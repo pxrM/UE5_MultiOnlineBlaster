@@ -1,0 +1,24 @@
+1. 引用 MultiplayerSession
+2. 重定向动画
+3. 创建c++类BlasterCharacter，创建蓝图类BP_BlasterCharacter
+4. 通过项目设置->Input里的 ActionMappings、AxisMappings 来设置自己输入，并在BlasterCharacter类里创建对应函数进行处理
+5. 创建c++BlasterAnimInstance，创建蓝图类BP_BlasterAnim并设置角色未穿戴装备时的动画
+6. 无缝旅行与非无缝旅行
+		无缝 Travel：无缝 Travel 是一种在不中断游戏流程的情况下切换场景或地图的方式。无缝 Travel 通常用于实现游戏中的波次、
+				关卡等级或任何需要玩家移动到新的游戏区域的情景中。无缝 Travel 可以通过在服务器和客户端之间传输数据来实现无缝衔接。
+				
+		非无缝 Travel：非无缝 Travel 是指在切换场景或地图时会中断游戏流程的方式。当执行非无缝 Travel 时，游戏会先停止当前场景的运行，
+				并加载新的场景或地图，然后重新启动游戏并初始化所需的数据和状态。非无缝 Travel 通常会中断客户端和服务器之间的连接，
+				并在加载新地图或场景时重新建立连接，通常，非无缝 Travel 更适用于需要完全重置游戏状态的情况，例如从主菜单进入游戏或重新启动游戏等。
+				
+	创建一个过渡level，方便我们每次travel（	切场景）时设置无缝旅行一个场景到另一个场景，
+	会创建一个游戏大厅，类似吃鸡进入游戏会先进入一个等待场景，有足够的玩家，就进入游戏。
+	非无缝旅行：切地图会断开与服务器的连接，然后重新连接回同一台服务器，断开和重连都需要时间，重连可能会出现问题
+	每次切场景首选使用无缝travel、首次加载地图以及连接到服务器时会发生非无缝travel。
+	创建LobbyGameMode类，负责查看有多少玩家连接到大厅，一旦进入一定数量就可以前往实际的游戏地图
+7. 创建c++ui小组件类OverheadWidget、蓝图类WBP_OverheadWidget
+8. 创建c++武器类Weapon
+9. 创建武器umg pickup组件，当玩家进入重叠时显示，退出隐藏
+10. 创建战斗组件，通过项目设置->Input里的 ActionMappings设置按键E来拾取武器
+
+	
