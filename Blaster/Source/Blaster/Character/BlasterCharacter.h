@@ -78,5 +78,11 @@ private:
 	/// </summary>
 	UFUNCTION()
 		void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
-
+	/// <summary>
+	/// 在客户端调用该函数时实际上会发送一个 RPC 请求到服务器，请求服务器执行其实现版本=ServerEquipBtnPressed_Implementation。
+	/// https://docs.unrealengine.com/5.1/zh-CN/rpcs-in-unreal-engine/
+	/// </summary>
+	UFUNCTION(Server, Reliable)	//声明为一个要在客户端上调用、但需要在服务器上执行代码的 RPC，并使用可靠的网络传输方式进行通信。
+		void ServerEquipBtnPressed();
+	
 };

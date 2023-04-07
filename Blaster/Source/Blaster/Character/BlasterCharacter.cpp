@@ -97,7 +97,26 @@ void ABlasterCharacter::LookUp(float Value)
 void ABlasterCharacter::EquipBtnPressed()
 {
 	//拾取武器需要服务器来验证
-	if (CombatCmp && HasAuthority())
+	if (CombatCmp)
+	{
+		//当装备按钮按下时，如果角色当前是服务端，则直接调用 CombatCmp 组件的 EquipWeapon 函数；
+		//否则，将该函数代理给 ServerEquipBtnPressed_Implementation 的远程过程调用（RPC）版本，以便由服务器验证并执行相应的操作。
+		//通过这种方式，可以确保装备按钮按下事件在所有客户端和服务器之间正确同步，并且在需要访问服务器资源或执行敏感操作时，由服务端进行验证和控制，从而提高游戏的安全性和可靠性。
+		if (HasAuthority())
+		{
+			CombatCmp->EquipWeapon(OverlappingWeapon);
+		}
+		else
+		{
+			ServerEquipBtnPressed();
+		}
+	}
+}
+
+//只在服务端被调用以响应 RPC 请求
+void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
+{
+	if (CombatCmp)
 	{
 		CombatCmp->EquipWeapon(OverlappingWeapon);
 	}
@@ -128,7 +147,7 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(false);
 	}
-	OverlappingWeapon = Weapon;
+	OverlappingWeapon = Weapon;	//发生改变，会同步给所有客户端，触发客户端 OnRep_OverlappingWeapon 函数
 	if (IsLocallyControlled())
 	{
 		if (OverlappingWeapon)
@@ -159,3 +178,4 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 		LastWeapon->ShowPickupWidget(false);
 	}
 }
+

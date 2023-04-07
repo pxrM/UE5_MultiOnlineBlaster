@@ -35,7 +35,7 @@ private:
 
 public:
 	/// <summary>
-	/// 将武器装备到当前角色身上
+	/// 将武器装备到当前角色身上。只在服务器调用
 	/// </summary>
 	/// <param name="WeaponToEquip"></param>
 	void EquipWeapon(AWeapon* WeaponToEquip);
