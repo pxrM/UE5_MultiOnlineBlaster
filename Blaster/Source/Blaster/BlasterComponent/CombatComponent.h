@@ -22,8 +22,23 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+
 public:	
-	
+	friend class ABlasterCharacter;	//是角色类可以访问武器类
+
+private:
+	class ABlasterCharacter* Character;
+	/// <summary>
+	/// 当前角色装备的武器
+	/// </summary>
+	class AWeapon* EquippedWeapon;
+
+public:
+	/// <summary>
+	/// 将武器装备到当前角色身上
+	/// </summary>
+	/// <param name="WeaponToEquip"></param>
+	void EquipWeapon(AWeapon* WeaponToEquip);
 
 		
 };

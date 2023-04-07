@@ -57,12 +57,15 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	//角色输入绑定按键
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipBtnPressed);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &ABlasterCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::LookUp);
 }
 
+/*--------------------------------------input--------------------------------------------*/
 
 void ABlasterCharacter::MoveForward(float Value)
 {
@@ -90,6 +93,17 @@ void ABlasterCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value);	//向俯仰角添加作用值
 }
+
+void ABlasterCharacter::EquipBtnPressed()
+{
+	//拾取武器需要服务器来验证
+	if (CombatCmp && HasAuthority())
+	{
+		CombatCmp->EquipWeapon(OverlappingWeapon);
+	}
+}
+
+/*--------------------------------------input--------------------------------------------*/
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -121,6 +135,15 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 		{
 			OverlappingWeapon->ShowPickupWidget(true);
 		}
+	}
+}
+
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (CombatCmp)
+	{
+		CombatCmp->Character = this;
 	}
 }
 

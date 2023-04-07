@@ -83,5 +83,6 @@ protected:
 
 public:
 	void ShowPickupWidget(bool bShow);
+	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
 
 };

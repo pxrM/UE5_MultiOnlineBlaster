@@ -26,11 +26,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	//-----------------------------------------------------------------------------------------------------------
-protected:
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-	void Turn(float Value);
-	void LookUp(float Value);
 
 private:
 	/// <summary>
@@ -59,6 +54,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		class UCombatComponent* CombatCmp;
 
+protected:
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	void Turn(float Value);
+	void LookUp(float Value);
+	void EquipBtnPressed();
 
 public:
 	/// <summary>
@@ -69,7 +70,7 @@ public:
 	//设置武器，内联函数
 	//FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon) { OverlappingWeapon = Weapon; }
 	void SetOverlappingWeapon(AWeapon* Weapon);
-
+	virtual void PostInitializeComponents() override;
 
 private:
 	/// <summary>
