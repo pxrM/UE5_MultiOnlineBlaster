@@ -49,6 +49,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		bool bWeaponEquipped;	//是否装备了武器
 
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bIsCrouched;	//是否蹲下
+
 private:
 	void RefreshBlasterCharacter();
 

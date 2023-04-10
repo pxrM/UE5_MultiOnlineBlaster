@@ -36,6 +36,8 @@ ABlasterCharacter::ABlasterCharacter()
 
 	CombatCmp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatCmp->SetIsReplicated(true);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;	//蓝图也可设置
 }
 
 // Called when the game starts or when spawned
@@ -58,6 +60,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	//角色输入绑定按键
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipBtnPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ABlasterCharacter::CrouchBtnPressed);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::MoveRight);
@@ -110,6 +113,20 @@ void ABlasterCharacter::EquipBtnPressed()
 		{
 			ServerEquipBtnPressed();
 		}
+	}
+}
+
+void ABlasterCharacter::CrouchBtnPressed()
+{
+	//这里会设置ACharacter->bIsCrouched
+	//这里会设置角色胶囊体的大小，可在运行期间按~键输入ShowCollision查看
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();	
 	}
 }
 

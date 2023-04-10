@@ -60,6 +60,7 @@ protected:
 	void Turn(float Value);
 	void LookUp(float Value);
 	void EquipBtnPressed();
+	void CrouchBtnPressed();
 
 public:
 	/// <summary>
