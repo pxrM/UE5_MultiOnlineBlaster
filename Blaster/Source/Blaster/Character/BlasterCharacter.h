@@ -67,10 +67,13 @@ public:
 	/// </summary>
 	/// <param name="OutLifetimeProps">需要进行网络同步的属性列表</param>
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	// 在 Actor 组件被初始化后，在 C++ 代码中进行额外的初始化操作。该函数在游戏运行时被调用。
+	virtual void PostInitializeComponents() override;
 	//设置武器，内联函数
 	//FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon) { OverlappingWeapon = Weapon; }
 	void SetOverlappingWeapon(AWeapon* Weapon);
-	virtual void PostInitializeComponents() override;
+	//是否装备了武器
+	bool IsWeaponEquipped();
 
 private:
 	/// <summary>

@@ -35,16 +35,19 @@ private:
 	*/
 
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-		class ABlasterCharacter* BlasterCharacter;
+		class ABlasterCharacter* BlasterCharacter;	//角色
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float Speed;
+		float Speed;  //速度
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		bool bIsInAir;	//是否在空中
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 		bool bIsAccelerating;	//是否正在加速移动
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bWeaponEquipped;	//是否装备了武器
 
 private:
 	void RefreshBlasterCharacter();

@@ -35,13 +35,16 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Speed = Velocity.Size();	//计算速度向量的大小（即速度标量值）
 
 	bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling();	//通过是否正在坠落判断角色是否在空中
+
 	//bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
-	//使用IsNearlyZero()避免进行浮点数比较，提高精度和计算速度
-	//在 FVector::IsNearlyZero() 函数中是可以传递一个 float 类型的参数 Tolerance 的，它表示允许的向量大小误差范围。
-	//如果手动指定 Tolerance 参数为0.1f，表示允许的向量大小误差范围为 0.1 的平方，即 0.01。
-	//如果没有手动指定 Tolerance 参数，则默认使用 FVector::ThreshVectorLen 来作为误差容忍值。
+	//使用IsNearlyZero()避免进行浮点数比较，提高精度和计算速度，
+	//在 FVector::IsNearlyZero() 函数中是可以传递一个 float 类型的参数 Tolerance 的，它表示允许的向量大小误差范围，
+	//如果手动指定 Tolerance 参数为0.1f，表示允许的向量大小误差范围为 0.1 的平方，即 0.01，
+	//如果没有手动指定 Tolerance 参数，则默认使用 FVector::ThreshVectorLen 来作为误差容忍值，
 	//FVector::ThreshVectorLen 的默认值为 1.e-4f，代表接近于 0 的向量大小平方不能超过 0.0001。
 	bIsAccelerating = !BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().IsNearlyZero(); 
+
+	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 }
 
 void UBlasterAnimInstance::RefreshBlasterCharacter()

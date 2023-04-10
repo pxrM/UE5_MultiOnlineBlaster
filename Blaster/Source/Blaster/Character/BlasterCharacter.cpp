@@ -130,7 +130,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	//使用 DOREPLIFETIME 宏将 OverlappingWeapon 变量添加到需要进行网络同步的属性列表中。
 	//DOREPLIFETIME 宏的第一个参数是要同步的变量名，第二个参数是要添加到的 OutLifetimeProps 数组。
-	//在多人游戏中，每当 OverlappingWeapon 的值发生变化时，它将自动由引擎ds同步到其他客户端。在其他客户端上，该值将自动更新以匹配服务器上的值。
+	//在多人游戏中，每当 OverlappingWeapon 的值发生变化时，它将自动由引擎ds服务器同步到其他客户端。在其他客户端上，该值将自动更新以匹配服务器上的值。
 	//需要注意的是，除了在 GetLifetimeReplicatedProps 函数中添加属性外，
 	//还需要确保所有需要同步的属性都使用了 UPROPERTY(Replicated) 标识符进行了标记。否则，这些属性可能无法被正确同步。
 	//DOREPLIFETIME(ABlasterCharacter, OverlappingWeapon);
@@ -155,6 +155,11 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 			OverlappingWeapon->ShowPickupWidget(true);
 		}
 	}
+}
+
+bool ABlasterCharacter::IsWeaponEquipped()
+{
+	return (CombatCmp && CombatCmp->EquippedWeapon);
 }
 
 void ABlasterCharacter::PostInitializeComponents()

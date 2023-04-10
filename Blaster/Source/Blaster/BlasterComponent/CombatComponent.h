@@ -7,12 +7,12 @@
 #include "CombatComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UCombatComponent();
 	// Called every frame
@@ -23,22 +23,28 @@ protected:
 	virtual void BeginPlay() override;
 
 
-public:	
+public:
 	friend class ABlasterCharacter;	//是角色类可以访问武器类
+
 
 private:
 	class ABlasterCharacter* Character;
-	/// <summary>
-	/// 当前角色装备的武器
-	/// </summary>
-	class AWeapon* EquippedWeapon;
+	//当前装备的武器
+	UPROPERTY(Replicated)
+		class AWeapon* EquippedWeapon;
+
 
 public:
+	/// <summary>
+	/// 用于获取需要进行网络同步的属性列表
+	/// </summary>
+	/// <param name="OutLifetimeProps">需要进行网络同步的属性列表</param>
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	/// <summary>
 	/// 将武器装备到当前角色身上。只在服务器调用
 	/// </summary>
 	/// <param name="WeaponToEquip"></param>
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
-		
+
 };
