@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CombatComponent.h"
@@ -39,11 +39,11 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	//½ÇÉ«×°±¸ÎäÆ÷ÓÉ·þÎñÆ÷¿ØÖÆ£¬ÕâÀïÖ»Í¬²½ÁË×Ô¼º£¬µ«ÊÇµÐÈËÒ²ÐèÒª¿´µ½ÄãµÄÎäÆ÷£¬ËùÒÔÕâÀï¼ÓÉÏÍ¬²½¸øËùÓÐ¿Í»§¶Ë
+	//è§’è‰²è£…å¤‡æ­¦å™¨ç”±æœåŠ¡å™¨æŽ§åˆ¶ï¼Œè¿™é‡ŒåªåŒæ­¥äº†è‡ªå·±ï¼Œä½†æ˜¯æ•Œäººä¹Ÿéœ€è¦çœ‹åˆ°ä½ çš„æ­¦å™¨ï¼Œæ‰€ä»¥è¿™é‡ŒåŠ ä¸ŠåŒæ­¥ç»™æ‰€æœ‰å®¢æˆ·ç«¯
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon); 
-	//ÕâÀïÊÇÓÉÍæ¼Ò×Ô¼º¿ØÖÆ±äÁ¿¸ü¸ÄµÄ£¬Ö»ÓÐ·þÎñÆ÷Íæ¼Ò¸ü¸ÄÁË±äÁ¿»áÍ¨Öª¸øÆäËû¿Í»§¶Ë£¬
-	//µ«ÊÇÆäËû¿Í»§¶Ë±äÁ¿¸ü¸ÄºóÒòÎªÊÇÔÚ±¾µØ£¬ËùÒÔ²»»á´¥·¢£¬ÕâÀïÐèÒª´Ó¿Í»§¶Ë»ñÈ¡ÐÅÏ¢Í¬²½µ½·þÎñÆ÷£¬·þÎñÆ÷¸ü¸Ä±äÁ¿²Å»á½â¾ö
-	//Ê¹ÓÃRPC½â¾ö£¬ÏñABlasterCharacter::ServerEquipBtnPressed_Implementation()Ò»Ñù
+	//è¿™é‡Œæ˜¯ç”±çŽ©å®¶è‡ªå·±æŽ§åˆ¶å˜é‡æ›´æ”¹çš„ï¼Œåªæœ‰æœåŠ¡å™¨çŽ©å®¶æ›´æ”¹äº†å˜é‡ä¼šé€šçŸ¥ç»™å…¶ä»–å®¢æˆ·ç«¯ï¼Œ
+	//ä½†æ˜¯å…¶ä»–å®¢æˆ·ç«¯å˜é‡æ›´æ”¹åŽå› ä¸ºæ˜¯åœ¨æœ¬åœ°ï¼Œæ‰€ä»¥ä¸ä¼šè§¦å‘ï¼Œè¿™é‡Œéœ€è¦ä»Žå®¢æˆ·ç«¯èŽ·å–ä¿¡æ¯åŒæ­¥åˆ°æœåŠ¡å™¨ï¼ŒæœåŠ¡å™¨æ›´æ”¹å˜é‡æ‰ä¼šè§£å†³
+	//ä½¿ç”¨RPCè§£å†³ï¼ŒåƒABlasterCharacter::ServerEquipBtnPressed_Implementation()ä¸€æ ·
 	DOREPLIFETIME(UCombatComponent, bAiming); 
 }
 
@@ -53,7 +53,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	//»ñÈ¡ÃûÎª RightHand_Socket µÄÊÖ³Ö¹Ç÷À²å²Û
+	//èŽ·å–åä¸º RightHand_Socket çš„æ‰‹æŒéª¨éª¼æ’æ§½
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName(TEXT("RightHand_Socket")));
 	if (HandSocket)
 	{
@@ -61,7 +61,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(Character);
 }
-
+	
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -71,7 +71,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	}
 }
 
-void UCombatComponent::SetAiming_Implementation(bool bIsAiming)
+void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 {
 	bAiming = bIsAiming;
 }
