@@ -32,6 +32,8 @@ private:
 	//当前装备的武器
 	UPROPERTY(Replicated)
 		class AWeapon* EquippedWeapon;
+	UPROPERTY(Replicated)
+		bool bAiming;	//是否正在瞄准
 
 
 public:
@@ -46,5 +48,9 @@ public:
 	/// <param name="WeaponToEquip"></param>
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
+protected:
+	void SetAiming(bool bIsAiming);
+	UFUNCTION(Server, Reliable)
+		void ServerSetAiming(bool bIsAiming);
 
 };

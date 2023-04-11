@@ -52,6 +52,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		bool bIsCrouched;	//是否蹲下
 
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bIsAiming;	  //是否在瞄准
+
 private:
 	void RefreshBlasterCharacter();
 

@@ -61,6 +61,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipBtnPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ABlasterCharacter::CrouchBtnPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimBtnPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimBtnReleased);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ABlasterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ABlasterCharacter::MoveRight);
@@ -130,6 +132,22 @@ void ABlasterCharacter::CrouchBtnPressed()
 	}
 }
 
+void ABlasterCharacter::AimBtnPressed()
+{
+	if (CombatCmp)
+	{
+		CombatCmp->SetAiming(true);
+	}
+}
+
+void ABlasterCharacter::AimBtnReleased()
+{
+	if (CombatCmp)
+	{
+		CombatCmp->SetAiming(false);
+	}
+}
+
 //只在服务端被调用以响应 RPC 请求
 void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
 {
@@ -177,6 +195,11 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 bool ABlasterCharacter::IsWeaponEquipped()
 {
 	return (CombatCmp && CombatCmp->EquippedWeapon);
+}
+
+bool ABlasterCharacter::IsAiming()
+{
+	return (CombatCmp && CombatCmp->bAiming);
 }
 
 void ABlasterCharacter::PostInitializeComponents()

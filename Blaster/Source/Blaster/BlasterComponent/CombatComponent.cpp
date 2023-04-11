@@ -39,7 +39,12 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon); //角色装备武器由服务器控制，这里只同步了自己，但是敌人也需要看到你的武器，所以这里加上同步给所有客户端
+	//角色装备武器由服务器控制，这里只同步了自己，但是敌人也需要看到你的武器，所以这里加上同步给所有客户端
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon); 
+	//这里是由玩家自己控制变量更改的，只有服务器玩家更改了变量会通知给其他客户端，
+	//但是其他客户端变量更改后因为是在本地，所以不会触发，这里需要从客户端获取信息同步到服务器，服务器更改变量才会解决
+	//使用RPC解决，像ABlasterCharacter::ServerEquipBtnPressed_Implementation()一样
+	DOREPLIFETIME(UCombatComponent, bAiming); 
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -55,4 +60,18 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character);
+}
+
+void UCombatComponent::SetAiming(bool bIsAiming)
+{
+	bAiming = bIsAiming;
+	if (!Character->HasAuthority())
+	{
+		ServerSetAiming(bIsAiming);
+	}
+}
+
+void UCombatComponent::SetAiming_Implementation(bool bIsAiming)
+{
+	bAiming = bIsAiming;
 }

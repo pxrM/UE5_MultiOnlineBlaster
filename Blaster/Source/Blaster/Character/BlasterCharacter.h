@@ -61,6 +61,8 @@ protected:
 	void LookUp(float Value);
 	void EquipBtnPressed();
 	void CrouchBtnPressed();
+	void AimBtnPressed();
+	void AimBtnReleased();
 
 public:
 	/// <summary>
@@ -75,6 +77,8 @@ public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	//是否装备了武器
 	bool IsWeaponEquipped();
+	//是否正在瞄准
+	bool IsAiming();
 
 private:
 	/// <summary>
