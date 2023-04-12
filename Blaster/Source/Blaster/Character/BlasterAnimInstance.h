@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -21,39 +21,49 @@ public:
 
 private:
 	/*
-	UPROPERTY ±íÊ¾Õâ¸öÊôĞÔÊÇÓÉ Unreal Engine ¹ÜÀíµÄ Unreal Object System ÖĞµÄÊôĞÔ¡£Ëü¿ÉÒÔÈÃ Unreal Engine ÔÚ±àÒëÊ±×Ô¶¯Éú³ÉÒ»Ğ©¸¨Öú´úÂë£¬
-				ÀıÈçĞòÁĞ»¯£¨Serialization£©£¬»òÕßÔÚ±à¼­Æ÷ÖĞÏÔÊ¾Õâ¸öÊôĞÔÒÔ±ãÓÚĞŞ¸Ä¡£
-	BlueprintReadOnly ±íÊ¾Õâ¸öÊôĞÔÖ»ÄÜÔÚÀ¶Í¼£¨Blueprint£©ÖĞ¶ÁÈ¡£¬¶ø²»ÄÜĞ´Èë¡£Õâ¸öÊôĞÔÍ¨³£ÓÃÓÚ½« C++ ÀàĞÍµÄÊı¾İ±©Â¶¸øÀ¶Í¼Ê¹ÓÃ£¬
-				µ«ÊÇÓÖ²»Ï£ÍûÀ¶Í¼Ö±½ÓĞŞ¸ÄÕâ¸öÊı¾İ£¬¶øÊÇÍ¨¹ıµ÷ÓÃ C++ º¯ÊıÀ´¸Ä±ä¡£
-	Category = Character ±íÊ¾Õâ¸öÊôĞÔÊôÓÚ Character Àà±ğ£¬ÊÇÓÃÓÚÃèÊö½ÇÉ«ÊôĞÔµÄ¡£ÔÚ Unreal Engine ÖĞ£¬ËùÓĞµÄÊôĞÔ¶¼ĞèÒª±»·ÖÅäµ½Ò»¸öËùÊôÀà±ğ£¨Category£©ÖĞ£¬
-				ÒÔ±ãÓÚÔÚ±à¼­Æ÷ÖĞ½øĞĞ·ÖÀàºÍ×éÖ¯¡£ÆäÖĞÒ»Ğ©³£ÓÃµÄÀà±ğÒÑ¾­±» Unreal Engine Ô¤¶¨ÒåºÃÁË£¬ÀıÈç Character¡¢Engine¡¢Input µÈµÈ¡£
-				ÔÚ C++ ´úÂëÖĞÉùÃ÷µÄ UPROPERTY ºêÖĞ£¬¿ÉÒÔÊ¹ÓÃ Category ²ÎÊı½«ÊôĞÔ·ÖÅäµ½Ô¤¶¨ÒåµÄÀà±ğÖĞ£¬Ò²¿ÉÒÔ´´½¨×Ô¶¨ÒåµÄÀà±ğÀ´¹ÜÀíÊôĞÔ¡£
-				Èç¹ûÊ¹ÓÃÎ´¶¨ÒåµÄÀà±ğ£¬Ëü»áÔÚ±à¼­Æ÷ÖĞÏÔÊ¾ÎªÒ»¸öĞÂµÄÀà±ğ£¬µ«ÊÇ²»»áÓ°Ïì´úÂëµÄ±àÒëºÍÔËĞĞ¡£Òò´Ë£¬Category = Character ¿ÉÄÜÊÇÔ¤¶¨ÒåµÄ Character Àà±ğ£¬
-				Ò²¿ÉÄÜÊÇ¿ª·¢Õß×Ô¼º¶¨ÒåµÄ Character Àà±ğ¡£
-	meta = (AllowPrivateAccess = "true") ±íÊ¾Õâ¸öÊôĞÔÔÊĞíË½ÓĞ·ÃÎÊ£¨AllowPrivateAccess£©£¬Ò²¾ÍÊÇËµ£¬¼´Ê¹ËüÊÇË½ÓĞ³ÉÔ±±äÁ¿£¬
-				À¶Í¼Ò²¿ÉÒÔ·ÃÎÊ²¢¶ÁÈ¡Õâ¸öÊôĞÔ¡£Õâ¸öÊôĞÔÍ¨³£ÓÃÓÚÔÚÀ¶Í¼ÖĞ·ÃÎÊ C++ ´úÂëÖĞµÄË½ÓĞ³ÉÔ±±äÁ¿¡£
+	UPROPERTY è¡¨ç¤ºè¿™ä¸ªå±æ€§æ˜¯ç”± Unreal Engine ç®¡ç†çš„ Unreal Object System ä¸­çš„å±æ€§ã€‚å®ƒå¯ä»¥è®© Unreal Engine åœ¨ç¼–è¯‘æ—¶è‡ªåŠ¨ç”Ÿæˆä¸€äº›è¾…åŠ©ä»£ç ï¼Œ
+				ä¾‹å¦‚åºåˆ—åŒ–ï¼ˆSerializationï¼‰ï¼Œæˆ–è€…åœ¨ç¼–è¾‘å™¨ä¸­æ˜¾ç¤ºè¿™ä¸ªå±æ€§ä»¥ä¾¿äºä¿®æ”¹ã€‚
+	BlueprintReadOnly è¡¨ç¤ºè¿™ä¸ªå±æ€§åªèƒ½åœ¨è“å›¾ï¼ˆBlueprintï¼‰ä¸­è¯»å–ï¼Œè€Œä¸èƒ½å†™å…¥ã€‚è¿™ä¸ªå±æ€§é€šå¸¸ç”¨äºå°† C++ ç±»å‹çš„æ•°æ®æš´éœ²ç»™è“å›¾ä½¿ç”¨ï¼Œ
+				ä½†æ˜¯åˆä¸å¸Œæœ›è“å›¾ç›´æ¥ä¿®æ”¹è¿™ä¸ªæ•°æ®ï¼Œè€Œæ˜¯é€šè¿‡è°ƒç”¨ C++ å‡½æ•°æ¥æ”¹å˜ã€‚
+	Category = Character è¡¨ç¤ºè¿™ä¸ªå±æ€§å±äº Character ç±»åˆ«ï¼Œæ˜¯ç”¨äºæè¿°è§’è‰²å±æ€§çš„ã€‚åœ¨ Unreal Engine ä¸­ï¼Œæ‰€æœ‰çš„å±æ€§éƒ½éœ€è¦è¢«åˆ†é…åˆ°ä¸€ä¸ªæ‰€å±ç±»åˆ«ï¼ˆCategoryï¼‰ä¸­ï¼Œ
+				ä»¥ä¾¿äºåœ¨ç¼–è¾‘å™¨ä¸­è¿›è¡Œåˆ†ç±»å’Œç»„ç»‡ã€‚å…¶ä¸­ä¸€äº›å¸¸ç”¨çš„ç±»åˆ«å·²ç»è¢« Unreal Engine é¢„å®šä¹‰å¥½äº†ï¼Œä¾‹å¦‚ Characterã€Engineã€Input ç­‰ç­‰ã€‚
+				åœ¨ C++ ä»£ç ä¸­å£°æ˜çš„ UPROPERTY å®ä¸­ï¼Œå¯ä»¥ä½¿ç”¨ Category å‚æ•°å°†å±æ€§åˆ†é…åˆ°é¢„å®šä¹‰çš„ç±»åˆ«ä¸­ï¼Œä¹Ÿå¯ä»¥åˆ›å»ºè‡ªå®šä¹‰çš„ç±»åˆ«æ¥ç®¡ç†å±æ€§ã€‚
+				å¦‚æœä½¿ç”¨æœªå®šä¹‰çš„ç±»åˆ«ï¼Œå®ƒä¼šåœ¨ç¼–è¾‘å™¨ä¸­æ˜¾ç¤ºä¸ºä¸€ä¸ªæ–°çš„ç±»åˆ«ï¼Œä½†æ˜¯ä¸ä¼šå½±å“ä»£ç çš„ç¼–è¯‘å’Œè¿è¡Œã€‚å› æ­¤ï¼ŒCategory = Character å¯èƒ½æ˜¯é¢„å®šä¹‰çš„ Character ç±»åˆ«ï¼Œ
+				ä¹Ÿå¯èƒ½æ˜¯å¼€å‘è€…è‡ªå·±å®šä¹‰çš„ Character ç±»åˆ«ã€‚
+	meta = (AllowPrivateAccess = "true") è¡¨ç¤ºè¿™ä¸ªå±æ€§å…è®¸ç§æœ‰è®¿é—®ï¼ˆAllowPrivateAccessï¼‰ï¼Œä¹Ÿå°±æ˜¯è¯´ï¼Œå³ä½¿å®ƒæ˜¯ç§æœ‰æˆå‘˜å˜é‡ï¼Œ
+				è“å›¾ä¹Ÿå¯ä»¥è®¿é—®å¹¶è¯»å–è¿™ä¸ªå±æ€§ã€‚è¿™ä¸ªå±æ€§é€šå¸¸ç”¨äºåœ¨è“å›¾ä¸­è®¿é—® C++ ä»£ç ä¸­çš„ç§æœ‰æˆå‘˜å˜é‡ã€‚
 	*/
 
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-		class ABlasterCharacter* BlasterCharacter;	//½ÇÉ«
+		class ABlasterCharacter* BlasterCharacter;	//è§’è‰²
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float Speed;  //ËÙ¶È
+		float Speed;  //é€Ÿåº¦
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsInAir;	//ÊÇ·ñÔÚ¿ÕÖĞ
+		bool bIsInAir;	//æ˜¯å¦åœ¨ç©ºä¸­
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsAccelerating;	//ÊÇ·ñÕıÔÚ¼ÓËÙÒÆ¶¯
+		bool bIsAccelerating;	//æ˜¯å¦æ­£åœ¨åŠ é€Ÿç§»åŠ¨
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bWeaponEquipped;	//ÊÇ·ñ×°±¸ÁËÎäÆ÷
+		bool bWeaponEquipped;	//æ˜¯å¦è£…å¤‡äº†æ­¦å™¨
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bIsCrouched;	//ÊÇ·ñ¶×ÏÂ
+		bool bIsCrouched;	//æ˜¯å¦è¹²ä¸‹
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bIsAiming;	  //ÊÇ·ñÔÚÃé×¼
+		bool bIsAiming;	  //æ˜¯å¦åœ¨ç„å‡†
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		float YawOffset;	  //æ§åˆ¶æ··åˆåŠ¨ç”»EquippedRun y
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		float Lean;	  //æ§åˆ¶æ··åˆåŠ¨ç”»EquippedRun x
+
+	FRotator DeltaRotation;
+	FRotator CharacterRotation;	//å½“å‰å¸§çš„æ—‹è½¬è§’åº¦å€¼
+	FRotator CharacterRotationLastFrame; //ä¸Šä¸€å¸§çš„æ—‹è½¬è§’åº¦å€¼
 
 private:
 	void RefreshBlasterCharacter();

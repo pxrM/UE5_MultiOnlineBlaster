@@ -1,9 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -16,11 +17,11 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	//ÔÚ NativeUpdateAnimation() ÖĞ£¬ÓÉÓÚ¸üĞÂ¶¯»­µÄÆµÂÊ±È³õÊ¼»¯¶¯»­¸ü¸ß£¬Òò´Ë BlasterCharacter ¿ÉÄÜ»á±»ÆäËû·Ç C++ ´úÂëĞŞ¸Ä»òÕßÉèÖÃÎª nullptr¡£
-	//Òò´Ë£¬ÔÚÃ¿´ÎÖ´ĞĞ NativeUpdateAnimation() º¯ÊıÊ±£¬¶¼ĞèÒªÖØĞÂ»ñÈ¡µ±Ç°¿ØÖÆÆ÷Ëù¿ØÖÆµÄ½ÇÉ«¶ÔÏó£¬
-	//²¢Ê¹ÓÃ Cast<ABlasterCharacter>() ½øĞĞÇ¿ÖÆÀàĞÍ×ª»»£¬ÒÔÈ·±£ BlasterCharacter Ö¸ÏòÕıÈ·µÄ¶ÔÏó¡£
-	//Èç¹û³¢ÊÔÖØĞÂ»ñÈ¡¿ØÖÆÆ÷¶ÔÏóºó·µ»ØµÄ Pawn ¶ÔÏó²»ÊÇ ABlasterCharacter ÀàĞÍ£¬Ôò Cast<ABlasterCharacter>() º¯Êı½«·µ»Ø¿ÕÖ¸Õë£¨nullptr£©£¬
-	//ÕâÊ±ºò¾ÍĞèÒªÔÙ´ÎÅĞ¶Ï BlasterCharacter ÊÇ·ñÎª¿Õ£¬ÒÔ±ÜÃâÊ¹ÓÃÒ»¸öÎŞĞ§µÄÖ¸Õë¶øµ¼ÖÂ³ÌĞò±ÀÀ£¡£
+	//åœ¨ NativeUpdateAnimation() ä¸­ï¼Œç”±äºæ›´æ–°åŠ¨ç”»çš„é¢‘ç‡æ¯”åˆå§‹åŒ–åŠ¨ç”»æ›´é«˜ï¼Œå› æ­¤ BlasterCharacter å¯èƒ½ä¼šè¢«å…¶ä»–é C++ ä»£ç ä¿®æ”¹æˆ–è€…è®¾ç½®ä¸º nullptrã€‚
+	//å› æ­¤ï¼Œåœ¨æ¯æ¬¡æ‰§è¡Œ NativeUpdateAnimation() å‡½æ•°æ—¶ï¼Œéƒ½éœ€è¦é‡æ–°è·å–å½“å‰æ§åˆ¶å™¨æ‰€æ§åˆ¶çš„è§’è‰²å¯¹è±¡ï¼Œ
+	//å¹¶ä½¿ç”¨ Cast<ABlasterCharacter>() è¿›è¡Œå¼ºåˆ¶ç±»å‹è½¬æ¢ï¼Œä»¥ç¡®ä¿ BlasterCharacter æŒ‡å‘æ­£ç¡®çš„å¯¹è±¡ã€‚
+	//å¦‚æœå°è¯•é‡æ–°è·å–æ§åˆ¶å™¨å¯¹è±¡åè¿”å›çš„ Pawn å¯¹è±¡ä¸æ˜¯ ABlasterCharacter ç±»å‹ï¼Œåˆ™ Cast<ABlasterCharacter>() å‡½æ•°å°†è¿”å›ç©ºæŒ‡é’ˆï¼ˆnullptrï¼‰ï¼Œ
+	//è¿™æ—¶å€™å°±éœ€è¦å†æ¬¡åˆ¤æ–­ BlasterCharacter æ˜¯å¦ä¸ºç©ºï¼Œä»¥é¿å…ä½¿ç”¨ä¸€ä¸ªæ— æ•ˆçš„æŒ‡é’ˆè€Œå¯¼è‡´ç¨‹åºå´©æºƒã€‚
 	if (BlasterCharacter == nullptr)
 	{
 		RefreshBlasterCharacter();
@@ -30,18 +31,18 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 	}
 
-	FVector Velocity = BlasterCharacter->GetVelocity(); //»ñÈ¡µ±Ç°½ÇÉ«¶ÔÏóµÄËÙ¶È
-	Velocity.Z = 0.f;	//½«ËÙ¶ÈÏòÁ¿µÄ Z ·ÖÁ¿ÉèÎª 0£¬ÕâÑù¿ÉÒÔÊ¹µÃ½ÇÉ«ÔÚË®Æ½ÃæÉÏµÄÒÆ¶¯ËÙ¶È¸ü·ûºÏÊµ¼ÊĞ§¹û
-	Speed = Velocity.Size();	//¼ÆËãËÙ¶ÈÏòÁ¿µÄ´óĞ¡£¨¼´ËÙ¶È±êÁ¿Öµ£©
+	FVector Velocity = BlasterCharacter->GetVelocity(); //è·å–å½“å‰è§’è‰²å¯¹è±¡çš„é€Ÿåº¦
+	Velocity.Z = 0.f;	//å°†é€Ÿåº¦å‘é‡çš„ Z åˆ†é‡è®¾ä¸º 0ï¼Œè¿™æ ·å¯ä»¥ä½¿å¾—è§’è‰²åœ¨æ°´å¹³é¢ä¸Šçš„ç§»åŠ¨é€Ÿåº¦æ›´ç¬¦åˆå®é™…æ•ˆæœ
+	Speed = Velocity.Size();	//è®¡ç®—é€Ÿåº¦å‘é‡çš„å¤§å°ï¼ˆå³é€Ÿåº¦æ ‡é‡å€¼ï¼‰
 
-	bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling();	//Í¨¹ıÊÇ·ñÕıÔÚ×¹ÂäÅĞ¶Ï½ÇÉ«ÊÇ·ñÔÚ¿ÕÖĞ
+	bIsInAir = BlasterCharacter->GetCharacterMovement()->IsFalling();	//é€šè¿‡æ˜¯å¦æ­£åœ¨å è½åˆ¤æ–­è§’è‰²æ˜¯å¦åœ¨ç©ºä¸­
 
 	//bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f;
-	//Ê¹ÓÃIsNearlyZero()±ÜÃâ½øĞĞ¸¡µãÊı±È½Ï£¬Ìá¸ß¾«¶ÈºÍ¼ÆËãËÙ¶È£¬
-	//ÔÚ FVector::IsNearlyZero() º¯ÊıÖĞÊÇ¿ÉÒÔ´«µİÒ»¸ö float ÀàĞÍµÄ²ÎÊı Tolerance µÄ£¬Ëü±íÊ¾ÔÊĞíµÄÏòÁ¿´óĞ¡Îó²î·¶Î§£¬
-	//Èç¹ûÊÖ¶¯Ö¸¶¨ Tolerance ²ÎÊıÎª0.1f£¬±íÊ¾ÔÊĞíµÄÏòÁ¿´óĞ¡Îó²î·¶Î§Îª 0.1 µÄÆ½·½£¬¼´ 0.01£¬
-	//Èç¹ûÃ»ÓĞÊÖ¶¯Ö¸¶¨ Tolerance ²ÎÊı£¬ÔòÄ¬ÈÏÊ¹ÓÃ FVector::ThreshVectorLen À´×÷ÎªÎó²îÈİÈÌÖµ£¬
-	//FVector::ThreshVectorLen µÄÄ¬ÈÏÖµÎª 1.e-4f£¬´ú±í½Ó½üÓÚ 0 µÄÏòÁ¿´óĞ¡Æ½·½²»ÄÜ³¬¹ı 0.0001¡£
+	//ä½¿ç”¨IsNearlyZero()é¿å…è¿›è¡Œæµ®ç‚¹æ•°æ¯”è¾ƒï¼Œæé«˜ç²¾åº¦å’Œè®¡ç®—é€Ÿåº¦ï¼Œ
+	//åœ¨ FVector::IsNearlyZero() å‡½æ•°ä¸­æ˜¯å¯ä»¥ä¼ é€’ä¸€ä¸ª float ç±»å‹çš„å‚æ•° Tolerance çš„ï¼Œå®ƒè¡¨ç¤ºå…è®¸çš„å‘é‡å¤§å°è¯¯å·®èŒƒå›´ï¼Œ
+	//å¦‚æœæ‰‹åŠ¨æŒ‡å®š Tolerance å‚æ•°ä¸º0.1fï¼Œè¡¨ç¤ºå…è®¸çš„å‘é‡å¤§å°è¯¯å·®èŒƒå›´ä¸º 0.1 çš„å¹³æ–¹ï¼Œå³ 0.01ï¼Œ
+	//å¦‚æœæ²¡æœ‰æ‰‹åŠ¨æŒ‡å®š Tolerance å‚æ•°ï¼Œåˆ™é»˜è®¤ä½¿ç”¨ FVector::ThreshVectorLen æ¥ä½œä¸ºè¯¯å·®å®¹å¿å€¼ï¼Œ
+	//FVector::ThreshVectorLen çš„é»˜è®¤å€¼ä¸º 1.e-4fï¼Œä»£è¡¨æ¥è¿‘äº 0 çš„å‘é‡å¤§å°å¹³æ–¹ä¸èƒ½è¶…è¿‡ 0.0001ã€‚
 	bIsAccelerating = !BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().IsNearlyZero(); 
 
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
@@ -49,16 +50,48 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 
 	bIsAiming = BlasterCharacter->IsAiming();
+
+	/*è·å–ä¸€ä¸ªè§’è‰²çš„ç§»åŠ¨æ–¹å‘å’Œè§†è§’æ—‹è½¬ä¹‹é—´çš„åç§»é‡*/
+	//è·å–è§’è‰²çš„ç„å‡†æ–¹å‘
+	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
+	//ä½¿ç”¨GetVelocity()è·å–åˆ°è§’è‰²å½“å‰çš„ç§»åŠ¨é€Ÿåº¦å’Œæ–¹å‘ï¼Œå¹¶é€šè¿‡MakeRotFromX()æ–¹æ³•å°†å…¶è½¬æ¢ä¸ºä¸€ä¸ªæ—‹è½¬å€¼ï¼Œè¡¨ç¤ºå½“å‰ç§»åŠ¨æ–¹å‘çš„æœå‘ã€‚
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
+	//ä¸‹é¢è¿™å¥ä»£ç ç›´æ¥è¿”å›éæ’å€¼çš„æ—‹è½¬åç§»é‡ï¼Œå¯èƒ½ä¼šå¯¼è‡´åŠ¨ç”»åˆ‡æ¢è¿‡ç¨‹ä¸å¤Ÿæµç•…ï¼Œå‡ºç°å‰§çƒˆæŠ–åŠ¨ç­‰ç°è±¡ã€‚è¿™é‡Œä¼šå‘ç”Ÿä»è´Ÿ180è¿‡æ¸¡åˆ°æ­£180ï¼Œå°±ä¼šä¸€ä¸‹å­æ‰«è¿‡å¤šä¸ªåŠ¨ç”»
+	//å› ä¸ºåœ¨YawOffsetå˜åŒ–è¿‡ç¨‹ä¸­ï¼Œæ¯ä¸€å¸§è§’è‰²çš„æœå‘éƒ½ä¼šå‘ç”Ÿæ¯”è¾ƒå¤§çš„å˜åŒ–ï¼Œå¯¼è‡´åŠ¨ç”»çš„è¿‡æ¸¡ä¸å¤Ÿå¹³æ»‘ã€‚å…·ä½“æ¥è¯´ï¼Œå½“è§’è‰²çš„æœå‘å‘ç”Ÿå˜åŒ–æ—¶ï¼Œ
+	//å¯èƒ½ä¼šå½±å“åˆ°è§’è‰²çš„å…¶å®ƒå±æ€§ï¼ˆå¦‚ä½ç½®ã€æ—‹è½¬ç­‰ï¼‰ï¼Œå¦‚æœåœ¨è¿‡æ¸¡çš„è¿‡ç¨‹ä¸­è¿™äº›å±æ€§å·®å¼‚å¾ˆå¤§ï¼Œå°±ä¼šå¯¼è‡´åŠ¨ç”»å‡ºç°çªå˜æˆ–ä¸æµç•…çš„æƒ…å†µï¼Œä»è€Œäº§ç”ŸæŠ–åŠ¨ã€‚
+	//ä½¿ç”¨NormalizedDeltaRotatorå‡½æ•°è®¡ç®—MovementRotationå’ŒAimRotationä¹‹é—´çš„æ—‹è½¬å·®å¼‚ï¼Œå¹¶æå–å…¶Yawè½´çš„å€¼èµ‹ç»™YawOffsetå˜é‡
+	//	YawOffset = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw;
+	//è®¡ç®—å‡ºMovementRotationä¸AimRotationä¹‹é—´çš„æ—‹è½¬å·®å€¼
+	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+	//DeltaRotationè®°å½•äº†ä¸Šä¸€å¸§ä¸å½“å‰å¸§ä¹‹é—´çš„æ—‹è½¬å·®å€¼ï¼Œåˆ©ç”¨RInterpTo()æ–¹æ³•å¯¹å®ƒè¿›è¡Œæ’å€¼è®¡ç®—ï¼Œå°†æ’å€¼ç»“æœèµ‹å€¼ç»™DeltaRotationã€‚
+	//è¯¥æ–¹æ³•å°†æ ¹æ®æä¾›çš„ä¸¤ä¸ªæ—‹è½¬å€¼å’Œæ—¶é—´ï¼Œä»¥åŠæ’å€¼é€Ÿåº¦(6.f)è®¡ç®—å‡ºä¸€ä¸ªæ–°çš„æ—‹è½¬å€¼ï¼Œè¯¥å€¼é€æ¸ä»å½“å‰çš„æ—‹è½¬å€¼å‘ç›®æ ‡æ—‹è½¬å€¼æ’å€¼è¿‡æ¸¡ã€‚
+	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaSeconds, 6.f);
+	YawOffset = DeltaRotation.Yaw;
+
+	/*è·å–è§’è‰²èº«ä½“å€¾æ–œè§’åº¦*/
+	//è®°å½•ä¸Šä¸€å¸§çš„æ—‹è½¬å€¼
+	CharacterRotationLastFrame = CharacterRotation;
+	//è·å–å½“å‰è§’è‰²çš„æ—‹è½¬å€¼
+	CharacterRotation = BlasterCharacter->GetActorRotation(); 
+	//è®¡ç®—å‡ºä¸Šä¸€å¸§è§’è‰²æ—‹è½¬å€¼ä¸å½“å‰å¸§è§’è‰²æ—‹è½¬å€¼ä¹‹é—´çš„å·®å€¼Deltaã€‚Delta.Yawè¡¨ç¤ºè§’è‰²åœ¨Yawè½´ä¸Šæ—‹è½¬çš„è§’åº¦å·®å€¼ã€‚
+	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
+	//(ä»ä¸Šä¸€å¸§åˆ°å½“å‰å¸§æ‰€ç»è¿‡çš„æ—¶é—´)å¾—åˆ°æ¯ç§’é’Ÿè§’è‰²èº«ä½“éœ€è¦å€¾æ–œçš„è§’åº¦é‡Target
+	const float Target = Delta.Yaw / DeltaSeconds;
+	//ä½¿ç”¨FInterpTo()æ–¹æ³•åœ¨Lean(è§’è‰²èº«ä½“å€¾æ–œè§’åº¦)å’Œç›®æ ‡å€¼Targetä¹‹é—´è¿›è¡Œæ’å€¼è®¡ç®—ï¼Œå¾—åˆ°æ’å€¼ç»“æœInterpã€‚
+	//è¯¥æ–¹æ³•ä¼šè‡ªåŠ¨å¤„ç†æ’å€¼è¿‡ç¨‹ä¸­çš„è¶…è°ƒé—®é¢˜ï¼Œå¹¶ç¡®ä¿æ’å€¼ç»“æœåœ¨è§„å®šçš„æ—¶é—´å†…åˆ°è¾¾ç›®æ ‡å€¼ã€‚
+	const float Interp = FMath::FInterpTo(Lean, Target, DeltaSeconds, 6.f);
+	//ä½¿ç”¨FMath::Clamp()æ–¹æ³•å°†è®¡ç®—å‡ºæ¥çš„æ’å€¼ç»“æœé™åˆ¶åœ¨-90å’Œ90åº¦ä¹‹é—´ï¼Œä»¥é˜²æ­¢è¿‡åº¦å€¾æ–œã€‚
+	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 }
 
 void UBlasterAnimInstance::RefreshBlasterCharacter()
 {
-	//Í¨¹ı½«»ñÈ¡ BlasterCharacter µÄÂß¼­·â×°µ½ RefreshBlasterCharacter() º¯ÊıÖĞ£¬²¢ÔÚĞèÒªÊ¹ÓÃ BlasterCharacter Ö¸ÕëÊ±µ÷ÓÃ¸Ãº¯Êı£¬
-	//¿ÉÒÔ±ÜÃâÔÚÃ¿´ÎÖ´ĞĞ NativeUpdateAnimation() º¯ÊıÊ±¶¼ÖØĞÂ»ñÈ¡¶ÔÏó²¢½øĞĞÀàĞÍ×ª»»µÄ²Ù×÷¡£
+	//é€šè¿‡å°†è·å– BlasterCharacter çš„é€»è¾‘å°è£…åˆ° RefreshBlasterCharacter() å‡½æ•°ä¸­ï¼Œå¹¶åœ¨éœ€è¦ä½¿ç”¨ BlasterCharacter æŒ‡é’ˆæ—¶è°ƒç”¨è¯¥å‡½æ•°ï¼Œ
+	//å¯ä»¥é¿å…åœ¨æ¯æ¬¡æ‰§è¡Œ NativeUpdateAnimation() å‡½æ•°æ—¶éƒ½é‡æ–°è·å–å¯¹è±¡å¹¶è¿›è¡Œç±»å‹è½¬æ¢çš„æ“ä½œã€‚
 	// 
-	// TryGetPawnOwner() º¯Êı»ñÈ¡µ±Ç°¿ØÖÆÆ÷£¨Controller£©Ëù¿ØÖÆµÄ½ÇÉ«£¨Pawn£©¶ÔÏó
-	// Cast<ABlasterCharacter>() ÊÇÒ»¸öÓÉUEÌá¹©µÄÀàĞÍ×ª»»º¯ÊıÄ£°å£¬ÓÃÓÚ½« UObject ÀàĞÍµÄ¶ÔÏó×ª»»ÎªÆäËûÅÉÉúÀàµÄÖ¸Õë
-	// ÔÚÕâÀï£¬Ëü½« TryGetPawnOwner() º¯Êı·µ»ØµÄ Pawn ¶ÔÏóÇ¿ÖÆ×ª»»Îª ABlasterCharacter ÀàĞÍµÄÖ¸Õë
-	// ×¢Òâ£ºÓÉÓÚ TryGetPawnOwner() ·µ»ØµÄ Pawn ¶ÔÏóÓĞ¿ÉÄÜ²»ÊÇ ABlasterCharacter ÀàĞÍµÄ£¬Òò´Ë Cast<ABlasterCharacter>() µÄ·µ»ØÖµÓĞ¿ÉÄÜÎª¿ÕÖ¸Õë
+	// TryGetPawnOwner() å‡½æ•°è·å–å½“å‰æ§åˆ¶å™¨ï¼ˆControllerï¼‰æ‰€æ§åˆ¶çš„è§’è‰²ï¼ˆPawnï¼‰å¯¹è±¡
+	// Cast<ABlasterCharacter>() æ˜¯ä¸€ä¸ªç”±UEæä¾›çš„ç±»å‹è½¬æ¢å‡½æ•°æ¨¡æ¿ï¼Œç”¨äºå°† UObject ç±»å‹çš„å¯¹è±¡è½¬æ¢ä¸ºå…¶ä»–æ´¾ç”Ÿç±»çš„æŒ‡é’ˆ
+	// åœ¨è¿™é‡Œï¼Œå®ƒå°† TryGetPawnOwner() å‡½æ•°è¿”å›çš„ Pawn å¯¹è±¡å¼ºåˆ¶è½¬æ¢ä¸º ABlasterCharacter ç±»å‹çš„æŒ‡é’ˆ
+	// æ³¨æ„ï¼šç”±äº TryGetPawnOwner() è¿”å›çš„ Pawn å¯¹è±¡æœ‰å¯èƒ½ä¸æ˜¯ ABlasterCharacter ç±»å‹çš„ï¼Œå› æ­¤ Cast<ABlasterCharacter>() çš„è¿”å›å€¼æœ‰å¯èƒ½ä¸ºç©ºæŒ‡é’ˆ
 	BlasterCharacter = Cast<ABlasterCharacter>(TryGetPawnOwner());
 }

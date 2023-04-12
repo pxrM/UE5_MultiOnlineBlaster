@@ -30,7 +30,7 @@ public:
 private:
 	class ABlasterCharacter* Character;
 	//当前装备的武器
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 		class AWeapon* EquippedWeapon;
 	UPROPERTY(Replicated)
 		bool bAiming;	//是否正在瞄准
@@ -52,5 +52,7 @@ protected:
 	void SetAiming(bool bIsAiming);
 	UFUNCTION(Server, Reliable)
 		void ServerSetAiming(bool bIsAiming);
+	UFUNCTION()
+		void OnRep_EquippedWeapon();
 
 };
