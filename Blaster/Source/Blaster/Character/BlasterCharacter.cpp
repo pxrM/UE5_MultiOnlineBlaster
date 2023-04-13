@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values 
 ABlasterCharacter::ABlasterCharacter()
@@ -38,6 +39,10 @@ ABlasterCharacter::ABlasterCharacter()
 	CombatCmp->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;	//蓝图也可设置
+
+	//在其他角色和本角色的相机碰撞时会出现相机放大效果，使用忽略相机的碰撞的办法解决，同时也要在角色蓝图对应组件的Collision Response里设置
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 // Called when the game starts or when spawned
