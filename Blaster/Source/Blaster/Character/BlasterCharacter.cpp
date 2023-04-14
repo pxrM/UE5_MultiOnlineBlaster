@@ -10,6 +10,7 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values 
 ABlasterCharacter::ABlasterCharacter()
@@ -55,6 +56,8 @@ void ABlasterCharacter::BeginPlay()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	AimOffset(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -133,7 +136,7 @@ void ABlasterCharacter::CrouchBtnPressed()
 	}
 	else
 	{
-		Crouch();	
+		Crouch();
 	}
 }
 
@@ -150,6 +153,41 @@ void ABlasterCharacter::AimBtnReleased()
 	if (CombatCmp)
 	{
 		CombatCmp->SetAiming(false);
+	}
+}
+
+void ABlasterCharacter::AimOffset(float DeltaTime)
+{
+	if (CombatCmp && CombatCmp->EquippedWeapon == nullptr)return;
+
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0;
+	float Speed = Velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+
+	if (Speed <= 0.f && !bIsInAir)
+	{
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation); //当前旋转和起始旋转之间的增量
+		AO_Yaw = DeltaAimRotation.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	if (Speed > 0.f || bIsInAir)
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+	}
+
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	if (AO_Pitch > 90.f && !IsLocallyControlled()) //由服务器控制的场景下，即非本地玩家控制的情况下才会生效
+	{
+		//因为客户端同步给服务器的时候会调用PackYawAndPitchTo32（先将Pitch和Yaw浮点数映射到 16 位无符号整数范围（0~65535），然后组合成一个32位整数返回），
+		//将数据进行压缩以减少传输和存储的负担。所以这里需要进行转换Pitch值从原始范围[270, 360]映射到新范围[-90, 0]，
+		//将视角的俯仰角度限制在-90度到0度之间。这个新范围相当于将视角的上下可视范围限制为正前方到水平线以下，使游戏场景更符合现实场景。
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
 }
 

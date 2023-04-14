@@ -54,6 +54,10 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		class UCombatComponent* CombatCmp;
 
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator StartingAimRotation; //从跑或跳跃结束后的角色起始目标值
+
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -63,6 +67,7 @@ protected:
 	void CrouchBtnPressed();
 	void AimBtnPressed();
 	void AimBtnReleased();
+	void AimOffset(float DeltaTime);
 
 public:
 	/// <summary>
@@ -80,6 +85,9 @@ public:
 	//是否正在瞄准
 	bool IsAiming();
 
+	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
+	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }
+
 private:
 	/// <summary>
 	/// 当 OverlappingWeapon 变量在客户端上更新时（服务通知客户端更新），将自动调用该回调函数进行处理
@@ -92,5 +100,5 @@ private:
 	/// </summary>
 	UFUNCTION(Server, Reliable)	//声明为一个要在客户端上调用、但需要在服务器上执行代码的 RPC，并使用可靠的网络传输方式进行通信。
 		void ServerEquipBtnPressed();
-	
+
 };

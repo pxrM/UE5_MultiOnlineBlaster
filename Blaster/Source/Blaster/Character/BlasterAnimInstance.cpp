@@ -10,8 +10,14 @@ void UBlasterAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	RefreshBlasterCharacter();
+	// TryGetPawnOwner() 函数获取当前控制器（Controller）所控制的角色（Pawn）对象
+	// Cast<ABlasterCharacter>() 是一个由UE提供的类型转换函数模板，用于将 UObject 类型的对象转换为其他派生类的指针
+	// 在这里，它将 TryGetPawnOwner() 函数返回的 Pawn 对象强制转换为 ABlasterCharacter 类型的指针
+	// 注意：由于 TryGetPawnOwner() 返回的 Pawn 对象有可能不是 ABlasterCharacter 类型的，因此 Cast<ABlasterCharacter>() 的返回值有可能为空指针
+	BlasterCharacter = Cast<ABlasterCharacter>(TryGetPawnOwner());
 }
+
+
 
 void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
@@ -24,7 +30,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	//这时候就需要再次判断 BlasterCharacter 是否为空，以避免使用一个无效的指针而导致程序崩溃。
 	if (BlasterCharacter == nullptr)
 	{
-		RefreshBlasterCharacter();
+		BlasterCharacter = Cast<ABlasterCharacter>(TryGetPawnOwner());
 	}
 	if (BlasterCharacter == nullptr)
 	{
@@ -82,16 +88,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	const float Interp = FMath::FInterpTo(Lean, Target, DeltaSeconds, 6.f);
 	//使用FMath::Clamp()方法将计算出来的插值结果限制在-90和90度之间，以防止过度倾斜。
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
-}
 
-void UBlasterAnimInstance::RefreshBlasterCharacter()
-{
-	//通过将获取 BlasterCharacter 的逻辑封装到 RefreshBlasterCharacter() 函数中，并在需要使用 BlasterCharacter 指针时调用该函数，
-	//可以避免在每次执行 NativeUpdateAnimation() 函数时都重新获取对象并进行类型转换的操作。
-	// 
-	// TryGetPawnOwner() 函数获取当前控制器（Controller）所控制的角色（Pawn）对象
-	// Cast<ABlasterCharacter>() 是一个由UE提供的类型转换函数模板，用于将 UObject 类型的对象转换为其他派生类的指针
-	// 在这里，它将 TryGetPawnOwner() 函数返回的 Pawn 对象强制转换为 ABlasterCharacter 类型的指针
-	// 注意：由于 TryGetPawnOwner() 返回的 Pawn 对象有可能不是 ABlasterCharacter 类型的，因此 Cast<ABlasterCharacter>() 的返回值有可能为空指针
-	BlasterCharacter = Cast<ABlasterCharacter>(TryGetPawnOwner());
+	AO_Yaw = BlasterCharacter->GetAO_Yaw();
+	AO_Pitch = BlasterCharacter->GetAO_Pitch();
 }

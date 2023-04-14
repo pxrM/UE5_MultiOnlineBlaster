@@ -65,7 +65,13 @@ private:
 	FRotator CharacterRotation;	//当前帧的旋转角度值
 	FRotator CharacterRotationLastFrame; //上一帧的旋转角度值
 
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		float AO_Yaw; //瞄准偏移量 左右
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		float AO_Pitch; //瞄准偏移量 上下
+
 private:
-	void RefreshBlasterCharacter();
+
 
 };
