@@ -88,6 +88,8 @@ public:
 	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }
 
+	AWeapon* GetEquippedWeapon();
+
 private:
 	/// <summary>
 	/// 当 OverlappingWeapon 变量在客户端上更新时（服务通知客户端更新），将自动调用该回调函数进行处理

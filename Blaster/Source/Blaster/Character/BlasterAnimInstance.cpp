@@ -5,6 +5,7 @@
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Weapon/Weapon.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -49,9 +50,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	//如果手动指定 Tolerance 参数为0.1f，表示允许的向量大小误差范围为 0.1 的平方，即 0.01，
 	//如果没有手动指定 Tolerance 参数，则默认使用 FVector::ThreshVectorLen 来作为误差容忍值，
 	//FVector::ThreshVectorLen 的默认值为 1.e-4f，代表接近于 0 的向量大小平方不能超过 0.0001。
-	bIsAccelerating = !BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().IsNearlyZero(); 
+	bIsAccelerating = !BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().IsNearlyZero();
 
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
+	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 
@@ -78,7 +80,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	//记录上一帧的旋转值
 	CharacterRotationLastFrame = CharacterRotation;
 	//获取当前角色的旋转值
-	CharacterRotation = BlasterCharacter->GetActorRotation(); 
+	CharacterRotation = BlasterCharacter->GetActorRotation();
 	//计算出上一帧角色旋转值与当前帧角色旋转值之间的差值Delta。Delta.Yaw表示角色在Yaw轴上旋转的角度差值。
 	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
 	//(从上一帧到当前帧所经过的时间)得到每秒钟角色身体需要倾斜的角度量Target
@@ -91,4 +93,17 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+
+	/*将左手插座的位置和旋转信息与BlasterCharacter骨架中的左手骨骼同步由于不同的武器、物品等左手的位置可能有所不同，因此程序应该能够动态调整左手的位置*/
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
+	{
+		//根据武器插槽获得左手变换位置，并以世界空间为基础。使用时转为骨骼上的骨骼空间
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+		//左手插座位置从世界空间转换为BlasterCharacter骨架中右手骨骼的本地空间，并将转换后的位置和旋转信息存储在OutPosition和OutRotation变量中
+		FVector OutPosition;
+		FRotator OutRotation;
+		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+	}
 }

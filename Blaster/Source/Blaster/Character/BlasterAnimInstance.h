@@ -48,6 +48,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		bool bWeaponEquipped;	//是否装备了武器
+	class AWeapon* EquippedWeapon;
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		bool bIsCrouched;	//是否蹲下
@@ -70,6 +71,9 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		float AO_Pitch; //瞄准偏移量 上下
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		FTransform LeftHandTransform;	//左手的变换位置，抓枪用
 
 private:
 

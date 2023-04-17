@@ -245,6 +245,12 @@ bool ABlasterCharacter::IsAiming()
 	return (CombatCmp && CombatCmp->bAiming);
 }
 
+AWeapon* ABlasterCharacter::GetEquippedWeapon()
+{
+	if (CombatCmp == nullptr)return nullptr;
+	return CombatCmp->EquippedWeapon;
+}
+
 void ABlasterCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
