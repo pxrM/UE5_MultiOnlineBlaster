@@ -73,6 +73,7 @@ protected:
 	void AimBtnPressed();
 	void AimBtnReleased();
 	void AimOffset(float DeltaTime);
+	virtual void Jump() override;
 
 
 public:
