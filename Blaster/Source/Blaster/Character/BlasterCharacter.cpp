@@ -46,6 +46,9 @@ ABlasterCharacter::ABlasterCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
+	NetUpdateFrequency = 66.f;	//Actor 网络同步的最大频率
+	MinNetUpdateFrequency = 33.f;	//网络同步的最小频率
 }
 
 // Called when the game starts or when spawned

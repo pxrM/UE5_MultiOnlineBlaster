@@ -94,7 +94,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
-	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+	AO_Pitch = BlasterCharacter->GetAO_Pitch();	
+	//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
+	//UE_LOG(LogTemp, Log, TEXT("GetAO_Pitch(): %i"), AO_Pitch);
 
 	/*将左手插座的位置和旋转信息与BlasterCharacter骨架中的左手骨骼同步由于不同的武器、物品等左手的位置可能有所不同，因此程序应该能够动态调整左手的位置*/
 	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
