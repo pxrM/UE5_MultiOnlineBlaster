@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -55,8 +56,12 @@ private:
 		class UCombatComponent* CombatCmp;
 
 	float AO_Yaw;
+	float InterpAO_Yaw;
 	float AO_Pitch;
 	FRotator StartingAimRotation; //从跑或跳跃结束后的角色起始目标值
+
+	ETurningInPlace TurningInPlace; //角色转向
+
 
 protected:
 	void MoveForward(float Value);
@@ -68,6 +73,7 @@ protected:
 	void AimBtnPressed();
 	void AimBtnReleased();
 	void AimOffset(float DeltaTime);
+
 
 public:
 	/// <summary>
@@ -90,6 +96,8 @@ public:
 
 	AWeapon* GetEquippedWeapon();
 
+	FORCEINLINE ETurningInPlace GetTurningInPlace()const { return TurningInPlace; }
+
 private:
 	/// <summary>
 	/// 当 OverlappingWeapon 变量在客户端上更新时（服务通知客户端更新），将自动调用该回调函数进行处理
@@ -102,5 +110,7 @@ private:
 	/// </summary>
 	UFUNCTION(Server, Reliable)	//声明为一个要在客户端上调用、但需要在服务器上执行代码的 RPC，并使用可靠的网络传输方式进行通信。
 		void ServerEquipBtnPressed();
+
+	void TurnInPlace(float DeltaTime);
 
 };
