@@ -62,6 +62,9 @@ private:
 
 	ETurningInPlace TurningInPlace; //角色转向
 
+	UPROPERTY(EditAnyWhere, Category = Combat)
+		class UAnimMontage* FireWeaponMontage;	//武器蒙太奇动画，可在角色蓝图指定
+
 
 protected:
 	void MoveForward(float Value);
@@ -100,6 +103,8 @@ public:
 	AWeapon* GetEquippedWeapon();
 
 	FORCEINLINE ETurningInPlace GetTurningInPlace()const { return TurningInPlace; }
+
+	void PlayFireMontage(bool bAiming);
 
 private:
 	/// <summary>

@@ -11,6 +11,7 @@
 #include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Character/BlasterAnimInstance.h"
 
 // Sets default values 
 ABlasterCharacter::ABlasterCharacter()
@@ -317,6 +318,20 @@ AWeapon* ABlasterCharacter::GetEquippedWeapon()
 {
 	if (CombatCmp == nullptr)return nullptr;
 	return CombatCmp->EquippedWeapon;
+}
+
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	if (CombatCmp == nullptr || CombatCmp->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireWeaponMontage)
+	{
+		AnimInstance->Montage_Play(FireWeaponMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
 }
 
 void ABlasterCharacter::PostInitializeComponents()
