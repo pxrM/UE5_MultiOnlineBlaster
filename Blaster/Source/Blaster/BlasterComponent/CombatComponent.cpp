@@ -101,3 +101,12 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->bUseControllerRotationYaw = true;  //角色将使用控制器的输入来控制yaw旋转方向，而不是默认的按照移动方向转向
 	}
 }
+
+void UCombatComponent::FireBtnPressed(bool bPressed)
+{
+	bFireBtnPressed = bPressed;
+	if (bPressed)
+	{
+
+	}
+}

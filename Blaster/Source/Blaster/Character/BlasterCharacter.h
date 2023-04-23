@@ -74,6 +74,8 @@ protected:
 	void AimBtnReleased();
 	void AimOffset(float DeltaTime);
 	virtual void Jump() override;
+	void FireBtnPressed();
+	void FireBtnReleased();
 
 
 public:

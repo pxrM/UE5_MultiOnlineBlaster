@@ -38,6 +38,7 @@ private:
 		float BaseWalkSpeed; //原始速度
 	UPROPERTY(EditAnywhere)
 		float AimWalkSpeed; //瞄准时速度
+	bool bFireBtnPressed;
 
 public:
 	/// <summary>
@@ -57,5 +58,7 @@ protected:
 		void ServerSetAiming(bool bIsAiming);
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
+	UFUNCTION()
+		void FireBtnPressed(bool bPressed);
 
 };
