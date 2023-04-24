@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+#define TRACE_LENGTH 8000.f
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UCombatComponent : public UActorComponent
@@ -66,5 +67,6 @@ protected:
 	//在多人游戏中，此函数通常用于向所有客户端广播某些操作，例如在所有客户端上生成爆炸效果。
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastFire();
+	void TraceUnderCroshairs(FHitResult& TraceHitResult);
 
 };
