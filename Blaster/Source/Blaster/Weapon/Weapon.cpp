@@ -11,6 +11,8 @@ ECR_MAX: 表示该枚举类型的最大值。
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
+#include "Animation/AnimationAsset.h"
+#include "Components/SkeletalMeshComponent.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -145,5 +147,10 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	}
 }
 
-
-
+void AWeapon::Fire()
+{
+	if (FireAnimation)
+	{
+		WeaponMesh->PlayAnimation(FireAnimation, false);
+	}
+}

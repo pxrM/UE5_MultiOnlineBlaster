@@ -51,6 +51,11 @@ private:
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 		class UWidgetComponent* PickupWidget;
+	/// <summary>
+	/// 开火动画资源
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		class UAnimationAsset* FireAnimation;
 
 protected:
 	/// <summary>
@@ -85,6 +90,7 @@ protected:
 public:
 	void ShowPickupWidget(bool bShow);
 	void SetWeaponState(EWeaponState State);
+	void Fire();
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 
