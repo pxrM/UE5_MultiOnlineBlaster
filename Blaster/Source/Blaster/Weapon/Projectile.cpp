@@ -3,12 +3,17 @@
 
 #include "Projectile.h"
 #include "Components/BoxComponent.h"
+#include "Gameframework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystem.h"
 
 // Sets default values
 AProjectile::AProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	bReplicates = true;
 
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	SetRootComponent(CollisionBox);
@@ -22,6 +27,11 @@ AProjectile::AProjectile()
 	//表示该碰撞体和 Visibility、WorldStatic 这两种类型的物体发生碰撞后，将被阻挡。
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+
+	//"UProjectileMovementComponent" 是UE中用于控制投射物（Projectile）的运动轨迹的组件类。
+	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+	//表示该组件将根据投射物的移动方向来旋转投射物。这使得投射物在飞行过程中，能够始终保持朝向移动的方向，看起来更加自然，也更易于控制。
+	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 }
 
 // Called when the game starts or when spawned
@@ -29,6 +39,17 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	//在武器发射时，在武器前方创建一条轨迹特效的功能
+	if (Tracer)
+	{
+		//则使用 "UGameplayStatics::SpawnEmitterAttached" 方法在 "CollisionBox" 网格上生成 "Tracer" 特效。
+		//最后一个参数 "EAttachLocation::KeepWorldPosition" 表示该特效将保持在世界空间中不变。这意味着，该特效将不会受到源对象的任何转换或平移操作的影响。
+		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
+			Tracer, CollisionBox, FName(),
+			GetActorLocation(), GetActorRotation(),
+			EAttachLocation::KeepWorldPosition
+		);
+	}
 }
 
 // Called every frame

@@ -175,7 +175,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	float Speed = Velocity.Size();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
-	if (Speed <= 0.f && !bIsInAir)
+	if (Speed == 0.f && !bIsInAir)
 	{
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation); //当前旋转和起始旋转之间的增量
@@ -183,6 +183,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
 		{
 			InterpAO_Yaw = AO_Yaw;
+			UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
 		}
 		bUseControllerRotationYaw = false;
 		TurnInPlace(DeltaTime);
