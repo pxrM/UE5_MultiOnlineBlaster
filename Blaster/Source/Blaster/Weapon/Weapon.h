@@ -90,7 +90,7 @@ protected:
 public:
 	void ShowPickupWidget(bool bShow);
 	void SetWeaponState(EWeaponState State);
-	void Fire();
+	virtual void Fire(const FVector& HitTarget);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 

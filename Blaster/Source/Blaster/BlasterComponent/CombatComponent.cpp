@@ -126,7 +126,7 @@ void UCombatComponent::MulticastFire_Implementation()
 	if (Character)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire();
+		EquippedWeapon->Fire(HitTarget);
 	}
 }
 
@@ -157,9 +157,11 @@ void UCombatComponent::TraceUnderCroshairs(FHitResult& TraceHitResult)
 		{
 			//如果射线没有击中任何阻挡视线的物体（即没有产生阻挡碰撞），则将 "TraceHitResult.ImpactPoint" 设置为终点 "End"。
 			TraceHitResult.ImpactPoint = End;
+			HitTarget = End;
 		}
 		else
 		{
+			HitTarget = TraceHitResult.ImpactPoint;
 			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
 		}
 	}

@@ -30,16 +30,24 @@ public:
 
 private:
 	class ABlasterCharacter* Character;
+
 	//当前装备的武器
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 		class AWeapon* EquippedWeapon;
+
 	UPROPERTY(Replicated)
 		bool bAiming; //是否正在瞄准
+
 	UPROPERTY(EditAnywhere)
 		float BaseWalkSpeed; //原始速度
+
 	UPROPERTY(EditAnywhere)
 		float AimWalkSpeed; //瞄准时速度
-	bool bFireBtnPressed;
+
+	bool bFireBtnPressed; //是否按下开火键
+
+	FVector HitTarget; //攻击坐标
+
 
 public:
 	/// <summary>
