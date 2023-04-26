@@ -15,7 +15,7 @@ UCombatComponent::UCombatComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 	BaseWalkSpeed = 600.f;
@@ -40,8 +40,6 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	FHitResult HitResult;
-	TraceUnderCroshairs(HitResult);
 }
 
 
@@ -111,6 +109,8 @@ void UCombatComponent::FireBtnPressed(bool bPressed)
 	bFireBtnPressed = bPressed;
 	if (bFireBtnPressed)
 	{
+		FHitResult HitResult;
+		TraceUnderCroshairs(HitResult);
 		ServerFire();
 	}
 }
