@@ -56,6 +56,11 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		class UAnimationAsset* FireAnimation;
+	/// <summary>
+	/// 开火时产生的子弹壳类
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		TSubclassOf<class ACasing> CasingClass;
 
 protected:
 	/// <summary>
