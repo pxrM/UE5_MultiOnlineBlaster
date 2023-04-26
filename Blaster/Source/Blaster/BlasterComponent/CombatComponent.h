@@ -46,8 +46,6 @@ private:
 
 	bool bFireBtnPressed; //是否按下开火键
 
-	FVector HitTarget; //攻击坐标
-
 
 public:
 	/// <summary>
@@ -75,14 +73,18 @@ protected:
 	UFUNCTION()
 		void FireBtnPressed(bool bPressed);
 
+	/*  FVector_NetQuantize 是ue中用于网络传输的结构体，用于压缩和优化 FVector 的数据传输。
+		该结构体可以将 FVector 的值在网络传输时进行压缩，使数据大小更小，减少网络负载和传输延迟。
+		FVector_NetQuantize 支持每个分量最多使用 20 位二进制数，在精度和实时性之间做了一个平衡。*/
 	UFUNCTION(Server, Reliable)
-		void ServerFire();
+		void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
 	//标记为 NetMulticast 和 Reliable。这意味着该函数将在各个客户端上进行调用，并且该函数的执行结果将从客户端同步到服务器和其他客户端。
 	//在多人游戏中，此函数通常用于向所有客户端广播某些操作，例如在所有客户端上生成爆炸效果。
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastFire();
+		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
+	//射线检测，用于检测玩家准心位置所对应的世界空间位置和方向
 	void TraceUnderCroshairs(FHitResult& TraceHitResult);
 
 };

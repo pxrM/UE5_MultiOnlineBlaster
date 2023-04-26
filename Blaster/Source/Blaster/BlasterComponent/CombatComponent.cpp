@@ -111,22 +111,22 @@ void UCombatComponent::FireBtnPressed(bool bPressed)
 	{
 		FHitResult HitResult;
 		TraceUnderCroshairs(HitResult);
-		ServerFire();
+		ServerFire(HitResult.ImpactPoint); //调用服务器函数
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation()
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	MulticastFire();
+	MulticastFire(TraceHitTarget); //通知所有客户端
 }
 
-void UCombatComponent::MulticastFire_Implementation()
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr) return;
 	if (Character)
 	{
 		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(HitTarget);
+		EquippedWeapon->Fire(TraceHitTarget);
 	}
 }
 
@@ -157,12 +157,6 @@ void UCombatComponent::TraceUnderCroshairs(FHitResult& TraceHitResult)
 		{
 			//如果射线没有击中任何阻挡视线的物体（即没有产生阻挡碰撞），则将 "TraceHitResult.ImpactPoint" 设置为终点 "End"。
 			TraceHitResult.ImpactPoint = End;
-			HitTarget = End;
-		}
-		else
-		{
-			HitTarget = TraceHitResult.ImpactPoint;
-			DrawDebugSphere(GetWorld(), TraceHitResult.ImpactPoint, 12.f, 12, FColor::Red);
 		}
 	}
 }
