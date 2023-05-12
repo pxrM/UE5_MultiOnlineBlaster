@@ -109,5 +109,14 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
+
+		/* 从枪口处画两条线来调试查看武器枪管的角度 */
+		FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
+		//通过MuzzleTipTransform.GetRotation().Rotator()获取枪口变换的旋转值，并传入FRotationMatrix构造函数中，得到一个旋转矩阵。调用GetUnitAxis方法，获取旋转矩阵中X轴的单位向量。
+		FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+		//从枪口朝前放的线
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MuzzleTipTransform.GetLocation() + MuzzleX * 1000.f, FColor::Red);
+		//从枪口到命中目标的线
+		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), BlasterCharacter->GetHitTarget(), FColor::Orange);
 	}
 }

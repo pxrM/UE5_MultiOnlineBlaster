@@ -46,7 +46,7 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 820.f);	
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 820.f);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
@@ -333,6 +333,12 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+FVector ABlasterCharacter::GetHitTarget() const
+{
+	if (CombatCmp == nullptr)return FVector();
+	return CombatCmp->HitTarget;
 }
 
 void ABlasterCharacter::PostInitializeComponents()
