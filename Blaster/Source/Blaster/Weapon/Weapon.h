@@ -30,6 +30,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+
 private:
 	/// <summary>
 	/// 武器网格
@@ -62,6 +63,20 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		TSubclassOf<class ACasing> CasingClass;
 
+
+public:
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		class UTexture2D* CrosshairsCenter; // 十字瞄准贴图  中
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsLeft;			// 十字瞄准贴图  左
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsRight;		// 十字瞄准贴图  右
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsTop;			// 十字瞄准贴图  上
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsBottom;		// 十字瞄准贴图  下
+
+
 protected:
 	/// <summary>
 	/// 进入重叠，在 Actor（或 Actor 中的组件）与一个球形碰撞体积重叠时被调用。控制PickupWidget的显隐
@@ -92,12 +107,14 @@ protected:
 			int32 OtherBodyIndex
 		);
 
+
 public:
 	void ShowPickupWidget(bool bShow);
 	void SetWeaponState(EWeaponState State);
 	virtual void Fire(const FVector& HitTarget);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+
 
 private:
 	UFUNCTION()

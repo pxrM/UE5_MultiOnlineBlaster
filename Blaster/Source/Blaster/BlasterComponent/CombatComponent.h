@@ -30,6 +30,8 @@ public:
 
 private:
 	class ABlasterCharacter* Character;
+	class ABlasterPlayerController* Controller;
+	class ABlasterHUD* HUD;
 
 	//当前装备的武器
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
@@ -86,5 +88,8 @@ protected:
 
 	//射线检测，用于检测玩家准心位置所对应的世界空间位置和方向
 	void TraceUnderCroshairs(FHitResult& TraceHitResult);
+
+	//设置hud十字准线
+	void SetHUDCrosshairs(float DeltaTime);
 
 };
