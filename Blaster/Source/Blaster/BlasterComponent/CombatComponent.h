@@ -1,4 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+/*
+	角色战斗组件 管理武器
+*/
 
 #pragma once
 
@@ -51,7 +54,15 @@ private:
 	float CrosshairVelocityFactor; //十字准线的缩放，射击游戏中十字准线会根据角色的位置移动稍微张开
 	float CrosshairInAirFactor;
 
-	FVector HitTarget;
+	FVector HitTarget;	//射击目标位置
+
+
+	float DefultFOV;	//没瞄准时的默认视野
+	float CurrentFOV;	//当前视野
+	UPROPERTY(EditAnywhere, Category = Combat)
+		float ZoomedFOV = 30.f;  //瞄准时的放大视野
+	UPROPERTY(EditAnywhere, Category = Combat)
+		float ZoomInterpSpeed = 20.f;  //瞄准时的视野缩放速度
 
 
 public:
@@ -96,5 +107,9 @@ protected:
 
 	//设置hud十字准线
 	void SetHUDCrosshairs(float DeltaTime);
+
+private:
+	//瞄准时处理视野缩放的函数
+	void InterpFOV(float DeltaTime);
 
 };

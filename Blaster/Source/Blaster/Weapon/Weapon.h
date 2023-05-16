@@ -76,6 +76,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 		UTexture2D* CrosshairsBottom;		// 十字瞄准贴图  下
 
+	UPROPERTY(EditAnywhere, Category = Zoom)
+		float ZoomedFOV = 30.f;  //瞄准缩放
+	UPROPERTY(EditAnywhere, Category = Zoom)
+		float ZoomInterpSpeed = 20.f;	//缩放速度
+
+
 
 protected:
 	/// <summary>
@@ -114,6 +120,8 @@ public:
 	virtual void Fire(const FVector& HitTarget);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 
 
 private:
