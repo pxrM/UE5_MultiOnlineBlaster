@@ -79,6 +79,13 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		ETurningInPlace TurningInPlace;
 
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		FRotator RightHandRotation;	//右手骨骼旋转
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bLocalControlled;
+
+
 private:
 
 

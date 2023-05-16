@@ -109,8 +109,19 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
+		
 
-		/* 从枪口处画两条线来调试查看武器枪管的角度 */
+		if (BlasterCharacter->IsLocallyControlled())
+		{
+			bLocalControlled = true;
+			/* 设置右手骨骼  让有右手骨骼到我们命中的目标位置 */
+			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("hand_r"), ERelativeTransformSpace::RTS_World);
+			FVector RightHandLocation = RightHandTransform.GetLocation(); //Socket的世界坐标位置
+			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandLocation, RightHandLocation + (RightHandLocation - BlasterCharacter->GetHitTarget()));
+		}
+
+
+		/* ===  Debug  ===  从枪口处画两条线来调试查看武器枪管的角度 */
 		FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
 		//通过MuzzleTipTransform.GetRotation().Rotator()获取枪口变换的旋转值，并传入FRotationMatrix构造函数中，得到一个旋转矩阵。调用GetUnitAxis方法，获取旋转矩阵中X轴的单位向量。
 		FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
