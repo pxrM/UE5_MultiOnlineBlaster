@@ -41,11 +41,19 @@ ABlasterCharacter::ABlasterCharacter()
 	CombatCmp->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;	//蓝图也可设置
-
+	
+	/*
+	* SetCollisionResponseToChannel()是设置Actor的碰撞响应函数，用于控制碰撞检测时Actor与其他指定通道的物体之间的交互方式。
+	*	 具体来说，这个函数的作用是将该Actor与指定类型的对象设为可碰撞，并指定其碰撞响应方式。
+	*		参数1表示要设置的碰撞通道，参数2则是指定该通道与其他对象的碰撞响应方式。
+	* 注意：蓝图中也要检查设置
+	*/
+	//碰撞通道被设置为ECC_Visibility，用于处理各种类型的可见性和投影问题。ECR_Block设置为碰撞响应方式，表示该通道上的碰撞体会阻碍任何对跨越通道的运动进行的碰撞。
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	//在其他角色和本角色的相机碰撞时会出现相机放大效果，使用忽略相机的碰撞的办法解决，同时也要在角色蓝图对应组件的Collision Response里设置
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-
+	
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 0.f, 820.f);
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;

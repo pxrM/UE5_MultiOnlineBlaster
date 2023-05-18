@@ -18,6 +18,7 @@ public:
 	UTexture2D* CrosshairsTop;			 // 十字瞄准贴图  上
 	UTexture2D* CrosshairsBottom;		 // 十字瞄准贴图  下
 	float CrosshairSpread;				 // 十字瞄准散开值 射击游戏中十字准线会根据角色的位置移动稍微张开
+	FLinearColor CrosshairColor;		 // 十字标准color
 };
 
 /**
@@ -33,7 +34,7 @@ public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 
 private:
-	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread);  //绘制准心
+	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);  //绘制准心
 
 private:
 	FHUDPackage HUDPackage;

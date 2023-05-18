@@ -7,6 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Blaster/HUD/BlasterHUD.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 8000.f
@@ -55,6 +56,8 @@ private:
 	float CrosshairInAirFactor;    //角色在空中时十字准线的缩放
 	float CrosshairInAimFactor;    //角色在瞄准时十字准线的缩放
 	float CrosshairShootingFactor; //角色在开火时十字准线的缩放
+
+	FHUDPackage HUDPackage;
 
 	FVector HitTarget;	//射击目标位置
 
