@@ -117,7 +117,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			/* 设置右手骨骼  让有右手骨骼到我们命中的目标位置 */
 			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("hand_r"), ERelativeTransformSpace::RTS_World);
 			FVector RightHandLocation = RightHandTransform.GetLocation(); //Socket的世界坐标位置
-			RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandLocation, RightHandLocation + (RightHandLocation - BlasterCharacter->GetHitTarget()));
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandLocation, RightHandLocation + (RightHandLocation - BlasterCharacter->GetHitTarget()));
+			RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaSeconds, 30.f);
 		}
 
 
