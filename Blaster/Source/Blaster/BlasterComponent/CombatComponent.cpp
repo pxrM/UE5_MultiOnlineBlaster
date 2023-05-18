@@ -255,6 +255,13 @@ void UCombatComponent::TraceUnderCroshairs(FHitResult& TraceHitResult)
 	if (bScreenToWorld)
 	{
 		FVector Start = CrosshairWorldPosition;
+		if (Character)
+		{
+			//获取起始位置和角色得差距，将起始位置移到角色前面，避免射线射向角色后面
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size(); 
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 60.f);
+			DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
+		}
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 		//从Start到End的射线进行检测，并将结果存储在TraceHitResult变量中。ECC_Visibility表示射线只会与阻挡视线的物体发生碰撞，忽略不可见的物体，提高射线检测的性能。
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, Start, End, ECollisionChannel::ECC_Visibility);
