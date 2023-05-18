@@ -171,7 +171,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	if (CombatCmp && CombatCmp->EquippedWeapon == nullptr)return;
 
 	FVector Velocity = GetVelocity();
-	Velocity.Z = 0;
+	Velocity.Z = 0.f;
 	float Speed = Velocity.Size();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
@@ -183,7 +183,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
 		{
 			InterpAO_Yaw = AO_Yaw;
-			UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
+			//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
 		}
 		bUseControllerRotationYaw = false;
 		TurnInPlace(DeltaTime);
@@ -259,6 +259,7 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		}
 	}
+	UE_LOG(LogTemp, Log, TEXT("AO_Yaw: %i   %i"), AO_Yaw, TurningInPlace);
 }
 
 //只在服务端被调用以响应 RPC 请求

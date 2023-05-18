@@ -89,6 +89,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				HUDPackage.CrosshairsTop = nullptr;
 				HUDPackage.CrosshairsBottom = nullptr;
 			}
+
 			// 十字准线的扩散
 			// FMath::GetMappedRangeValueClamped()	 [0, 600] -> [0, 1]
 			FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
@@ -96,6 +97,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			FVector Velocity = Character->GetVelocity();
 			Velocity.Z = 0.f;
 			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultierRange, Velocity.Size());
+
 			if (Character->GetCharacterMovement()->IsFalling())
 			{
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
@@ -104,7 +106,19 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			{
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
 			}
-			HUDPackage.CrosshairSpread = CrosshairVelocityFactor + CrosshairInAirFactor;
+
+			if (bAiming)
+			{
+				CrosshairInAimFactor = FMath::FInterpTo(CrosshairInAimFactor, 0.58f, DeltaTime, 30.f);
+			}
+			else
+			{
+				CrosshairInAimFactor = FMath::FInterpTo(CrosshairInAimFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 40.f);
+
+			HUDPackage.CrosshairSpread = 0.5f/*基础值*/ + CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairInAimFactor + CrosshairShootingFactor;
 			HUD->SetHUDPackage(HUDPackage);
 		}
 	}
@@ -198,6 +212,11 @@ void UCombatComponent::FireBtnPressed(bool bPressed)
 		FHitResult HitResult;
 		TraceUnderCroshairs(HitResult);
 		ServerFire(HitResult.ImpactPoint); //调用服务器函数
+
+		if (EquippedWeapon)
+		{
+			CrosshairShootingFactor = 0.75f;
+		}
 	}
 }
 

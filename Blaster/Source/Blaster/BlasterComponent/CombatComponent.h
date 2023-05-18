@@ -52,7 +52,9 @@ private:
 	bool bFireBtnPressed; //是否按下开火键
 
 	float CrosshairVelocityFactor; //十字准线的缩放，射击游戏中十字准线会根据角色的位置移动稍微张开
-	float CrosshairInAirFactor;
+	float CrosshairInAirFactor;    //角色在空中时十字准线的缩放
+	float CrosshairInAimFactor;    //角色在瞄准时十字准线的缩放
+	float CrosshairShootingFactor; //角色在开火时十字准线的缩放
 
 	FVector HitTarget;	//射击目标位置
 
