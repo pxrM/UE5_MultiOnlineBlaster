@@ -66,6 +66,9 @@ private:
 	UPROPERTY(EditAnyWhere, Category = Combat)
 		class UAnimMontage* FireWeaponMontage;	//武器蒙太奇动画，可在角色蓝图指定
 
+	UPROPERTY(EditAnyWhere)
+		float CameraThreshold = 200.f; //相机和角色距离阈值
+
 
 protected:
 	void MoveForward(float Value);
@@ -127,5 +130,7 @@ private:
 		void ServerEquipBtnPressed();
 
 	void TurnInPlace(float DeltaTime);
+
+	void HideCameraIfCharacterClose(); //解决角色靠墙时，相机离角色添加而挡住视野，太近时隐藏角色
 
 };

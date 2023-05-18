@@ -74,6 +74,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
 }
 
 // Called to bind functionality to input
@@ -268,6 +269,28 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 		}
 	}
 	UE_LOG(LogTemp, Log, TEXT("AO_Yaw: %i   %i"), AO_Yaw, TurningInPlace);
+}
+
+void ABlasterCharacter::HideCameraIfCharacterClose()
+{
+	if (!IsLocallyControlled())return;
+
+	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if (CombatCmp && CombatCmp->EquippedWeapon && CombatCmp->EquippedWeapon->GetWeaponMesh())
+		{
+			CombatCmp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (CombatCmp && CombatCmp->EquippedWeapon && CombatCmp->EquippedWeapon->GetWeaponMesh())
+		{
+			CombatCmp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
 }
 
 //只在服务端被调用以响应 RPC 请求
