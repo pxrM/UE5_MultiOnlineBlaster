@@ -1,5 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/*
+	智能指针：不需要手动释放的，通过引用计数实现，当引用计数为0，自动析构
+	为什么要使用ue的智能指针：1.std::shared_ptr不是所有平台都可以使用，2.可以和其它虚幻容器(TArray)以及类型完美的协作，3.线程安全及优化
+*/
 
 #include "PictureToolsLibrary.h"
 #include "IImageWrapperModule.h"
