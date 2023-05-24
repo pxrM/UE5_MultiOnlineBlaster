@@ -11,6 +11,14 @@
 
 bool UPictureToolsLibrary::LoadImageToTexture2D(const FString& ImagePath, UTexture2D*& InTexture, float& Width, float& Height)
 {
+	// 使用静态映射表
+//const TMap<FString, EImageFormat> UPictureToolsLibrary::ImageFormatMap =
+//{
+//	{ TEXT("jpg"), EImageFormat::JPEG },
+//	{ TEXT("jpeg"), EImageFormat::JPEG },
+//	{ TEXT("png"), EImageFormat::PNG },
+//	{ TEXT("bmp"), EImageFormat::BMP }
+//};
 	FString AbsImagePath = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir(), ImagePath);
 	/* 将指定路径下的图像文件加载为二进制数据，并使用Image Wrapper模块将其转换为特定格式的图像数据 */
 	//存储图像文件的原始二进制数据。
@@ -56,6 +64,48 @@ bool UPictureToolsLibrary::LoadImageToTexture2D(const FString& ImagePath, UTextu
 			InTexture->UpdateResource();
 			return true;
 		}
+	}
+	return false;
+}
+
+bool UPictureToolsLibrary::SaveImageFromTexture2D(UTexture2D* InTex, const FString& DesPath)
+{
+	if (!InTex)return false;
+
+	FString ImageSuffix = FPaths::GetExtension(DesPath, false);
+	EImageFormat ImageFromt = EImageFormat::Invalid;
+	if (ImageSuffix.Equals(TEXT("jpg"), ESearchCase::IgnoreCase) || ImageSuffix.Equals(TEXT("jpeg"), ESearchCase::IgnoreCase))
+	{
+		ImageFromt = EImageFormat::JPEG;
+	}
+	else if (ImageSuffix.Equals(TEXT("png"), ESearchCase::IgnoreCase))
+	{
+		ImageFromt = EImageFormat::PNG;
+	}
+	else if (ImageSuffix.Equals(TEXT("bmp"), ESearchCase::IgnoreCase))
+	{
+		ImageFromt = EImageFormat::BMP;
+	}
+
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>("ImageWrapper");
+	TSharedPtr<IImageWrapper> ImageWrapperPtr = ImageWrapperModule.CreateImageWrapper(ImageFromt);
+	TArray64<uint8> OutData;
+	InTex->Source.GetMipData(OutData, 0);
+	float Width = InTex->GetSizeX();
+	float Height = InTex->GetSizeY();
+	int Depth = InTex->Source.GetFormat() == ETextureSourceFormat::TSF_RGBA16 ? 16 : 8;
+	if (ImageWrapperPtr.IsValid() && ImageWrapperPtr->SetRaw(OutData.GetData(), OutData.Num(), Width, Height, ERGBFormat::BGRA, Depth))
+	{
+		if (ImageFromt == EImageFormat::BMP)
+		{
+
+		}
+		else
+		{
+			const TArray64<uint8>CompessedData = ImageWrapperPtr->GetCompressed(100);
+			FFileHelper::SaveArrayToFile(CompessedData, *DesPath);
+			return true;
+		}		
 	}
 	return false;
 }

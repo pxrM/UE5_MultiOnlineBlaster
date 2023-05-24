@@ -116,6 +116,7 @@ public:
 
 
 
+class FTestD;
 class FTestC {
 public:
 	void TestCFunc(const TSharedPtr<FTestD>& Test) {}
