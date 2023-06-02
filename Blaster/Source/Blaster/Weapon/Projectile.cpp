@@ -8,6 +8,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/Blaster.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -29,7 +30,13 @@ AProjectile::AProjectile()
 	//表示该碰撞体和 Visibility、WorldStatic 这两种类型的物体发生碰撞后，将被阻挡。
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	/*
+	* 问题：这里碰撞通道并不准确，因为是通过角色身上的胶囊体碰撞的，胶囊体的大小有时候并不完全准确，所以有时候会和角色模型外的区域进行碰撞
+	*			应该设法击中角色mesh而不是角色身上的胶囊体
+	*			可以为角色网格专门创建一个自定义的碰撞通道（项目设置-Engine-Collision中设置）
+	*/
+	//CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
 
 	//"UProjectileMovementComponent" 是UE中用于控制投射物（Projectile）的运动轨迹的组件类。
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
