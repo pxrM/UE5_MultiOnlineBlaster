@@ -66,6 +66,9 @@ private:
 	UPROPERTY(EditAnyWhere, Category = Combat)
 		class UAnimMontage* FireWeaponMontage;	//武器蒙太奇动画，可在角色蓝图指定
 
+	UPROPERTY(EditAnyWhere, Category = Combat)
+		UAnimMontage* HitReactMontage; //受击蒙太奇动画
+
 	UPROPERTY(EditAnyWhere)
 		float CameraThreshold = 200.f; //相机和角色距离阈值
 
@@ -109,11 +112,14 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace()const { return TurningInPlace; }
 
 	void PlayFireMontage(bool bAiming);
+	void PlayHitReactMontage();
 
 	FVector GetHitTarget() const;
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	UFUNCTION(NetMulticast, Unreliable)
+		void MulticastHit();	//播放受击动画 NetMulticast会从服务端同步到所有客户端 Unreliable表示同步消息不可靠
 
 private:
 	/// <summary>
