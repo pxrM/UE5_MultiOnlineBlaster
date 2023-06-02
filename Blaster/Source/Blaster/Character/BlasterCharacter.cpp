@@ -73,7 +73,20 @@ void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	AimOffset(DeltaTime);
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
+	{
+		AimOffset(DeltaTime);
+	}
+	else
+	{
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f)
+		{
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
+
 	HideCameraIfCharacterClose();
 }
 
@@ -133,7 +146,7 @@ void ABlasterCharacter::EquipBtnPressed()
 	{
 		//当装备按钮按下时，如果角色当前是服务端，则直接调用 CombatCmp 组件的 EquipWeapon 函数；
 		//否则，将该函数代理给 ServerEquipBtnPressed_Implementation 的远程过程调用（RPC）版本，以便由服务器验证并执行相应的操作。
-		//通过这种方式，可以确保装备按钮按下事件在所有客户端和服务器之间正确同步，并且在需要访问服务器资源或执行敏感操作时，由服务端进行验证和控制，从而提高游戏的安全性和可靠性。
+		//通过这种方式，确保装备按钮按下事件在所有客户端和服务器之间正确同步，并且在需要访问服务器资源或执行敏感操作时，由服务端进行验证和控制，从而提高游戏的安全性和可靠性。
 		if (HasAuthority())
 		{
 			CombatCmp->EquipWeapon(OverlappingWeapon);
@@ -175,36 +188,50 @@ void ABlasterCharacter::AimBtnReleased()
 	}
 }
 
+float ABlasterCharacter::CalculateSpeed()
+{
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	return Velocity.Size();
+}
+
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
 	if (CombatCmp && CombatCmp->EquippedWeapon == nullptr)return;
 
-	FVector Velocity = GetVelocity();
-	Velocity.Z = 0.f;
-	float Speed = Velocity.Size();
+	float Speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
 	if (Speed == 0.f && !bIsInAir)
 	{
+		bRotateRootBone = true;
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation); //当前旋转和起始旋转之间的增量
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;
 		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning)
 		{
 			InterpAO_Yaw = AO_Yaw;
 			//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
 		}
+		UE_LOG(LogTemp, Warning, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
 		bUseControllerRotationYaw = false;
 		TurnInPlace(DeltaTime);
 	}
 	if (Speed > 0.f || bIsInAir)
 	{
+		bRotateRootBone = false;
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
+		InterpAO_Yaw = AO_Yaw;
 		bUseControllerRotationYaw = true;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
+	CalculateAO_Pitch();
+}
+
+void ABlasterCharacter::CalculateAO_Pitch()
+{
 	AO_Pitch = GetBaseAimRotation().Pitch;
 	if (AO_Pitch > 90.f && !IsLocallyControlled()) //由服务器控制的场景下，即非本地玩家控制的情况下才会生效
 	{
@@ -215,6 +242,40 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
 	}
+}
+
+void ABlasterCharacter::SimProxiesTurn()
+{
+	if (CombatCmp == nullptr || CombatCmp->EquippedWeapon == nullptr)return;
+
+	bRotateRootBone = false;
+	float Speed = CalculateSpeed();
+	if (Speed > .0f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+	ProxyRotationLastFrame = ProxyRotationCur;
+	ProxyRotationCur = GetActorRotation();
+	ProxyYawOffset = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotationCur, ProxyRotationLastFrame).Yaw;
+	UE_LOG(LogTemp, Warning, TEXT("ProxyYawOffset: %f"), ProxyYawOffset);
+	if (FMath::Abs(ProxyYawOffset) > TurnThreshold)
+	{
+		if (ProxyYawOffset > TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Right;
+		}
+		else if (ProxyYawOffset < -TurnThreshold)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_Left;
+		}
+		else
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		}
+		return;
+	}
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 }
 
 void ABlasterCharacter::Jump()
@@ -398,6 +459,14 @@ void ABlasterCharacter::PostInitializeComponents()
 	{
 		CombatCmp->Character = this;
 	}
+}
+
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)

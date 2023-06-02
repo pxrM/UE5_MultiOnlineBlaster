@@ -72,6 +72,13 @@ private:
 	UPROPERTY(EditAnyWhere)
 		float CameraThreshold = 200.f; //相机和角色距离阈值
 
+	bool bRotateRootBone;	//是否旋转根骨骼
+	float TurnThreshold = 0.5f; //原地转向的阈值
+	FRotator ProxyRotationLastFrame;  //代理上一次的旋转值
+	FRotator ProxyRotationCur;
+	float ProxyYawOffset;
+	float TimeSinceLastMovementReplication; //上一次代理角色移动组件的网络同步时间
+
 
 protected:
 	void MoveForward(float Value);
@@ -82,10 +89,13 @@ protected:
 	void CrouchBtnPressed();
 	void AimBtnPressed();
 	void AimBtnReleased();
-	void AimOffset(float DeltaTime);
 	virtual void Jump() override;
 	void FireBtnPressed();
 	void FireBtnReleased();
+
+	void AimOffset(float DeltaTime);
+	void CalculateAO_Pitch();
+	void SimProxiesTurn(); //模拟代理使用
 
 
 public:
@@ -106,6 +116,7 @@ public:
 
 	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }
+	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
 
 	AWeapon* GetEquippedWeapon();
 
@@ -120,6 +131,10 @@ public:
 
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastHit();	//播放受击动画 NetMulticast会从服务端同步到所有客户端 Unreliable表示同步消息不可靠
+
+	//当该对象在服务器上的运动状态发生变化时，客户端会通过该函数收到通知并更新对应的运动状态。
+	virtual void OnRep_ReplicatedMovement() override;
+
 
 private:
 	/// <summary>
@@ -138,5 +153,7 @@ private:
 	void TurnInPlace(float DeltaTime);
 
 	void HideCameraIfCharacterClose(); //解决角色靠墙时，相机离角色添加而挡住视野，太近时隐藏角色
+
+	float CalculateSpeed();
 
 };

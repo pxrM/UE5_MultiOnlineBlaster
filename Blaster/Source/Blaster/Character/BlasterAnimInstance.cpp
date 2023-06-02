@@ -60,6 +60,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bIsAiming = BlasterCharacter->IsAiming();
 
 	TurningInPlace = BlasterCharacter->GetTurningInPlace();
+	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
 
 	/*获取一个角色的移动方向和视角旋转之间的偏移量*/
 	//获取角色的瞄准方向
@@ -98,7 +99,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
 	//UE_LOG(LogTemp, Log, TEXT("GetAO_Pitch(): %i"), AO_Pitch);
 
-	/*将左手插座的位置和旋转信息与BlasterCharacter骨架中的左手骨骼同步由于不同的武器、物品等左手的位置可能有所不同，因此程序应该能够动态调整左手的位置*/
+	/*将左手插座的位置和旋转信息与BlasterCharacter骨架中的左手骨骼同步，由于不同的武器、物品等左手的位置可能有所不同，因此程序应该能够动态调整左手的位置*/
 	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
 	{
 		//根据武器插槽获得左手变换位置，并以世界空间为基础。使用时转为骨骼上的骨骼空间
