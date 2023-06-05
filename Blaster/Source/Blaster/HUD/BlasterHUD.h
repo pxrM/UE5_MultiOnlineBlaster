@@ -33,6 +33,10 @@ public:
 	virtual void DrawHUD() override;	//重写父类中的DrawHUD()函数，以实现自定义的用户界面（UI）渲染逻辑
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 
+protected:
+	virtual void BeginPlay() override;
+	void AddCharacterOverlay();
+
 private:
 	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);  //绘制准心
 
@@ -41,4 +45,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		float MaxCrosshairSpread = 16.f;
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+		TSubclassOf<class UUserWidget> CharacterOverlayClass;
+	class UCharacterOverlayWidget* CharacterOverlayWidget;
 };

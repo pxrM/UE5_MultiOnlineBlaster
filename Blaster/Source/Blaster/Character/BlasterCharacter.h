@@ -72,12 +72,19 @@ private:
 	UPROPERTY(EditAnyWhere)
 		float CameraThreshold = 200.f; //相机和角色距离阈值
 
+	/*  代理角色使用  */
 	bool bRotateRootBone;	//是否旋转根骨骼
 	float TurnThreshold = 0.5f; //原地转向的阈值
 	FRotator ProxyRotationLastFrame;  //代理上一次的旋转值
 	FRotator ProxyRotationCur;
 	float ProxyYawOffset;
 	float TimeSinceLastMovementReplication; //上一次代理角色移动组件的网络同步时间
+
+	/*  player health  */
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+		float MaxHealth = 100.f; //最大健康值
+	UPROPERTY(ReplicatedUsing = OnRep_CurHealth, VisibleAnywhere, Category = "Player Stats")
+		float CurHealth = MaxHealth;
 
 
 protected:
@@ -142,6 +149,11 @@ private:
 	/// </summary>
 	UFUNCTION()
 		void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	/// <summary>
+	/// 同步CurHealth
+	/// </summary>
+	UFUNCTION()
+		void OnRep_CurHealth();
 
 	/// <summary>
 	/// 在客户端调用该函数时实际上会发送一个 RPC 请求到服务器，请求服务器执行其实现版本=ServerEquipBtnPressed_Implementation。

@@ -385,6 +385,8 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	//第三个参数是同步的条件，即 COND_OwnerOnly,表示仅在具有所有权的客户端和服务器之间同步变量。
 	//表示只有具有所有权的客户端和服务器之间会同步变量。这会降低网络流量，并维护数据一致性，因为通常情况下只有具有所有权的客户端可以更改某个对象的属性。
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+
+	DOREPLIFETIME(ABlasterCharacter, CurHealth);
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
@@ -482,4 +484,7 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 }
 
+void ABlasterCharacter::OnRep_CurHealth()
+{
 
+}
