@@ -52,22 +52,26 @@ private:
 
 	bool bFireBtnPressed; //是否按下开火键
 
+	FVector HitTarget;	//射击目标位置
+
+	/*	 十字准线	*/
 	float CrosshairVelocityFactor; //十字准线的缩放，射击游戏中十字准线会根据角色的位置移动稍微张开
 	float CrosshairInAirFactor;    //角色在空中时十字准线的缩放
 	float CrosshairInAimFactor;    //角色在瞄准时十字准线的缩放
 	float CrosshairShootingFactor; //角色在开火时十字准线的缩放
+	FHUDPackage HUDPackage; //十字准线贴图结构体
 
-	FHUDPackage HUDPackage;
-
-	FVector HitTarget;	//射击目标位置
-
-
+	/*	 瞄准视野	*/
 	float DefultFOV;	//没瞄准时的默认视野
 	float CurrentFOV;	//当前视野
 	UPROPERTY(EditAnywhere, Category = Combat)
 		float ZoomedFOV = 30.f;  //瞄准时的放大视野
 	UPROPERTY(EditAnywhere, Category = Combat)
 		float ZoomInterpSpeed = 20.f;  //瞄准时的视野缩放速度
+
+	/*	 自动开火	*/
+	FTimerHandle FireTimer;	//开火计时器
+	bool CanFire = true; //是否可以开火
 
 
 public:
@@ -96,6 +100,8 @@ protected:
 	UFUNCTION()
 		void FireBtnPressed(bool bPressed);
 
+	void Fire();
+
 	/*  FVector_NetQuantize 是ue中用于网络传输的结构体，用于压缩和优化 FVector 的数据传输。
 		该结构体可以将 FVector 的值在网络传输时进行压缩，使数据大小更小，减少网络负载和传输延迟。
 		FVector_NetQuantize 支持每个分量最多使用 20 位二进制数，在精度和实时性之间做了一个平衡。*/
@@ -113,8 +119,14 @@ protected:
 	//设置hud十字准线
 	void SetHUDCrosshairs(float DeltaTime);
 
+
 private:
 	//瞄准时处理视野缩放的函数
 	void InterpFOV(float DeltaTime);
+
+	//启动自动开火计时器
+	void StartFireTimer();
+	//自动开火计时器回调
+	void FireTimerFinished();
 
 };

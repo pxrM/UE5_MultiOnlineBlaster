@@ -81,6 +81,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = Zoom)
 		float ZoomInterpSpeed = 20.f;	//缩放速度
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+		bool bAutomatic = true;  //是否自动开火
+	UPROPERTY(EditAnywhere, Category = Combat)
+		float FireDelay = 0.15f;  //开火间隔时间
 
 
 protected:

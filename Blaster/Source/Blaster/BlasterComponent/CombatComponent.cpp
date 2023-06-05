@@ -12,6 +12,8 @@
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 //#include "Blaster/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
+
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -207,16 +209,48 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::FireBtnPressed(bool bPressed)
 {
 	bFireBtnPressed = bPressed;
-	if (bFireBtnPressed)
+	if (bFireBtnPressed && EquippedWeapon)
 	{
-		FHitResult HitResult;
-		TraceUnderCroshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint); //调用服务器函数
+		Fire();
+	}
+}
 
+void UCombatComponent::Fire()
+{
+	if (CanFire)
+	{
+		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
 		if (EquippedWeapon)
 		{
 			CrosshairShootingFactor = 0.75f;
 		}
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) return;
+
+	// FTimerHandle 的结构体，用于标识该定时器
+	// 定时器到期后要调用的函数的对象
+	// 定时器到期后要调用的函数的名称
+	// 定时器的持续时间，即 FireDelay 参数，以秒为单位。
+	if (EquippedWeapon->bAutomatic)
+	{
+		CanFire = false;
+		Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+	}
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (EquippedWeapon == nullptr)return;
+
+	CanFire = true;
+	if (bFireBtnPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
 	}
 }
 
@@ -258,7 +292,7 @@ void UCombatComponent::TraceUnderCroshairs(FHitResult& TraceHitResult)
 		if (Character)
 		{
 			//获取起始位置和角色得差距，将起始位置移到角色前面，避免射线射向角色后面
-			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size(); 
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
 			Start += CrosshairWorldDirection * (DistanceToCharacter + 60.f);
 			//DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
 		}
