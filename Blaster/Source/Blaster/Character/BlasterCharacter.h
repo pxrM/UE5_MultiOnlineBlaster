@@ -86,6 +86,8 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_CurHealth, VisibleAnywhere, Category = "Player Stats")
 		float CurHealth = MaxHealth;
 
+	class ABlasterPlayerController* BlasterPlayerController;
+
 
 protected:
 	void MoveForward(float Value);
