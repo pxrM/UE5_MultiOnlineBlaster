@@ -68,10 +68,16 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BlasterPlayerController = Cast<ABlasterPlayerController>(Controller);
-	if (BlasterPlayerController)
+	UpdateHUDHealth();
+
+	// 这段代码是在服务端（即拥有所有权的机器或主机）中调用的，用于注册处理角色收到任何伤害事件的函数。
+	// 首先，HasAuthority()函数判断当前执行的代码是否在服务端中。
+	// 接着，OnTakeAnyDamage是一个代表角色受到任何类型伤害事件的委托（Delegate），该委托会在角色受到任何类型的伤害时被触发。
+	// AddDynamic函数用于动态地将受到任何类型伤害事件与AblasterCharacter::ReceiveDamage方法绑定，以便在收到伤害事件时自动调用ReceiveDamage方法来处理伤害效果。
+	// 最后，this表示当前脚本所在的角色对象本身，即指定当角色受到任何类型的伤害时都会调用该角色对象的ReceiveDamage方法。
+	if (HasAuthority())
 	{
-		BlasterPlayerController->SetHUDHealth(CurHealth, MaxHealth);
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	}
 }
 
@@ -361,10 +367,10 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 	}
 }
 
-void ABlasterCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
-}
+//void ABlasterCharacter::MulticastHit_Implementation()
+//{
+//	PlayHitReactMontage();
+//}
 
 //只在服务端被调用以响应 RPC 请求
 void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
@@ -493,5 +499,22 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 
 void ABlasterCharacter::OnRep_CurHealth()
 {
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
 
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	CurHealth = FMath::Clamp(CurHealth - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
+
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(CurHealth, MaxHealth);
+	}
 }

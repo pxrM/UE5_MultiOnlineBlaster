@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 /*
-	子弹
+	射弹物体
 */
 
 #pragma once
@@ -42,6 +42,11 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		class USoundCue* ImpactSound;  //撞击时产生的音效
+
+
+protected:
+	UPROPERTY(EditAnywhere)
+		float DamageVal = 20.f; //伤害
 
 
 protected:

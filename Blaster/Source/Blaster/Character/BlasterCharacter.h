@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -31,25 +31,25 @@ protected:
 
 private:
 	/// <summary>
-	/// Ïà»úµ¯»É¸Ë
+	/// ç›¸æœºå¼¹ç°§æ†
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 		class USpringArmComponent* CameraBoom;
 
 	/// <summary>
-	/// ½ÇÉ«¸úËæÏà»ú
+	/// è§’è‰²è·Ÿéšç›¸æœº
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 		class UCameraComponent* FollowCamera;
 
 	/// <summary>
-	/// Í·¶¥ui
+	/// å¤´é¡¶ui
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UWidgetComponent* OverheadWidget;
 
-	//UPROPERTY(Replicated)//ÓÃÓÚ±ê¼ÇÄ³¸ö³ÉÔ±±äÁ¿ĞèÒª½øĞĞÍ¬²½¸´ÖÆ£¨Replicated£©
-	//UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon) ÓÃÓÚ±ê¼ÇÄ³¸ö³ÉÔ±±äÁ¿ĞèÒª½øĞĞÍ¬²½¸´ÖÆ£¬²¢Ö¸¶¨µ±¸Ã±äÁ¿¸´ÖÆÊ±ĞèÒªµ÷ÓÃµÄ»Øµ÷º¯Êı
+	//UPROPERTY(Replicated)//ç”¨äºæ ‡è®°æŸä¸ªæˆå‘˜å˜é‡éœ€è¦è¿›è¡ŒåŒæ­¥å¤åˆ¶ï¼ˆReplicatedï¼‰
+	//UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon) ç”¨äºæ ‡è®°æŸä¸ªæˆå‘˜å˜é‡éœ€è¦è¿›è¡ŒåŒæ­¥å¤åˆ¶ï¼Œå¹¶æŒ‡å®šå½“è¯¥å˜é‡å¤åˆ¶æ—¶éœ€è¦è°ƒç”¨çš„å›è°ƒå‡½æ•°
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 		class AWeapon* OverlappingWeapon;
 
@@ -59,30 +59,30 @@ private:
 	float AO_Yaw;
 	float InterpAO_Yaw;
 	float AO_Pitch;
-	FRotator StartingAimRotation; //´ÓÅÜ»òÌøÔ¾½áÊøºóµÄ½ÇÉ«ÆğÊ¼Ä¿±êÖµ
+	FRotator StartingAimRotation; //ä»è·‘æˆ–è·³è·ƒç»“æŸåçš„è§’è‰²èµ·å§‹ç›®æ ‡å€¼
 
-	ETurningInPlace TurningInPlace; //½ÇÉ«×ªÏò
-
-	UPROPERTY(EditAnyWhere, Category = Combat)
-		class UAnimMontage* FireWeaponMontage;	//ÎäÆ÷ÃÉÌ«Ææ¶¯»­£¬¿ÉÔÚ½ÇÉ«À¶Í¼Ö¸¶¨
+	ETurningInPlace TurningInPlace; //è§’è‰²è½¬å‘
 
 	UPROPERTY(EditAnyWhere, Category = Combat)
-		UAnimMontage* HitReactMontage; //ÊÜ»÷ÃÉÌ«Ææ¶¯»­
+		class UAnimMontage* FireWeaponMontage;	//æ­¦å™¨è’™å¤ªå¥‡åŠ¨ç”»ï¼Œå¯åœ¨è§’è‰²è“å›¾æŒ‡å®š
+
+	UPROPERTY(EditAnyWhere, Category = Combat)
+		UAnimMontage* HitReactMontage; //å—å‡»è’™å¤ªå¥‡åŠ¨ç”»
 
 	UPROPERTY(EditAnyWhere)
-		float CameraThreshold = 200.f; //Ïà»úºÍ½ÇÉ«¾àÀëãĞÖµ
+		float CameraThreshold = 200.f; //ç›¸æœºå’Œè§’è‰²è·ç¦»é˜ˆå€¼
 
-	/*  ´úÀí½ÇÉ«Ê¹ÓÃ  */
-	bool bRotateRootBone;	//ÊÇ·ñĞı×ª¸ù¹Ç÷À
-	float TurnThreshold = 0.5f; //Ô­µØ×ªÏòµÄãĞÖµ
-	FRotator ProxyRotationLastFrame;  //´úÀíÉÏÒ»´ÎµÄĞı×ªÖµ
+	/*  ä»£ç†è§’è‰²ä½¿ç”¨  */
+	bool bRotateRootBone;	//æ˜¯å¦æ—‹è½¬æ ¹éª¨éª¼
+	float TurnThreshold = 0.5f; //åŸåœ°è½¬å‘çš„é˜ˆå€¼
+	FRotator ProxyRotationLastFrame;  //ä»£ç†ä¸Šä¸€æ¬¡çš„æ—‹è½¬å€¼
 	FRotator ProxyRotationCur;
 	float ProxyYawOffset;
-	float TimeSinceLastMovementReplication; //ÉÏÒ»´Î´úÀí½ÇÉ«ÒÆ¶¯×é¼şµÄÍøÂçÍ¬²½Ê±¼ä
+	float TimeSinceLastMovementReplication; //ä¸Šä¸€æ¬¡ä»£ç†è§’è‰²ç§»åŠ¨ç»„ä»¶çš„ç½‘ç»œåŒæ­¥æ—¶é—´
 
 	/*  player health  */
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float MaxHealth = 100.f; //×î´ó½¡¿µÖµ
+		float MaxHealth = 100.f; //æœ€å¤§å¥åº·å€¼
 	UPROPERTY(ReplicatedUsing = OnRep_CurHealth, VisibleAnywhere, Category = "Player Stats")
 		float CurHealth = MaxHealth;
 
@@ -104,23 +104,30 @@ protected:
 
 	void AimOffset(float DeltaTime);
 	void CalculateAO_Pitch();
-	void SimProxiesTurn(); //Ä£Äâ´úÀíÊ¹ÓÃ
+	void SimProxiesTurn(); //æ¨¡æ‹Ÿä»£ç†ä½¿ç”¨
+
+	//æ¥æ”¶ä¼¤å®³å›è°ƒ
+	//å³å½“è§’è‰²å—åˆ°ä¼¤å®³æ—¶ï¼ˆUGameplayStatics::ApplyDamageï¼‰ï¼Œå¼•æ“ä¼šè‡ªåŠ¨è°ƒç”¨è¯¥å‡½æ•°å¹¶ä¼ é€’ä¼¤å®³ç›¸å…³çš„å‚æ•°ï¼Œ
+	//è¢«æ”»å‡»çš„è§’è‰²DamagedActorã€é€ æˆçš„ä¼¤å®³Damageã€ä¼¤å®³ç±»å‹DamageTypeã€é€ æˆä¼¤å®³çš„æ§åˆ¶å™¨InstigatorControllerå’Œé€ æˆä¼¤å®³çš„å¯¹è±¡DamageCauserã€‚
+	UFUNCTION()
+		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void UpdateHUDHealth();
 
 
 public:
 	/// <summary>
-	/// ÓÃÓÚ»ñÈ¡ĞèÒª½øĞĞÍøÂçÍ¬²½µÄÊôĞÔÁĞ±í
+	/// ç”¨äºè·å–éœ€è¦è¿›è¡Œç½‘ç»œåŒæ­¥çš„å±æ€§åˆ—è¡¨
 	/// </summary>
-	/// <param name="OutLifetimeProps">ĞèÒª½øĞĞÍøÂçÍ¬²½µÄÊôĞÔÁĞ±í</param>
+	/// <param name="OutLifetimeProps">éœ€è¦è¿›è¡Œç½‘ç»œåŒæ­¥çš„å±æ€§åˆ—è¡¨</param>
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	// ÔÚ Actor ×é¼ş±»³õÊ¼»¯ºó£¬ÔÚ C++ ´úÂëÖĞ½øĞĞ¶îÍâµÄ³õÊ¼»¯²Ù×÷¡£¸Ãº¯ÊıÔÚÓÎÏ·ÔËĞĞÊ±±»µ÷ÓÃ¡£
+	// åœ¨ Actor ç»„ä»¶è¢«åˆå§‹åŒ–åï¼Œåœ¨ C++ ä»£ç ä¸­è¿›è¡Œé¢å¤–çš„åˆå§‹åŒ–æ“ä½œã€‚è¯¥å‡½æ•°åœ¨æ¸¸æˆè¿è¡Œæ—¶è¢«è°ƒç”¨ã€‚
 	virtual void PostInitializeComponents() override;
-	//ÉèÖÃÎäÆ÷£¬ÄÚÁªº¯Êı
+	//è®¾ç½®æ­¦å™¨ï¼Œå†…è”å‡½æ•°
 	//FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon) { OverlappingWeapon = Weapon; }
 	void SetOverlappingWeapon(AWeapon* Weapon);
-	//ÊÇ·ñ×°±¸ÁËÎäÆ÷
+	//æ˜¯å¦è£…å¤‡äº†æ­¦å™¨
 	bool IsWeaponEquipped();
-	//ÊÇ·ñÕıÔÚÃé×¼
+	//æ˜¯å¦æ­£åœ¨ç„å‡†
 	bool IsAiming();
 
 	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
@@ -138,35 +145,35 @@ public:
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastHit();	//²¥·ÅÊÜ»÷¶¯»­ NetMulticast»á´Ó·şÎñ¶ËÍ¬²½µ½ËùÓĞ¿Í»§¶Ë Unreliable±íÊ¾Í¬²½ÏûÏ¢²»¿É¿¿
+	/*	UFUNCTION(NetMulticast, Unreliable) //** è¿™é‡Œæ”¹ä¸ºç”±æ›´æ–°è§’è‰²å¥åº·å€¼æ—¶è§¦å‘ï¼Œå¥åº·å€¼ä¼šè¢«åŒæ­¥åˆ°æ‰€æœ‰å®¢æœç«¯ï¼Œæ”¾åˆ°è¿™é‚£é‡Œä¼šå‡å°‘ä¸€æ¬¡ç½‘ç»œå¹¿æ’­æ¶ˆè€—
+			void MulticastHit();	*///æ’­æ”¾å—å‡»åŠ¨ç”» NetMulticastä¼šä»æœåŠ¡ç«¯åŒæ­¥åˆ°æ‰€æœ‰å®¢æˆ·ç«¯ Unreliableè¡¨ç¤ºåŒæ­¥æ¶ˆæ¯ä¸å¯é 
 
-	//µ±¸Ã¶ÔÏóÔÚ·şÎñÆ÷ÉÏµÄÔË¶¯×´Ì¬·¢Éú±ä»¯Ê±£¬¿Í»§¶Ë»áÍ¨¹ı¸Ãº¯ÊıÊÕµ½Í¨Öª²¢¸üĞÂ¶ÔÓ¦µÄÔË¶¯×´Ì¬¡£
+			//å½“è¯¥å¯¹è±¡åœ¨æœåŠ¡å™¨ä¸Šçš„è¿åŠ¨çŠ¶æ€å‘ç”Ÿå˜åŒ–æ—¶ï¼Œå®¢æˆ·ç«¯ä¼šé€šè¿‡è¯¥å‡½æ•°æ”¶åˆ°é€šçŸ¥å¹¶æ›´æ–°å¯¹åº”çš„è¿åŠ¨çŠ¶æ€ã€‚
 	virtual void OnRep_ReplicatedMovement() override;
 
 
 private:
 	/// <summary>
-	/// µ± OverlappingWeapon ±äÁ¿ÔÚ¿Í»§¶ËÉÏ¸üĞÂÊ±£¨·şÎñÍ¨Öª¿Í»§¶Ë¸üĞÂ£©£¬½«×Ô¶¯µ÷ÓÃ¸Ã»Øµ÷º¯Êı½øĞĞ´¦Àí
+	/// å½“ OverlappingWeapon å˜é‡åœ¨å®¢æˆ·ç«¯ä¸Šæ›´æ–°æ—¶ï¼ˆæœåŠ¡é€šçŸ¥å®¢æˆ·ç«¯æ›´æ–°ï¼‰ï¼Œå°†è‡ªåŠ¨è°ƒç”¨è¯¥å›è°ƒå‡½æ•°è¿›è¡Œå¤„ç†
 	/// </summary>
 	UFUNCTION()
 		void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 	/// <summary>
-	/// Í¬²½CurHealth
+	/// åŒæ­¥CurHealth
 	/// </summary>
 	UFUNCTION()
 		void OnRep_CurHealth();
 
 	/// <summary>
-	/// ÔÚ¿Í»§¶Ëµ÷ÓÃ¸Ãº¯ÊıÊ±Êµ¼ÊÉÏ»á·¢ËÍÒ»¸ö RPC ÇëÇóµ½·şÎñÆ÷£¬ÇëÇó·şÎñÆ÷Ö´ĞĞÆäÊµÏÖ°æ±¾=ServerEquipBtnPressed_Implementation¡£
+	/// åœ¨å®¢æˆ·ç«¯è°ƒç”¨è¯¥å‡½æ•°æ—¶å®é™…ä¸Šä¼šå‘é€ä¸€ä¸ª RPC è¯·æ±‚åˆ°æœåŠ¡å™¨ï¼Œè¯·æ±‚æœåŠ¡å™¨æ‰§è¡Œå…¶å®ç°ç‰ˆæœ¬=ServerEquipBtnPressed_Implementationã€‚
 	/// https://docs.unrealengine.com/5.1/zh-CN/rpcs-in-unreal-engine/
 	/// </summary>
-	UFUNCTION(Server, Reliable)	//ÉùÃ÷ÎªÒ»¸öÒªÔÚ¿Í»§¶ËÉÏµ÷ÓÃ¡¢µ«ĞèÒªÔÚ·şÎñÆ÷ÉÏÖ´ĞĞ´úÂëµÄ RPC£¬²¢Ê¹ÓÃ¿É¿¿µÄÍøÂç´«Êä·½Ê½½øĞĞÍ¨ĞÅ¡£
+	UFUNCTION(Server, Reliable)	//å£°æ˜ä¸ºä¸€ä¸ªè¦åœ¨å®¢æˆ·ç«¯ä¸Šè°ƒç”¨ã€ä½†éœ€è¦åœ¨æœåŠ¡å™¨ä¸Šæ‰§è¡Œä»£ç çš„ RPCï¼Œå¹¶ä½¿ç”¨å¯é çš„ç½‘ç»œä¼ è¾“æ–¹å¼è¿›è¡Œé€šä¿¡ã€‚
 		void ServerEquipBtnPressed();
 
 	void TurnInPlace(float DeltaTime);
 
-	void HideCameraIfCharacterClose(); //½â¾ö½ÇÉ«¿¿Ç½Ê±£¬Ïà»úÀë½ÇÉ«Ìí¼Ó¶øµ²×¡ÊÓÒ°£¬Ì«½üÊ±Òş²Ø½ÇÉ«
+	void HideCameraIfCharacterClose(); //è§£å†³è§’è‰²é å¢™æ—¶ï¼Œç›¸æœºç¦»è§’è‰²æ·»åŠ è€ŒæŒ¡ä½è§†é‡ï¼Œå¤ªè¿‘æ—¶éšè—è§’è‰²
 
 	float CalculateSpeed();
 
