@@ -61,6 +61,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	TurningInPlace = BlasterCharacter->GetTurningInPlace();
 	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
+	bElimmed = BlasterCharacter->IsElimmed();
 
 	/*获取一个角色的移动方向和视角旋转之间的偏移量*/
 	//获取角色的瞄准方向

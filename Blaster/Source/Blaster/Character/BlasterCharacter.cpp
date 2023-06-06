@@ -462,6 +462,15 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
+void ABlasterCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+	}
+}
+
 FVector ABlasterCharacter::GetHitTarget() const
 {
 	if (CombatCmp == nullptr)return FVector();
@@ -532,7 +541,8 @@ void ABlasterCharacter::UpdateHUDHealth()
 	}
 }
 
-void ABlasterCharacter::Elim()
+void ABlasterCharacter::Elim_Implementation()
 {
-
+	bElimmed = true;
+	PlayElimMontage();
 }

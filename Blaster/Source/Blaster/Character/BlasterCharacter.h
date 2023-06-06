@@ -69,6 +69,9 @@ private:
 	UPROPERTY(EditAnyWhere, Category = Combat)
 		UAnimMontage* HitReactMontage; //受击蒙太奇动画
 
+	UPROPERTY(EditAnyWhere, Category = Combat)
+		UAnimMontage* ElimMontage; //淘汰蒙太奇动画
+
 	UPROPERTY(EditAnyWhere)
 		float CameraThreshold = 200.f; //相机和角色距离阈值
 
@@ -85,6 +88,7 @@ private:
 		float MaxHealth = 100.f; //最大健康值
 	UPROPERTY(ReplicatedUsing = OnRep_CurHealth, VisibleAnywhere, Category = "Player Stats")
 		float CurHealth = MaxHealth;
+	bool bElimmed = false;  //是否淘汰
 
 	class ABlasterPlayerController* BlasterPlayerController;
 
@@ -140,6 +144,7 @@ public:
 
 	void PlayFireMontage(bool bAiming);
 	void PlayHitReactMontage();
+	void PlayElimMontage();
 
 	FVector GetHitTarget() const;
 
@@ -151,7 +156,9 @@ public:
 			//当该对象在服务器上的运动状态发生变化时，客户端会通过该函数收到通知并更新对应的运动状态。
 	virtual void OnRep_ReplicatedMovement() override;
 
-	void Elim(); //淘汰
+	UFUNCTION(NetMulticast, Reliable)
+		void Elim(); //淘汰
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 
 
 private:
