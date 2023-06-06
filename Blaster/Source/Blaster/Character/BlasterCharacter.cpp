@@ -14,6 +14,7 @@
 #include "Blaster/Character/BlasterAnimInstance.h"
 #include "Blaster/Blaster.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
 
 // Sets default values 
 ABlasterCharacter::ABlasterCharacter()
@@ -508,6 +509,18 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	CurHealth = FMath::Clamp(CurHealth - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
+
+	if (CurHealth == 0.f)
+	{
+		//GetAuthGameMode<T>()是一个由UE引擎提供的模板函数，用于获取当前场景中存在的并继承自T(AGameMode)类型
+		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		if (BlasterGameMode)
+		{
+			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+		}
+	}
 }
 
 void ABlasterCharacter::UpdateHUDHealth()
@@ -517,4 +530,9 @@ void ABlasterCharacter::UpdateHUDHealth()
 	{
 		BlasterPlayerController->SetHUDHealth(CurHealth, MaxHealth);
 	}
+}
+
+void ABlasterCharacter::Elim()
+{
+
 }

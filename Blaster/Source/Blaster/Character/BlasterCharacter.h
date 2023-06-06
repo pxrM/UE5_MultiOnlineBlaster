@@ -151,6 +151,8 @@ public:
 			//当该对象在服务器上的运动状态发生变化时，客户端会通过该函数收到通知并更新对应的运动状态。
 	virtual void OnRep_ReplicatedMovement() override;
 
+	void Elim(); //淘汰
+
 
 private:
 	/// <summary>
