@@ -22,4 +22,10 @@ public:
 	/// <param name="VictimController">受害者的控制器</param>
 	/// <param name="AttackerController">加害者的控制器</param>
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
+	/// <summary>
+	/// 请求复活
+	/// </summary>
+	/// <param name="ElimmedCharacter">被淘汰的角色</param>
+	/// <param name="ElimmedController">被淘汰的控制器</param>
+	virtual void ResquestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 };

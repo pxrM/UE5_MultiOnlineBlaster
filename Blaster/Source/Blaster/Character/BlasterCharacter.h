@@ -90,6 +90,10 @@ private:
 		float CurHealth = MaxHealth;
 	bool bElimmed = false;  //是否淘汰
 
+	FTimerHandle ElimTimer; //淘汰结束倒计时 结束后复活
+	UPROPERTY(EditDefaultsOnly) //EditDefaultsOnly可以在编辑器编辑，但只能在默认值之上
+		float ElimDelay = 3.f; //淘汰计时器时间
+
 	class ABlasterPlayerController* BlasterPlayerController;
 
 
@@ -156,8 +160,9 @@ public:
 			//当该对象在服务器上的运动状态发生变化时，客户端会通过该函数收到通知并更新对应的运动状态。
 	virtual void OnRep_ReplicatedMovement() override;
 
+	void Elim();
 	UFUNCTION(NetMulticast, Reliable)
-		void Elim(); //淘汰
+		void MulticastElim(); //淘汰
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 
 
@@ -185,5 +190,7 @@ private:
 	void HideCameraIfCharacterClose(); //解决角色靠墙时，相机离角色添加而挡住视野，太近时隐藏角色
 
 	float CalculateSpeed();
+
+	void ElimTimerFinished();
 
 };
