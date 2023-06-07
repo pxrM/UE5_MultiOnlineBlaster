@@ -24,6 +24,13 @@ ABlasterCharacter::ABlasterCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//-----------------------------------------------------------------------------------------------------------
+	//SpawnCollisionHandlingMethod用于控制新生成的Actor在产生碰撞时的处理方式。
+	//ESpawnActorCollisionHandlingMethod枚举类型定义了Actor生成时可能遇到的几种不同的碰撞处理方式，包括：
+	//	Undefined：未定义的碰撞处理方式，不进行任何处理。
+	//	AlwaysSpawn：始终生成新的Actor，忽略任何碰撞检测。
+	//	AdjustIfPossibleButAlwaysSpawn：如果新生成的Actor与现有的Actor发生碰撞，则尝试对新生成的Actor位置进行调整以避免碰撞。如果无法避免碰撞，则仍然生成新的Actor。
+	//	AdjustIfPossibleButDontSpawnIfColliding：如果新生成的Actor与现有的Actor发生碰撞，则尝试对新生成的Actor位置进行调整以避免碰撞。如果无法避免碰撞，则不会生成新的Actor。
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom")); //创建弹簧臂
 	CameraBoom->SetupAttachment(GetMesh());	//将弹簧臂连接到角色mesh上，角色移动时将带动弹簧臂
 	CameraBoom->TargetArmLength = 600.f;	//设置弹簧臂的长度
