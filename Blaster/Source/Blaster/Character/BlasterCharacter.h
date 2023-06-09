@@ -184,6 +184,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastElim(); //淘汰
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
+	FORCEINLINE float GetCurHealth() const { return CurHealth; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 
 
 private:

@@ -23,7 +23,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void Destroyed() override;
+	virtual void Destroyed() override; //会在所有机器上调用
 
 private:
 	UPROPERTY(EditAnywhere)
