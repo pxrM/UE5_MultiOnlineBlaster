@@ -85,6 +85,15 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName(TEXT("RightHand_Socket")));
 	if (HandSocket)
 	{
+		/*
+		* 由于 AttachActor 函数是用于将一个 Actor 对象附加到目标组件上的函数，
+		* 因此它通常要求被附加的 Actor 对象不应该拥有物理效果（SimulatePhysics=false）。
+		* 如果被附加的 Actor 对象拥有物理效果，并且此时它在游戏世界中处于运动状态，那么它很有可能会与目标组件产生冲突或者碰撞，
+		* 导致 AttachActor 函数失败或者造成不必要的破坏甚至崩溃。
+		* 
+		* 这里在服务器上调用EquipWeapon，调用EquippedWeapon->SetWeaponState后会同步给客户端关闭武器的碰撞，但是这里不能保证网络速度，
+		* 所以存在客户端武器的碰撞还没关 HandSocket->AttachActor执行失败，所以要在OnRep_EquippedWeapon函数中再设置一次。
+		*/
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character);
@@ -97,6 +106,12 @@ void UCombatComponent::OnRep_EquippedWeapon()
 {
 	if (EquippedWeapon && Character)
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName(TEXT("RightHand_Socket")));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;	//角色将不再自动面向移动方向
 		Character->bUseControllerRotationYaw = true;  //角色将使用控制器的输入来控制yaw旋转方向，而不是默认的按照移动方向转向
 	}

@@ -108,24 +108,6 @@ void AWeapon::ShowPickupWidget(bool bShow)
 	}
 }
 
-void AWeapon::OnRep_WeaponState()
-{
-	switch (WeaponState)
-	{
-	case EWeaponState::EWS_Initial:
-		break;
-	case EWeaponState::EWS_Equipped:
-		ShowPickupWidget(false);
-		break;
-	case EWeaponState::EWS_Dropped:
-		break;
-	case EWeaponState::EWS_MAX:
-		break;
-	default:
-		break;
-	}
-}
-
 void AWeapon::SetWeaponState(EWeaponState State)
 {
 	WeaponState = State; //服务器值发生改变，会同步给所有客户端，触发客户端 OnRep_WeaponState 函数
@@ -136,11 +118,44 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		break;
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
-		//关闭碰撞检测
 		//服务端调用 SetCollisionEnabled 函数之后，该函数将会在所有客户端上被调用并执行相应的操作，以使服务端和所有客户端都使用相同的碰撞设置
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);  //关闭碰撞检测
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 	case EWeaponState::EWS_Dropped:
+		if (HasAuthority()) //是否在服务器
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly); //将武器球形碰撞体设为可查询
+		}
+		WeaponMesh->SetSimulatePhysics(true); //模拟物理效果
+		WeaponMesh->SetEnableGravity(true); //启用重力效果
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); //设置为可查询和模拟物理效果的对象
+		break;
+	case EWeaponState::EWS_MAX:
+		break;
+	default:
+		break;
+	}
+}
+
+void AWeapon::OnRep_WeaponState()
+{
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Initial:
+		break;
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		WeaponMesh->SetSimulatePhysics(true); //模拟物理效果
+		WeaponMesh->SetEnableGravity(true); //启用重力效果
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); //设置为可查询和模拟物理效果的对象
 		break;
 	case EWeaponState::EWS_MAX:
 		break;
@@ -168,4 +183,18 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
+}
+
+void AWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+
+	//使用 FDetachmentTransformRules 类型的 DetachRules 对象来设置武器的分离规则：
+	//EDetachmentRule::KeepWorld 表示武器将会保持在世界空间中，不继承所属组件或Actor的位置、旋转和缩放信息。
+	//第二个参数 true 表示保留原始缩放信息。当武器被分离时，它将保留自己的位置、旋转和缩放信息，并且可以自由地在游戏世界中移动和旋转。
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	//将武器从当前所属的组件或者Actor上分离（detach），此时，武器将变成一个独立的对象
+	WeaponMesh->DetachFromComponent(DetachRules);
+	//将拥有者置空
+	SetOwner(nullptr);
 }

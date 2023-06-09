@@ -554,6 +554,11 @@ void ABlasterCharacter::UpdateHUDHealth()
 
 void ABlasterCharacter::Elim()
 {
+	if (CombatCmp && CombatCmp->EquippedWeapon)
+	{
+		CombatCmp->EquippedWeapon->Dropped();
+	}
+
 	MulticastElim(); //网络多播
 
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
@@ -562,16 +567,22 @@ void ABlasterCharacter::Elim()
 void ABlasterCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
-	PlayElimMontage();
 
-	if (DissolveMatInstance)
-	{
-		DynamicDissolveMatInstance = UMaterialInstanceDynamic::Create(DissolveMatInstance, this);
-		GetMesh()->SetMaterial(0, DynamicDissolveMatInstance);
-		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
-		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
-	}
+	// 播放淘汰蒙太奇
+	PlayElimMontage();
+	// 开始溶解特效
 	StartDisslove();
+	// 关闭角色移动
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	// 关闭输入
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);
+	}
+	// 关闭碰撞
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -593,6 +604,14 @@ void ABlasterCharacter::UpdataDissloveMaterial(float DissloveVal)
 
 void ABlasterCharacter::StartDisslove()
 {
+	if (DissolveMatInstance)
+	{
+		DynamicDissolveMatInstance = UMaterialInstanceDynamic::Create(DissolveMatInstance, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMatInstance);
+		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+
 	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdataDissloveMaterial);
 	if (DissolveCurve && DissolveTimelineCmp)
 	{
