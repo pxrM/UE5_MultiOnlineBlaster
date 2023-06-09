@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interface/InteractWithCrosshairsInterface.h"
+#include "Components/TimelineComponent.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -95,6 +96,17 @@ private:
 		float ElimDelay = 3.f; //淘汰计时器时间
 
 	class ABlasterPlayerController* BlasterPlayerController;
+
+	/*  溶解特效  */
+	UPROPERTY(EditAnywhere, Category = Elim)
+		UCurveFloat* DissolveCurve; //溶解时间曲线
+	UPROPERTY(EditAnywhere)
+		UTimelineComponent* DissolveTimelineCmp;
+	FOnTimelineFloat DissolveTrack; //处理时间轴（timeline）中浮点数值变化的事件
+	UPROPERTY(VisibleAnywhere, Category = Elim)
+		UMaterialInstanceDynamic* DynamicDissolveMatInstance; //在运行时动态创建的材质实例。它可以用于在游戏或应用程序中即时修改材质的属性，例如改变颜色、纹理、参数等等。
+	UPROPERTY(EditAnywhere, Category = Elim)
+		UMaterialInstance* DissolveMatInstance; //适合在需要多次使用相同材质但有不同属性的场景中使用，可在蓝图里使用
 
 
 protected:
@@ -192,5 +204,9 @@ private:
 	float CalculateSpeed();
 
 	void ElimTimerFinished();
+
+	UFUNCTION()
+		void UpdataDissloveMaterial(float DissloveVal);
+	void StartDisslove(); //开启溶解
 
 };

@@ -51,6 +51,8 @@ ABlasterCharacter::ABlasterCharacter()
 	CombatCmp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatCmp->SetIsReplicated(true);
 
+	DissolveTimelineCmp = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
+
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;	//蓝图也可设置
 	//在其他角色和本角色的相机碰撞时会出现相机放大效果，使用忽略相机的碰撞的办法解决，同时也要在角色蓝图对应组件的Collision Response里设置
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
@@ -133,6 +135,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 }
 
 /*--------------------------------------input--------------------------------------------*/
+
 
 void ABlasterCharacter::MoveForward(float Value)
 {
@@ -560,6 +563,15 @@ void ABlasterCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
+
+	if (DissolveMatInstance)
+	{
+		DynamicDissolveMatInstance = UMaterialInstanceDynamic::Create(DissolveMatInstance, this);
+		GetMesh()->SetMaterial(0, DynamicDissolveMatInstance);
+		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Dissolve"), 0.55f);
+		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
+	}
+	StartDisslove();
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -568,5 +580,23 @@ void ABlasterCharacter::ElimTimerFinished()
 	if (BlasterGameMode)
 	{
 		BlasterGameMode->ResquestRespawn(this, Controller);
+	}
+}
+
+void ABlasterCharacter::UpdataDissloveMaterial(float DissloveVal)
+{
+	if (DynamicDissolveMatInstance)
+	{
+		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Dissolve"), DissloveVal);
+	}
+}
+
+void ABlasterCharacter::StartDisslove()
+{
+	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdataDissloveMaterial);
+	if (DissolveCurve && DissolveTimelineCmp)
+	{
+		DissolveTimelineCmp->AddInterpFloat(DissolveCurve, DissolveTrack);
+		DissolveTimelineCmp->Play();
 	}
 }
