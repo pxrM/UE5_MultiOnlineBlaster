@@ -27,7 +27,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	virtual void Destroyed() override; //会在所有机器上调用
 	//-----------------------------------------------------------------------------------------------------------
 
 private:
@@ -107,6 +107,14 @@ private:
 		UMaterialInstanceDynamic* DynamicDissolveMatInstance; //在运行时动态创建的材质实例。它可以用于在游戏或应用程序中即时修改材质的属性，例如改变颜色、纹理、参数等等。
 	UPROPERTY(EditAnywhere, Category = Elim)
 		UMaterialInstance* DissolveMatInstance; //适合在需要多次使用相同材质但有不同属性的场景中使用，可在蓝图里使用
+
+	/* 淘汰回收机器人 */
+	UPROPERTY(EditAnywhere, Category = Elim)
+		class USoundCue* ElimBotSound;
+	UPROPERTY(EditAnywhere, Category = Elim)
+		UParticleSystem* ElimBotEffect;
+	UPROPERTY(VisibleAnywhere, Category = Elim)
+		UParticleSystemComponent* ElimBotComponent;
 
 
 protected:
