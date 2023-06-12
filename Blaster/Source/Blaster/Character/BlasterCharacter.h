@@ -95,8 +95,6 @@ private:
 	UPROPERTY(EditDefaultsOnly) //EditDefaultsOnly可以在编辑器编辑，但只能在默认值之上
 		float ElimDelay = 3.f; //淘汰计时器时间
 
-	class ABlasterPlayerController* BlasterPlayerController;
-
 	/*  溶解特效  */
 	UPROPERTY(EditAnywhere, Category = Elim)
 		UCurveFloat* DissolveCurve; //溶解时间曲线
@@ -115,6 +113,9 @@ private:
 		UParticleSystem* ElimBotEffect;
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 		UParticleSystemComponent* ElimBotComponent;
+
+	class ABlasterPlayerController* BlasterPlayerController;
+	class ABlasterPlayerState* BlasterPlayerState;
 
 
 protected:
@@ -140,6 +141,8 @@ protected:
 	UFUNCTION()
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
+
+	void PollInit(); // 玩家数据有效时 初始化hud等工作
 
 
 public:
