@@ -79,6 +79,10 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr)return;
 
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Dropped(); //如果有武器时需要先丢掉，再装备其它武器
+	}
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 	//获取名为 RightHand_Socket 的手持骨骼插槽
