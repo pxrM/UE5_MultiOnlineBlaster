@@ -133,7 +133,7 @@ void UCombatComponent::FireBtnPressed(bool bPressed)
 
 void UCombatComponent::Fire()
 {
-	if (CanFire)
+	if (CanFire())
 	{
 		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
 		if (EquippedWeapon)
@@ -154,7 +154,7 @@ void UCombatComponent::StartFireTimer()
 	// 定时器的持续时间，即 FireDelay 参数，以秒为单位。
 	if (EquippedWeapon->bAutomatic)
 	{
-		CanFire = false;
+		bCanFire = false;
 		Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
 	}
 }
@@ -163,7 +163,7 @@ void UCombatComponent::FireTimerFinished()
 {
 	if (EquippedWeapon == nullptr)return;
 
-	CanFire = true;
+	bCanFire = true;
 	if (bFireBtnPressed && EquippedWeapon->bAutomatic)
 	{
 		Fire();
@@ -335,4 +335,9 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 
 		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
 	}
+}
+
+bool UCombatComponent::CanFire()
+{
+	return EquippedWeapon && !EquippedWeapon->IsAmmoEmpty() && bCanFire;
 }

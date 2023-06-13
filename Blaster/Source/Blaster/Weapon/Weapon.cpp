@@ -185,7 +185,7 @@ void AWeapon::OnRep_WeaponState()
 void AWeapon::SpeedRound()
 {
 	/*·þÎñÆ÷Ö´ÐÐ*/
-	AmmoNum--;
+	AmmoNum = FMath::Clamp(AmmoNum - 1, 0, MagCapacity);
 	SetHUDAmmo();
 }
 

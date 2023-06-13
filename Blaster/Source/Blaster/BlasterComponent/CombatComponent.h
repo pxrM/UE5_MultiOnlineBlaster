@@ -74,7 +74,7 @@ private:
 
 	/*	 自动开火	*/
 	FTimerHandle FireTimer;	//开火计时器
-	bool CanFire = true; //是否可以开火
+	bool bCanFire = true; //是否可以开火
 
 
 public:
@@ -131,5 +131,7 @@ private:
 	void StartFireTimer();
 	//自动开火计时器回调
 	void FireTimerFinished();
+
+	bool CanFire();
 
 };
