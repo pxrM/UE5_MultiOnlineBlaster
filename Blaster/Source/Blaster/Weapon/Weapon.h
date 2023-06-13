@@ -27,6 +27,7 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
 protected:
 	virtual void BeginPlay() override;
 
@@ -62,6 +63,21 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		TSubclassOf<class ACasing> CasingClass;
+	/// <summary>
+	/// 子弹数量
+	/// </summary>
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_AmmoNum, Category = "Weapon Properties")
+		int32 AmmoNum;
+	/// <summary>
+	/// 弹夹容量
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		int32 MagCapacity;
+
+	UPROPERTY()
+		class ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+		class ABlasterPlayerController* BlasterOwnerController;
 
 
 public:
@@ -123,6 +139,7 @@ public:
 	void SetWeaponState(EWeaponState State);
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped(); //掉落
+	void SetHUDAmmo();
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
@@ -132,5 +149,8 @@ public:
 private:
 	UFUNCTION()
 		void OnRep_WeaponState();
+	UFUNCTION()
+		void OnRep_AmmoNum();
+	void SpeedRound();
 
 };

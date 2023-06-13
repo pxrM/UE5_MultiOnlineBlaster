@@ -44,24 +44,33 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	}
 }
 
+#define SETHUDTEXT_INT(TextCom, Num) \
+BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD; \
+bool bHUDValid = BlasterHUD && BlasterHUD->CharacterOverlayWidget && BlasterHUD->CharacterOverlayWidget->TextCom; \
+if (bHUDValid) \
+{ \
+	FString NumText = FString::Printf(TEXT("%d"), Num); \
+	BlasterHUD->CharacterOverlayWidget->TextCom->SetText(FText::FromString(NumText)); \
+} \
+
 void ABlasterPlayerController::SetHUDScore(float Score)
 {
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-
-	bool bHUDValid = BlasterHUD &&
-		BlasterHUD->CharacterOverlayWidget &&
-		BlasterHUD->CharacterOverlayWidget->ScoreAmountText;
-	if (bHUDValid)
-	{
-		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
-		BlasterHUD->CharacterOverlayWidget->ScoreAmountText->SetText(FText::FromString(ScoreText));
-	}
+	SETHUDTEXT_INT(ScoreAmountText, FMath::FloorToInt(Score));
+	//BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	//bool bHUDValid = BlasterHUD &&
+	//	BlasterHUD->CharacterOverlayWidget &&
+	//	BlasterHUD->CharacterOverlayWidget->ScoreAmountText;
+	//if (bHUDValid)
+	//{
+	//	FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
+	//	BlasterHUD->CharacterOverlayWidget->ScoreAmountText->SetText(FText::FromString(ScoreText));
+	//}
 }
 
 void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 {
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-
+	SETHUDTEXT_INT(DefeatsAmountText, Defeats);
+	/*BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlayWidget &&
 		BlasterHUD->CharacterOverlayWidget->DefeatsAmountText;
@@ -69,5 +78,19 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 	{
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		BlasterHUD->CharacterOverlayWidget->DefeatsAmountText->SetText(FText::FromString(DefeatsText));
-	}
+	}*/
+}
+
+void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
+{
+	SETHUDTEXT_INT(WeaponAmmoAmountText, Ammo);
+	/*BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlayWidget &&
+		BlasterHUD->CharacterOverlayWidget->WeaponAmmoAmountText;
+	if (bHUDValid)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		BlasterHUD->CharacterOverlayWidget->WeaponAmmoAmountText->SetText(FText::FromString(AmmoText));
+	}*/
 }

@@ -13,11 +13,22 @@ void ABlasterPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(ABlasterPlayerState, Defeats);
 }
 
+#define CHECK_SETHUDTEXT(Func, Num) \
+Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character; \
+if (Character) \
+{ \
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller; \
+	if (Controller) \
+	{ \
+		Controller->Func(Num); \
+	} \
+} \
+
 void ABlasterPlayerState::AddToScore(float ScoreAmount)
 {
 	SetScore(Score + ScoreAmount);
-
-	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
+	CHECK_SETHUDTEXT(SetHUDScore, Score); //服务器执行
+	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -25,14 +36,14 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 		{
 			Controller->SetHUDScore(Score);
 		}
-	}
+	}*/
 }
 
 void ABlasterPlayerState::OnRep_Score()
 {
 	Super::OnRep_Score();
-
-	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
+	CHECK_SETHUDTEXT(SetHUDScore, Score);  //客户端执行
+	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -40,14 +51,14 @@ void ABlasterPlayerState::OnRep_Score()
 		{
 			Controller->SetHUDScore(Score);
 		}
-	}
+	}*/
 }
 
 void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 {
 	Defeats += DefeatsAmount;
-
-	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
+	CHECK_SETHUDTEXT(SetHUDDefeats, Defeats);
+	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -55,12 +66,13 @@ void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 		{
 			Controller->SetHUDDefeats(Defeats);
 		}
-	}
+	}*/
 }
 
 void ABlasterPlayerState::OnRep_Defeats()
 {
-	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
+	CHECK_SETHUDTEXT(SetHUDDefeats, Defeats);
+	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -68,5 +80,5 @@ void ABlasterPlayerState::OnRep_Defeats()
 		{
 			Controller->SetHUDDefeats(Defeats);
 		}
-	}
+	}*/
 }
