@@ -7,13 +7,13 @@
 #include "BlasterPlayerController.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
 public:
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDScore(float Score);
@@ -27,7 +27,8 @@ protected:
 
 
 private:
-	class ABlasterHUD* BlasterHUD;
+	UPROPERTY()
+		class ABlasterHUD* BlasterHUD;
 
 
 };

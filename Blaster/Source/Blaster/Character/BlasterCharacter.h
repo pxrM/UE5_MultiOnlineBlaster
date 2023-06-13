@@ -114,8 +114,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 		UParticleSystemComponent* ElimBotComponent;
 
-	class ABlasterPlayerController* BlasterPlayerController;
-	class ABlasterPlayerState* BlasterPlayerState;
+	UPROPERTY()
+		class ABlasterPlayerController* BlasterPlayerController;
+	UPROPERTY()
+		class ABlasterPlayerState* BlasterPlayerState;
 
 
 protected:

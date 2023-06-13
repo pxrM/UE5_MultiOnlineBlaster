@@ -33,9 +33,12 @@ public:
 
 
 private:
-	class ABlasterCharacter* Character;
-	class ABlasterPlayerController* Controller;
-	class ABlasterHUD* HUD;
+	UPROPERTY()
+		class ABlasterCharacter* Character;
+	UPROPERTY()
+		class ABlasterPlayerController* Controller;
+	UPROPERTY()
+		class ABlasterHUD* HUD;
 
 	//当前装备的武器
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)

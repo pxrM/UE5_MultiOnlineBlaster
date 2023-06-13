@@ -34,8 +34,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		class UParticleSystem* Tracer; //用于创建和管理粒子特效的类，子弹飞行时用
-
-	class UParticleSystemComponent* TracerComponent; //粒子系统相关的组件类。该类可以被用于将 "UParticleSystem" 创建的粒子特效附加到游戏中的角色、场景、物体等上
+	UPROPERTY()
+		class UParticleSystemComponent* TracerComponent; //粒子系统相关的组件类。该类可以被用于将 "UParticleSystem" 创建的粒子特效附加到游戏中的角色、场景、物体等上
 
 	UPROPERTY(EditAnywhere)
 		UParticleSystem* ImpactParticles; //撞击时产生的特效
