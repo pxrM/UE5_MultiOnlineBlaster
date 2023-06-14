@@ -42,6 +42,12 @@ void UCombatComponent::BeginPlay()
 			DefultFOV = Character->GetFollowCamera()->FieldOfView;	//获取当前视野
 			CurrentFOV = DefultFOV;
 		}
+
+		if (Character->HasAuthority())
+		{
+			//只在服务器上执行
+			InitializeCarriedAmmo();
+		}
 	}
 }
 
@@ -73,6 +79,8 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	//但是其他客户端变量更改后因为是在本地，所以不会触发，这里需要从客户端获取信息同步到服务器，服务器更改变量才会解决
 	//使用RPC解决，像ABlasterCharacter::ServerEquipBtnPressed_Implementation()一样
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	//只同步到对应的客户端
+	DOREPLIFETIME_CONDITION(UCombatComponent, CurWeaponCarriedAmmo, COND_OwnerOnly);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -102,6 +110,15 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
+	}
 
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
@@ -340,4 +357,27 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 bool UCombatComponent::CanFire()
 {
 	return EquippedWeapon && !EquippedWeapon->IsAmmoEmpty() && bCanFire;
+}
+
+void UCombatComponent::OnRep_CurWeaponCarriedAmmo()
+{
+	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
+	}
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	//Map.Emplace是ue中用于往 Map 容器中添加元素的一种方法。
+	//它的作用类似于 Map.Add() 或 Map.Insert(), 但是相比于这两种方法，Map.Emplace() 有以下几个优势：
+	//	 避免重复的创建和销毁元素对象，从而提高代码的性能和效率。
+	//	 使用移动构造函数和完美转发技术进行元素的构造和插入，从而减少内存分配和拷贝操作。
+	//	 支持变长参数列表，从而方便地向容器中添加不同类型和数量的元素。
+	//需要注意的是，在使用Emplace方法添加元素时，应该确保元素的键值不会重复。
+	//如果键值已经存在于容器中，则Emplace方法将忽略该插入操作，并返回指向已有元素的迭代器。
+	//如果键值不存在，则Emplace方法将创建一个新元素并返回指向该元素的迭代器。
+
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
 }

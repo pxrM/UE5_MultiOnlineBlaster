@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 8000.f
@@ -76,6 +77,12 @@ private:
 	FTimerHandle FireTimer;	//开火计时器
 	bool bCanFire = true; //是否可以开火
 
+	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
+		int32 CurWeaponCarriedAmmo;  //携带弹药量，当前装备武器的
+	UPROPERTY(EditAnywhere, Category = Combat)
+		int32 StartingARAmmo = 30;	//用来初始化每种武器的弹药数量
+	TMap<EWeaponType, int32> CarriedAmmoMap;	//不同武器类型的弹药数量
+
 
 public:
 	/// <summary>
@@ -133,5 +140,10 @@ private:
 	void FireTimerFinished();
 
 	bool CanFire();
+
+	UFUNCTION()
+		void OnRep_CurWeaponCarriedAmmo();
+
+	void InitializeCarriedAmmo();
 
 };

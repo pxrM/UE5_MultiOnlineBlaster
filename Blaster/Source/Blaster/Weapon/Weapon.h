@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 
@@ -73,6 +74,11 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		int32 MagCapacity;
+	/// <summary>
+	/// 武器类型
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		EWeaponType WeaponType;
 
 	UPROPERTY()
 		class ABlasterCharacter* BlasterOwnerCharacter;
@@ -145,6 +151,7 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	FORCEINLINE bool IsAmmoEmpty() const { return AmmoNum <= 0; }
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 
 
 private:
