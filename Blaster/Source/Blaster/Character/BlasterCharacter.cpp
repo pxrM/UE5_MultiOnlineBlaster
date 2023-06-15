@@ -683,6 +683,12 @@ void ABlasterCharacter::StartDisslove()
 	}
 }
 
+ECombatState ABlasterCharacter::GetCombatState() const
+{
+	if (CombatCmp == nullptr) return ECombatState::ECS_MAX;
+	return CombatCmp->CombatState;
+}
+
 void ABlasterCharacter::Destroyed()
 {
 	Super::Destroyed();

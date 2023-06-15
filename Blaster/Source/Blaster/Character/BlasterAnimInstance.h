@@ -84,13 +84,16 @@ private:
 		FRotator RightHandRotation;	//右手骨骼旋转
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bLocalControlled;
+		bool bLocalControlled; //是否是本地控制器
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bRotateRootBone;
+		bool bRotateRootBone; //是否旋转根骨骼
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bElimmed;
+		bool bElimmed; //是否淘汰
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bUseFABRIK; //是否启用左手ik
 
 
 private:

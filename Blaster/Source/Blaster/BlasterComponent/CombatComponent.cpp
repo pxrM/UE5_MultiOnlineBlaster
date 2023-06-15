@@ -81,6 +81,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, bAiming);
 	//只同步到对应的客户端
 	DOREPLIFETIME_CONDITION(UCombatComponent, CurWeaponCarriedAmmo, COND_OwnerOnly);
+	DOREPLIFETIME(UCombatComponent, CombatState);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -141,7 +142,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 
 void UCombatComponent::ReloadMag()
 {
-	if (CurWeaponCarriedAmmo > 0)
+	if (CurWeaponCarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
 	{
 		ServerReloadMag();
 	}
@@ -150,7 +151,33 @@ void UCombatComponent::ReloadMag()
 void UCombatComponent::ServerReloadMag_Implementation()
 {
 	if (Character == nullptr)return;
+	CombatState = ECombatState::ECS_Reloading;
+	HandleReloadMag();
+}
 
+void UCombatComponent::FinishReloadMag()
+{
+	if (Character == nullptr)return;
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+}
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Unoccupied:
+		break;
+	case ECombatState::ECS_Reloading:
+		HandleReloadMag();
+		break;
+	}
+}
+
+void UCombatComponent::HandleReloadMag()
+{
 	Character->PlayReloadMagMontage();
 }
 
