@@ -97,6 +97,11 @@ public:
 	/// <param name="WeaponToEquip"></param>
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
+	/// <summary>
+	/// 重新加载弹夹
+	/// </summary>
+	void ReloadMag();
+
 
 protected:
 	void SetAiming(bool bIsAiming);
@@ -122,6 +127,9 @@ protected:
 	//在多人游戏中，此函数通常用于向所有客户端广播某些操作，例如在所有客户端上生成爆炸效果。
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(Server, Reliable)
+		void ServerReloadMag();
 
 	//射线检测，用于检测玩家准心位置所对应的世界空间位置和方向
 	void TraceUnderCroshairs(FHitResult& TraceHitResult);

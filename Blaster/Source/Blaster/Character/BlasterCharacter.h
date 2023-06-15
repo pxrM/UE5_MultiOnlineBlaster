@@ -64,13 +64,16 @@ private:
 
 	ETurningInPlace TurningInPlace; //角色转向
 
-	UPROPERTY(EditAnyWhere, Category = Combat)
+	UPROPERTY(EditAnyWhere, Category = CombatMontage)
 		class UAnimMontage* FireWeaponMontage;	//武器蒙太奇动画，可在角色蓝图指定
 
-	UPROPERTY(EditAnyWhere, Category = Combat)
+	UPROPERTY(EditAnyWhere, Category = CombatMontage)
+		UAnimMontage* ReloadMagMontage; //重新加载弹夹蒙太奇动画
+
+	UPROPERTY(EditAnyWhere, Category = CombatMontage)
 		UAnimMontage* HitReactMontage; //受击蒙太奇动画
 
-	UPROPERTY(EditAnyWhere, Category = Combat)
+	UPROPERTY(EditAnyWhere, Category = CombatMontage)
 		UAnimMontage* ElimMontage; //淘汰蒙太奇动画
 
 	UPROPERTY(EditAnyWhere)
@@ -132,6 +135,7 @@ protected:
 	virtual void Jump() override;
 	void FireBtnPressed();
 	void FireBtnReleased();
+	void ReloadMagBtnPressed();
 
 	void AimOffset(float DeltaTime);
 	void CalculateAO_Pitch();
@@ -172,6 +176,7 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace()const { return TurningInPlace; }
 
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMagMontage();
 	void PlayHitReactMontage();
 	void PlayElimMontage();
 

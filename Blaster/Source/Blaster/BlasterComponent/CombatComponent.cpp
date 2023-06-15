@@ -139,6 +139,21 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+void UCombatComponent::ReloadMag()
+{
+	if (CurWeaponCarriedAmmo > 0)
+	{
+		ServerReloadMag();
+	}
+}
+
+void UCombatComponent::ServerReloadMag_Implementation()
+{
+	if (Character == nullptr)return;
+
+	Character->PlayReloadMagMontage();
+}
+
 void UCombatComponent::FireBtnPressed(bool bPressed)
 {
 	bFireBtnPressed = bPressed;
