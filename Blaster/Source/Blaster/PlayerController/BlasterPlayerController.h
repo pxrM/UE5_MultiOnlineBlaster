@@ -20,17 +20,23 @@ public:
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
+	void SetHUDMatchCountdown(float CountdownTime);
 	//当一个控制器获取一个 Pawn 后，引擎会调用该控制器的 OnPossess 函数，并将获取的 Pawn 作为参数传入其中。
 	virtual void OnPossess(APawn* InPawn)override;
+	virtual void Tick(float DeltaTime) override;
 
 
 protected:
 	virtual void BeginPlay() override;
+	void SetHUDTime();
 
 
 private:
 	UPROPERTY()
 		class ABlasterHUD* BlasterHUD;
+
+	float MatchTime = 120.f;
+	uint32 CountdownInt = 0;
 
 
 };
