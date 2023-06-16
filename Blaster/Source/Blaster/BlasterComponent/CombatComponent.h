@@ -80,9 +80,9 @@ private:
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;	//不同武器类型的携带弹药量
 	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
-		int32 CurWeaponCarriedAmmo;  //携带弹药量，当前装备武器的类型弹药
+		int32 CurWeaponCarriedAmmo;  //携带弹药量（角色当前武器类型的弹药数量）
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingARAmmo = 30;	//用来初始化每种武器的弹药数量
+		int32 StartingARAmmo = 30;	//用来初始化每种武器的携带弹药量
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态

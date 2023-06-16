@@ -127,6 +127,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSouund, Character->GetActorLocation());
 	}
 
+	if (EquippedWeapon->IsAmmoEmpty())
+	{
+		ReloadMag();
+	}
+
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
@@ -280,6 +285,11 @@ void UCombatComponent::FireTimerFinished()
 	if (bFireBtnPressed && EquippedWeapon->bAutomatic)
 	{
 		Fire();
+	}
+
+	if (EquippedWeapon->IsAmmoEmpty())
+	{
+		ReloadMag();
 	}
 }
 
