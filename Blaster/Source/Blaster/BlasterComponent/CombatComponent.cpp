@@ -13,6 +13,7 @@
 //#include "Blaster/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
+#include "Sound/SoundCue.h"
 
 
 // Sets default values for this component's properties
@@ -121,6 +122,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
 	}
 
+	if (EquippedWeapon->EquipSouund)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSouund, Character->GetActorLocation());
+	}
+
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
@@ -137,6 +143,11 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;	//角色将不再自动面向移动方向
 		Character->bUseControllerRotationYaw = true;  //角色将使用控制器的输入来控制yaw旋转方向，而不是默认的按照移动方向转向
+
+		if (EquippedWeapon->EquipSouund)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSouund, Character->GetActorLocation());
+		}
 	}
 }
 

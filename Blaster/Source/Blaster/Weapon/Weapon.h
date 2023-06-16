@@ -108,6 +108,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 		float FireDelay = 0.15f;  //开火间隔时间
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+		class USoundCue* EquipSouund;  //装备武器音效
+
 
 protected:
 	/// <summary>

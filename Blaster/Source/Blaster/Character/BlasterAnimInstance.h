@@ -95,6 +95,12 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		bool bUseFABRIK; //是否启用左手ik
 
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bUseAimOffsets; //是否使用瞄准偏移
+
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bTransformRightHand; //是否启用右手变换
+
 
 private:
 
