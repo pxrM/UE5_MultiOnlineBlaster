@@ -78,9 +78,9 @@ private:
 	FTimerHandle FireTimer;	//开火计时器
 	bool bCanFire = true; //是否可以开火
 
-	TMap<EWeaponType, int32> CarriedAmmoMap;	//不同武器类型的弹药数量
+	TMap<EWeaponType, int32> CarriedAmmoMap;	//不同武器类型的携带弹药量
 	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
-		int32 CurWeaponCarriedAmmo;  //携带弹药量，当前装备武器的
+		int32 CurWeaponCarriedAmmo;  //携带弹药量，当前装备武器的类型弹药
 	UPROPERTY(EditAnywhere, Category = Combat)
 		int32 StartingARAmmo = 30;	//用来初始化每种武器的弹药数量
 
@@ -142,6 +142,7 @@ protected:
 	UFUNCTION(Server, Reliable)
 		void ServerReloadMag();	//服务器调用
 	void HandleReloadMag();	//服务器和客户端调用
+	int32 AmountToReloadMag(); //更换弹匣后子弹的变化数量
 
 	//射线检测，用于检测玩家准心位置所对应的世界空间位置和方向
 	void TraceUnderCroshairs(FHitResult& TraceHitResult);
@@ -162,6 +163,8 @@ private:
 	bool CanFire(); //是否可开火
 
 	void InitializeCarriedAmmo(); //初始化弹夹
+
+	void UpdateAmmoValues();
 
 	UFUNCTION()
 		void OnRep_CurWeaponCarriedAmmo();

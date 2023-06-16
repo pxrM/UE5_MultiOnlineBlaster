@@ -208,6 +208,12 @@ void AWeapon::SetHUDAmmo()
 	}
 }
 
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	AmmoNum = FMath::Clamp(AmmoNum - AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
+}
+
 void AWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation)

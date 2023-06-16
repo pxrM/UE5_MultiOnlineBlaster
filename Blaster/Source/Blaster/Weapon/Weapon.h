@@ -65,7 +65,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		TSubclassOf<class ACasing> CasingClass;
 	/// <summary>
-	/// 子弹数量
+	/// 弹夹容量中剩余子弹数量
 	/// </summary>
 	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_AmmoNum, Category = "Weapon Properties")
 		int32 AmmoNum;
@@ -146,12 +146,15 @@ public:
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped(); //掉落
 	void SetHUDAmmo();
+	void AddAmmo(int32 AmmoToAdd);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	FORCEINLINE bool IsAmmoEmpty() const { return AmmoNum <= 0; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetAmmoNum() const { return AmmoNum; }
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 
 
 private:
