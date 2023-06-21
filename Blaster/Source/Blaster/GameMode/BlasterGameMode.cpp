@@ -8,6 +8,32 @@
 #include "GameFramework/PlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 
+ABlasterGameMode::ABlasterGameMode()
+{
+	bDelayedStart = true; //游戏模式将保持在等待开始状态，GameMode会为每个玩家生成默认的Pawn（只能飞来飞去），直到手动调用StartMatch()
+}
+
+void ABlasterGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
+
+void ABlasterGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (MatchState == MatchState::WaitingToStart)
+	{
+		CountdownTime = WarmupTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountdownTime <= 0.f)
+		{
+			StartMatch();
+		}
+	}
+}
+
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
 	ABlasterPlayerState* AttackPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
