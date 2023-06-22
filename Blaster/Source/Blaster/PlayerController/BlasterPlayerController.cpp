@@ -7,12 +7,21 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Net/UnrealNetwork.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+}
+
+void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABlasterPlayerController, MatchState);
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -32,6 +41,7 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 
 	SetHUDTime();
 	CheckTimeSync(DeltaTime);
+	PollInit();
 }
 
 void ABlasterPlayerController::ReceivedPlayer()
@@ -60,6 +70,12 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 		BlasterHUD->CharacterOverlayWidget->HealthText->SetText(FText::FromString(HealthText));
 	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDHealth = Health;
+		HUDMaxHealth = MaxHealth;
+	}
 }
 
 #define SETHUDTEXT_INT(TextCom, Num) \
@@ -73,22 +89,27 @@ if (bHUDValid) \
 
 void ABlasterPlayerController::SetHUDScore(float Score)
 {
-	SETHUDTEXT_INT(ScoreAmountText, FMath::FloorToInt(Score));
-	//BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-	//bool bHUDValid = BlasterHUD &&
-	//	BlasterHUD->CharacterOverlayWidget &&
-	//	BlasterHUD->CharacterOverlayWidget->ScoreAmountText;
-	//if (bHUDValid)
-	//{
-	//	FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
-	//	BlasterHUD->CharacterOverlayWidget->ScoreAmountText->SetText(FText::FromString(ScoreText));
-	//}
+	//SETHUDTEXT_INT(ScoreAmountText, FMath::FloorToInt(Score));
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlayWidget &&
+		BlasterHUD->CharacterOverlayWidget->ScoreAmountText;
+	if (bHUDValid)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
+		BlasterHUD->CharacterOverlayWidget->ScoreAmountText->SetText(FText::FromString(ScoreText));
+	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDScore = Score;
+	}
 }
 
 void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 {
-	SETHUDTEXT_INT(DefeatsAmountText, Defeats);
-	/*BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	//SETHUDTEXT_INT(DefeatsAmountText, Defeats);
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlayWidget &&
 		BlasterHUD->CharacterOverlayWidget->DefeatsAmountText;
@@ -96,7 +117,12 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 	{
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		BlasterHUD->CharacterOverlayWidget->DefeatsAmountText->SetText(FText::FromString(DefeatsText));
-	}*/
+	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDDefaults = Defeats;
+	}
 }
 
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
@@ -171,4 +197,47 @@ float ABlasterPlayerController::GetServerTime()
 	if (HasAuthority())
 		return GetWorld()->GetTimeSeconds();
 	return GetWorld()->GetTimeSeconds() + ClientServerDelte;
+}
+
+void ABlasterPlayerController::OnMatchStateSet(FName State)
+{
+	MatchState = State;
+
+	if (MatchState == MatchState::InProgress)
+	{
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddCharacterOverlay();
+		}
+	}
+}
+
+void ABlasterPlayerController::OnRep_MatchState()
+{
+	if (MatchState == MatchState::InProgress)
+	{
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddCharacterOverlay();
+		}
+	}
+}
+
+void ABlasterPlayerController::PollInit()
+{
+	if (CharacterOverlayWidget == nullptr)
+	{
+		if (BlasterHUD && BlasterHUD->CharacterOverlayWidget)
+		{
+			CharacterOverlayWidget = BlasterHUD->CharacterOverlayWidget;
+			if (CharacterOverlayWidget && bInitializeCharacterOverlay)
+			{
+				SetHUDHealth(HUDHealth, HUDMaxHealth);
+				SetHUDScore(HUDScore);
+				SetHUDDefeats(HUDDefaults);
+			}
+		}
+	}
 }

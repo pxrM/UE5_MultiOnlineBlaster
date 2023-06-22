@@ -9,7 +9,7 @@ void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AddCharacterOverlay();
+	//AddCharacterOverlay(); 改为游戏进行中再开始添加
 }
 
 void ABlasterHUD::AddCharacterOverlay()
