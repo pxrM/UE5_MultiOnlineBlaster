@@ -61,6 +61,9 @@ protected:
 	/// </summary>
 	void PollInit();
 
+	// 比赛开始设置
+	void HandleMatchHasStarted();
+
 
 private:
 	UFUNCTION()
