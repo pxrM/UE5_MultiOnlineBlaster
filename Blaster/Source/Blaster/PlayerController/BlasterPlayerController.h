@@ -21,13 +21,14 @@ public:
 	virtual void ReceivedPlayer() override;
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
+	virtual float GetServerTime(); //与服务器时间同步
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CountdownTime);
-	virtual float GetServerTime(); //与服务器世界时间同步
+	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void OnMatchStateSet(FName State);
 
 
@@ -39,13 +40,13 @@ protected:
 		服务器和客户端之间的时间同步
 	*/
 	/// <summary>
-	/// 使用RPC（因为是服务器rpc函数所以前面加了个Server）请求服务器时间
+	/// 使用RPC（因为是服务器rpc函数所以前面加了个Server）请求服务器时间，该函数运行在服务器上
 	/// </summary>
 	/// <param name="TimeOfClientRequest">客户端发送请求的时间</param>
 	UFUNCTION(Server, Reliable)
 		void ServerRequestServerTime(float TimeOfClientRequest);
 	/// <summary>
-	/// 对ServerRequestServerTime请求的响应，获得服务器时间
+	/// 对ServerRequestServerTime请求的响应，获得服务器时间，该函数运行在客户端上
 	/// </summary>
 	/// <param name="TimeOfClientRequest">客户端发送请求的时间</param>
 	/// <param name="TimeServerReceivedRequest">服务器接收到客户端请求的时间</param>
@@ -57,12 +58,27 @@ protected:
 	/// <param name="DeltaTime"></param>
 	void CheckTimeSync(float DeltaTime);
 	/// <summary>
-	/// 轮询检查初始化
+	/// 轮询检查初始化角色状态HUD
 	/// </summary>
 	void PollInit();
 
-	// 比赛开始设置
+	/*
+	 游戏匹配状态相关	
+	*/
+	/// <summary>
+	/// 服务器检查游戏匹配状态
+	/// </summary>
+	UFUNCTION(Server, Reliable)
+		void ServerCheckMatchState();
+	/// <summary>
+	/// 比赛开始设置
+	/// </summary>
 	void HandleMatchHasStarted();
+	/// <summary>
+	/// 客户端加入时通知一次游戏状态
+	/// </summary>
+	UFUNCTION(Server, Reliable)
+		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
 
 
 private:
@@ -90,12 +106,6 @@ private:
 	UPROPERTY()
 		class ABlasterHUD* BlasterHUD;
 
-	float MatchTime = 120.f;
-	uint32 CountdownInt = 0;
-
-	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
-		FName MatchState; //匹配状态
-
 	UPROPERTY()
 		class UCharacterOverlayWidget* CharacterOverlayWidget;
 	bool bInitializeCharacterOverlay = false;
@@ -104,5 +114,11 @@ private:
 	float HUDScore;
 	int32 HUDDefaults;
 
+	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
+		FName MatchState; // 匹配状态
+	float LevelStartingTime = 0.f;	// 关卡开始时间，每个玩家进入关卡的时间不一样，所以以服务器为准
+	float MatchTime = 0.f;	// 比赛时长，从gamemode中获取
+	float WarmupTime = 0.f;	 // 预热时长
+	uint32 CountdownInt = 0;  // 上一次倒计时的时间，如果与当前不同则更新hud
 
 };

@@ -7,7 +7,7 @@
 #include "BlasterGameMode.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class BLASTER_API ABlasterGameMode : public AGameMode
@@ -18,6 +18,13 @@ public:
 	ABlasterGameMode();
 	virtual void Tick(float DeltaTime) override;
 
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void OnMatchStateSet() override;
+
+
+public:
 	/// <summary>
 	/// 淘汰角色
 	/// </summary>
@@ -33,24 +40,27 @@ public:
 	virtual void ResquestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 
 
-protected:
-	virtual void BeginPlay() override;
-	virtual void OnMatchStateSet() override;
-
-
 public:
+	/// <summary>
+	/// 关卡开始时间
+	/// </summary>
+	float LevelStartingTime = 0.f;
 	/// <summary>
 	/// 预热时间，结束后开始StartMatch
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
 		float WarmupTime = 10.f;
 	/// <summary>
-	/// 关卡开始时间
+	/// 比赛时长
 	/// </summary>
-	float LevelStartingTime = 0.f;
+	UPROPERTY(EditDefaultsOnly)
+		float MatchTime = 120.f;
 
 
 private:
-	float CountdownTime = 0.f; //预热倒计时
+	/// <summary>
+	/// 预热倒计时
+	/// </summary>
+	float CountdownTime = 0.f;
 
 };

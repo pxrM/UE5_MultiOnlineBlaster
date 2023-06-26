@@ -14,6 +14,7 @@ class BLASTER_API UAnnouncementWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
 	UPROPERTY(meta = (BindWidget))
 		class UTextBlock* AnnouncementText;
 	UPROPERTY(meta = (BindWidget))
