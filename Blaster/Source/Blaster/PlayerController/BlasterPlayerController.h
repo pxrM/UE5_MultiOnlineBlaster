@@ -74,7 +74,7 @@ protected:
 	/// 客户端加入时通知一次游戏状态
 	/// </summary>
 	UFUNCTION(Client, Reliable)
-		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
 	/// <summary>
 	/// 比赛开始设置
 	/// </summary>
@@ -109,6 +109,8 @@ protected:
 private:
 	UPROPERTY()
 		class ABlasterHUD* BlasterHUD;
+	UPROPERTY()
+		class ABlasterGameMode* BlasterGameMode;
 
 	UPROPERTY()
 		class UCharacterOverlayWidget* CharacterOverlayWidget;
@@ -123,6 +125,7 @@ private:
 	float LevelStartingTime = 0.f;	// 关卡开始时间，每个玩家进入关卡的时间不一样，所以以服务器为准
 	float MatchTime = 0.f;	// 比赛时长，从gamemode中获取
 	float WarmupTime = 0.f;	 // 预热时长
+	float CooldownTime = 0.f; // 比赛冷却时长
 	uint32 CountdownInt = 0;  // 上一次倒计时的时间，如果与当前不同则更新hud
 
 };

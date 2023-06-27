@@ -45,6 +45,9 @@ public:
 	/// <param name="ElimmedController">±»ÌÔÌ­µÄ¿ØÖÆÆ÷</param>
 	virtual void ResquestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 
+public:
+	FORCEINLINE float GetCountdownTime() { return CountdownTime; }
+
 
 public:
 	/// <summary>

@@ -155,6 +155,11 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 		BlasterHUD->CharacterOverlayWidget->MatchCountdownText;
 	if (bHUDValid)
 	{
+		if (CountdownTime < 0.f)
+		{
+			BlasterHUD->CharacterOverlayWidget->MatchCountdownText->SetText(FText());
+			return;
+		}
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
 		int32 Seconds = CountdownTime - Minutes * 60;
 		FString ConntdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
@@ -170,6 +175,11 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
 		BlasterHUD->AnnouncementWidget->WarmupTimeText;
 	if (bHUDValid)
 	{
+		if (CountdownTime < 0.f)
+		{
+			BlasterHUD->AnnouncementWidget->WarmupTimeText->SetText(FText());
+			return;
+		}
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
 		int32 Seconds = CountdownTime - Minutes * 60;
 		FString ConntdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
@@ -188,11 +198,23 @@ void ABlasterPlayerController::SetHUDTime()
 	{
 		TimeLeft = WarmupTime + MatchTime - GetServerTime() + LevelStartingTime;
 	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		TimeLeft = WarmupTime + MatchTime + CooldownTime - GetServerTime() + LevelStartingTime;
+	}
 
 	uint32 SecondsLeft = FMath::CeilToInt(TimeLeft);
+	if (HasAuthority())
+	{
+		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
+		if (BlasterGameMode)
+		{
+			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime); //服务器直接使用GameMode时间
+		}
+	}
 	if (CountdownInt != SecondsLeft)
 	{
-		if (MatchState == MatchState::WaitingToStart)
+		if (MatchState == MatchState::WaitingToStart || MatchState == MatchState::Cooldown)
 		{
 			SetHUDAnnouncementCountdown(TimeLeft);
 		}
@@ -236,22 +258,24 @@ float ABlasterPlayerController::GetServerTime()
 
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 {
-	ABlasterGameMode* GameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
-	if (GameMode)
+	BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
+	if (BlasterGameMode)
 	{
-		MatchState = GameMode->GetMatchState();
-		LevelStartingTime = GameMode->LevelStartingTime;
-		WarmupTime = GameMode->WarmupTime;
-		MatchTime = GameMode->MatchTime;
-		ClientJoinMidgame(MatchState, WarmupTime, MatchTime, LevelStartingTime);
+		MatchState = BlasterGameMode->GetMatchState();
+		LevelStartingTime = BlasterGameMode->LevelStartingTime;
+		WarmupTime = BlasterGameMode->WarmupTime;
+		MatchTime = BlasterGameMode->MatchTime;
+		CooldownTime = BlasterGameMode->CooldownTime;
+		ClientJoinMidgame(MatchState, WarmupTime, MatchTime, CooldownTime, LevelStartingTime);
 	}
 }
 
-void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMatch, float Warmup, float Match, float StartingTime)
+void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime)
 {
 	LevelStartingTime = StartingTime;
 	WarmupTime = Warmup;
 	MatchTime = Match;
+	CooldownTime = Cooldown;
 	OnMatchStateSet(StateOfMatch);
 
 	if (BlasterHUD && MatchState == MatchState::WaitingToStart)
@@ -323,9 +347,15 @@ void ABlasterPlayerController::HandleCooldown()
 	if (BlasterHUD)
 	{
 		BlasterHUD->CharacterOverlayWidget->RemoveFromParent();
-		if (BlasterHUD->AnnouncementWidget)
+		bool bHUDValid = BlasterHUD->AnnouncementWidget && 
+			BlasterHUD->AnnouncementWidget->InfoText && 
+			BlasterHUD->AnnouncementWidget->AnnouncementText;
+		if (bHUDValid)
 		{
 			BlasterHUD->AnnouncementWidget->SetVisibility(ESlateVisibility::Visible);
+			FString AnnouncementText("New Match Stats In:");
+			BlasterHUD->AnnouncementWidget->AnnouncementText->SetText(FText::FromString(AnnouncementText));
+			BlasterHUD->AnnouncementWidget->InfoText->SetText(FText()); //后面需要改为显示获胜的玩家信息
 		}
 	}
 }
