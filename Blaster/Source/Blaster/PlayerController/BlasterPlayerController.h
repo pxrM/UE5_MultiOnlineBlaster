@@ -73,7 +73,7 @@ protected:
 	/// <summary>
 	/// 客户端加入时通知一次游戏状态
 	/// </summary>
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Client, Reliable)
 		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
 	/// <summary>
 	/// 比赛开始设置
