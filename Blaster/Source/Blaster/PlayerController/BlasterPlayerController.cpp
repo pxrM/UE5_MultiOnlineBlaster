@@ -11,6 +11,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Kismet/GamePlayStatics.h"
+#include "Blaster/BlasterComponent/CombatComponent.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -356,6 +357,16 @@ void ABlasterPlayerController::HandleCooldown()
 			FString AnnouncementText("New Match Stats In:");
 			BlasterHUD->AnnouncementWidget->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 			BlasterHUD->AnnouncementWidget->InfoText->SetText(FText()); //后面需要改为显示获胜的玩家信息
+		}
+	}
+
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+	if (BlasterCharacter)
+	{
+		BlasterCharacter->SetDisableGameplay(true); //关闭部分输入
+		if(BlasterCharacter->GetCombatCmp())
+		{
+			BlasterCharacter->GetCombatCmp()->FireBtnPressed(false); //停止开火
 		}
 	}
 }

@@ -113,6 +113,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void FinishReloadMag();
 
+	UFUNCTION()
+		void FireBtnPressed(bool bPressed);
+
 
 protected:
 	void SetAiming(bool bIsAiming);
@@ -122,9 +125,6 @@ protected:
 
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
-
-	UFUNCTION()
-		void FireBtnPressed(bool bPressed);
 
 	void Fire();
 

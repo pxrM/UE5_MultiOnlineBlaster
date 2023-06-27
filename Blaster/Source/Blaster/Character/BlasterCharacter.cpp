@@ -102,6 +102,19 @@ void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	RotateInPlace(DeltaTime);
+	HideCameraIfCharacterClose();
+	PollInit(); //初始几帧的时候玩家数据可能还没初始化，所以放到tick里
+}
+
+void ABlasterCharacter::RotateInPlace(float DeltaTime)
+{
+	if (bDisableGameplay) 
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
 	{
 		AimOffset(DeltaTime);
@@ -115,9 +128,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		}
 		CalculateAO_Pitch();
 	}
-
-	HideCameraIfCharacterClose();
-	PollInit(); //初始几帧的时候玩家数据可能还没初始化，所以放到tick里
 }
 
 // Called to bind functionality to input
@@ -146,6 +156,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ABlasterCharacter::MoveForward(float Value)
 {
+	if (bDisableGameplay) return;
 	if (Controller && Value != 0)
 	{
 		const FRotator YawRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);	//偏航角
@@ -156,6 +167,7 @@ void ABlasterCharacter::MoveForward(float Value)
 
 void ABlasterCharacter::MoveRight(float Value)
 {
+	if (bDisableGameplay) return;
 	const FRotator YawRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);	//偏航角
 	const FVector Direction(FRotationMatrix(YawRotator).GetUnitAxis(EAxis::Y)); //创建旋转矩阵然后获得矩阵Y轴的单位向量，这个向量就是当前朝向的方向
 	AddMovementInput(Direction, Value);
@@ -173,6 +185,7 @@ void ABlasterCharacter::LookUp(float Value)
 
 void ABlasterCharacter::EquipBtnPressed()
 {
+	if (bDisableGameplay) return;
 	//拾取武器需要服务器来验证
 	if (CombatCmp)
 	{
@@ -192,6 +205,7 @@ void ABlasterCharacter::EquipBtnPressed()
 
 void ABlasterCharacter::CrouchBtnPressed()
 {
+	if (bDisableGameplay) return;
 	//这里会设置ACharacter->bIsCrouched
 	//这里会设置角色胶囊体的大小，可在运行期间按~键输入ShowCollision查看
 	if (bIsCrouched)
@@ -206,6 +220,7 @@ void ABlasterCharacter::CrouchBtnPressed()
 
 void ABlasterCharacter::AimBtnPressed()
 {
+	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
 		CombatCmp->SetAiming(true);
@@ -214,6 +229,7 @@ void ABlasterCharacter::AimBtnPressed()
 
 void ABlasterCharacter::AimBtnReleased()
 {
+	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
 		CombatCmp->SetAiming(false);
@@ -312,6 +328,7 @@ void ABlasterCharacter::SimProxiesTurn()
 
 void ABlasterCharacter::Jump()
 {
+	if (bDisableGameplay) return;
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -324,6 +341,7 @@ void ABlasterCharacter::Jump()
 
 void ABlasterCharacter::FireBtnPressed()
 {
+	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
 		CombatCmp->FireBtnPressed(true);
@@ -332,6 +350,7 @@ void ABlasterCharacter::FireBtnPressed()
 
 void ABlasterCharacter::FireBtnReleased()
 {
+	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
 		CombatCmp->FireBtnPressed(false);
@@ -340,6 +359,7 @@ void ABlasterCharacter::FireBtnReleased()
 
 void ABlasterCharacter::ReloadMagBtnPressed()
 {
+	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
 		CombatCmp->ReloadMag();
@@ -427,6 +447,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 
 	DOREPLIFETIME(ABlasterCharacter, CurHealth);
+	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
@@ -628,10 +649,11 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
 	// 关闭输入
-	if (BlasterPlayerController)
-	{
-		DisableInput(BlasterPlayerController);
-	}
+	bDisableGameplay = true;
+	//if (BlasterPlayerController)
+	//{
+	//	DisableInput(BlasterPlayerController);
+	//}
 	// 关闭碰撞
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -692,8 +714,14 @@ ECombatState ABlasterCharacter::GetCombatState() const
 void ABlasterCharacter::Destroyed()
 {
 	Super::Destroyed();
+
 	if (ElimBotComponent)
 	{
 		ElimBotComponent->DestroyComponent();
+	}
+
+	if (CombatCmp && CombatCmp->EquippedWeapon)
+	{
+		CombatCmp->EquippedWeapon->Destroy();
 	}
 }

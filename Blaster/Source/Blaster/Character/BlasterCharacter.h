@@ -123,6 +123,9 @@ private:
 	UPROPERTY()
 		class ABlasterPlayerState* BlasterPlayerState;
 
+	UPROPERTY(Replicated)
+		bool bDisableGameplay = false; //禁止游戏输入
+
 
 protected:
 	void MoveForward(float Value);
@@ -149,7 +152,9 @@ protected:
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
 
-	void PollInit(); // 玩家数据有效时 初始化hud等工作
+	void PollInit(); // 轮询检查玩家数据有效时 初始化hud等工作
+
+	void RotateInPlace(float DeltaTime); //原地旋转
 
 
 public:
@@ -198,6 +203,10 @@ public:
 	FORCEINLINE float GetCurHealth() const { return CurHealth; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
+
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
+	FORCEINLINE void SetDisableGameplay(const bool bDisable) { bDisableGameplay = bDisable; }
+	FORCEINLINE UCombatComponent* GetCombatCmp() const { return CombatCmp; }
 
 
 private:

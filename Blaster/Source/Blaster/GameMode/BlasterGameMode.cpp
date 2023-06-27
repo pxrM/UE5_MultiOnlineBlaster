@@ -50,7 +50,7 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		CountdownTime = WarmupTime + MatchTime + CooldownTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
 		if (CountdownTime <= 0.f)
 		{
-			
+			RestartGame();
 		}
 	}
 }
