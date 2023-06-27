@@ -6,6 +6,12 @@
 #include "GameFramework/GameMode.h"
 #include "BlasterGameMode.generated.h"
 
+//在MatchState命名空间下添加自己的状态
+namespace MatchState
+{
+	extern BLASTER_API const FName Cooldown;	//比赛时间已结束，显示获胜者并开始冷却倒计时
+}
+
 /**
  *
  */
@@ -55,11 +61,16 @@ public:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
 		float MatchTime = 120.f;
+	/// <summary>
+	/// 冷却时长
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly)
+		float CooldownTime = 10.f;
 
 
 private:
 	/// <summary>
-	/// 预热倒计时
+	/// 当前时长的倒计时时间
 	/// </summary>
 	float CountdownTime = 0.f;
 

@@ -71,14 +71,18 @@ protected:
 	UFUNCTION(Server, Reliable)
 		void ServerCheckMatchState();
 	/// <summary>
-	/// 比赛开始设置
-	/// </summary>
-	void HandleMatchHasStarted();
-	/// <summary>
 	/// 客户端加入时通知一次游戏状态
 	/// </summary>
 	UFUNCTION(Server, Reliable)
 		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+	/// <summary>
+	/// 比赛开始设置
+	/// </summary>
+	void HandleMatchHasStarted();
+	/// <summary>
+	/// 比赛结束冷却阶段设置
+	/// </summary>
+	void HandleCooldown();
 
 
 private:

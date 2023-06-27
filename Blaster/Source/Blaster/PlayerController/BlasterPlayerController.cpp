@@ -234,24 +234,6 @@ float ABlasterPlayerController::GetServerTime()
 	return GetWorld()->GetTimeSeconds() + ClientServerDelte;
 }
 
-void ABlasterPlayerController::OnMatchStateSet(FName State)
-{
-	MatchState = State; 
-
-	if (MatchState == MatchState::InProgress)
-	{
-		HandleMatchHasStarted();
-	}
-}
-
-void ABlasterPlayerController::OnRep_MatchState()
-{
-	if (MatchState == MatchState::InProgress)
-	{
-		HandleMatchHasStarted();
-	}
-}
-
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 {
 	ABlasterGameMode* GameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
@@ -278,19 +260,6 @@ void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMat
 	}
 }
 
-void ABlasterPlayerController::HandleMatchHasStarted()
-{
-	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
-	if (BlasterHUD)
-	{
-		BlasterHUD->AddCharacterOverlay();
-		if (BlasterHUD->AnnouncementWidget)
-		{
-			BlasterHUD->AnnouncementWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-}
-
 void ABlasterPlayerController::PollInit()
 {
 	if (CharacterOverlayWidget == nullptr)
@@ -305,6 +274,58 @@ void ABlasterPlayerController::PollInit()
 			SetHUDHealth(HUDHealth, HUDMaxHealth);
 			SetHUDScore(HUDScore);
 			SetHUDDefeats(HUDDefaults);
+		}
+	}
+}
+
+void ABlasterPlayerController::OnMatchStateSet(FName State)
+{
+	MatchState = State;
+
+	if (MatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
+}
+
+void ABlasterPlayerController::OnRep_MatchState()
+{
+	if (MatchState == MatchState::InProgress)
+	{
+		HandleMatchHasStarted();
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		HandleCooldown();
+	}
+}
+
+void ABlasterPlayerController::HandleMatchHasStarted()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		BlasterHUD->AddCharacterOverlay();
+		if (BlasterHUD->AnnouncementWidget)
+		{
+			BlasterHUD->AnnouncementWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void ABlasterPlayerController::HandleCooldown()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	if (BlasterHUD)
+	{
+		BlasterHUD->CharacterOverlayWidget->RemoveFromParent();
+		if (BlasterHUD->AnnouncementWidget)
+		{
+			BlasterHUD->AnnouncementWidget->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }

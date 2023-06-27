@@ -8,6 +8,11 @@
 #include "GameFramework/PlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 
+namespace MatchState
+{
+	const FName Cooldown = FName("Cooldown");	//比赛时间已结束，显示获胜者并开始冷却倒计时
+}
+
 ABlasterGameMode::ABlasterGameMode()
 {
 	bDelayedStart = true; //游戏模式将保持在等待开始状态，GameMode会为每个玩家生成默认的Pawn（只能飞来飞去），直到手动调用StartMatch()
@@ -30,6 +35,22 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		if (CountdownTime <= 0.f)
 		{
 			StartMatch();
+		}
+	}
+	else if (MatchState == MatchState::InProgress)
+	{
+		CountdownTime = WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountdownTime <= 0.f)
+		{
+			SetMatchState(MatchState::Cooldown);
+		}
+	}
+	else if (MatchState == MatchState::Cooldown)
+	{
+		CountdownTime = WarmupTime + MatchTime + CooldownTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountdownTime <= 0.f)
+		{
+			
 		}
 	}
 }
