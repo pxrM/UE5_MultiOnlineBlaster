@@ -654,6 +654,11 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	//{
 	//	DisableInput(BlasterPlayerController);
 	//}
+	// 关闭自动开火
+	if (CombatCmp)
+	{
+		CombatCmp->FireBtnPressed(false);
+	}
 	// 关闭碰撞
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -720,7 +725,9 @@ void ABlasterCharacter::Destroyed()
 		ElimBotComponent->DestroyComponent();
 	}
 
-	if (CombatCmp && CombatCmp->EquippedWeapon)
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
+	if (CombatCmp && CombatCmp->EquippedWeapon && bMatchNotInProgress)  //如果不是游戏进行中状态删除武器
 	{
 		CombatCmp->EquippedWeapon->Destroy();
 	}

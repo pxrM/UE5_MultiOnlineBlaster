@@ -12,6 +12,8 @@
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Kismet/GamePlayStatics.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
+#include "Blaster/GameState/BlasterGameState.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -356,7 +358,35 @@ void ABlasterPlayerController::HandleCooldown()
 			BlasterHUD->AnnouncementWidget->SetVisibility(ESlateVisibility::Visible);
 			FString AnnouncementText("New Match Stats In:");
 			BlasterHUD->AnnouncementWidget->AnnouncementText->SetText(FText::FromString(AnnouncementText));
-			BlasterHUD->AnnouncementWidget->InfoText->SetText(FText()); //后面需要改为显示获胜的玩家信息
+
+			ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+			ABlasterPlayerState* BPlayerState = GetPlayerState<ABlasterPlayerState>();
+			if (BGameState && BPlayerState)
+			{
+				FString InfoTextStr;
+				auto TopPlayers = BGameState->TopScoringPlayers;
+				if (TopPlayers.Num() == 0)
+				{
+					InfoTextStr = FString("There is no winner.");
+				}
+				else if (TopPlayers.Num() == 1 && TopPlayers[0] == BPlayerState)
+				{
+					InfoTextStr = FString("You are the winner!");
+				}
+				else if (TopPlayers.Num() == 1)
+				{
+					InfoTextStr = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
+				}
+				else if (TopPlayers.Num() > 1)
+				{
+					InfoTextStr = FString("Players tied for the win:\n");
+					for (auto TiedPlayer : TopPlayers)
+					{
+						InfoTextStr.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+					}
+				}
+				BlasterHUD->AnnouncementWidget->InfoText->SetText(FText::FromString(InfoTextStr));
+			}
 		}
 	}
 

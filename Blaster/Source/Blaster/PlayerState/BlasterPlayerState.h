@@ -46,6 +46,6 @@ private:
 		class ABlasterPlayerController* Controller;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
-		int32 Defeats;
+		int32 Defeats; //Ê§°Ü´ÎÊý
 
 };
