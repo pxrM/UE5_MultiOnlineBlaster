@@ -486,4 +486,5 @@ void UCombatComponent::InitializeCarriedAmmo()
 	//如果键值不存在，则Emplace方法将创建一个新元素并返回指向该元素的迭代器。
 
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartingRocketAmmo);
 }
