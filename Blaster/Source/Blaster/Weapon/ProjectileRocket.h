@@ -52,4 +52,11 @@ protected:
 	UPROPERTY(EditAnywhere)
 		float TrailDestroyTime = 3.f;
 
+	UPROPERTY(EditAnywhere)
+		USoundCue* ProjectileLoop;
+	UPROPERTY()
+		UAudioComponent* ProjectileLoopComp;
+	UPROPERTY(EditAnywhere)
+		USoundAttenuation* LoopingSoundAttenuation; //…˘“ÙÀ•ºı
+
 };
