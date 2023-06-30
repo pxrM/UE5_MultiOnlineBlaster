@@ -25,10 +25,10 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override; //会在所有机器上调用
 
-private:
-	UPROPERTY(EditAnywhere)
-		class UBoxComponent* CollisionBox;
+	virtual void CollideManifestation(); //碰撞后的表现
 
+
+private:
 	UPROPERTY(VisibleAnyWhere)
 		class UProjectileMovementComponent* ProjectileMovementComponent; //用于实现子弹、火箭等射弹物体运动的组件类
 
@@ -45,6 +45,9 @@ private:
 
 
 protected:
+	UPROPERTY(EditAnywhere)
+		class UBoxComponent* CollisionBox;
+
 	UPROPERTY(EditAnywhere)
 		float DamageVal = 20.f; //伤害
 

@@ -82,6 +82,11 @@ void AProjectile::Destroyed()
 {
 	Super::Destroyed();
 
+	CollideManifestation();
+}
+
+void AProjectile::CollideManifestation()
+{
 	if (ImpactParticles)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());

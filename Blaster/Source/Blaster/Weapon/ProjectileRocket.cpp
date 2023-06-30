@@ -3,6 +3,9 @@
 
 #include "ProjectileRocket.h"
 #include "Kismet/GamePlayStatics.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Components/BoxComponent.h"
 
 AProjectileRocket::AProjectileRocket()
 {
@@ -11,11 +14,40 @@ AProjectileRocket::AProjectileRocket()
 	RocketMash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+void AProjectileRocket::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HasAuthority() == false)  //客户端
+	{
+		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+	}
+
+	if (TrailSystem)
+	{
+		//在场景中附加并生成一个 Niagara 系统
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,//要生成的 Niagara 系统的指针。
+			GetRootComponent(),//用于确定要附加生成的 Niagara 系统的位置的根组件。
+			FName(),//附加点名称，可以指定骨骼名或者插槽名
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,//保持其在世界空间中的位置。
+			false //表示生成的 Niagara 系统不具有自动销毁功能。
+		);
+	}
+}
+
+void AProjectileRocket::Destroyed()
+{
+	Super::Destroyed();
+}
+
 void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	//获取发射玩家的控制器
 	APawn* FiringPawn = GetInstigator(); //SpawnParams.Instigator = InstigatorPawn;
-	if (FiringPawn)
+	if (FiringPawn && HasAuthority()) //服务器执行的代码块
 	{
 		AController* FiringController = FiringPawn->GetController();
 		if (FiringController)
@@ -37,5 +69,31 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		}
 	}
 
-	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
+	//添加计时器延迟烟雾消失
+	GetWorldTimerManager().SetTimer(
+		TrailDestroyTimer,
+		this,
+		&AProjectileRocket::TrailDestroyTimerFinished,
+		TrailDestroyTime
+	);
+
+	//播放碰撞视觉效果
+	CollideManifestation();
+
+	//隐藏火箭的mesh
+	if (RocketMash)
+	{
+		RocketMash->SetVisibility(false);
+	}
+
+	//停止产生粒子
+	if (TrailSystemComponent)
+	{
+		TrailSystemComponent->GetSystemInstance()->Deactivate();
+	}
+}
+
+void AProjectileRocket::TrailDestroyTimerFinished()
+{
+
 }
