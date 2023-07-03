@@ -3,7 +3,6 @@
 
 #include "Projectile.h"
 #include "Components/BoxComponent.h"
-#include "Gameframework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
@@ -38,10 +37,12 @@ AProjectile::AProjectile()
 	//CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block);
 
+	/*改到子类添加，以支持不同类型的移动控件
 	//"UProjectileMovementComponent" 是UE中用于控制投射物（Projectile）的运动轨迹的组件类。
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	//表示该组件将根据投射物的移动方向来旋转投射物。这使得投射物在飞行过程中，能够始终保持朝向移动的方向，看起来更加自然，也更易于控制。
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+	*/
 }
 
 // Called when the game starts or when spawned

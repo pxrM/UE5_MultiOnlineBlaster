@@ -28,10 +28,12 @@ protected:
 	virtual void CollideManifestation(); //碰撞后的表现
 
 
-private:
+protected:
 	UPROPERTY(VisibleAnyWhere)
 		class UProjectileMovementComponent* ProjectileMovementComponent; //用于实现子弹、火箭等射弹物体运动的组件类
 
+
+private:
 	UPROPERTY(EditAnywhere)
 		class UParticleSystem* Tracer; //用于创建和管理粒子特效的类，子弹飞行时用
 	UPROPERTY()

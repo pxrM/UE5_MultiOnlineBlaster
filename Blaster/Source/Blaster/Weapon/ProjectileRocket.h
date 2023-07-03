@@ -33,6 +33,8 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* RocketMash;
+	UPROPERTY(VisibleAnywhere)
+		class URocketMovementComponent* RocketMoveCmp;
 
 
 protected:

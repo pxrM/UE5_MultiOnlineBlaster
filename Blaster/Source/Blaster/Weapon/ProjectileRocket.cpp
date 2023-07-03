@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ProjectileRocket.h"
@@ -8,88 +8,98 @@
 #include "Components/BoxComponent.h"
 #include "Sound/SoundCue.h"
 #include "Components/AudioComponent.h"
+#include "RocketMovementComponent.h"
 
 AProjectileRocket::AProjectileRocket()
 {
-	RocketMash = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Roket Mesh"));
+	RocketMash = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
 	RocketMash->SetupAttachment(RootComponent);
 	RocketMash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	RocketMoveCmp = CreateDefaultSubobject<URocketMovementComponent>(TEXT("Rocket Move"));
+	RocketMoveCmp->bRotationFollowsVelocity = true;
+	RocketMoveCmp->SetIsReplicated(true);
 }
 
 void AProjectileRocket::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority() == false)  //¿Í»§¶Ë
+	if (HasAuthority() == false)  //å®¢æˆ·ç«¯
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);
 	}
 
 	if (TrailSystem)
 	{
-		//ÔÚ³¡¾°ÖĞ¸½¼Ó²¢Éú³ÉÒ»¸ö Niagara ÏµÍ³
+		//åœ¨åœºæ™¯ä¸­é™„åŠ å¹¶ç”Ÿæˆä¸€ä¸ª Niagara ç³»ç»Ÿ
 		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			TrailSystem,//ÒªÉú³ÉµÄ Niagara ÏµÍ³µÄÖ¸Õë¡£
-			GetRootComponent(),//ÓÃÓÚÈ·¶¨Òª¸½¼ÓÉú³ÉµÄ Niagara ÏµÍ³µÄÎ»ÖÃµÄ¸ù×é¼ş¡£
-			FName(),//¸½¼ÓµãÃû³Æ£¬¿ÉÒÔÖ¸¶¨¹Ç÷ÀÃû»òÕß²å²ÛÃû
+			TrailSystem,//è¦ç”Ÿæˆçš„ Niagara ç³»ç»Ÿçš„æŒ‡é’ˆã€‚
+			GetRootComponent(),//ç”¨äºç¡®å®šè¦é™„åŠ ç”Ÿæˆçš„ Niagara ç³»ç»Ÿçš„ä½ç½®çš„æ ¹ç»„ä»¶ã€‚
+			FName(),//é™„åŠ ç‚¹åç§°ï¼Œå¯ä»¥æŒ‡å®šéª¨éª¼åæˆ–è€…æ’æ§½å
 			GetActorLocation(),
 			GetActorRotation(),
-			EAttachLocation::KeepWorldPosition,//±£³ÖÆäÔÚÊÀ½ç¿Õ¼äÖĞµÄÎ»ÖÃ¡£
-			false //±íÊ¾Éú³ÉµÄ Niagara ÏµÍ³²»¾ßÓĞ×Ô¶¯Ïú»Ù¹¦ÄÜ¡£
+			EAttachLocation::KeepWorldPosition,//ä¿æŒå…¶åœ¨ä¸–ç•Œç©ºé—´ä¸­çš„ä½ç½®ã€‚
+			false //è¡¨ç¤ºç”Ÿæˆçš„ Niagara ç³»ç»Ÿä¸å…·æœ‰è‡ªåŠ¨é”€æ¯åŠŸèƒ½ã€‚
 		);
 	}
 
 	if (ProjectileLoop && LoopingSoundAttenuation)
 	{
 		ProjectileLoopComp = UGameplayStatics::SpawnSoundAttached(
-			ProjectileLoop,//Òª²¥·ÅµÄÒôÆµ×ÊÔ´
-			GetRootComponent(),//»ñÈ¡µ±Ç°ActorµÄ¸ù×é¼ş£¬½«ÉùÒô¸½¼Óµ½¸ù×é¼şÉÏ
-			FName(),//¸½¼ÓµãÃû³Æ
-			GetActorLocation(),//»ñÈ¡µ±Ç°ActorµÄÎ»ÖÃ£¬ÓÃÓÚÈ·¶¨ÉùÒôµÄÎ»ÖÃ
-			EAttachLocation::KeepWorldPosition,//Ö¸¶¨¸½¼ÓÎ»ÖÃÎªÊÀ½ç×ø±ê
-			false,//¸½¼ÓÎïÌå±»Ïú»ÙÊ±ÊÇ·ñ×Ô¶¯Í£Ö¹²¥·Å
-			1.f,//Ìå»ı±¶Ôö
-			1.f,//ÒôÁ¿±¶Ôö
-			0.f,//´Ó0Î»ÖÃ¿ªÊ¼²¥·Å
-			LoopingSoundAttenuation,//ÉùÒôµÄË¥¼õÉèÖÃ
-			(USoundConcurrency*)nullptr,//²¢·¢ÉùÒô
-			false //±íÊ¾²»×Ô¶¯¼¤»îÉùÒô×é¼ş
+			ProjectileLoop,//è¦æ’­æ”¾çš„éŸ³é¢‘èµ„æº
+			GetRootComponent(),//è·å–å½“å‰Actorçš„æ ¹ç»„ä»¶ï¼Œå°†å£°éŸ³é™„åŠ åˆ°æ ¹ç»„ä»¶ä¸Š
+			FName(),//é™„åŠ ç‚¹åç§°
+			GetActorLocation(),//è·å–å½“å‰Actorçš„ä½ç½®ï¼Œç”¨äºç¡®å®šå£°éŸ³çš„ä½ç½®
+			EAttachLocation::KeepWorldPosition,//æŒ‡å®šé™„åŠ ä½ç½®ä¸ºä¸–ç•Œåæ ‡
+			false,//é™„åŠ ç‰©ä½“è¢«é”€æ¯æ—¶æ˜¯å¦è‡ªåŠ¨åœæ­¢æ’­æ”¾
+			1.f,//ä½“ç§¯å€å¢
+			1.f,//éŸ³é‡å€å¢
+			0.f,//ä»0ä½ç½®å¼€å§‹æ’­æ”¾
+			LoopingSoundAttenuation,//å£°éŸ³çš„è¡°å‡è®¾ç½®
+			(USoundConcurrency*)nullptr,//å¹¶å‘å£°éŸ³
+			false //è¡¨ç¤ºä¸è‡ªåŠ¨æ¿€æ´»å£°éŸ³ç»„ä»¶
 		);
 	}
 }
 
 void AProjectileRocket::Destroyed()
 {
-	Super::Destroyed();
+	
 }
 
 void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	//»ñÈ¡·¢ÉäÍæ¼ÒµÄ¿ØÖÆÆ÷
+	if (OtherActor == GetOwner())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit self"));
+		return;
+	}
+	//è·å–å‘å°„ç©å®¶çš„æ§åˆ¶å™¨
 	APawn* FiringPawn = GetInstigator(); //SpawnParams.Instigator = InstigatorPawn;
-	if (FiringPawn && HasAuthority()) //·şÎñÆ÷Ö´ĞĞµÄ´úÂë¿é
+	if (FiringPawn && HasAuthority()) //æœåŠ¡å™¨æ‰§è¡Œçš„ä»£ç å—
 	{
 		AController* FiringController = FiringPawn->GetController();
 		if (FiringController)
 		{
-			// ´øÓĞË¥¼õĞ§¹ûµÄ¾¶ÏòÉËº¦
+			// å¸¦æœ‰è¡°å‡æ•ˆæœçš„å¾„å‘ä¼¤å®³
 			UGameplayStatics::ApplyRadialDamageWithFalloff(
-				this, //ÊÀ½çÉÏÏÂÎÄ
-				DamageVal,	//»ù´¡ÉËº¦
-				10.f, //×îĞ¡ÉËº¦
-				GetActorLocation(),	//ÉËº¦·¶Î§µÄÔ²ĞÄµã
-				200.f, //ÉËº¦ÄÚ°ë¾¶
-				500.f, //ÉËº¦Íâ°ë¾¶
-				1.f, //Ë¥¼õÒò×Ó£¬¿ØÖÆÉËº¦Ëæ¾àÀëÔö¼Ó¶øË¥¼õµÄËÙ¶È
-				UDamageType::StaticClass(), //ÒªÓ¦ÓÃµÄÉËº¦ÀàĞÍ
-				TArray<AActor*>(), //ºöÂÔÉËº¦µÄactor
-				this, //ÉËº¦µÄÀ´Ô´¶ÔÏó
-				FiringController //ÉËº¦µÄÀ´Ô´¶ÔÏóµÄ¿ØÖÆÆ÷
+				this, //ä¸–ç•Œä¸Šä¸‹æ–‡
+				DamageVal,	//åŸºç¡€ä¼¤å®³
+				10.f, //æœ€å°ä¼¤å®³
+				GetActorLocation(),	//ä¼¤å®³èŒƒå›´çš„åœ†å¿ƒç‚¹
+				200.f, //ä¼¤å®³å†…åŠå¾„
+				500.f, //ä¼¤å®³å¤–åŠå¾„
+				1.f, //è¡°å‡å› å­ï¼Œæ§åˆ¶ä¼¤å®³éšè·ç¦»å¢åŠ è€Œè¡°å‡çš„é€Ÿåº¦
+				UDamageType::StaticClass(), //è¦åº”ç”¨çš„ä¼¤å®³ç±»å‹
+				TArray<AActor*>(), //å¿½ç•¥ä¼¤å®³çš„actor
+				this, //ä¼¤å®³çš„æ¥æºå¯¹è±¡
+				FiringController //ä¼¤å®³çš„æ¥æºå¯¹è±¡çš„æ§åˆ¶å™¨
 			);
 		}
 	}
 
-	//Ìí¼Ó¼ÆÊ±Æ÷ÑÓ³ÙÑÌÎíÏûÊ§
+	//æ·»åŠ è®¡æ—¶å™¨å»¶è¿ŸçƒŸé›¾æ¶ˆå¤±
 	GetWorldTimerManager().SetTimer(
 		TrailDestroyTimer,
 		this,
@@ -97,22 +107,22 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		TrailDestroyTime
 	);
 
-	//²¥·ÅÅö×²ÊÓ¾õĞ§¹û
+	//æ’­æ”¾ç¢°æ’è§†è§‰æ•ˆæœ
 	CollideManifestation();
 
-	//Òş²Ø»ğ¼ıµÄmesh
+	//éšè—ç«ç®­çš„mesh
 	if (RocketMash)
 	{
 		RocketMash->SetVisibility(false);
 	}
 
-	//Í£Ö¹²úÉúÁ£×Ó
+	//åœæ­¢äº§ç”Ÿç²’å­
 	if (TrailSystemComponent && TrailSystemComponent->GetSystemInstanceController())
 	{
 		TrailSystemComponent->GetSystemInstanceController()->Deactivate();
 	}
 
-	//Åö×²ºóÍ£Ö¹²¥·ÅÑ­»·ÉùÒô£¬ÒòÎªÕâÀïÑÓ³ÙÁË×Óµ¯Ïú»Ù£¬ËùÒÔÉùÒôÔÚÑÓ³ÙÊ±¼ä»áÒ»Ö±Ñ­»·²¥·Å£¬ĞèÒª×Ô¼º¹Ø±ÕÏÂ
+	//ç¢°æ’ååœæ­¢æ’­æ”¾å¾ªç¯å£°éŸ³ï¼Œå› ä¸ºè¿™é‡Œå»¶è¿Ÿäº†å­å¼¹é”€æ¯ï¼Œæ‰€ä»¥å£°éŸ³åœ¨å»¶è¿Ÿæ—¶é—´ä¼šä¸€ç›´å¾ªç¯æ’­æ”¾ï¼Œéœ€è¦è‡ªå·±å…³é—­ä¸‹
 	if (ProjectileLoopComp && ProjectileLoopComp->IsPlaying())
 	{
 		ProjectileLoopComp->Stop();
@@ -121,5 +131,5 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 
 void AProjectileRocket::TrailDestroyTimerFinished()
 {
-
+	Destroyed();
 }
