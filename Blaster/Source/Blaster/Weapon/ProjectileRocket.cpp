@@ -16,9 +16,9 @@ AProjectileRocket::AProjectileRocket()
 	RocketMash->SetupAttachment(RootComponent);
 	RocketMash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	RocketMoveCmp = CreateDefaultSubobject<URocketMovementComponent>(TEXT("Rocket Move"));
-	RocketMoveCmp->bRotationFollowsVelocity = true;
-	RocketMoveCmp->SetIsReplicated(true);
+	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("RocketMovementComponent"));
+	RocketMovementComponent->bRotationFollowsVelocity = true;
+	RocketMovementComponent->SetIsReplicated(true);
 }
 
 void AProjectileRocket::BeginPlay()
@@ -65,7 +65,7 @@ void AProjectileRocket::BeginPlay()
 
 void AProjectileRocket::Destroyed()
 {
-	
+	Super::Destroyed();
 }
 
 void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
