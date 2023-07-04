@@ -82,9 +82,11 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
 		int32 CurWeaponCarriedAmmo;  //携带弹药量（角色当前武器类型的弹药数量）
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingARAmmo = 30;	//用来初始化每种武器的携带弹药量
+		int32 StartingARAmmo = 30;	//用来初始化步枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
 		int32 StartingRocketAmmo = 0;	//用来初始化火箭武器的携带弹药量
+	UPROPERTY(EditAnywhere, Category = Combat)
+		int32 StartingPistolAmmo = 0;	//用来初始化手枪武器的携带弹药量
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
