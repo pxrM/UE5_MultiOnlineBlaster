@@ -72,7 +72,7 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 {
 	if (OtherActor == GetOwner())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit self"));
+		//UE_LOG(LogTemp, Warning, TEXT("Hit self"));
 		return;
 	}
 	//获取发射玩家的控制器

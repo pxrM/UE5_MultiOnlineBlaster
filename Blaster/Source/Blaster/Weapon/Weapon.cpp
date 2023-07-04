@@ -28,6 +28,8 @@ AWeapon::AWeapon()
 	//为true，则该Actor的状态和属性将在客户端和服务器之间进行复制和同步，确保它们在所有玩家之间具有相同的状态和行为。
 	//为false，则Actor只存在于服务器上，客户端无法访问或控制它。
 	bReplicates = true;
+	//同步移动
+	SetReplicateMovement(true);
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	SetRootComponent(WeaponMesh);	//将 WeaponMesh 设置为根组件。这意味着WeaponMesh现在是该物体的主要组件，并且它的位置取决于该物体的位置。
