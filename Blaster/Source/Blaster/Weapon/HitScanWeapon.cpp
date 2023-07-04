@@ -5,6 +5,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -16,7 +17,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 	AController* InstigatorController = OwnerPawn->GetController();
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
-	if (MuzzleFlashSocket && InstigatorController)
+	if (MuzzleFlashSocket)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
@@ -36,7 +37,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			if (FireHit.bBlockingHit)
 			{
 				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-				if (BlasterCharacter && HasAuthority())
+				if (BlasterCharacter && InstigatorController && HasAuthority())
 				{
 					//在服务器施加伤害
 					UGameplayStatics::ApplyDamage(
@@ -56,6 +57,20 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						FireHit.ImpactPoint,
 						FireHit.ImpactNormal.Rotation()
 					);
+				}
+			}
+			//播放弹道特效
+			if (BeamParticles)
+			{
+				FVector BeamEnd = FireHit.bBlockingHit ? FireHit.ImpactPoint : End;
+				UParticleSystemComponent* BeamCmp = UGameplayStatics::SpawnEmitterAtLocation(
+					World,
+					BeamParticles,
+					SocketTransform
+				);
+				if (BeamCmp)
+				{
+					BeamCmp->SetVectorParameter(FName("Target"), BeamEnd);
 				}
 			}
 		}
