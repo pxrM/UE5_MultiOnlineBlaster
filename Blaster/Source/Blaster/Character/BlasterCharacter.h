@@ -65,23 +65,38 @@ private:
 
 	ETurningInPlace TurningInPlace; //角色转向
 
+	/// <summary>
+	/// 武器蒙太奇动画，可在角色蓝图指定
+	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		class UAnimMontage* FireWeaponMontage;	//武器蒙太奇动画，可在角色蓝图指定
+		class UAnimMontage* FireWeaponMontage;
 
+	/// <summary>
+	/// 重新加载弹夹蒙太奇动画
+	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* ReloadMagMontage; //重新加载弹夹蒙太奇动画
+		UAnimMontage* ReloadMagMontage;
 
+	/// <summary>
+	/// 受击蒙太奇动画
+	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* HitReactMontage; //受击蒙太奇动画
+		UAnimMontage* HitReactMontage;
 
+	/// <summary>
+	/// 淘汰蒙太奇动画
+	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* ElimMontage; //淘汰蒙太奇动画
+		UAnimMontage* ElimMontage;
 
+	/// <summary>
+	/// 相机和角色距离阈值
+	/// </summary>
 	UPROPERTY(EditAnyWhere)
-		float CameraThreshold = 200.f; //相机和角色距离阈值
+		float CameraThreshold = 200.f;
 
 	/*  代理角色使用  */
-	bool bRotateRootBone;	//是否旋转根骨骼
+	bool bRotateRootBone; //是否旋转根骨骼
 	float TurnThreshold = 0.5f; //原地转向的阈值
 	FRotator ProxyRotationLastFrame;  //代理上一次的旋转值
 	FRotator ProxyRotationCur;
@@ -89,19 +104,28 @@ private:
 	float TimeSinceLastMovementReplication; //上一次代理角色移动组件的网络同步时间
 
 	/*  player health  */
+	bool bElimmed = false;  //是否淘汰
+	/// <summary>
+	/// 最大健康值
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float MaxHealth = 100.f; //最大健康值
+		float MaxHealth = 100.f;
 	UPROPERTY(ReplicatedUsing = OnRep_CurHealth, VisibleAnywhere, Category = "Player Stats")
 		float CurHealth = MaxHealth;
-	bool bElimmed = false;  //是否淘汰
 
 	FTimerHandle ElimTimer; //淘汰结束倒计时 结束后复活
+	/// <summary>
+	/// 淘汰计时器时间
+	/// </summary>
 	UPROPERTY(EditDefaultsOnly) //EditDefaultsOnly可以在编辑器编辑，但只能在默认值之上
-		float ElimDelay = 3.f; //淘汰计时器时间
+		float ElimDelay = 3.f;
 
 	/*  溶解特效  */
+	/// <summary>
+	/// 溶解时间曲线
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UCurveFloat* DissolveCurve; //溶解时间曲线
+		UCurveFloat* DissolveCurve;
 	UPROPERTY(EditAnywhere)
 		UTimelineComponent* DissolveTimelineCmp;
 	FOnTimelineFloat DissolveTrack; //处理时间轴（timeline）中浮点数值变化的事件

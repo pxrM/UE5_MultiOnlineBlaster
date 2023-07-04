@@ -98,18 +98,33 @@ public:
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 		UTexture2D* CrosshairsBottom;		// 十字瞄准贴图  下
 
+	/// <summary>
+	/// 瞄准缩放
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Zoom)
-		float ZoomedFOV = 30.f;  //瞄准缩放
+		float ZoomedFOV = 30.f;
+	/// <summary>
+	/// 缩放速度
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Zoom)
-		float ZoomInterpSpeed = 20.f;	//缩放速度
+		float ZoomInterpSpeed = 20.f;
 
+	/// <summary>
+	/// 是否自动开火
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Combat)
-		bool bAutomatic = true;  //是否自动开火
+		bool bAutomatic = true;
+	/// <summary>
+	/// 开火间隔时间
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float FireDelay = 0.15f;  //开火间隔时间
+		float FireDelay = 0.15f;
 
+	/// <summary>
+	/// 装备武器音效
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Combat)
-		class USoundCue* EquipSouund;  //装备武器音效
+		class USoundCue* EquipSouund;
 
 
 protected:
