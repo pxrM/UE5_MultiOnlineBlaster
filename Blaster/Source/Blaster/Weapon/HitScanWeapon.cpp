@@ -6,6 +6,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -58,6 +59,15 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 						FireHit.ImpactNormal.Rotation()
 					);
 				}
+				//播放击中音效
+				if (HitSound)
+				{
+					UGameplayStatics::SpawnSoundAtLocation(
+						this,
+						HitSound,
+						FireHit.ImpactPoint
+					);
+				}
 			}
 			//播放弹道特效
 			if (BeamParticles)
@@ -72,6 +82,24 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				{
 					BeamCmp->SetVectorParameter(FName("Target"), BeamEnd);
 				}
+			}
+			//播放枪口特效
+			if (MuzzleFlash)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					World,
+					MuzzleFlash,
+					SocketTransform
+				);
+			}
+			//播放开火音效
+			if (FireSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					this,
+					FireSound,
+					GetActorLocation()
+				);
 			}
 		}
 	}
