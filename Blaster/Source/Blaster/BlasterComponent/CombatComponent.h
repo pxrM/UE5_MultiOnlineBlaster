@@ -12,8 +12,6 @@
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
-#define TRACE_LENGTH 8000.f
-
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UCombatComponent : public UActorComponent
 {
@@ -89,6 +87,8 @@ private:
 		int32 StartingPistolAmmo = 0;	//用来初始化手枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
 		int32 StartingSMGAmmo = 0;	//用来初始化冲锋枪武器的携带弹药量
+	UPROPERTY(EditAnywhere, Category = Combat)
+		int32 StartingShotgunAmmo = 0;	//用来初始化霰弹枪武器的携带弹药量
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态

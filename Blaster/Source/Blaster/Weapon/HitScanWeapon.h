@@ -21,6 +21,16 @@ public:
 	virtual void Fire(const FVector& HitTarget) override;
 
 
+protected:
+	/// <summary>
+	/// 获取一个扩散后的目标方向
+	/// </summary>
+	/// <param name="TraceStart">起始点</param>
+	/// <param name="HitTarget">射线目标点</param>
+	/// <returns></returns>
+	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
+
+
 private:
 	UPROPERTY(EditAnywhere)
 		float Damage = 20.f;
@@ -39,5 +49,15 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		USoundCue* HitSound;
+
+	/* 分赛子弹 */
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+		float DistanceToSphere = 800.f;
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+		float SphereRadius = 75.f;
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+		bool bUseSactter = false;
+
 
 };
