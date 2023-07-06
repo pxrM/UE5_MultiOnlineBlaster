@@ -29,15 +29,24 @@ protected:
 	/// <param name="HitTarget">射线目标点</param>
 	/// <returns></returns>
 	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
+	/// <summary>
+	/// 武器击中轨道
+	/// </summary>
+	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutFireHits);
 
 
-private:
-	UPROPERTY(EditAnywhere)
-		float Damage = 20.f;
-
+protected:
 	UPROPERTY(EditAnywhere)
 		class UParticleSystem* ImpactParticles;
 
+	UPROPERTY(EditAnywhere)
+		USoundCue* HitSound;
+
+	UPROPERTY(EditAnywhere)
+		float Damage = 20.f;
+
+
+private:
 	UPROPERTY(EditAnywhere)
 		UParticleSystem* BeamParticles;
 
@@ -46,9 +55,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		USoundCue* FireSound;
-
-	UPROPERTY(EditAnywhere)
-		USoundCue* HitSound;
 
 	/* 分赛子弹 */
 
