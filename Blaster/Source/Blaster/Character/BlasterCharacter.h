@@ -206,7 +206,7 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace()const { return TurningInPlace; }
 
 	void PlayFireMontage(bool bAiming);
-	void PlayReloadMagMontage();
+	void PlayReloadMagMontage(); //播放装弹夹动画
 	void PlayHitReactMontage();
 	void PlayElimMontage();
 

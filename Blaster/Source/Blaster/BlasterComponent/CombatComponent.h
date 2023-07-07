@@ -89,6 +89,8 @@ private:
 		int32 StartingSMGAmmo = 0;	//用来初始化冲锋枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
 		int32 StartingShotgunAmmo = 0;	//用来初始化霰弹枪武器的携带弹药量
+	UPROPERTY(EditAnywhere, Category = Combat)
+		int32 StartingSniperAmmo = 0;	//用来初始化狙击步枪武器的携带弹药量
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
