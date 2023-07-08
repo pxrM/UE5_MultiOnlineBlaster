@@ -29,8 +29,37 @@ protected:
 
 
 protected:
+	UFUNCTION()
+		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	void SpawnTrailSystem(); //生成拖尾特效
+
+	void StartDestroyTimer(); //启动延迟销毁计时器
+	void TrailDestroyTimerFinished(); //拖尾特效延迟销毁计时器完成回调
+
+
+protected:
+	UPROPERTY(EditAnywhere)
+		class UBoxComponent* CollisionBox;
+
+	UPROPERTY(EditAnywhere)
+		float DamageVal = 20.f; //伤害
+
+	//拖尾特效管理
+	//UNiagaraSystem 是用于创建和管理 Niagara 系统的类。Niagara 是Ue的一个强大的特效系统，用于创建高度可定制的粒子和特效。
+	//UNiagaraSystem 包含了一系列粒子模块和参数，用于定义特效的行为、外观和交互。
+	//UNiagaraSystem 可以被用于创建和管理一个或多个 UNiagaraComponent 实例，并在场景中进行实例化和播放。
+	UPROPERTY(EditAnywhere)
+		class UNiagaraSystem* TrailSystem;
+	//是一个 Unreal Engine 中的组件类，用于在场景中放置和控制 Niagara 系统。
+	UPROPERTY()
+		class UNiagaraComponent* TrailSystemComponent;
+
 	UPROPERTY(VisibleAnyWhere)
 		class UProjectileMovementComponent* ProjectileMovementComponent; //用于实现子弹、火箭等射弹物体运动的组件类
+
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* ProjectileMash;
 
 
 private:
@@ -45,16 +74,11 @@ private:
 	UPROPERTY(EditAnywhere)
 		class USoundCue* ImpactSound;  //撞击时产生的音效
 
-
-protected:
+	//拖尾特效延迟销毁计时器
+	FTimerHandle TrailDestroyTimer;
+	//延迟销毁时间
 	UPROPERTY(EditAnywhere)
-		class UBoxComponent* CollisionBox;
-
-	UPROPERTY(EditAnywhere)
-		float DamageVal = 20.f; //伤害
+		float TrailDestroyTime = 3.f;
 
 
-protected:
-	UFUNCTION()
-		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 };

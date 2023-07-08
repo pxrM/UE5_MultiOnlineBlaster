@@ -12,9 +12,9 @@
 
 AProjectileRocket::AProjectileRocket()
 {
-	RocketMash = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
-	RocketMash->SetupAttachment(RootComponent);
-	RocketMash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ProjectileMash = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rocket Mesh"));
+	ProjectileMash->SetupAttachment(RootComponent);
+	ProjectileMash->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("RocketMovementComponent"));
 	RocketMovementComponent->bRotationFollowsVelocity = true;
@@ -30,19 +30,7 @@ void AProjectileRocket::BeginPlay()
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileRocket::OnHit);
 	}
 
-	if (TrailSystem)
-	{
-		//在场景中附加并生成一个 Niagara 系统
-		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
-			TrailSystem,//要生成的 Niagara 系统的指针。
-			GetRootComponent(),//用于确定要附加生成的 Niagara 系统的位置的根组件。
-			FName(),//附加点名称，可以指定骨骼名或者插槽名
-			GetActorLocation(),
-			GetActorRotation(),
-			EAttachLocation::KeepWorldPosition,//保持其在世界空间中的位置。
-			false //表示生成的 Niagara 系统不具有自动销毁功能。
-		);
-	}
+	SpawnTrailSystem();
 
 	if (ProjectileLoop && LoopingSoundAttenuation)
 	{
@@ -99,21 +87,15 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		}
 	}
 
-	//添加计时器延迟烟雾消失
-	GetWorldTimerManager().SetTimer(
-		TrailDestroyTimer,
-		this,
-		&AProjectileRocket::TrailDestroyTimerFinished,
-		TrailDestroyTime
-	);
+	StartDestroyTimer();
 
 	//播放碰撞视觉效果
 	CollideManifestation();
 
 	//隐藏火箭的mesh
-	if (RocketMash)
+	if (ProjectileMash)
 	{
-		RocketMash->SetVisibility(false);
+		ProjectileMash->SetVisibility(false);
 	}
 
 	//停止产生粒子
@@ -127,9 +109,4 @@ void AProjectileRocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	{
 		ProjectileLoopComp->Stop();
 	}
-}
-
-void AProjectileRocket::TrailDestroyTimerFinished()
-{
-	Destroyed();
 }

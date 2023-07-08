@@ -8,6 +8,8 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -68,6 +70,13 @@ void AProjectile::BeginPlay()
 	}
 }
 
+// Called every frame
+void AProjectile::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	//ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
@@ -79,11 +88,21 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	Destroy(); //会在服务器和所有客户端进行广播
 }
 
-void AProjectile::Destroyed()
+void AProjectile::SpawnTrailSystem()
 {
-	Super::Destroyed();
-
-	CollideManifestation();
+	if (TrailSystem)
+	{
+		//在场景中附加并生成一个 Niagara 系统
+		TrailSystemComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			TrailSystem,//要生成的 Niagara 系统的指针。
+			GetRootComponent(),//用于确定要附加生成的 Niagara 系统的位置的根组件。
+			FName(),//附加点名称，可以指定骨骼名或者插槽名
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,//保持其在世界空间中的位置。
+			false //表示生成的 Niagara 系统不具有自动销毁功能。
+		);
+	}
 }
 
 void AProjectile::CollideManifestation()
@@ -98,10 +117,25 @@ void AProjectile::CollideManifestation()
 	}
 }
 
-// Called every frame
-void AProjectile::Tick(float DeltaTime)
+void AProjectile::StartDestroyTimer()
 {
-	Super::Tick(DeltaTime);
-
+	//添加计时器延迟烟雾消失
+	GetWorldTimerManager().SetTimer(
+		TrailDestroyTimer,
+		this,
+		&AProjectile::TrailDestroyTimerFinished,
+		TrailDestroyTime
+	);
 }
 
+void AProjectile::TrailDestroyTimerFinished()
+{
+	Destroyed();
+}
+
+void AProjectile::Destroyed()
+{
+	Super::Destroyed();
+
+	CollideManifestation();
+}
