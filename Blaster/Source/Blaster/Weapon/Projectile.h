@@ -19,23 +19,25 @@ public:
 	AProjectile();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual void Destroyed() override; //会在所有机器上调用
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void Destroyed() override; //会在所有机器上调用
-
-	virtual void CollideManifestation(); //碰撞后的表现
 
 
 protected:
 	UFUNCTION()
 		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	
+	virtual void CollideManifestation(); //碰撞后的表现
 
 	void SpawnTrailSystem(); //生成拖尾特效
 
 	void StartDestroyTimer(); //启动延迟销毁计时器
 	void TrailDestroyTimerFinished(); //拖尾特效延迟销毁计时器完成回调
+
+	void ExplodeDamage();
 
 
 protected:
@@ -60,6 +62,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* ProjectileMash;
+
+	UPROPERTY(EditAnywhere)
+		float DamageInnerRadius = 200.f; //范围伤害内半径
+	UPROPERTY(EditAnywhere)
+		float DamageOuterRadius = 500.f; //范围伤害外半径
 
 
 private:
