@@ -18,18 +18,22 @@ class BLASTER_API UCombatComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	friend class ABlasterCharacter;	//是角色类可以访问武器类
+
+public:
 	// Sets default values for this component's properties
 	UCombatComponent();
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	/// <summary>
+	/// 用于获取需要进行网络同步的属性列表
+	/// </summary>
+	/// <param name="OutLifetimeProps">需要进行网络同步的属性列表</param>
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
-
-public:
-	friend class ABlasterCharacter;	//是角色类可以访问武器类
 
 
 private:
@@ -99,12 +103,6 @@ private:
 
 
 public:
-	/// <summary>
-	/// 用于获取需要进行网络同步的属性列表
-	/// </summary>
-	/// <param name="OutLifetimeProps">需要进行网络同步的属性列表</param>
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	/// <summary>
 	/// 将武器装备到当前角色身上。只在服务器调用
 	/// </summary>

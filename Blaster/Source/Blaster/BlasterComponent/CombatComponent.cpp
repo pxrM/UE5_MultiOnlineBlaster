@@ -85,6 +85,24 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, CombatState);
 }
 
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+	case ECombatState::ECS_Unoccupied:
+		if (bFireBtnPressed)
+		{
+			Fire();
+		}
+		break;
+	case ECombatState::ECS_Reloading:
+		HandleReloadMag();
+		break;
+	}
+}
+
+
+
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr)return;
@@ -156,130 +174,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-void UCombatComponent::ReloadMag()
-{
-	if (CurWeaponCarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
-	{
-		ServerReloadMag();
-	}
-}
 
-void UCombatComponent::ServerReloadMag_Implementation()
-{
-	if (Character == nullptr || EquippedWeapon == nullptr) return;
-
-	CombatState = ECombatState::ECS_Reloading;
-	HandleReloadMag();
-}
-
-void UCombatComponent::FinishReloadMag()
-{
-	if (Character == nullptr)return;
-	if (Character->HasAuthority())
-	{
-		CombatState = ECombatState::ECS_Unoccupied;
-		UpdateAmmoValues();
-	}
-	if (bFireBtnPressed)
-	{
-		Fire();
-	}
-}
-
-void UCombatComponent::UpdateAmmoValues()
-{
-	if (Character == nullptr || EquippedWeapon == nullptr) return;
-
-	int32 ReloadAmount = AmountToReloadMag();
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
-	{
-		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount; //更新携带武器的弹药量
-		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
-	}
-	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
-	if (Controller)
-	{
-		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
-	}
-	EquippedWeapon->AddAmmo(-ReloadAmount); //弹夹添加子弹
-}
-
-void UCombatComponent::UpdateShotgunAmmoValues()
-{
-	if (Character == nullptr || EquippedWeapon == nullptr) return;
-
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
-	{
-		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
-		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
-	}
-	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
-	if (Controller)
-	{
-		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
-	}
-	EquippedWeapon->AddAmmo(-1);
-	bCanFire = true; //霰弹枪支持添加子弹途中切换到开火
-	if (EquippedWeapon->IsAmmoFull() || CurWeaponCarriedAmmo == 0)
-	{
-		AnimJumpToShotgunEnd();
-	}
-}
-
-void UCombatComponent::AnimJumpToShotgunEnd()
-{
-	//弹夹满了，直接跳转的换单结束动画
-	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-	if (AnimInstance && Character->GetReloadMontage())
-	{
-		AnimInstance->Montage_JumpToSection(FName("ShotgunEnd"));
-	}
-}
-
-void UCombatComponent::ShotgunShellReload()
-{
-	if (Character == nullptr)return;
-	if (Character->HasAuthority())
-	{
-		UpdateShotgunAmmoValues();
-	}
-}
-
-void UCombatComponent::OnRep_CombatState()
-{
-	switch (CombatState)
-	{
-	case ECombatState::ECS_Unoccupied:
-		if (bFireBtnPressed)
-		{
-			Fire();
-		}
-		break;
-	case ECombatState::ECS_Reloading:
-		HandleReloadMag();
-		break;
-	}
-}
-
-void UCombatComponent::HandleReloadMag()
-{
-	Character->PlayReloadMagMontage();
-}
-
-int32 UCombatComponent::AmountToReloadMag()
-{
-	if (EquippedWeapon)
-	{
-		int32 RoomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmoNum();
-		if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
-		{
-			int32 AmountCarried = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
-			int32 Least = FMath::Min(RoomInMag, AmountCarried);
-			return FMath::Clamp(RoomInMag, 0, Least);
-		}
-	}
-	return 0;
-}
 
 void UCombatComponent::FireBtnPressed(bool bPressed)
 {
@@ -301,6 +196,43 @@ void UCombatComponent::Fire()
 		}
 		StartFireTimer();
 	}
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MulticastFire(TraceHitTarget); //通知所有客户端
+}
+
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	if (CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
+
+	if (CombatState == ECombatState::ECS_Unoccupied)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+bool UCombatComponent::CanFire()
+{
+	if (EquippedWeapon == nullptr)
+		return false;
+
+	//霰弹枪特殊处理
+	if (!EquippedWeapon->IsAmmoEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading
+		&& EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+		return true;
+
+	return !EquippedWeapon->IsAmmoEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
 void UCombatComponent::StartFireTimer()
@@ -334,29 +266,7 @@ void UCombatComponent::FireTimerFinished()
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MulticastFire(TraceHitTarget); //通知所有客户端
-}
 
-void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	if (Character == nullptr || EquippedWeapon == nullptr) return;
-
-	if (CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-		CombatState = ECombatState::ECS_Unoccupied;
-		return;
-	}
-
-	if (CombatState == ECombatState::ECS_Unoccupied)
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-	}
-}
 
 void UCombatComponent::TraceUnderCroshairs(FHitResult& TraceHitResult)
 {
@@ -469,6 +379,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 	}
 }
 
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
@@ -516,17 +427,96 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 	}
 }
 
-bool UCombatComponent::CanFire()
+
+
+void UCombatComponent::HandleReloadMag()
 {
-	if (EquippedWeapon == nullptr)
-		return false;
+	Character->PlayReloadMagMontage();
+}
 
-	//霰弹枪特殊处理
-	if (!EquippedWeapon->IsAmmoEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading
-		&& EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
-		return true;
+int32 UCombatComponent::AmountToReloadMag()
+{
+	if (EquippedWeapon)
+	{
+		int32 RoomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmoNum();
+		if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+		{
+			int32 AmountCarried = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+			int32 Least = FMath::Min(RoomInMag, AmountCarried);
+			return FMath::Clamp(RoomInMag, 0, Least);
+		}
+	}
+	return 0;
+}
 
-	return !EquippedWeapon->IsAmmoEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
+void UCombatComponent::ReloadMag()
+{
+	if (CurWeaponCarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
+	{
+		ServerReloadMag();
+	}
+}
+
+void UCombatComponent::ServerReloadMag_Implementation()
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	CombatState = ECombatState::ECS_Reloading;
+	HandleReloadMag();
+}
+
+void UCombatComponent::FinishReloadMag()
+{
+	if (Character == nullptr)return;
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+		UpdateAmmoValues();
+	}
+	if (bFireBtnPressed)
+	{
+		Fire();
+	}
+}
+
+void UCombatComponent::UpdateAmmoValues()
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	int32 ReloadAmount = AmountToReloadMag();
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount; //更新携带武器的弹药量
+		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
+	}
+	EquippedWeapon->AddAmmo(-ReloadAmount); //弹夹添加子弹
+}
+
+void UCombatComponent::UpdateShotgunAmmoValues()
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
+	}
+	EquippedWeapon->AddAmmo(-1);
+	bCanFire = true; //霰弹枪支持添加子弹途中切换到开火
+	if (EquippedWeapon->IsAmmoFull() || CurWeaponCarriedAmmo == 0)
+	{
+		AnimJumpToShotgunEnd();
+	}
 }
 
 void UCombatComponent::OnRep_CurWeaponCarriedAmmo()
@@ -544,6 +534,25 @@ void UCombatComponent::OnRep_CurWeaponCarriedAmmo()
 	if (bJumpToShotgunEnd)
 	{
 		AnimJumpToShotgunEnd();
+	}
+}
+
+void UCombatComponent::AnimJumpToShotgunEnd()
+{
+	//弹夹满了，直接跳转的换单结束动画
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimInstance && Character->GetReloadMontage())
+	{
+		AnimInstance->Montage_JumpToSection(FName("ShotgunEnd"));
+	}
+}
+
+void UCombatComponent::ShotgunShellReload()
+{
+	if (Character == nullptr)return;
+	if (Character->HasAuthority())
+	{
+		UpdateShotgunAmmoValues();
 	}
 }
 
