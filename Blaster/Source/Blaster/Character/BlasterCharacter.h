@@ -231,6 +231,7 @@ public:
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 	FORCEINLINE void SetDisableGameplay(const bool bDisable) { bDisableGameplay = bDisable; }
 	FORCEINLINE UCombatComponent* GetCombatCmp() const { return CombatCmp; }
+	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMagMontage; }
 
 	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
 		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umg

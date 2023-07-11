@@ -1,6 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 /*
-	½ÇÉ«Õ½¶·×é¼ş ¹ÜÀíÎäÆ÷
+	è§’è‰²æˆ˜æ–—ç»„ä»¶ ç®¡ç†æ­¦å™¨
 */
 
 #pragma once
@@ -29,7 +29,7 @@ protected:
 
 
 public:
-	friend class ABlasterCharacter;	//ÊÇ½ÇÉ«Àà¿ÉÒÔ·ÃÎÊÎäÆ÷Àà
+	friend class ABlasterCharacter;	//æ˜¯è§’è‰²ç±»å¯ä»¥è®¿é—®æ­¦å™¨ç±»
 
 
 private:
@@ -40,91 +40,102 @@ private:
 	UPROPERTY()
 		class ABlasterHUD* HUD;
 
-	//µ±Ç°×°±¸µÄÎäÆ÷
+	//å½“å‰è£…å¤‡çš„æ­¦å™¨
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 		class AWeapon* EquippedWeapon;
 
 	UPROPERTY(Replicated)
-		bool bAiming; //ÊÇ·ñÕıÔÚÃé×¼
+		bool bAiming; //æ˜¯å¦æ­£åœ¨ç„å‡†
 
 	UPROPERTY(EditAnywhere)
-		float BaseWalkSpeed; //Ô­Ê¼ËÙ¶È
+		float BaseWalkSpeed; //åŸå§‹é€Ÿåº¦
 
 	UPROPERTY(EditAnywhere)
-		float AimWalkSpeed; //Ãé×¼Ê±ËÙ¶È
+		float AimWalkSpeed; //ç„å‡†æ—¶é€Ÿåº¦
 
-	bool bFireBtnPressed; //ÊÇ·ñ°´ÏÂ¿ª»ğ¼ü
+	bool bFireBtnPressed; //æ˜¯å¦æŒ‰ä¸‹å¼€ç«é”®
 
-	FVector HitTarget;	//Éä»÷Ä¿±êÎ»ÖÃ
+	FVector HitTarget;	//å°„å‡»ç›®æ ‡ä½ç½®
 
-	/*	 Ê®×Ö×¼Ïß	*/
-	float CrosshairVelocityFactor; //Ê®×Ö×¼ÏßµÄËõ·Å£¬Éä»÷ÓÎÏ·ÖĞÊ®×Ö×¼Ïß»á¸ù¾İ½ÇÉ«µÄÎ»ÖÃÒÆ¶¯ÉÔÎ¢ÕÅ¿ª
-	float CrosshairInAirFactor;    //½ÇÉ«ÔÚ¿ÕÖĞÊ±Ê®×Ö×¼ÏßµÄËõ·Å
-	float CrosshairInAimFactor;    //½ÇÉ«ÔÚÃé×¼Ê±Ê®×Ö×¼ÏßµÄËõ·Å
-	float CrosshairShootingFactor; //½ÇÉ«ÔÚ¿ª»ğÊ±Ê®×Ö×¼ÏßµÄËõ·Å
-	FHUDPackage HUDPackage; //Ê®×Ö×¼ÏßÌùÍ¼½á¹¹Ìå
+	/*	 åå­—å‡†çº¿	*/
+	float CrosshairVelocityFactor; //åå­—å‡†çº¿çš„ç¼©æ”¾ï¼Œå°„å‡»æ¸¸æˆä¸­åå­—å‡†çº¿ä¼šæ ¹æ®è§’è‰²çš„ä½ç½®ç§»åŠ¨ç¨å¾®å¼ å¼€
+	float CrosshairInAirFactor;    //è§’è‰²åœ¨ç©ºä¸­æ—¶åå­—å‡†çº¿çš„ç¼©æ”¾
+	float CrosshairInAimFactor;    //è§’è‰²åœ¨ç„å‡†æ—¶åå­—å‡†çº¿çš„ç¼©æ”¾
+	float CrosshairShootingFactor; //è§’è‰²åœ¨å¼€ç«æ—¶åå­—å‡†çº¿çš„ç¼©æ”¾
+	FHUDPackage HUDPackage; //åå­—å‡†çº¿è´´å›¾ç»“æ„ä½“
 
-	/*	 Ãé×¼ÊÓÒ°	*/
-	float DefultFOV;	//Ã»Ãé×¼Ê±µÄÄ¬ÈÏÊÓÒ°
-	float CurrentFOV;	//µ±Ç°ÊÓÒ°
+	/*	 ç„å‡†è§†é‡	*/
+	float DefultFOV;	//æ²¡ç„å‡†æ—¶çš„é»˜è®¤è§†é‡
+	float CurrentFOV;	//å½“å‰è§†é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float ZoomedFOV = 30.f;  //Ãé×¼Ê±µÄ·Å´óÊÓÒ°
+		float ZoomedFOV = 30.f;  //ç„å‡†æ—¶çš„æ”¾å¤§è§†é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float ZoomInterpSpeed = 20.f;  //Ãé×¼Ê±µÄÊÓÒ°Ëõ·ÅËÙ¶È
+		float ZoomInterpSpeed = 20.f;  //ç„å‡†æ—¶çš„è§†é‡ç¼©æ”¾é€Ÿåº¦
 
-	/*	 ×Ô¶¯¿ª»ğ	*/
-	FTimerHandle FireTimer;	//¿ª»ğ¼ÆÊ±Æ÷
-	bool bCanFire = true; //ÊÇ·ñ¿ÉÒÔ¿ª»ğ
+	/*	 è‡ªåŠ¨å¼€ç«	*/
+	FTimerHandle FireTimer;	//å¼€ç«è®¡æ—¶å™¨
+	bool bCanFire = true; //æ˜¯å¦å¯ä»¥å¼€ç«
 
-	TMap<EWeaponType, int32> CarriedAmmoMap;	//²»Í¬ÎäÆ÷ÀàĞÍµÄĞ¯´øµ¯Ò©Á¿
+	TMap<EWeaponType, int32> CarriedAmmoMap;	//ä¸åŒæ­¦å™¨ç±»å‹çš„æºå¸¦å¼¹è¯é‡
 	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
-		int32 CurWeaponCarriedAmmo;  //Ğ¯´øµ¯Ò©Á¿£¨½ÇÉ«µ±Ç°ÎäÆ÷ÀàĞÍµÄµ¯Ò©ÊıÁ¿£©
+		int32 CurWeaponCarriedAmmo;  //æºå¸¦å¼¹è¯é‡ï¼ˆè§’è‰²å½“å‰æ­¦å™¨ç±»å‹çš„å¼¹è¯æ•°é‡ï¼‰
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingARAmmo = 30;	//ÓÃÀ´³õÊ¼»¯²½Ç¹ÎäÆ÷µÄĞ¯´øµ¯Ò©Á¿
+		int32 StartingARAmmo = 30;	//ç”¨æ¥åˆå§‹åŒ–æ­¥æªæ­¦å™¨çš„æºå¸¦å¼¹è¯é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingRocketAmmo = 0;	//ÓÃÀ´³õÊ¼»¯»ğ¼ıÎäÆ÷µÄĞ¯´øµ¯Ò©Á¿
+		int32 StartingRocketAmmo = 0;	//ç”¨æ¥åˆå§‹åŒ–ç«ç®­æ­¦å™¨çš„æºå¸¦å¼¹è¯é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingPistolAmmo = 0;	//ÓÃÀ´³õÊ¼»¯ÊÖÇ¹ÎäÆ÷µÄĞ¯´øµ¯Ò©Á¿
+		int32 StartingPistolAmmo = 0;	//ç”¨æ¥åˆå§‹åŒ–æ‰‹æªæ­¦å™¨çš„æºå¸¦å¼¹è¯é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingSMGAmmo = 0;	//ÓÃÀ´³õÊ¼»¯³å·æÇ¹ÎäÆ÷µÄĞ¯´øµ¯Ò©Á¿
+		int32 StartingSMGAmmo = 0;	//ç”¨æ¥åˆå§‹åŒ–å†²é”‹æªæ­¦å™¨çš„æºå¸¦å¼¹è¯é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingShotgunAmmo = 0;	//ÓÃÀ´³õÊ¼»¯ö±µ¯Ç¹ÎäÆ÷µÄĞ¯´øµ¯Ò©Á¿
+		int32 StartingShotgunAmmo = 0;	//ç”¨æ¥åˆå§‹åŒ–éœ°å¼¹æªæ­¦å™¨çš„æºå¸¦å¼¹è¯é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingSniperAmmo = 0;	//ÓÃÀ´³õÊ¼»¯¾Ñ»÷²½Ç¹ÎäÆ÷µÄĞ¯´øµ¯Ò©Á¿
+		int32 StartingSniperAmmo = 0;	//ç”¨æ¥åˆå§‹åŒ–ç‹™å‡»æ­¥æªæ­¦å™¨çš„æºå¸¦å¼¹è¯é‡
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingGrenadeAmmo = 0;	//ÓÃÀ´³õÊ¼»¯Áñµ¯ÎäÆ÷µÄĞ¯´øµ¯Ò©Á¿
+		int32 StartingGrenadeAmmo = 0;	//ç”¨æ¥åˆå§‹åŒ–æ¦´å¼¹æ­¦å™¨çš„æºå¸¦å¼¹è¯é‡
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
-		ECombatState CombatState = ECombatState::ECS_Unoccupied; //Õ½¶·×´Ì¬
+		ECombatState CombatState = ECombatState::ECS_Unoccupied; //æˆ˜æ–—çŠ¶æ€
 
 
 public:
 	/// <summary>
-	/// ÓÃÓÚ»ñÈ¡ĞèÒª½øĞĞÍøÂçÍ¬²½µÄÊôĞÔÁĞ±í
+	/// ç”¨äºè·å–éœ€è¦è¿›è¡Œç½‘ç»œåŒæ­¥çš„å±æ€§åˆ—è¡¨
 	/// </summary>
-	/// <param name="OutLifetimeProps">ĞèÒª½øĞĞÍøÂçÍ¬²½µÄÊôĞÔÁĞ±í</param>
+	/// <param name="OutLifetimeProps">éœ€è¦è¿›è¡Œç½‘ç»œåŒæ­¥çš„å±æ€§åˆ—è¡¨</param>
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/// <summary>
-	/// ½«ÎäÆ÷×°±¸µ½µ±Ç°½ÇÉ«ÉíÉÏ¡£Ö»ÔÚ·şÎñÆ÷µ÷ÓÃ
+	/// å°†æ­¦å™¨è£…å¤‡åˆ°å½“å‰è§’è‰²èº«ä¸Šã€‚åªåœ¨æœåŠ¡å™¨è°ƒç”¨
 	/// </summary>
 	/// <param name="WeaponToEquip"></param>
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
 	/// <summary>
-	/// ÖØĞÂ¼ÓÔØµ¯¼Ğ£¬¿Í»§¶Ë·¢Æğ
+	/// é‡æ–°åŠ è½½å¼¹å¤¹ï¼Œå®¢æˆ·ç«¯å‘èµ·
 	/// </summary>
 	void ReloadMag();
 
 	/// <summary>
-	/// ÖØĞÂ¼ÓÔØµ¯¼Ğ½áÊø
-	/// ÔÚ¶¯»­ÃÉÌ«ÆæÖĞÌí¼Ó¶¯»­ÊÂ¼şµ÷ÓÃGame/Blueprints/Character/Animation/ReloadMag
+	/// é‡æ–°åŠ è½½å¼¹å¤¹ç»“æŸ
+	/// åœ¨åŠ¨ç”»è’™å¤ªå¥‡ä¸­æ·»åŠ åŠ¨ç”»äº‹ä»¶è°ƒç”¨Game/Blueprints/Character/Animation/ReloadMag
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
 		void FinishReloadMag();
 
+	/// <summary>
+	/// å¼€ç«
+	/// </summary>
+	/// <param name="bPressed"></param>
 	UFUNCTION()
 		void FireBtnPressed(bool bPressed);
+
+	/// <summary>
+	/// éœ°å¼¹æªæ›´æ¢å¼¹å¤¹æ—¶åŠ¨ç”»å¡«è£…å­å¼¹çš„å›è°ƒ
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+		void ShotgunShellReload();
+	void AnimJumpToShotgunEnd();
 
 
 protected:
@@ -138,43 +149,49 @@ protected:
 
 	void Fire();
 
-	/*  FVector_NetQuantize ÊÇueÖĞÓÃÓÚÍøÂç´«ÊäµÄ½á¹¹Ìå£¬ÓÃÓÚÑ¹ËõºÍÓÅ»¯ FVector µÄÊı¾İ´«Êä¡£
-		¸Ã½á¹¹Ìå¿ÉÒÔ½« FVector µÄÖµÔÚÍøÂç´«ÊäÊ±½øĞĞÑ¹Ëõ£¬Ê¹Êı¾İ´óĞ¡¸üĞ¡£¬¼õÉÙÍøÂç¸ºÔØºÍ´«ÊäÑÓ³Ù¡£
-		FVector_NetQuantize Ö§³ÖÃ¿¸ö·ÖÁ¿×î¶àÊ¹ÓÃ 20 Î»¶ş½øÖÆÊı£¬ÔÚ¾«¶ÈºÍÊµÊ±ĞÔÖ®¼ä×öÁËÒ»¸öÆ½ºâ¡£*/
+	/*  FVector_NetQuantize æ˜¯ueä¸­ç”¨äºç½‘ç»œä¼ è¾“çš„ç»“æ„ä½“ï¼Œç”¨äºå‹ç¼©å’Œä¼˜åŒ– FVector çš„æ•°æ®ä¼ è¾“ã€‚
+		è¯¥ç»“æ„ä½“å¯ä»¥å°† FVector çš„å€¼åœ¨ç½‘ç»œä¼ è¾“æ—¶è¿›è¡Œå‹ç¼©ï¼Œä½¿æ•°æ®å¤§å°æ›´å°ï¼Œå‡å°‘ç½‘ç»œè´Ÿè½½å’Œä¼ è¾“å»¶è¿Ÿã€‚
+		FVector_NetQuantize æ”¯æŒæ¯ä¸ªåˆ†é‡æœ€å¤šä½¿ç”¨ 20 ä½äºŒè¿›åˆ¶æ•°ï¼Œåœ¨ç²¾åº¦å’Œå®æ—¶æ€§ä¹‹é—´åšäº†ä¸€ä¸ªå¹³è¡¡ã€‚*/
 	UFUNCTION(Server, Reliable)
 		void ServerFire(const FVector_NetQuantize& TraceHitTarget);
 
-	//±ê¼ÇÎª NetMulticast ºÍ Reliable¡£ÕâÒâÎ¶×Å¸Ãº¯Êı½«ÔÚ¸÷¸ö¿Í»§¶ËÉÏ½øĞĞµ÷ÓÃ£¬²¢ÇÒ¸Ãº¯ÊıµÄÖ´ĞĞ½á¹û½«´Ó¿Í»§¶ËÍ¬²½µ½·şÎñÆ÷ºÍÆäËû¿Í»§¶Ë¡£
-	//ÔÚ¶àÈËÓÎÏ·ÖĞ£¬´Ëº¯ÊıÍ¨³£ÓÃÓÚÏòËùÓĞ¿Í»§¶Ë¹ã²¥Ä³Ğ©²Ù×÷£¬ÀıÈçÔÚËùÓĞ¿Í»§¶ËÉÏÉú³É±¬Õ¨Ğ§¹û¡£
+	//æ ‡è®°ä¸º NetMulticast å’Œ Reliableã€‚è¿™æ„å‘³ç€è¯¥å‡½æ•°å°†åœ¨å„ä¸ªå®¢æˆ·ç«¯ä¸Šè¿›è¡Œè°ƒç”¨ï¼Œå¹¶ä¸”è¯¥å‡½æ•°çš„æ‰§è¡Œç»“æœå°†ä»å®¢æˆ·ç«¯åŒæ­¥åˆ°æœåŠ¡å™¨å’Œå…¶ä»–å®¢æˆ·ç«¯ã€‚
+	//åœ¨å¤šäººæ¸¸æˆä¸­ï¼Œæ­¤å‡½æ•°é€šå¸¸ç”¨äºå‘æ‰€æœ‰å®¢æˆ·ç«¯å¹¿æ’­æŸäº›æ“ä½œï¼Œä¾‹å¦‚åœ¨æ‰€æœ‰å®¢æˆ·ç«¯ä¸Šç”Ÿæˆçˆ†ç‚¸æ•ˆæœã€‚
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(Server, Reliable)
-		void ServerReloadMag();	//·şÎñÆ÷µ÷ÓÃ
-	void HandleReloadMag();	//·şÎñÆ÷ºÍ¿Í»§¶Ëµ÷ÓÃ
-	int32 AmountToReloadMag(); //¸ü»»µ¯Ï»ºó×Óµ¯µÄ±ä»¯ÊıÁ¿
+		void ServerReloadMag();	//æœåŠ¡å™¨è°ƒç”¨
+	void HandleReloadMag();	//æœåŠ¡å™¨å’Œå®¢æˆ·ç«¯è°ƒç”¨
+	//æ›´æ¢å¼¹åŒ£åå­å¼¹çš„å˜åŒ–æ•°é‡
+	int32 AmountToReloadMag();
 
-	//ÉäÏß¼ì²â£¬ÓÃÓÚ¼ì²âÍæ¼Ò×¼ĞÄÎ»ÖÃËù¶ÔÓ¦µÄÊÀ½ç¿Õ¼äÎ»ÖÃºÍ·½Ïò
+	//å°„çº¿æ£€æµ‹ï¼Œç”¨äºæ£€æµ‹ç©å®¶å‡†å¿ƒä½ç½®æ‰€å¯¹åº”çš„ä¸–ç•Œç©ºé—´ä½ç½®å’Œæ–¹å‘
 	void TraceUnderCroshairs(FHitResult& TraceHitResult);
 
-	//ÉèÖÃhudÊ®×Ö×¼Ïß
+	//è®¾ç½®hudåå­—å‡†çº¿
 	void SetHUDCrosshairs(float DeltaTime);
 
 
 private:
-	//Ãé×¼Ê±´¦ÀíÊÓÒ°Ëõ·ÅµÄº¯Êı
+	//ç„å‡†æ—¶å¤„ç†è§†é‡ç¼©æ”¾çš„å‡½æ•°
 	void InterpFOV(float DeltaTime);
 
-	//Æô¶¯×Ô¶¯¿ª»ğ¼ÆÊ±Æ÷
+	//å¯åŠ¨è‡ªåŠ¨å¼€ç«è®¡æ—¶å™¨
 	void StartFireTimer();
-	//×Ô¶¯¿ª»ğ¼ÆÊ±Æ÷»Øµ÷
+	//è‡ªåŠ¨å¼€ç«è®¡æ—¶å™¨å›è°ƒ
 	void FireTimerFinished();
 
-	bool CanFire(); //ÊÇ·ñ¿É¿ª»ğ
+	//æ˜¯å¦å¯å¼€ç«
+	bool CanFire();
 
-	void InitializeCarriedAmmo(); //³õÊ¼»¯µ¯¼Ğ
+	//åˆå§‹åŒ–å¼¹å¤¹
+	void InitializeCarriedAmmo(); 
 
+	//æ›´æ–°å¼¹å¤¹çš„å­å¼¹æ•°é‡
 	void UpdateAmmoValues();
+	//æ›´æ–°éœ°å¼¹æªå¼¹å¤¹çš„å­å¼¹æ•°é‡
+	void UpdateShotgunAmmoValues();
 
 	UFUNCTION()
 		void OnRep_CurWeaponCarriedAmmo();

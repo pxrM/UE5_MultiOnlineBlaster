@@ -17,6 +17,7 @@ ECR_MAX: 表示该枚举类型的最大值。
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/BlasterComponent/CombatComponent.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -213,9 +214,20 @@ void AWeapon::SpeedRound()
 	SetHUDAmmo();
 }
 
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	AmmoNum = FMath::Clamp(AmmoNum - AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
+}
+
 void AWeapon::OnRep_AmmoNum()
 {
 	/*同步给客户端执行*/
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if(IsAmmoFull() && BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombatCmp())
+	{
+		BlasterOwnerCharacter->GetCombatCmp()->AnimJumpToShotgunEnd();
+	}
 	SetHUDAmmo();
 }
 
@@ -230,12 +242,6 @@ void AWeapon::SetHUDAmmo()
 			BlasterOwnerController->SetHUDWeaponAmmo(AmmoNum);
 		}
 	}
-}
-
-void AWeapon::AddAmmo(int32 AmmoToAdd)
-{
-	AmmoNum = FMath::Clamp(AmmoNum - AmmoToAdd, 0, MagCapacity);
-	SetHUDAmmo();
 }
 
 void AWeapon::Fire(const FVector& HitTarget)

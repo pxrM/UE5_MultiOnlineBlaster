@@ -104,7 +104,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		* 因此它通常要求被附加的 Actor 对象不应该拥有物理效果（SimulatePhysics=false）。
 		* 如果被附加的 Actor 对象拥有物理效果，并且此时它在游戏世界中处于运动状态，那么它很有可能会与目标组件产生冲突或者碰撞，
 		* 导致 AttachActor 函数失败或者造成不必要的破坏甚至崩溃。
-		* 
+		*
 		* 这里在服务器上调用EquipWeapon，调用EquippedWeapon->SetWeaponState后会同步给客户端关闭武器的碰撞，但是这里不能保证网络速度，
 		* 所以存在客户端武器的碰撞还没关 HandSocket->AttachActor执行失败，所以要在OnRep_EquippedWeapon函数中再设置一次。
 		*/
@@ -193,7 +193,7 @@ void UCombatComponent::UpdateAmmoValues()
 	int32 ReloadAmount = AmountToReloadMag();
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
-		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount;
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= ReloadAmount; //更新携带武器的弹药量
 		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
 	}
 	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
@@ -201,7 +201,48 @@ void UCombatComponent::UpdateAmmoValues()
 	{
 		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
 	}
-	EquippedWeapon->AddAmmo(-ReloadAmount);
+	EquippedWeapon->AddAmmo(-ReloadAmount); //弹夹添加子弹
+}
+
+void UCombatComponent::UpdateShotgunAmmoValues()
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmoMap[EquippedWeapon->GetWeaponType()] -= 1;
+		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	Controller = Controller == nullptr && Character->Controller ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
+	}
+	EquippedWeapon->AddAmmo(-1);
+	bCanFire = true; //霰弹枪支持添加子弹途中切换到开火
+	if (EquippedWeapon->IsAmmoFull() || CurWeaponCarriedAmmo == 0)
+	{
+		AnimJumpToShotgunEnd();
+	}
+}
+
+void UCombatComponent::AnimJumpToShotgunEnd()
+{
+	//弹夹满了，直接跳转的换单结束动画
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+	if (AnimInstance && Character->GetReloadMontage())
+	{
+		AnimInstance->Montage_JumpToSection(FName("ShotgunEnd"));
+	}
+}
+
+void UCombatComponent::ShotgunShellReload()
+{
+	if (Character == nullptr)return;
+	if (Character->HasAuthority())
+	{
+		UpdateShotgunAmmoValues();
+	}
 }
 
 void UCombatComponent::OnRep_CombatState()
@@ -300,8 +341,17 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	if (EquippedWeapon == nullptr) return;
-	if (Character && CombatState == ECombatState::ECS_Unoccupied)
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	if (CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	{
+		Character->PlayFireMontage(bAiming);
+		EquippedWeapon->Fire(TraceHitTarget);
+		CombatState = ECombatState::ECS_Unoccupied;
+		return;
+	}
+
+	if (CombatState == ECombatState::ECS_Unoccupied)
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
@@ -468,7 +518,15 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 
 bool UCombatComponent::CanFire()
 {
-	return EquippedWeapon && !EquippedWeapon->IsAmmoEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
+	if (EquippedWeapon == nullptr)
+		return false;
+
+	//霰弹枪特殊处理
+	if (!EquippedWeapon->IsAmmoEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading
+		&& EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+		return true;
+
+	return !EquippedWeapon->IsAmmoEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
 void UCombatComponent::OnRep_CurWeaponCarriedAmmo()
@@ -477,6 +535,15 @@ void UCombatComponent::OnRep_CurWeaponCarriedAmmo()
 	if (Controller)
 	{
 		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
+	}
+
+	bool bJumpToShotgunEnd = CombatState == ECombatState::ECS_Reloading &&
+		EquippedWeapon != nullptr &&
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun &&
+		CurWeaponCarriedAmmo == 0;
+	if (bJumpToShotgunEnd)
+	{
+		AnimJumpToShotgunEnd();
 	}
 }
 
