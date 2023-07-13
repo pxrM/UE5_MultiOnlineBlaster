@@ -90,6 +90,12 @@ private:
 		UAnimMontage* ElimMontage;
 
 	/// <summary>
+	/// 投掷手榴弹蒙太奇动画
+	/// </summary>
+	UPROPERTY(EditAnyWhere, Category = CombatMontage)
+		UAnimMontage* ThrowGrenadeMontage;
+
+	/// <summary>
 	/// 相机和角色距离阈值
 	/// </summary>
 	UPROPERTY(EditAnyWhere)
@@ -164,6 +170,7 @@ protected:
 	void FireBtnPressed();
 	void FireBtnReleased();
 	void ReloadMagBtnPressed();
+	void GrenadeBtnPressed();
 
 	void AimOffset(float DeltaTime);
 	void CalculateAO_Pitch();
@@ -209,6 +216,7 @@ public:
 	void PlayReloadMagMontage(); //播放装弹夹动画
 	void PlayHitReactMontage();
 	void PlayElimMontage();
+	void PlayThrowGrenadeMontage(); //投掷手榴弹蒙太奇
 
 	FVector GetHitTarget() const;
 

@@ -98,6 +98,13 @@ void UCombatComponent::OnRep_CombatState()
 	case ECombatState::ECS_Reloading:
 		HandleReloadMag();
 		break;
+	case ECombatState::ECS_ThrowingGrenade:
+		// 不是本地的controller才播放，因为本地的已经播放过了
+		if (Character && !Character->IsLocallyControlled())
+		{
+			Character->PlayThrowGrenadeMontage();
+		}
+		break;
 	}
 }
 
@@ -106,6 +113,7 @@ void UCombatComponent::OnRep_CombatState()
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr)return;
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
 
 	if (EquippedWeapon)
 	{
@@ -264,6 +272,36 @@ void UCombatComponent::FireTimerFinished()
 	{
 		ReloadMag();
 	}
+}
+
+
+
+void UCombatComponent::ThrowGrenade()
+{
+	// 当前机器本地执行逻辑
+	if (Character == nullptr || CombatState != ECombatState::ECS_Unoccupied) return;
+	CombatState = ECombatState::ECS_ThrowingGrenade;
+	Character->PlayThrowGrenadeMontage();
+	// 如果是在客户端就通知服务器
+	if (!Character->HasAuthority())
+	{
+		ServerThrowGrenade();
+	}
+}
+
+void UCombatComponent::ServerThrowGrenade_Implementation()
+{
+	CombatState = ECombatState::ECS_ThrowingGrenade;
+	if (Character)
+	{
+		Character->PlayThrowGrenadeMontage();
+	}
+}
+
+void UCombatComponent::ThrowGrenadeFinished()
+{
+	// 投掷手榴弹结束时在所有机器上调用
+	CombatState = ECombatState::ECS_Unoccupied;
 }
 
 
@@ -451,7 +489,7 @@ int32 UCombatComponent::AmountToReloadMag()
 
 void UCombatComponent::ReloadMag()
 {
-	if (CurWeaponCarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
+	if (CurWeaponCarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		ServerReloadMag();
 	}
