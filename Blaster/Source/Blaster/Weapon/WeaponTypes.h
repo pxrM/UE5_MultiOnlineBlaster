@@ -1,6 +1,13 @@
 ﻿#pragma once
 
+//射线长度
 #define TRACE_LENGTH 8000.f
+//深度值-紫色
+#define CUSTOM_DEPTH_COLOR_PURPLE 250
+//深度值-蓝色
+#define CUSTOM_DEPTH_COLOR_BLUE 251
+//深度值-棕色
+#define CUSTOM_DEPTH_COLOR_TAN 252
 
 /// <summary>
 /// 武器类型

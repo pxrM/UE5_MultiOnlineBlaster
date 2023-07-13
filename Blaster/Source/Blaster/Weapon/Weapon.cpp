@@ -34,7 +34,6 @@ AWeapon::AWeapon()
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	SetRootComponent(WeaponMesh);	//将 WeaponMesh 设置为根组件。这意味着WeaponMesh现在是该物体的主要组件，并且它的位置取决于该物体的位置。
-
 	/*处理武器或物品与玩家之间的交互*/
 	//设置 WeaponMesh 对所有碰撞通道都具有 Block 响应, 会阻止某些物体通过它，以确保武器不会穿过玩家
 	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
@@ -42,6 +41,12 @@ AWeapon::AWeapon()
 	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	//将 WeaponMesh 的碰撞设置为 NoCollision，WeaponMesh 不会与其他任何物体实现碰撞。
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	/*处理武器的深度值	======  蓝图设置会覆盖c++，所以需要检查蓝图设置	*/
+	//置该模型的自定义深度模板值（Custom Depth Stencil Value）
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_COLOR_BLUE);
+	//标记该模型的渲染状态（Render State）为“脏”（Dirty）。这将强制引擎在下一帧重新渲染该模型，以便应用新的自定义深度模板值。
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
 
 	/*AreaSphere 的作用是确定一个区域范围，以便玩家能够从该范围内拾取武器或物品，所以不需要对该游戏对象进行碰撞响应*/
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaSphere"));
@@ -150,6 +155,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		}
+		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		if (HasAuthority()) //是否在服务器
@@ -164,6 +170,10 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		//设置 WeaponMesh 对 Pawn 类型物体的碰撞响应为 Ignore，WeaponMesh 将忽略与 Pawn 相关的任何碰撞，从而使玩家可以通过穿过武器拾取地上的物品
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_COLOR_BLUE);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
 		break;
 	case EWeaponState::EWS_MAX:
 		break;
@@ -189,6 +199,7 @@ void AWeapon::OnRep_WeaponState()
 			WeaponMesh->SetEnableGravity(true);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		}
+		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		WeaponMesh->SetSimulatePhysics(true); //模拟物理效果
@@ -199,6 +210,10 @@ void AWeapon::OnRep_WeaponState()
 		//设置 WeaponMesh 对 Pawn 类型物体的碰撞响应为 Ignore，WeaponMesh 将忽略与 Pawn 相关的任何碰撞，从而使玩家可以通过穿过武器拾取地上的物品
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_COLOR_BLUE);
+		WeaponMesh->MarkRenderStateDirty();
+		EnableCustomDepth(true);
 		break;
 	case EWeaponState::EWS_MAX:
 		break;
@@ -218,6 +233,14 @@ void AWeapon::AddAmmo(int32 AmmoToAdd)
 {
 	AmmoNum = FMath::Clamp(AmmoNum - AmmoToAdd, 0, MagCapacity);
 	SetHUDAmmo();
+}
+
+void AWeapon::EnableCustomDepth(bool bEnable)
+{
+	if (WeaponMesh)
+	{
+		WeaponMesh->SetRenderCustomDepth(bEnable);
+	}
 }
 
 void AWeapon::OnRep_AmmoNum()

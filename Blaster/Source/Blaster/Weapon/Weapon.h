@@ -165,6 +165,7 @@ public:
 	void Dropped(); //掉落
 	void SetHUDAmmo();
 	void AddAmmo(int32 AmmoToAdd);
+	void EnableCustomDepth(bool bEnable); //是否开启RnderCustomDepth，以显示轮廓
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
