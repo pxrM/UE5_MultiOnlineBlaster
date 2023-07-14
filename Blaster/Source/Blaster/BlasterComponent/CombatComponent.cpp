@@ -115,12 +115,49 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (Character == nullptr || WeaponToEquip == nullptr)return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
 
+	DropEquippedWeapon();
+
+	EquippedWeapon = WeaponToEquip;
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+	AttachActorToRightHand(EquippedWeapon);
+
+	EquippedWeapon->SetOwner(Character);
+	EquippedWeapon->SetHUDAmmo();
+	
+	UpdateCarriedAmmo();
+
+	PlayEquipWeaponSound();
+
+	ReloadEmptyWeapon();
+
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		AttachActorToRightHand(EquippedWeapon);
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;	//角色将不再自动面向移动方向
+		Character->bUseControllerRotationYaw = true;  //角色将使用控制器的输入来控制yaw旋转方向，而不是默认的按照移动方向转向
+		PlayEquipWeaponSound();
+	}
+}
+
+void UCombatComponent::DropEquippedWeapon()
+{
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->Dropped(); //如果有武器时需要先丢掉，再装备其它武器
 	}
-	EquippedWeapon = WeaponToEquip;
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+}
+
+void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || ActorToAttach == nullptr) return;
 	//获取名为 RightHand_Socket 的手持骨骼插槽
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName(TEXT("RightHand_Socket")));
 	if (HandSocket)
@@ -134,10 +171,14 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		* 这里在服务器上调用EquipWeapon，调用EquippedWeapon->SetWeaponState后会同步给客户端关闭武器的碰撞，但是这里不能保证网络速度，
 		* 所以存在客户端武器的碰撞还没关 HandSocket->AttachActor执行失败，所以要在OnRep_EquippedWeapon函数中再设置一次。
 		*/
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
 	}
-	EquippedWeapon->SetOwner(Character);
-	EquippedWeapon->SetHUDAmmo();
+}
+
+void UCombatComponent::UpdateCarriedAmmo()
+{
+	if (EquippedWeapon == nullptr) return;
+
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		CurWeaponCarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
@@ -147,38 +188,21 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	{
 		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
 	}
+}
 
-	if (EquippedWeapon->EquipSouund)
+void UCombatComponent::PlayEquipWeaponSound()
+{
+	if (Character && EquippedWeapon && EquippedWeapon->EquipSouund)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSouund, Character->GetActorLocation());
 	}
-
-	if (EquippedWeapon->IsAmmoEmpty())
-	{
-		ReloadMag();
-	}
-
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
 }
 
-void UCombatComponent::OnRep_EquippedWeapon()
+void UCombatComponent::ReloadEmptyWeapon()
 {
-	if (EquippedWeapon && Character)
+	if (EquippedWeapon && EquippedWeapon->IsAmmoEmpty())
 	{
-		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName(TEXT("RightHand_Socket")));
-		if (HandSocket)
-		{
-			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-		}
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;	//角色将不再自动面向移动方向
-		Character->bUseControllerRotationYaw = true;  //角色将使用控制器的输入来控制yaw旋转方向，而不是默认的按照移动方向转向
-
-		if (EquippedWeapon->EquipSouund)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSouund, Character->GetActorLocation());
-		}
+		ReloadMag();
 	}
 }
 
@@ -268,10 +292,7 @@ void UCombatComponent::FireTimerFinished()
 		Fire();
 	}
 
-	if (EquippedWeapon->IsAmmoEmpty())
-	{
-		ReloadMag();
-	}
+	ReloadEmptyWeapon();
 }
 
 

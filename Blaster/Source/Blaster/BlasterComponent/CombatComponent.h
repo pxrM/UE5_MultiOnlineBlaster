@@ -146,6 +146,11 @@ protected:
 
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
+	void DropEquippedWeapon();  //使当前装备的武器掉落
+	void AttachActorToRightHand(AActor* ActorToAttach);	//附加actor到角色的右手
+	void UpdateCarriedAmmo(); //更新武器的携带弹药量
+	void PlayEquipWeaponSound(); //播放装备武器音效
+	void ReloadEmptyWeapon(); //更换武器空弹夹
 
 	void Fire();
 	/*  FVector_NetQuantize 是ue中用于网络传输的结构体，用于压缩和优化 FVector 的数据传输。
