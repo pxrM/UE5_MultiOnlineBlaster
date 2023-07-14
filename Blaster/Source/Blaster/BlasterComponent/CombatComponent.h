@@ -102,6 +102,11 @@ private:
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
 
 
+protected:
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class AProjectile> GrenadeClass; //投掷弹药类-手榴弹
+
+
 public:
 	/// <summary>
 	/// 将武器装备到当前角色身上。只在服务器调用

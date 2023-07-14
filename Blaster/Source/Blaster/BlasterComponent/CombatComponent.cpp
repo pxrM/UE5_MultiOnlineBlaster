@@ -14,6 +14,7 @@
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
+#include "Blaster/Weapon/Projectile.h"
 
 
 // Sets default values for this component's properties
@@ -315,7 +316,7 @@ void UCombatComponent::FireTimerFinished()
 void UCombatComponent::ThrowGrenade()
 {
 	// 当前机器本地执行逻辑
-	if (Character == nullptr || CombatState != ECombatState::ECS_Unoccupied) return;
+	if (Character == nullptr || EquippedWeapon == nullptr || CombatState != ECombatState::ECS_Unoccupied) return;
 	CombatState = ECombatState::ECS_ThrowingGrenade;
 	Character->PlayThrowGrenadeMontage();
 	AttachActorToLeftHand(EquippedWeapon);
@@ -355,8 +356,23 @@ void UCombatComponent::ThrowGrenadeFinished()
 
 void UCombatComponent::LaunchGrenade()
 {
-	//开始扔出手榴弹
+	/*开始扔出手榴弹*/
+	//隐藏手上的手榴弹
 	ShowAttachedGrenade(false);
+	if (GrenadeClass && Character && Character->HasAuthority() && Character->GetAttachedGrenade())
+	{
+		const FVector StartingLocation = Character->GetAttachedGrenade()->GetComponentLocation();
+		FVector ToTarget = HitTarget - StartingLocation;
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = Character;
+		SpawnParams.Instigator = Character;
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			// 生成手榴弹
+			World->SpawnActor<AProjectile>(GrenadeClass, StartingLocation, ToTarget.Rotation(), SpawnParams);
+		}
+	}
 }
 
 
