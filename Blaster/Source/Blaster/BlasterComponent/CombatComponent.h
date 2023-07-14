@@ -137,6 +137,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void ThrowGrenadeFinished();
+	UFUNCTION(BlueprintCallable)
+		void LaunchGrenade();
 
 
 protected:
@@ -179,6 +181,7 @@ protected:
 	void ThrowGrenade();
 	UFUNCTION(Server, Reliable)
 		void ServerThrowGrenade();
+	void ShowAttachedGrenade(bool bShowGrenade);
 
 
 private:

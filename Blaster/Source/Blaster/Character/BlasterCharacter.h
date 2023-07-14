@@ -148,6 +148,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 		UParticleSystemComponent* ElimBotComponent;
 
+	/* 手榴弹 */
+	UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* AttachedGrenade;
+
 	UPROPERTY()
 		class ABlasterPlayerController* BlasterPlayerController;
 	UPROPERTY()
@@ -240,6 +244,7 @@ public:
 	FORCEINLINE void SetDisableGameplay(const bool bDisable) { bDisableGameplay = bDisable; }
 	FORCEINLINE UCombatComponent* GetCombatCmp() const { return CombatCmp; }
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMagMontage; }
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 
 	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
 		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umg

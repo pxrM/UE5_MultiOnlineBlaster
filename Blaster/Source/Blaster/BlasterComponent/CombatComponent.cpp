@@ -104,6 +104,7 @@ void UCombatComponent::OnRep_CombatState()
 		{
 			Character->PlayThrowGrenadeMontage();
 			AttachActorToLeftHand(EquippedWeapon);
+			ShowAttachedGrenade(true);
 		}
 		break;
 	}
@@ -318,6 +319,7 @@ void UCombatComponent::ThrowGrenade()
 	CombatState = ECombatState::ECS_ThrowingGrenade;
 	Character->PlayThrowGrenadeMontage();
 	AttachActorToLeftHand(EquippedWeapon);
+	ShowAttachedGrenade(true);
 	// 如果是在客户端就通知服务器
 	if (!Character->HasAuthority())
 	{
@@ -332,6 +334,15 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	{
 		Character->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
+		ShowAttachedGrenade(true);
+	}
+}
+
+void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
+{
+	if (Character && Character->GetAttachedGrenade())
+	{
+		Character->GetAttachedGrenade()->SetVisibility(bShowGrenade);
 	}
 }
 
@@ -340,6 +351,12 @@ void UCombatComponent::ThrowGrenadeFinished()
 	// 投掷手榴弹结束时在所有机器上调用
 	CombatState = ECombatState::ECS_Unoccupied;
 	AttachActorToRightHand(EquippedWeapon);
+}
+
+void UCombatComponent::LaunchGrenade()
+{
+	//开始扔出手榴弹
+	ShowAttachedGrenade(false);
 }
 
 
@@ -527,7 +544,7 @@ int32 UCombatComponent::AmountToReloadMag()
 
 void UCombatComponent::ReloadMag()
 {
-	if (CurWeaponCarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied)
+	if (CurWeaponCarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsAmmoFull())
 	{
 		ServerReloadMag();
 	}
