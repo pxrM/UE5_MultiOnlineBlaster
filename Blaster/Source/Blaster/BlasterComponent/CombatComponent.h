@@ -101,6 +101,11 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
 
+	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
+		int32 Grenades = 4; //当前拥有的手榴弹数量
+	UPROPERTY(EditAnywhere)
+		int32 MaxGrenades; //最大拥有手榴弹数量
+
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -204,7 +209,7 @@ private:
 	bool CanFire();
 
 	//初始化弹夹
-	void InitializeCarriedAmmo(); 
+	void InitializeCarriedAmmo();
 
 	//更新弹夹的子弹数量
 	void UpdateAmmoValues();
@@ -216,5 +221,13 @@ private:
 
 	UFUNCTION()
 		void OnRep_CombatState();
+
+	UFUNCTION()
+		void OnRep_Grenades();
+	void UpdateHUDGrenades();
+
+
+public:
+	FORCEINLINE int32 GetGrenades() const { return Grenades; }
 
 };

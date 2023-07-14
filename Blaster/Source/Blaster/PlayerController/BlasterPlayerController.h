@@ -29,6 +29,7 @@ public:
 	void SetHUDCarriedAmmo(int32 Ammo);
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
+	void SetHUDGrenades(int32 Grenades);
 	void OnMatchStateSet(FName State);
 
 
@@ -119,6 +120,7 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefaults;
+	int32 HUDGrenades;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
 		FName MatchState; // Æ¥Åä×´Ì¬

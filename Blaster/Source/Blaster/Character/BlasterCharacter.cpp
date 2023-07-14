@@ -626,6 +626,8 @@ void ABlasterCharacter::OnRep_CurHealth()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
+	if (bElimmed) return; //防止重复向淘汰者施加伤害
+
 	CurHealth = FMath::Clamp(CurHealth - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
