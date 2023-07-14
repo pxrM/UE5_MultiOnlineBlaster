@@ -359,10 +359,19 @@ void UCombatComponent::LaunchGrenade()
 	/*开始扔出手榴弹*/
 	//隐藏手上的手榴弹
 	ShowAttachedGrenade(false);
-	if (GrenadeClass && Character && Character->HasAuthority() && Character->GetAttachedGrenade())
+	if (Character->IsLocallyControlled())
+	{
+		// 如果是本地控制器，调用服务器函数并传入当前攻击目标点
+		ServerLaunchGrenade(HitTarget);
+	}
+}
+
+void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuantize& Target)
+{
+	if (GrenadeClass && Character && Character->GetAttachedGrenade())
 	{
 		const FVector StartingLocation = Character->GetAttachedGrenade()->GetComponentLocation();
-		FVector ToTarget = HitTarget - StartingLocation;
+		FVector ToTarget = Target - StartingLocation;
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = Character;
 		SpawnParams.Instigator = Character;

@@ -141,9 +141,11 @@ public:
 	void AnimJumpToShotgunEnd();
 
 	UFUNCTION(BlueprintCallable)
-		void ThrowGrenadeFinished();
+		void ThrowGrenadeFinished(); //投掷手榴弹蒙太奇动画结束
 	UFUNCTION(BlueprintCallable)
-		void LaunchGrenade();
+		void LaunchGrenade(); //投掷手榴弹蒙太奇动画播放至扔出手榴弹时刻
+	UFUNCTION(Server, Reliable)
+		void ServerLaunchGrenade(const FVector_NetQuantize& Target);//生成手榴弹。FVector_NetQuantize提供在网络传输中压缩和序列化三维向量功能，提高网络传输性能。
 
 
 protected:
