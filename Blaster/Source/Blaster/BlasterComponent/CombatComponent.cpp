@@ -103,6 +103,7 @@ void UCombatComponent::OnRep_CombatState()
 		if (Character && !Character->IsLocallyControlled())
 		{
 			Character->PlayThrowGrenadeMontage();
+			AttachActorToLeftHand(EquippedWeapon);
 		}
 		break;
 	}
@@ -112,7 +113,7 @@ void UCombatComponent::OnRep_CombatState()
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (Character == nullptr || WeaponToEquip == nullptr)return;
+	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
 
 	DropEquippedWeapon();
@@ -124,7 +125,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
-	
+
 	UpdateCarriedAmmo();
 
 	PlayEquipWeaponSound();
@@ -171,6 +172,19 @@ void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
 		* 这里在服务器上调用EquipWeapon，调用EquippedWeapon->SetWeaponState后会同步给客户端关闭武器的碰撞，但是这里不能保证网络速度，
 		* 所以存在客户端武器的碰撞还没关 HandSocket->AttachActor执行失败，所以要在OnRep_EquippedWeapon函数中再设置一次。
 		*/
+		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+}
+
+void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || ActorToAttach == nullptr || EquippedWeapon == nullptr) return;
+	bool bUsePistolScoket = EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol ||
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SubmachineGun;
+	FName SocketName = bUsePistolScoket ? FName("PistolSocket") : FName("LeftHand_Socket");
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(SocketName);
+	if (HandSocket)
+	{
 		HandSocket->AttachActor(ActorToAttach, Character->GetMesh());
 	}
 }
@@ -303,6 +317,7 @@ void UCombatComponent::ThrowGrenade()
 	if (Character == nullptr || CombatState != ECombatState::ECS_Unoccupied) return;
 	CombatState = ECombatState::ECS_ThrowingGrenade;
 	Character->PlayThrowGrenadeMontage();
+	AttachActorToLeftHand(EquippedWeapon);
 	// 如果是在客户端就通知服务器
 	if (!Character->HasAuthority())
 	{
@@ -316,6 +331,7 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 	if (Character)
 	{
 		Character->PlayThrowGrenadeMontage();
+		AttachActorToLeftHand(EquippedWeapon);
 	}
 }
 
@@ -323,6 +339,7 @@ void UCombatComponent::ThrowGrenadeFinished()
 {
 	// 投掷手榴弹结束时在所有机器上调用
 	CombatState = ECombatState::ECS_Unoccupied;
+	AttachActorToRightHand(EquippedWeapon);
 }
 
 

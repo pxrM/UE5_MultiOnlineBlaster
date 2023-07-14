@@ -148,6 +148,7 @@ protected:
 		void OnRep_EquippedWeapon();
 	void DropEquippedWeapon();  //使当前装备的武器掉落
 	void AttachActorToRightHand(AActor* ActorToAttach);	//附加actor到角色的右手
+	void AttachActorToLeftHand(AActor* ActorToAttach);	//附加actor到角色的左手
 	void UpdateCarriedAmmo(); //更新武器的携带弹药量
 	void PlayEquipWeaponSound(); //播放装备武器音效
 	void ReloadEmptyWeapon(); //更换武器空弹夹
