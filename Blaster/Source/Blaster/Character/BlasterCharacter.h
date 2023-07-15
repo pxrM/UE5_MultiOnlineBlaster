@@ -21,17 +21,23 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	/// <summary>
+	/// 用于获取需要进行网络同步的属性列表
+	/// </summary>
+	/// <param name="OutLifetimeProps">需要进行网络同步的属性列表</param>
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	// 在 Actor 组件被初始化后，在 C++ 代码中进行额外的初始化操作。该函数在游戏运行时被调用。
+	virtual void PostInitializeComponents() override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override; //会在所有机器上调用
-	//-----------------------------------------------------------------------------------------------------------
+	
 
-private:
+private://-----------------------------------------------------------------------------------------------------------
 	/// <summary>
 	/// 相机弹簧杆
 	/// </summary>
@@ -57,6 +63,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UCombatComponent* CombatCmp;
+	UPROPERTY(VisibleAnywhere)
+		class UBuffComponent* BuffCmp;
 
 	float AO_Yaw;
 	float InterpAO_Yaw;
@@ -102,12 +110,12 @@ private:
 		float CameraThreshold = 200.f;
 
 	/*  代理角色使用  */
-	bool bRotateRootBone; //是否旋转根骨骼
+	bool bRotateRootBone = false; //是否旋转根骨骼
 	float TurnThreshold = 0.5f; //原地转向的阈值
 	FRotator ProxyRotationLastFrame;  //代理上一次的旋转值
 	FRotator ProxyRotationCur;
-	float ProxyYawOffset;
-	float TimeSinceLastMovementReplication; //上一次代理角色移动组件的网络同步时间
+	float ProxyYawOffset = 0.f;
+	float TimeSinceLastMovementReplication = 0.f; //上一次代理角色移动组件的网络同步时间
 
 	/*  player health  */
 	bool bElimmed = false;  //是否淘汰
@@ -193,13 +201,6 @@ protected:
 
 
 public:
-	/// <summary>
-	/// 用于获取需要进行网络同步的属性列表
-	/// </summary>
-	/// <param name="OutLifetimeProps">需要进行网络同步的属性列表</param>
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	// 在 Actor 组件被初始化后，在 C++ 代码中进行额外的初始化操作。该函数在游戏运行时被调用。
-	virtual void PostInitializeComponents() override;
 	//设置武器，内联函数
 	//FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon) { OverlappingWeapon = Weapon; }
 	void SetOverlappingWeapon(AWeapon* Weapon);

@@ -18,7 +18,7 @@ class BLASTER_API UCombatComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	friend class ABlasterCharacter;	//是角色类可以访问武器类
+	friend class ABlasterCharacter;	//角色类可以访问武器组件类
 
 public:
 	// Sets default values for this component's properties

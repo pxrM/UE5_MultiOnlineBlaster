@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
+#include "Blaster/BlasterComponent/BuffComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Blaster/Character/BlasterAnimInstance.h"
@@ -55,6 +56,9 @@ ABlasterCharacter::ABlasterCharacter()
 
 	CombatCmp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatCmp->SetIsReplicated(true);
+
+	BuffCmp = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
+	BuffCmp->SetIsReplicated(true);
 
 	DissolveTimelineCmp = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 
@@ -116,29 +120,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	PollInit(); //初始几帧的时候玩家数据可能还没初始化，所以放到tick里
 }
 
-void ABlasterCharacter::RotateInPlace(float DeltaTime)
-{
-	if (bDisableGameplay)
-	{
-		bUseControllerRotationYaw = false;
-		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-		return;
-	}
-	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
-	{
-		AimOffset(DeltaTime);
-	}
-	else
-	{
-		TimeSinceLastMovementReplication += DeltaTime;
-		if (TimeSinceLastMovementReplication > 0.25f)
-		{
-			OnRep_ReplicatedMovement();
-		}
-		CalculateAO_Pitch();
-	}
-}
-
 // Called to bind functionality to input
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -161,8 +142,41 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::LookUp);
 }
 
-/*--------------------------------------input--------------------------------------------*/
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 
+	if (CombatCmp)
+	{
+		CombatCmp->Character = this;
+	}
+	if (BuffCmp)
+	{
+		BuffCmp->Character = this;
+	}
+}
+
+void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//使用 DOREPLIFETIME 宏将 OverlappingWeapon 变量添加到需要进行网络同步的属性列表中。
+	//DOREPLIFETIME 宏的第一个参数是要同步的变量名，第二个参数是要添加到的 OutLifetimeProps 数组。
+	//在多人游戏中，每当 OverlappingWeapon 的值发生变化时，它将自动由引擎ds服务器同步到其他客户端。在其他客户端上，该值将自动更新以匹配服务器上的值。
+	//需要注意的是，除了在 GetLifetimeReplicatedProps 函数中添加属性外，
+	//还需要确保所有需要同步的属性都使用了 UPROPERTY(Replicated) 标识符进行了标记。否则，这些属性可能无法被正确同步。
+	//DOREPLIFETIME(ABlasterCharacter, OverlappingWeapon);
+	// 
+	//DOREPLIFETIME_CONDITION 是 Unreal Engine 中用于网络同步的宏之一，用于标记需要进行网络同步的属性，并指定同步的条件。
+	//第三个参数是同步的条件，即 COND_OwnerOnly,表示仅在具有所有权的客户端和服务器之间同步变量。
+	//表示只有具有所有权的客户端和服务器之间会同步变量。这会降低网络流量，并维护数据一致性，因为通常情况下只有具有所有权的客户端可以更改某个对象的属性。
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+
+	DOREPLIFETIME(ABlasterCharacter, CurHealth);
+	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
+}
+
+/*--------------------------------------input start--------------------------------------------*/
 
 void ABlasterCharacter::MoveForward(float Value)
 {
@@ -213,6 +227,15 @@ void ABlasterCharacter::EquipBtnPressed()
 	}
 }
 
+//只在服务端被调用以响应 RPC 请求
+void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
+{
+	if (CombatCmp)
+	{
+		CombatCmp->EquipWeapon(OverlappingWeapon);
+	}
+}
+
 void ABlasterCharacter::CrouchBtnPressed()
 {
 	if (bDisableGameplay) return;
@@ -253,6 +276,29 @@ float ABlasterCharacter::CalculateSpeed()
 	return Velocity.Size();
 }
 
+void ABlasterCharacter::RotateInPlace(float DeltaTime)
+{
+	if (bDisableGameplay)
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return;
+	}
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
+	{
+		AimOffset(DeltaTime);
+	}
+	else
+	{
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f)
+		{
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
+}
+
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
 	if (CombatCmp && CombatCmp->EquippedWeapon == nullptr)return;
@@ -287,6 +333,33 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 
 	CalculateAO_Pitch();
 }
+
+void ABlasterCharacter::TurnInPlace(float DeltaTime)
+{
+	if (AO_Yaw > 90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+	}
+	else if (AO_Yaw < -90.f)
+	{
+		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
+
+	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
+	{
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f); //使用 FInterpTo 函数实现平滑的偏移量插值
+		AO_Yaw = InterpAO_Yaw; //将 InterpAO_Yaw 赋值给 AO_Yaw，使得角色的 AIM Offset 偏移量随着插值而发生平滑的变化
+		//在 AO_Yaw 偏移量小于一定阈值（15 度）时，表示原地转向完成，将 TurningInPlace 设置为 ETIP_NotTurning，
+		//并重新将 StartingAimRotation 设为当前角色的基础瞄准旋转，以便下一次原地转向时的参考。
+		if (FMath::Abs(AO_Yaw) < 15.f)
+		{
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("AO_Yaw: %i   %i"), AO_Yaw, TurningInPlace);
+}
+
 
 void ABlasterCharacter::CalculateAO_Pitch()
 {
@@ -384,32 +457,6 @@ void ABlasterCharacter::GrenadeBtnPressed()
 	}
 }
 
-void ABlasterCharacter::TurnInPlace(float DeltaTime)
-{
-	if (AO_Yaw > 90.f)
-	{
-		TurningInPlace = ETurningInPlace::ETIP_Right;
-	}
-	else if (AO_Yaw < -90.f)
-	{
-		TurningInPlace = ETurningInPlace::ETIP_Left;
-	}
-
-	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
-	{
-		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f); //使用 FInterpTo 函数实现平滑的偏移量插值
-		AO_Yaw = InterpAO_Yaw; //将 InterpAO_Yaw 赋值给 AO_Yaw，使得角色的 AIM Offset 偏移量随着插值而发生平滑的变化
-		//在 AO_Yaw 偏移量小于一定阈值（15 度）时，表示原地转向完成，将 TurningInPlace 设置为 ETIP_NotTurning，
-		//并重新将 StartingAimRotation 设为当前角色的基础瞄准旋转，以便下一次原地转向时的参考。
-		if (FMath::Abs(AO_Yaw) < 15.f)
-		{
-			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
-			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
-		}
-	}
-	UE_LOG(LogTemp, Log, TEXT("AO_Yaw: %i   %i"), AO_Yaw, TurningInPlace);
-}
-
 void ABlasterCharacter::HideCameraIfCharacterClose()
 {
 	if (!IsLocallyControlled())return;
@@ -437,36 +484,7 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 //	PlayHitReactMontage();
 //}
 
-//只在服务端被调用以响应 RPC 请求
-void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
-{
-	if (CombatCmp)
-	{
-		CombatCmp->EquipWeapon(OverlappingWeapon);
-	}
-}
-
-/*--------------------------------------input--------------------------------------------*/
-
-void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	//使用 DOREPLIFETIME 宏将 OverlappingWeapon 变量添加到需要进行网络同步的属性列表中。
-	//DOREPLIFETIME 宏的第一个参数是要同步的变量名，第二个参数是要添加到的 OutLifetimeProps 数组。
-	//在多人游戏中，每当 OverlappingWeapon 的值发生变化时，它将自动由引擎ds服务器同步到其他客户端。在其他客户端上，该值将自动更新以匹配服务器上的值。
-	//需要注意的是，除了在 GetLifetimeReplicatedProps 函数中添加属性外，
-	//还需要确保所有需要同步的属性都使用了 UPROPERTY(Replicated) 标识符进行了标记。否则，这些属性可能无法被正确同步。
-	//DOREPLIFETIME(ABlasterCharacter, OverlappingWeapon);
-	// 
-	//DOREPLIFETIME_CONDITION 是 Unreal Engine 中用于网络同步的宏之一，用于标记需要进行网络同步的属性，并指定同步的条件。
-	//第三个参数是同步的条件，即 COND_OwnerOnly,表示仅在具有所有权的客户端和服务器之间同步变量。
-	//表示只有具有所有权的客户端和服务器之间会同步变量。这会降低网络流量，并维护数据一致性，因为通常情况下只有具有所有权的客户端可以更改某个对象的属性。
-	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
-
-	DOREPLIFETIME(ABlasterCharacter, CurHealth);
-	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
-}
+/*--------------------------------------input end--------------------------------------------*/
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
@@ -586,15 +604,6 @@ FVector ABlasterCharacter::GetHitTarget() const
 {
 	if (CombatCmp == nullptr)return FVector();
 	return CombatCmp->HitTarget;
-}
-
-void ABlasterCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	if (CombatCmp)
-	{
-		CombatCmp->Character = this;
-	}
 }
 
 void ABlasterCharacter::OnRep_ReplicatedMovement()
