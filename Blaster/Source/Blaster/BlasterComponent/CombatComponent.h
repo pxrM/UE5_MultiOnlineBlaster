@@ -80,7 +80,7 @@ private:
 	FTimerHandle FireTimer;	//开火计时器
 	bool bCanFire = true; //是否可以开火
 
-	TMap<EWeaponType, int32> CarriedAmmoMap;	//不同武器类型的携带弹药量
+	TMap<EWeaponType, int32> CarriedAmmoMap; //不同武器类型的携带弹药量
 	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
 		int32 CurWeaponCarriedAmmo;  //携带弹药量（角色当前武器类型的弹药数量）
 	UPROPERTY(EditAnywhere, Category = Combat)
@@ -97,14 +97,15 @@ private:
 		int32 StartingSniperAmmo = 0;	//用来初始化狙击步枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
 		int32 StartingGrenadeAmmo = 0;	//用来初始化榴弹武器的携带弹药量
-
-	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
-		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
-
+	UPROPERTY(EditAnywhere, Category = Combat)
+		int32 MaxCarriedAmmo = 500; //最大武器弹药携带量，这里适用于每种武器
 	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
 		int32 Grenades = 4; //当前拥有的手榴弹数量
 	UPROPERTY(EditAnywhere)
 		int32 MaxGrenades; //最大拥有手榴弹数量
+
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
 
 
 protected:
@@ -145,12 +146,29 @@ public:
 		void ShotgunShellReload();
 	void AnimJumpToShotgunEnd();
 
+	/// <summary>
+	/// 投掷手榴弹蒙太奇动画结束
+	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void ThrowGrenadeFinished(); //投掷手榴弹蒙太奇动画结束
+		void ThrowGrenadeFinished();
+	/// <summary>
+	/// 投掷手榴弹蒙太奇动画播放至扔出手榴弹时刻
+	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void LaunchGrenade(); //投掷手榴弹蒙太奇动画播放至扔出手榴弹时刻
+		void LaunchGrenade();
+	/// <summary>
+	/// 生成手榴弹
+	/// </summary>
+	/// <param name="Target">FVector_NetQuantize提供在网络传输中压缩和序列化三维向量功能，提高网络传输性能。</param>
 	UFUNCTION(Server, Reliable)
-		void ServerLaunchGrenade(const FVector_NetQuantize& Target);//生成手榴弹。FVector_NetQuantize提供在网络传输中压缩和序列化三维向量功能，提高网络传输性能。
+		void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+
+	/// <summary>
+	/// 拾取子弹
+	/// </summary>
+	/// <param name="WeaponType">子弹的武器类型</param>
+	/// <param name="AmmoAmount">子弹数量</param>
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 
 protected:
@@ -163,7 +181,7 @@ protected:
 	void DropEquippedWeapon();  //使当前装备的武器掉落
 	void AttachActorToRightHand(AActor* ActorToAttach);	//附加actor到角色的右手
 	void AttachActorToLeftHand(AActor* ActorToAttach);	//附加actor到角色的左手
-	void UpdateCarriedAmmo(); //更新武器的携带弹药量
+	void UpdateCarriedAmmo(); //更新当前装备武器的携带弹药量及hud
 	void PlayEquipWeaponSound(); //播放装备武器音效
 	void ReloadEmptyWeapon(); //更换武器空弹夹
 

@@ -46,6 +46,11 @@ protected:
 		);
 
 
+protected:
+	UPROPERTY(EditAnywhere)
+		float BaseTurnRate = 45.f;
+
+
 public:	
 	UPROPERTY(EditAnywhere)
 		class USphereComponent* OverlapSphere;
