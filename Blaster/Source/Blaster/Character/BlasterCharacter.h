@@ -193,7 +193,6 @@ protected:
 	//被攻击的角色DamagedActor、造成的伤害Damage、伤害类型DamageType、造成伤害的控制器InstigatorController和造成伤害的对象DamageCauser。
 	UFUNCTION()
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
-	void UpdateHUDHealth();
 
 	void PollInit(); // 轮询检查玩家数据有效时 初始化hud等工作
 
@@ -238,6 +237,7 @@ public:
 		void MulticastElim(); //淘汰
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetCurHealth() const { return CurHealth; }
+	FORCEINLINE void SetCurHealth(const float Amount) { CurHealth = Amount; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	ECombatState GetCombatState() const;
 
@@ -246,9 +246,12 @@ public:
 	FORCEINLINE UCombatComponent* GetCombatCmp() const { return CombatCmp; }
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMagMontage; }
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
+	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
 
 	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
 		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umg
+
+	void UpdateHUDHealth();
 
 
 private:
@@ -260,8 +263,9 @@ private:
 	/// <summary>
 	/// 同步CurHealth
 	/// </summary>
+	/// <param name="LastHealth">上一次的血量</param>
 	UFUNCTION()
-		void OnRep_CurHealth();
+		void OnRep_CurHealth(float LastHealth);
 
 	/// <summary>
 	/// 在客户端调用该函数时实际上会发送一个 RPC 请求到服务器，请求服务器执行其实现版本=ServerEquipBtnPressed_Implementation。

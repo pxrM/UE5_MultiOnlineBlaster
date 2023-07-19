@@ -2,6 +2,7 @@
 
 
 #include "BuffComponent.h"
+#include "Blaster/Character/BlasterCharacter.h"
 
 // Sets default values for this component's properties
 UBuffComponent::UBuffComponent()
@@ -13,7 +14,6 @@ UBuffComponent::UBuffComponent()
 	// ...
 }
 
-
 // Called when the game starts
 void UBuffComponent::BeginPlay()
 {
@@ -23,12 +23,34 @@ void UBuffComponent::BeginPlay()
 	
 }
 
-
 // Called every frame
 void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+	HealRampUp(DeltaTime);
 }
 
+void UBuffComponent::HealRampUp(float DeltaTime)
+{
+	if (!bHealing || Character == nullptr || Character->IsElimmed()) return;
+
+	const float HealThisFrame = HealingRate * DeltaTime; //每一帧治疗的数量
+	Character->SetCurHealth(FMath::Clamp(Character->GetCurHealth() + HealThisFrame, 0, Character->GetMaxHealth()));
+	Character->UpdateHUDHealth();
+	AmountToHeal -= HealThisFrame; //总治疗量减去已经治疗的
+
+	if (AmountToHeal <= 0.f || Character->GetCurHealth() >= Character->GetMaxHealth())
+	{
+		bHealing = false;
+		AmountToHeal = 0.f;
+	}
+}
+
+void UBuffComponent::Heal(float HealAmmo, float HealingTime)
+{
+	bHealing = true;
+	HealingRate = HealAmmo / HealingTime;
+	AmountToHeal += HealAmmo;
+}

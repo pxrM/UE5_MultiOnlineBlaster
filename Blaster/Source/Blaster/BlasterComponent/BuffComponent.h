@@ -27,11 +27,24 @@ protected:
 
 
 public:	
+	/// <summary>
+	/// 治疗
+	/// </summary>
+	/// <param name="HealAmmp">治疗量</param>
+	/// <param name="HealingTime">治疗所需时间2</param>
+	void Heal(float HealAmmo, float HealingTime);
 
+
+protected:
+	void HealRampUp(float DeltaTime); //每一帧的血量修复程度
 
 		
 private:
 	UPROPERTY()
 		class ABlasterCharacter* Character;
+
+	bool bHealing = false; //是否正在治疗
+	float HealingRate = 0.f; //治愈率，每秒治疗多少
+	float AmountToHeal = 0.f; //治疗buff总数量
 
 };
