@@ -16,7 +16,6 @@ class BLASTER_API AHealthPickup : public APickup
 
 public:
 	AHealthPickup();
-	virtual void Destroyed() override;
 
 protected:
 	virtual void OnSphereOverlap(
@@ -34,10 +33,5 @@ public:
 		float HealAmount = 100.f; //治疗量
 	UPROPERTY(EditAnywhere)
 		float HealingTime = 5.f; //治疗所需时间
-
-	UPROPERTY(VisibleAnywhere)
-		class UNiagaraComponent* PickupEffectComponent; //场景展示特效
-	UPROPERTY(EditAnywhere)
-		class UNiagaraSystem* PickupDesEffect; //销毁时产生的特效
 	
 };

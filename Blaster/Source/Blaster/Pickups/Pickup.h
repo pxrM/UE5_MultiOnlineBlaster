@@ -48,7 +48,11 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere)
-		float BaseTurnRate = 45.f;
+		float BaseTurnRate = 45.f; //旋转速度
+	UPROPERTY(VisibleAnywhere)
+		class UNiagaraComponent* PickupEffectComponent; //场景展示特效
+	UPROPERTY(EditAnywhere)
+		class UNiagaraSystem* PickupDesEffect; //销毁时产生的特效
 
 
 public:	
