@@ -33,6 +33,19 @@ public:
 	/// <param name="HealAmmp">治疗量</param>
 	/// <param name="HealingTime">治疗所需时间2</param>
 	void Heal(float HealAmmo, float HealingTime);
+	/// <summary>
+	/// 速度buff
+	/// </summary>
+	/// <param name="BuffBaseSpeed">基本移动速度</param>
+	/// <param name="BuffCrouchSpeed">蹲伏移动速度</param>
+	/// <param name="BuffTime">增益时间</param>
+	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
+	/// <summary>
+	/// 记录角色的初始速度
+	/// </summary>
+	/// <param name="BaseSpeed">正常移动速度</param>
+	/// <param name="CrouchSpeed">蹲伏移动速度</param>
+	void SetInitialSpeeds(const float BaseSpeed, const float CrouchSpeed);
 
 
 protected:
@@ -43,8 +56,15 @@ private:
 	UPROPERTY()
 		class ABlasterCharacter* Character;
 
+	/* health buff */
 	bool bHealing = false; //是否正在治疗
 	float HealingRate = 0.f; //治愈率，每秒治疗多少
 	float AmountToHeal = 0.f; //治疗buff总数量
+
+	/* speed buff */
+	FTimerHandle SpeedBuffTimer;
+	void ResetSpeeds();
+	float InitialBaseSpeed;
+	float InitialCrouchSpeed;
 
 };
