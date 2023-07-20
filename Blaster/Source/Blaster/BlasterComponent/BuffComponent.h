@@ -49,7 +49,25 @@ public:
 
 
 protected:
-	void HealRampUp(float DeltaTime); //每一帧的血量修复程度
+	/// <summary>
+	/// 每一帧的血量修复程度
+	/// </summary>
+	/// <param name="DeltaTime"></param>
+	void HealRampUp(float DeltaTime);
+
+
+private:
+	/// <summary>
+	/// 速度buff时效结束恢复之前的速度
+	/// </summary>
+	void ResetSpeeds();
+	/// <summary>
+	/// 网络广播同步速度
+	/// </summary>
+	/// <param name="BaseSpeed"></param>
+	/// <param name="CrouchSpeed"></param>
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
 
 		
 private:
@@ -63,7 +81,6 @@ private:
 
 	/* speed buff */
 	FTimerHandle SpeedBuffTimer;
-	void ResetSpeeds();
 	float InitialBaseSpeed;
 	float InitialCrouchSpeed;
 
