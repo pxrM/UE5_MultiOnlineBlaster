@@ -33,6 +33,7 @@ public:
 	/// <param name="HealAmmp">治疗量</param>
 	/// <param name="HealingTime">治疗所需时间2</param>
 	void Heal(float HealAmmo, float HealingTime);
+
 	/// <summary>
 	/// 速度buff
 	/// </summary>
@@ -47,16 +48,26 @@ public:
 	/// <param name="CrouchSpeed">蹲伏移动速度</param>
 	void SetInitialSpeeds(const float BaseSpeed, const float CrouchSpeed);
 
+	/// <summary>
+	/// 记录角色的初始跳跃高度
+	/// </summary>
+	/// <param name="JumpVelocity"></param>
+	void SetInitialJumpVelocity(const float JumpVelocity);
+	/// <summary>
+	/// 跳跃buff
+	/// </summary>
+	/// <param name="BuffJumpVelocity"></param>
+	/// <param name="BuffTime"></param>
+	void BuffJump(float BuffJumpVelocity, float BuffTime);
 
-protected:
+
+private:
 	/// <summary>
 	/// 每一帧的血量修复程度
 	/// </summary>
 	/// <param name="DeltaTime"></param>
 	void HealRampUp(float DeltaTime);
 
-
-private:
 	/// <summary>
 	/// 速度buff时效结束恢复之前的速度
 	/// </summary>
@@ -75,6 +86,22 @@ private:
 	/// <param name="CrouchSpeed"></param>
 	void HandleChangeSpeed(float BaseSpeed, float CrouchSpeed);
 
+	/// <summary>
+	/// 跳跃buff时效结束恢复之前的跳跃高度
+	/// </summary>
+	void ResetJumpVelocity();
+	/// <summary>
+	/// 网络广播跳跃速度
+	/// </summary>
+	/// <param name="JumpVelocity"></param>
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastJumpBuff(float JumpVelocity);
+	/// <summary>
+	/// 处理跳跃速度修改
+	/// </summary>
+	/// <param name="JumpVelocity"></param>
+	void HandleChangeJumpVelocity(float JumpVelocity);
+
 		
 private:
 	UPROPERTY()
@@ -89,5 +116,9 @@ private:
 	FTimerHandle SpeedBuffTimer;
 	float InitialBaseSpeed;
 	float InitialCrouchSpeed;
+
+	/* jump buff */
+	FTimerHandle JumpBuffTimer;
+	float InitialJumpVelocity;
 
 };

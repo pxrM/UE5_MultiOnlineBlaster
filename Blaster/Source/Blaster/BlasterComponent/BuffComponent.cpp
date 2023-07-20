@@ -92,3 +92,38 @@ void UBuffComponent::HandleChangeSpeed(float BaseSpeed, float CrouchSpeed)
 		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
 	}
 }
+
+
+void UBuffComponent::SetInitialJumpVelocity(const float JumpVelocity)
+{
+	InitialJumpVelocity = JumpVelocity;
+}
+
+void UBuffComponent::BuffJump(float BuffJumpVelocity, float BuffTime)
+{
+	if (Character == nullptr) return;
+
+	Character->GetWorldTimerManager().SetTimer(JumpBuffTimer, this, &UBuffComponent::ResetJumpVelocity, BuffTime);
+
+	HandleChangeJumpVelocity(BuffJumpVelocity);
+	MulticastJumpBuff(BuffJumpVelocity);
+}
+
+void UBuffComponent::ResetJumpVelocity()
+{
+	HandleChangeJumpVelocity(InitialJumpVelocity);
+	MulticastJumpBuff(InitialJumpVelocity);
+}
+
+void UBuffComponent::MulticastJumpBuff_Implementation(float JumpVelocity)
+{
+	HandleChangeJumpVelocity(JumpVelocity);
+}
+
+void UBuffComponent::HandleChangeJumpVelocity(float JumpVelocity)
+{
+	if (Character && Character->GetCharacterMovement())
+	{
+		Character->GetCharacterMovement()->JumpZVelocity = JumpVelocity;
+	}
+}
