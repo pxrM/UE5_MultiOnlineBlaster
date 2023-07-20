@@ -68,6 +68,12 @@ private:
 	/// <param name="CrouchSpeed"></param>
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+	/// <summary>
+	/// 处理速度修改
+	/// </summary>
+	/// <param name="BaseSpeed"></param>
+	/// <param name="CrouchSpeed"></param>
+	void HandleChangeSpeed(float BaseSpeed, float CrouchSpeed);
 
 		
 private:

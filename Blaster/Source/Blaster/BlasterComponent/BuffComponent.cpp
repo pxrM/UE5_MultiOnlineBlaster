@@ -57,37 +57,34 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 }
 
 
-void UBuffComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime)
-{
-	if (Character == nullptr) return;
-
-	Character->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UBuffComponent::ResetSpeeds, BuffTime);
-
-	if (Character->GetCharacterMovement())
-	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = BuffBaseSpeed;
-		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = BuffCrouchSpeed;
-	}
-	MulticastSpeedBuff(BuffBaseSpeed, BuffCrouchSpeed);
-}
-
 void UBuffComponent::SetInitialSpeeds(const float BaseSpeed, const float CrouchSpeed)
 {
 	InitialBaseSpeed = BaseSpeed;
 	InitialCrouchSpeed = CrouchSpeed;
 }
 
+void UBuffComponent::BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime)
+{
+	if (Character == nullptr) return;
+
+	Character->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UBuffComponent::ResetSpeeds, BuffTime);
+
+	HandleChangeSpeed(BuffBaseSpeed, BuffCrouchSpeed);
+	MulticastSpeedBuff(BuffBaseSpeed, BuffCrouchSpeed);
+}
+
 void UBuffComponent::ResetSpeeds()
 {
-	if (Character && Character->GetCharacterMovement())
-	{
-		Character->GetCharacterMovement()->MaxWalkSpeed = InitialBaseSpeed;
-		Character->GetCharacterMovement()->MaxWalkSpeedCrouched = InitialCrouchSpeed;
-	}
+	HandleChangeSpeed(InitialBaseSpeed, InitialCrouchSpeed);
 	MulticastSpeedBuff(InitialBaseSpeed, InitialCrouchSpeed);
 }
 
 void UBuffComponent::MulticastSpeedBuff_Implementation (float BaseSpeed, float CrouchSpeed)
+{
+	HandleChangeSpeed(BaseSpeed, CrouchSpeed);
+}
+
+void UBuffComponent::HandleChangeSpeed(float BaseSpeed, float CrouchSpeed)
 {
 	if (Character && Character->GetCharacterMovement())
 	{
