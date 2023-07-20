@@ -116,13 +116,18 @@ private:
 
 	UPROPERTY()
 		class UCharacterOverlayWidget* CharacterOverlayWidget;
-	bool bInitializeCharacterOverlay = false;
+
+	bool bInitializeHealth = false;
 	float HUDHealth;
 	float HUDMaxHealth;
+	bool bInitializeShield = false;
 	float HUDShield;
 	float HUDMaxShield;
+	bool bInitializeScore = false;
 	float HUDScore;
+	bool bInitializeDefaults = false;
 	int32 HUDDefaults;
+	bool bInitializeGrenades = false;
 	int32 HUDGrenades;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)

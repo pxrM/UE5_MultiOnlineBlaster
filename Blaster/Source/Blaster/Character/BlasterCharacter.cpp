@@ -93,6 +93,7 @@ void ABlasterCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	UpdateHUDHealth();
+	UpdateHUDShield();
 
 	// 这段代码是在服务端（即拥有所有权的机器或主机）中调用的，用于注册处理角色收到任何伤害事件的函数。
 	// 首先，HasAuthority()函数判断当前执行的代码是否在服务端中。
@@ -653,8 +654,24 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 {
 	if (bElimmed) return; //防止重复向淘汰者施加伤害
 
-	CurHealth = FMath::Clamp(CurHealth - Damage, 0.f, MaxHealth);
+	float DamageToHealth = Damage;
+	if (CurHealth > 0.f)
+	{
+		if (CurShield >= Damage)
+		{
+			CurShield = FMath::Clamp(CurShield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(DamageToHealth - CurShield, 0.f, Damage);
+			CurHealth = 0.f;
+		}
+	}
+	CurHealth = FMath::Clamp(CurHealth - DamageToHealth, 0.f, MaxHealth);
+
 	UpdateHUDHealth();
+	UpdateHUDShield();
 	PlayHitReactMontage();
 
 	if (CurHealth == 0.f)
@@ -684,7 +701,7 @@ void ABlasterCharacter::UpdateHUDShield()
 	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if (BlasterPlayerController)
 	{
-		BlasterPlayerController->SetHUDHealth(CurShield, MaxShield);
+		BlasterPlayerController->SetHUDShield(CurShield, MaxShield);
 	}
 }
 
