@@ -76,6 +76,12 @@ private:
 	void HealRampUp(float DeltaTime);
 
 	/// <summary>
+	/// 每一帧的护盾补充程度
+	/// </summary>
+	/// <param name="DeltaTime"></param>
+	void ShieldRampUp(float DeltaTime);
+
+	/// <summary>
 	/// 速度buff时效结束恢复之前的速度
 	/// </summary>
 	void ResetSpeeds();
@@ -127,5 +133,10 @@ private:
 	/* jump buff */
 	FTimerHandle JumpBuffTimer;
 	float InitialJumpVelocity;
+
+	/* shield buff */
+	bool bReplenishingShield = false;
+	float ShieldReplenishRate = 0.f;
+	float ShieldReplenishAmount = 0.f;
 
 };
