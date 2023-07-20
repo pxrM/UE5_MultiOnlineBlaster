@@ -60,6 +60,26 @@ void ABlasterPlayerController::ReceivedPlayer()
 	}
 }
 
+void ABlasterPlayerController::PollInit()
+{
+	if (CharacterOverlayWidget == nullptr && BlasterHUD && BlasterHUD->CharacterOverlayWidget)
+	{
+		CharacterOverlayWidget = BlasterHUD->CharacterOverlayWidget;
+		if (CharacterOverlayWidget)
+		{
+			SetHUDHealth(HUDHealth, HUDMaxHealth);
+			SetHUDShield(HUDShield, HUDMaxShield);
+			SetHUDScore(HUDScore);
+			SetHUDDefeats(HUDDefaults);
+			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+			if (BlasterCharacter && BlasterCharacter->GetCombatCmp())
+			{
+				SetHUDGrenades(BlasterCharacter->GetCombatCmp()->GetGrenades());
+			}
+		}
+	}
+}
+
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
@@ -81,6 +101,30 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		bInitializeCharacterOverlay = true;
 		HUDHealth = Health;
 		HUDMaxHealth = MaxHealth;
+	}
+}
+
+void ABlasterPlayerController::SetHUDShield(float Shield, float MaxShield)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlayWidget &&
+		BlasterHUD->CharacterOverlayWidget->ShieldBar &&
+		BlasterHUD->CharacterOverlayWidget->ShieldText;
+	if (bHUDValid)
+	{
+		const float ShieldPercent = Shield / MaxShield;
+		BlasterHUD->CharacterOverlayWidget->ShieldBar->SetPercent(ShieldPercent);
+
+		FString ShieldText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Shield), FMath::CeilToInt(MaxShield));
+		BlasterHUD->CharacterOverlayWidget->ShieldText->SetText(FText::FromString(ShieldText));
+	}
+	else
+	{
+		bInitializeCharacterOverlay = true;
+		HUDShield = Shield;
+		HUDMaxShield = MaxShield;
 	}
 }
 
@@ -306,24 +350,6 @@ void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMat
 	}
 }
 
-void ABlasterPlayerController::PollInit()
-{
-	if (CharacterOverlayWidget == nullptr && BlasterHUD && BlasterHUD->CharacterOverlayWidget)
-	{
-		CharacterOverlayWidget = BlasterHUD->CharacterOverlayWidget;
-		if (CharacterOverlayWidget)
-		{
-			SetHUDHealth(HUDHealth, HUDMaxHealth);
-			SetHUDScore(HUDScore);
-			SetHUDDefeats(HUDDefaults);
-			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
-			if (BlasterCharacter && BlasterCharacter->GetCombatCmp())
-			{
-				SetHUDGrenades(BlasterCharacter->GetCombatCmp()->GetGrenades());
-			}
-		}
-	}
-}
 
 void ABlasterPlayerController::OnMatchStateSet(FName State)
 {

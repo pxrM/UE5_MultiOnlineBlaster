@@ -175,6 +175,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 
 	DOREPLIFETIME(ABlasterCharacter, CurHealth);
+	DOREPLIFETIME(ABlasterCharacter, CurShield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 }
 
@@ -639,6 +640,15 @@ void ABlasterCharacter::OnRep_CurHealth(float LastHealth)
 	}
 }
 
+void ABlasterCharacter::OnRep_CurShield(float LastShield)
+{
+	UpdateHUDShield();
+	if (CurShield < LastShield)
+	{
+		PlayHitReactMontage();
+	}
+}
+
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	if (bElimmed) return; //防止重复向淘汰者施加伤害
@@ -666,6 +676,15 @@ void ABlasterCharacter::UpdateHUDHealth()
 	if (BlasterPlayerController)
 	{
 		BlasterPlayerController->SetHUDHealth(CurHealth, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::UpdateHUDShield()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDHealth(CurShield, MaxShield);
 	}
 }
 

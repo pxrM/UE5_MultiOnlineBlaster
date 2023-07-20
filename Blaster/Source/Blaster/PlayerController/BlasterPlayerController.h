@@ -23,6 +23,7 @@ public:
 
 	virtual float GetServerTime(); //与服务器时间同步
 	void SetHUDHealth(float Health, float MaxHealth);
+	void SetHUDShield(float Shield, float MaxShield);
 	void SetHUDScore(float Score);
 	void SetHUDDefeats(int32 Defeats);
 	void SetHUDWeaponAmmo(int32 Ammo);
@@ -118,6 +119,8 @@ private:
 	bool bInitializeCharacterOverlay = false;
 	float HUDHealth;
 	float HUDMaxHealth;
+	float HUDShield;
+	float HUDMaxShield;
 	float HUDScore;
 	int32 HUDDefaults;
 	int32 HUDGrenades;

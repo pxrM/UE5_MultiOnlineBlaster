@@ -118,26 +118,24 @@ private://----------------------------------------------------------------------
 	float TimeSinceLastMovementReplication = 0.f; //上一次代理角色移动组件的网络同步时间
 
 	/*  player health  */
-	bool bElimmed = false;  //是否淘汰
-	/// <summary>
-	/// 最大健康值
-	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float MaxHealth = 100.f;
 	UPROPERTY(ReplicatedUsing = OnRep_CurHealth, VisibleAnywhere, Category = "Player Stats")
 		float CurHealth = MaxHealth;
 
+	/*  player shield  */
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+		float MaxShield = 100.f;
+	UPROPERTY(ReplicatedUsing = OnRep_CurShield, VisibleAnywhere, Category = "Player Stats")
+		float CurShield = MaxShield;
+
+	bool bElimmed = false;  //是否淘汰
 	FTimerHandle ElimTimer; //淘汰结束倒计时 结束后复活
-	/// <summary>
-	/// 淘汰计时器时间
-	/// </summary>
 	UPROPERTY(EditDefaultsOnly) //EditDefaultsOnly可以在编辑器编辑，但只能在默认值之上
-		float ElimDelay = 3.f;
+		float ElimDelay = 3.f; //淘汰计时器时间
 
 	/*  溶解特效  */
-	/// <summary>
-	/// 溶解时间曲线
-	/// </summary>
+	//溶解时间曲线
 	UPROPERTY(EditAnywhere, Category = Elim)
 		UCurveFloat* DissolveCurve;
 	UPROPERTY(EditAnywhere)
@@ -239,20 +237,19 @@ public:
 	FORCEINLINE float GetCurHealth() const { return CurHealth; }
 	FORCEINLINE void SetCurHealth(const float Amount) { CurHealth = Amount; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
-	ECombatState GetCombatState() const;
-
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 	FORCEINLINE void SetDisableGameplay(const bool bDisable) { bDisableGameplay = bDisable; }
 	FORCEINLINE UCombatComponent* GetCombatCmp() const { return CombatCmp; }
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMagMontage; }
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
+	ECombatState GetCombatState() const;
 
 	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
 		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umg
 
 	void UpdateHUDHealth();
-
+	void UpdateHUDShield();
 
 private:
 	/// <summary>
@@ -266,6 +263,12 @@ private:
 	/// <param name="LastHealth">上一次的血量</param>
 	UFUNCTION()
 		void OnRep_CurHealth(float LastHealth);
+	/// <summary>
+	/// 同步护盾值
+	/// </summary>
+	/// <param name="LastShield">上一次的护盾值</param>
+	UFUNCTION()
+		void OnRep_CurShield(float LastShield);
 
 	/// <summary>
 	/// 在客户端调用该函数时实际上会发送一个 RPC 请求到服务器，请求服务器执行其实现版本=ServerEquipBtnPressed_Implementation。
