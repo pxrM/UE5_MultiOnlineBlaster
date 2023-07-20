@@ -35,6 +35,13 @@ public:
 	void Heal(float HealAmmo, float HealingTime);
 
 	/// <summary>
+	/// 补充护盾
+	/// </summary>
+	/// <param name="ShieldAmount"></param>
+	/// <param name="ReplenishTime"></param>
+	void ReplenishShield(float ShieldAmount, float ReplenishTime);
+
+	/// <summary>
 	/// 速度buff
 	/// </summary>
 	/// <param name="BuffBaseSpeed">基本移动速度</param>

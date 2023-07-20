@@ -57,6 +57,11 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 }
 
 
+void UBuffComponent::ReplenishShield(float ShieldAmount, float ReplenishTime)
+{
+}
+
+
 void UBuffComponent::SetInitialSpeeds(const float BaseSpeed, const float CrouchSpeed)
 {
 	InitialBaseSpeed = BaseSpeed;

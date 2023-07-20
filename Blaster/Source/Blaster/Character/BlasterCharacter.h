@@ -126,8 +126,8 @@ private://----------------------------------------------------------------------
 	/*  player shield  */
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float MaxShield = 100.f;
-	UPROPERTY(ReplicatedUsing = OnRep_CurShield, VisibleAnywhere, Category = "Player Stats")
-		float CurShield = MaxShield;
+	UPROPERTY(ReplicatedUsing = OnRep_CurShield, EditAnywhere, Category = "Player Stats")
+		float CurShield = 0.f;
 
 	bool bElimmed = false;  //是否淘汰
 	FTimerHandle ElimTimer; //淘汰结束倒计时 结束后复活
