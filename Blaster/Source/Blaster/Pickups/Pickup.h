@@ -46,7 +46,14 @@ protected:
 		);
 
 
-protected:
+private:	
+	UPROPERTY(EditAnywhere)
+		class USphereComponent* OverlapSphere;
+	UPROPERTY(EditAnywhere)
+		class USoundCue* PickupSound;
+	UPROPERTY(EditAnywhere)
+		UStaticMeshComponent* PickupMesh;
+
 	UPROPERTY(EditAnywhere)
 		float BaseTurnRate = 45.f; //旋转速度
 	UPROPERTY(VisibleAnywhere)
@@ -54,12 +61,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 		class UNiagaraSystem* PickupDesEffect; //销毁时产生的特效
 
-
-public:	
-	UPROPERTY(EditAnywhere)
-		class USphereComponent* OverlapSphere;
-	UPROPERTY(EditAnywhere)
-		class USoundCue* PickupSound;
-	UPROPERTY(EditAnywhere)
-		UStaticMeshComponent* PickupMesh;
+	FTimerHandle BindOverlapTimer;
+	float BindOverlapTime = 0.25f;
+	void BindOverlapTimerFinished();
 };
