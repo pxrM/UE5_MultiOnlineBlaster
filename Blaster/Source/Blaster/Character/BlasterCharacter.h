@@ -200,6 +200,8 @@ protected:
 
 	void RotateInPlace(float DeltaTime); //原地旋转
 
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+
 
 public:
 	//设置武器，内联函数

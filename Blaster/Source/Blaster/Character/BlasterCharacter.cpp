@@ -224,7 +224,14 @@ void ABlasterCharacter::EquipBtnPressed()
 		//通过这种方式，确保装备按钮按下事件在所有客户端和服务器之间正确同步，并且在需要访问服务器资源或执行敏感操作时，由服务端进行验证和控制，从而提高游戏的安全性和可靠性。
 		if (HasAuthority())
 		{
-			CombatCmp->EquipWeapon(OverlappingWeapon);
+			if (OverlappingWeapon)
+			{
+				CombatCmp->EquipWeapon(OverlappingWeapon);
+			}
+			else if (CombatCmp->IsShouldSwapWeapons())
+			{
+				CombatCmp->SwapWeapons();
+			}
 		}
 		else
 		{
@@ -739,21 +746,30 @@ void ABlasterCharacter::PollInit()
 
 void ABlasterCharacter::Elim()
 {
-	if (CombatCmp && CombatCmp->EquippedWeapon)
+	if (CombatCmp)
 	{
-		if (CombatCmp->EquippedWeapon->bDestroyWeapon)
-		{
-			CombatCmp->EquippedWeapon->Destroy();
-		}
-		else
-		{
-			CombatCmp->EquippedWeapon->Dropped();
-		}
+		DropOrDestroyWeapon(CombatCmp->EquippedWeapon);
+		DropOrDestroyWeapon(CombatCmp->SecondaryWeapon);
 	}
 
 	MulticastElim(); //网络多播
 
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
+}
+
+void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
+{
+	if (Weapon)
+	{
+		if (Weapon->bDestroyWeapon)
+		{
+			Weapon->Destroy();
+		}
+		else
+		{
+			Weapon->Dropped();
+		}
+	}
 }
 
 void ABlasterCharacter::MulticastElim_Implementation()
