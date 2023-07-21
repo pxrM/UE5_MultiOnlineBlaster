@@ -159,6 +159,9 @@ void AWeapon::OnSetWeaponState()
 	case EWeaponState::EWS_Equipped:
 		OnEquippedState();
 		break;
+	case EWeaponState::EWS_EquippedSecondary:
+		OnEquippedSecondaryState();
+		break;
 	case EWeaponState::EWS_Dropped:
 		OnDroppedState();
 		break;
@@ -183,6 +186,26 @@ void AWeapon::OnEquippedState()
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	}
+	EnableCustomDepth(false);
+}
+
+void AWeapon::OnEquippedSecondaryState()
+{
+	ShowPickupWidget(false);
+	//服务端调用 SetCollisionEnabled 函数之后，该函数将会在所有客户端上被调用并执行相应的操作，以使服务端和所有客户端都使用相同的碰撞设置
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);  //关闭碰撞检测
+	WeaponMesh->SetSimulatePhysics(false);
+	WeaponMesh->SetEnableGravity(false);
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (WeaponType == EWeaponType::EWT_SubmachineGun)
+	{
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	}
+	EnableCustomDepth(true);
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_COLOR_BLUE);
+	WeaponMesh->MarkRenderStateDirty();
 }
 
 void AWeapon::OnDroppedState()

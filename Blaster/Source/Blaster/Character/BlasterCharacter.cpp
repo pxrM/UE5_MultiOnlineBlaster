@@ -238,7 +238,14 @@ void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
 {
 	if (CombatCmp)
 	{
-		CombatCmp->EquipWeapon(OverlappingWeapon);
+		if (OverlappingWeapon)
+		{
+			CombatCmp->EquipWeapon(OverlappingWeapon);
+		}
+		else if (CombatCmp->IsShouldSwapWeapons())
+		{
+			CombatCmp->SwapWeapons();
+		}
 	}
 }
 

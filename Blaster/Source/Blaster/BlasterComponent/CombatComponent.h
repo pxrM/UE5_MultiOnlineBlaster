@@ -121,6 +121,10 @@ public:
 	/// </summary>
 	/// <param name="WeaponToEquip"></param>
 	void EquipWeapon(AWeapon* WeaponToEquip);
+	/// <summary>
+	/// 交换武器
+	/// </summary>
+	void SwapWeapons();
 
 	/// <summary>
 	/// 重新加载弹夹，客户端发起
@@ -257,5 +261,5 @@ private:
 
 public:
 	FORCEINLINE int32 GetGrenades() const { return Grenades; }
-
+	bool IsShouldSwapWeapons();
 };

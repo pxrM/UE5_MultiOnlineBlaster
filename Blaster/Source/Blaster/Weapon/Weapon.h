@@ -13,6 +13,7 @@ enum class EWeaponState :uint8
 {
 	EWS_Initial UMETA(DisplayName = "初始"),
 	EWS_Equipped UMETA(DisplayName = "装备"),
+	EWS_EquippedSecondary UMETA(DisplayName = "装备第二把武器"),
 	EWS_Dropped UMETA(DisplayName = "掉落"),
 
 	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
@@ -161,13 +162,10 @@ protected:
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex
 		);
-
-	/// <summary>
-	/// 设置武器状态
-	/// </summary>
-	/// <param name="State"></param>
+	/* 设置武器状态 */
 	virtual void OnSetWeaponState();
 	virtual void OnEquippedState();
+	virtual void OnEquippedSecondaryState();
 	virtual void OnDroppedState();
 
 
