@@ -142,80 +142,25 @@ void AWeapon::SetWeaponState(EWeaponState State)
 {
 	WeaponState = State; //服务器值发生改变，会同步给所有客户端，触发客户端 OnRep_WeaponState 函数
 
-	switch (WeaponState)
-	{
-	case EWeaponState::EWS_Initial:
-		break;
-	case EWeaponState::EWS_Equipped:
-		ShowPickupWidget(false);
-		//服务端调用 SetCollisionEnabled 函数之后，该函数将会在所有客户端上被调用并执行相应的操作，以使服务端和所有客户端都使用相同的碰撞设置
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);  //关闭碰撞检测
-		WeaponMesh->SetSimulatePhysics(false);
-		WeaponMesh->SetEnableGravity(false);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		if (WeaponType == EWeaponType::EWT_SubmachineGun)
-		{
-			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			WeaponMesh->SetEnableGravity(true);
-			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		}
-		break;
-	case EWeaponState::EWS_Dropped:
-		if (HasAuthority()) //是否在服务器
-		{
-			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly); //将武器球形碰撞体设为可查询
-		}
-		WeaponMesh->SetSimulatePhysics(true); //模拟物理效果
-		WeaponMesh->SetEnableGravity(true); //启用重力效果
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); //设置为可查询和模拟物理效果的对象
-		//设置 WeaponMesh 对所有碰撞通道都具有 Block 响应, 会阻止某些物体通过它，以确保武器不会穿过玩家
-		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-		//设置 WeaponMesh 对 Pawn 类型物体的碰撞响应为 Ignore，WeaponMesh 将忽略与 Pawn 相关的任何碰撞，从而使玩家可以通过穿过武器拾取地上的物品
-		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-
-		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_COLOR_BLUE);
-		WeaponMesh->MarkRenderStateDirty();
-		EnableCustomDepth(true);
-		break;
-	case EWeaponState::EWS_MAX:
-		break;
-	default:
-		break;
-	}
+	OnSetWeaponState();
 }
 
 void AWeapon::OnRep_WeaponState()
+{
+	OnSetWeaponState();
+}
+
+void AWeapon::OnSetWeaponState()
 {
 	switch (WeaponState)
 	{
 	case EWeaponState::EWS_Initial:
 		break;
 	case EWeaponState::EWS_Equipped:
-		ShowPickupWidget(false);
-		WeaponMesh->SetSimulatePhysics(false);
-		WeaponMesh->SetEnableGravity(false);
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		if (WeaponType == EWeaponType::EWT_SubmachineGun)
-		{
-			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			WeaponMesh->SetEnableGravity(true);
-			WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		}
+		OnEquippedState();
 		break;
 	case EWeaponState::EWS_Dropped:
-		WeaponMesh->SetSimulatePhysics(true); //模拟物理效果
-		WeaponMesh->SetEnableGravity(true); //启用重力效果
-		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); //设置为可查询和模拟物理效果的对象
-		//设置 WeaponMesh 对所有碰撞通道都具有 Block 响应, 会阻止某些物体通过它，以确保武器不会穿过玩家
-		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-		//设置 WeaponMesh 对 Pawn 类型物体的碰撞响应为 Ignore，WeaponMesh 将忽略与 Pawn 相关的任何碰撞，从而使玩家可以通过穿过武器拾取地上的物品
-		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-		WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-
-		WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_COLOR_BLUE);
-		WeaponMesh->MarkRenderStateDirty();
-		EnableCustomDepth(true);
+		OnDroppedState();
 		break;
 	case EWeaponState::EWS_MAX:
 		break;
@@ -223,6 +168,43 @@ void AWeapon::OnRep_WeaponState()
 		break;
 	}
 }
+
+void AWeapon::OnEquippedState()
+{
+	ShowPickupWidget(false);
+	//服务端调用 SetCollisionEnabled 函数之后，该函数将会在所有客户端上被调用并执行相应的操作，以使服务端和所有客户端都使用相同的碰撞设置
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);  //关闭碰撞检测
+	WeaponMesh->SetSimulatePhysics(false);
+	WeaponMesh->SetEnableGravity(false);
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (WeaponType == EWeaponType::EWT_SubmachineGun)
+	{
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	}
+}
+
+void AWeapon::OnDroppedState()
+{
+	if (HasAuthority())
+	{
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly); //在服务器将武器球形碰撞体设为可查询
+	}
+	WeaponMesh->SetSimulatePhysics(true); //模拟物理效果
+	WeaponMesh->SetEnableGravity(true); //启用重力效果
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); //设置为可查询和模拟物理效果的对象
+	//设置 WeaponMesh 对所有碰撞通道都具有 Block 响应, 会阻止某些物体通过它，以确保武器不会穿过玩家
+	WeaponMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	//设置 WeaponMesh 对 Pawn 类型物体的碰撞响应为 Ignore，WeaponMesh 将忽略与 Pawn 相关的任何碰撞，从而使玩家可以通过穿过武器拾取地上的物品
+	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	WeaponMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+
+	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_COLOR_BLUE);
+	WeaponMesh->MarkRenderStateDirty();
+	EnableCustomDepth(true);
+}
+
 
 void AWeapon::SpeedRound()
 {

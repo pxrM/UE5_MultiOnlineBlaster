@@ -162,6 +162,14 @@ protected:
 			int32 OtherBodyIndex
 		);
 
+	/// <summary>
+	/// 设置武器状态
+	/// </summary>
+	/// <param name="State"></param>
+	virtual void OnSetWeaponState();
+	virtual void OnEquippedState();
+	virtual void OnDroppedState();
+
 
 public:
 	void ShowPickupWidget(bool bShow);
