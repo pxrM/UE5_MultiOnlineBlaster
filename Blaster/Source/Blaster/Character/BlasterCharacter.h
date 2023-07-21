@@ -158,6 +158,10 @@ private://----------------------------------------------------------------------
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* AttachedGrenade;
 
+	/* 出场默认武器 */
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AWeapon> DefaultWeaponClass;
+
 	UPROPERTY()
 		class ABlasterPlayerController* BlasterPlayerController;
 	UPROPERTY()
@@ -253,6 +257,10 @@ public:
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
+	void UpdateHUDAmmo();
+
+	void SpawnDefaultWeapon();
+
 
 private:
 	/// <summary>

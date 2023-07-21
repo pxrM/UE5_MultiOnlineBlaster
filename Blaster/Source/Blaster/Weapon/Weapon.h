@@ -126,6 +126,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 		class USoundCue* EquipSouund;
 
+	/// <summary>
+	/// 玩家淘汰时是否销毁武器，一般只对玩家的默认武器生效
+	/// </summary>
+	bool bDestroyWeapon = false;
+
 
 protected:
 	/// <summary>

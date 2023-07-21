@@ -92,6 +92,8 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SpawnDefaultWeapon();
+	UpdateHUDAmmo();
 	UpdateHUDHealth();
 	UpdateHUDShield();
 
@@ -705,6 +707,16 @@ void ABlasterCharacter::UpdateHUDShield()
 	}
 }
 
+void ABlasterCharacter::UpdateHUDAmmo()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController && CombatCmp && CombatCmp->EquippedWeapon)
+	{
+		BlasterPlayerController->SetHUDCarriedAmmo(CombatCmp->CurWeaponCarriedAmmo);
+		BlasterPlayerController->SetHUDWeaponAmmo(CombatCmp->EquippedWeapon->GetAmmoNum());
+	}
+}
+
 void ABlasterCharacter::PollInit()
 {
 	if (BlasterPlayerState == nullptr)
@@ -722,7 +734,14 @@ void ABlasterCharacter::Elim()
 {
 	if (CombatCmp && CombatCmp->EquippedWeapon)
 	{
-		CombatCmp->EquippedWeapon->Dropped();
+		if (CombatCmp->EquippedWeapon->bDestroyWeapon)
+		{
+			CombatCmp->EquippedWeapon->Destroy();
+		}
+		else
+		{
+			CombatCmp->EquippedWeapon->Dropped();
+		}
 	}
 
 	MulticastElim(); //网络多播
@@ -835,5 +854,22 @@ void ABlasterCharacter::Destroyed()
 	if (CombatCmp && CombatCmp->EquippedWeapon && bMatchNotInProgress)  //如果不是游戏进行中状态删除武器
 	{
 		CombatCmp->EquippedWeapon->Destroy();
+	}
+}
+
+
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	// 不在服务器GameMode会返回null
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (BlasterGameMode && World && !bElimmed && DefaultWeaponClass)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass);
+		StartingWeapon->bDestroyWeapon = true;
+		if (CombatCmp)
+		{
+			CombatCmp->EquipWeapon(StartingWeapon);
+		}
 	}
 }

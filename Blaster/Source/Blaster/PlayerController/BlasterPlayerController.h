@@ -129,6 +129,10 @@ private:
 	int32 HUDDefaults;
 	bool bInitializeGrenades = false;
 	int32 HUDGrenades;
+	bool bInitializeCarriedAmmo = false;
+	int32 HUDCarriedAmmo;
+	bool bInitializeWeaponAmmo = false;
+	int32 HUDWeaponAmmo;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
 		FName MatchState; // Æ¥Åä×´Ì¬
