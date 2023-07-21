@@ -44,9 +44,11 @@ private:
 	UPROPERTY()
 		class ABlasterHUD* HUD;
 
-	//当前装备的武器
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
-		class AWeapon* EquippedWeapon;
+		class AWeapon* EquippedWeapon; //当前装备的武器
+
+	UPROPERTY(ReplicatedUsing = OnRep_SecsondaryWeapon)
+		AWeapon* SecondaryWeapon; //第二把武器
 
 	UPROPERTY(Replicated)
 		bool bAiming; //是否正在瞄准
@@ -178,11 +180,14 @@ protected:
 
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
+	UFUNCTION()
+		void OnRep_SecsondaryWeapon();
 	void DropEquippedWeapon();  //使当前装备的武器掉落
 	void AttachActorToRightHand(AActor* ActorToAttach);	//附加actor到角色的右手
 	void AttachActorToLeftHand(AActor* ActorToAttach);	//附加actor到角色的左手
+	void AttachActorToBackpack(AActor* ActorToAttach);	//附加actor到角色的背包
 	void UpdateCarriedAmmo(); //更新当前装备武器的携带弹药量及hud
-	void PlayEquipWeaponSound(); //播放装备武器音效
+	void PlayEquipWeaponSound(AWeapon* WeaponToEquip); //播放装备武器音效
 	void ReloadEmptyWeapon(); //更换武器空弹夹
 
 	void Fire();
@@ -212,6 +217,11 @@ protected:
 	UFUNCTION(Server, Reliable)
 		void ServerThrowGrenade();
 	void ShowAttachedGrenade(bool bShowGrenade);
+
+	//装备主武器
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	//装备副武器
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
 
 
 private:

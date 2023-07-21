@@ -237,6 +237,7 @@ public:
 	void Elim();
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastElim(); //淘汰
+
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetCurHealth() const { return CurHealth; }
 	FORCEINLINE void SetCurHealth(const float Amount) { CurHealth = Amount; }
