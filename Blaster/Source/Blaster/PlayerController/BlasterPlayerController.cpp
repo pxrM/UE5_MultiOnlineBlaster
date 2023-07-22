@@ -7,6 +7,7 @@
 #include "Blaster/HUD/AnnouncementWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Net/UnrealNetwork.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
@@ -48,6 +49,7 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 	SetHUDTime();
 	CheckTimeSync(DeltaTime);
 	PollInit();
+	CheckPing(DeltaTime);
 }
 
 void ABlasterPlayerController::ReceivedPlayer()
@@ -442,8 +444,8 @@ void ABlasterPlayerController::HandleCooldown()
 	if (BlasterHUD)
 	{
 		BlasterHUD->CharacterOverlayWidget->RemoveFromParent();
-		bool bHUDValid = BlasterHUD->AnnouncementWidget && 
-			BlasterHUD->AnnouncementWidget->InfoText && 
+		bool bHUDValid = BlasterHUD->AnnouncementWidget &&
+			BlasterHUD->AnnouncementWidget->InfoText &&
 			BlasterHUD->AnnouncementWidget->AnnouncementText;
 		if (bHUDValid)
 		{
@@ -486,9 +488,74 @@ void ABlasterPlayerController::HandleCooldown()
 	if (BlasterCharacter)
 	{
 		BlasterCharacter->SetDisableGameplay(true); //关闭部分输入
-		if(BlasterCharacter->GetCombatCmp())
+		if (BlasterCharacter->GetCombatCmp())
 		{
 			BlasterCharacter->GetCombatCmp()->FireBtnPressed(false); //停止开火
+		}
+	}
+}
+
+
+void ABlasterPlayerController::CheckPing(float DeltaTime)
+{
+	HighPingRunningTime += DeltaTime;
+	if (HighPingRunningTime > CheckPingFrequency)
+	{
+		PlayerState = PlayerState == nullptr ? GetPlayerState<APlayerState>() : PlayerState;
+		if (PlayerState)
+		{
+			//GetPing()服务器在同步给客户端时会将该值除以4进行压缩，为了得到真正的需要*4
+			if (PlayerState->GetPing() * 4 > HighPingThreshold)
+			{
+				HighPingWarning();
+				PingAnimRunningTime = 0.f;
+			}
+		}
+		HighPingRunningTime = 0.f;
+	}
+	bool bHighPingAnimPlaying = BlasterHUD &&
+		BlasterHUD->CharacterOverlayWidget &&
+		BlasterHUD->CharacterOverlayWidget->HighPingAnim &&
+		BlasterHUD->CharacterOverlayWidget->IsPlayingAnimation();
+	if (bHighPingAnimPlaying)
+	{
+		PingAnimRunningTime += DeltaTime;
+		if (PingAnimRunningTime > HighPingDuration)
+		{
+			StopHigtPingWarning();
+		}
+	}
+}
+
+void ABlasterPlayerController::HighPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlayWidget &&
+		BlasterHUD->CharacterOverlayWidget->HighPingImage &&
+		BlasterHUD->CharacterOverlayWidget->HighPingAnim;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlayWidget->HighPingImage->SetOpacity(1.f);
+		BlasterHUD->CharacterOverlayWidget->PlayAnimation(BlasterHUD->CharacterOverlayWidget->HighPingAnim, 0.f, 5);
+	}
+}
+
+void ABlasterPlayerController::StopHigtPingWarning()
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlayWidget &&
+		BlasterHUD->CharacterOverlayWidget->HighPingImage &&
+		BlasterHUD->CharacterOverlayWidget->HighPingAnim;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlayWidget->HighPingImage->SetOpacity(0.f);
+		if (BlasterHUD->CharacterOverlayWidget->IsAnimationPlaying(BlasterHUD->CharacterOverlayWidget->HighPingAnim))
+		{
+			BlasterHUD->CharacterOverlayWidget->StopAnimation(BlasterHUD->CharacterOverlayWidget->HighPingAnim);
 		}
 	}
 }

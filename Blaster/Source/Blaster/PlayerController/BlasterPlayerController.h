@@ -65,7 +65,7 @@ protected:
 	void PollInit();
 
 	/*
-	 游戏匹配状态相关	
+	 游戏匹配状态相关
 	*/
 	/// <summary>
 	/// 服务器检查游戏匹配状态
@@ -85,6 +85,10 @@ protected:
 	/// 比赛结束冷却阶段设置
 	/// </summary>
 	void HandleCooldown();
+
+	void CheckPing(float DeltaTime);
+	void HighPingWarning();
+	void StopHigtPingWarning();
 
 
 private:
@@ -141,5 +145,14 @@ private:
 	float WarmupTime = 0.f;	 // 预热时长
 	float CooldownTime = 0.f; // 比赛冷却时长
 	uint32 CountdownInt = 0;  // 上一次倒计时的时间，如果与当前不同则更新hud
+
+	float HighPingRunningTime = 0.f;
+	float PingAnimRunningTime = 0.f;
+	UPROPERTY(EditAnywhere)
+		float CheckPingFrequency = 20.f;
+	UPROPERTY(EditAnywhere)
+		float HighPingThreshold = 50.f;
+	UPROPERTY(EditAnywhere)
+		float HighPingDuration = 5.f;
 
 };
