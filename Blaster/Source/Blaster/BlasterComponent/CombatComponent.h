@@ -195,6 +195,7 @@ protected:
 	void ReloadEmptyWeapon(); //更换武器空弹夹
 
 	void Fire();
+	void LocalFire(const FVector_NetQuantize& TraceHitTarget);
 	/*  FVector_NetQuantize 是ue中用于网络传输的结构体，用于压缩和优化 FVector 的数据传输。
 		该结构体可以将 FVector 的值在网络传输时进行压缩，使数据大小更小，减少网络负载和传输延迟。
 		FVector_NetQuantize 支持每个分量最多使用 20 位二进制数，在精度和实时性之间做了一个平衡。*/

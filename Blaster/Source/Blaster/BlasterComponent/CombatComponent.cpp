@@ -135,6 +135,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
 	SecondaryWeapon = TempWeapon;
@@ -308,6 +310,7 @@ void UCombatComponent::Fire()
 	if (CanFire())
 	{
 		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
+		LocalFire(HitTarget); //在自己机器上直接走流程
 		if (EquippedWeapon)
 		{
 			CrosshairShootingFactor = 0.75f;
@@ -322,6 +325,14 @@ void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& Trac
 }
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	//在自己机器上已经走玩流程了
+	if (Character && Character->IsLocallyControlled() && !Character->HasAuthority()) return;
+
+	LocalFire(TraceHitTarget);
+}
+
+void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 

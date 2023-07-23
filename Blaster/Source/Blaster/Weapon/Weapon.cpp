@@ -293,7 +293,10 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	SpeedRound();
+	if (HasAuthority())
+	{
+		SpeedRound();
+	}
 }
 
 void AWeapon::Dropped()
