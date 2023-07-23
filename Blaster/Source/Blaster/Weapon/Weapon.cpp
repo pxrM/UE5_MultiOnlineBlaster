@@ -18,6 +18,7 @@ ECR_MAX: 表示该枚举类型的最大值。
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -319,4 +320,33 @@ void AWeapon::Dropped()
 
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
+}
+
+
+FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
+{
+	// 获取枪口位置
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
+	if (MuzzleFlashSocket == nullptr) return FVector();
+	FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+	FVector TraceStart = SocketTransform.GetLocation();
+
+	// 计算从 TraceStart 到 HitTarget 的方向向量，并进行单位化处理
+	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	// 以 TraceStart 为起点，沿着射线方向前进 DistanceToSphere 的距离，得到球体的中心点
+	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+	// 先调用 RandomUnitVector 生成一个随机单位向量，然后乘在 0 到 SphereRadius 范围内的随机浮点数，得到一个随机向量 RandVec
+	// 这样就可以获得一个随机的偏移向量，用于在球体的中心点周围进行散射偏移
+	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+	// 将球体的中心点 和 随机向量 相加，得到最终的结束位置 EndLoc。这样就完成了散射效果的计算，最终的结束位置将会稍稍偏离球体的中心点。
+	FVector EndLoc = SphereCenter + RandVec;
+	// 将 散射后的最终结束位置 减去 射线起始位置，计算出一个从起始位置到结束位置的向量 ToEndLoc。这个向量表示了射线追踪的方向和距离。
+	FVector ToEndLoc = EndLoc - TraceStart;
+
+	//DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
+	//DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
+	//DrawDebugLine(GetWorld(), TraceStart, FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()), FColor::Cyan, true);
+
+	// TRACE_LENGTH / ToEndLoc.Size() 这里除一下是为了防止数值太大溢出
+	return  FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
 }

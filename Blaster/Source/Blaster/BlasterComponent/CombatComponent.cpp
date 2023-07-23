@@ -309,11 +309,24 @@ void UCombatComponent::Fire()
 {
 	if (CanFire())
 	{
-		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
-		LocalFire(HitTarget); //在自己机器上直接走流程
+		bCanFire = false;
 		if (EquippedWeapon)
 		{
 			CrosshairShootingFactor = 0.75f;
+			switch (EquippedWeapon->GetFireType())
+			{
+			case EFireType::EFT_Projectile:
+				FireProjectileWeapon();
+				break;
+			case EFireType::EFT_HitScan:
+				FireHitScanWeapon();
+				break;
+			case EFireType::EFT_Shotgun:
+				FireShotgunWeapon();
+				break;
+			default:
+				break;
+			}
 		}
 		StartFireTimer();
 	}
@@ -349,6 +362,27 @@ void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
 	}
+}
+
+void UCombatComponent::FireProjectileWeapon()
+{
+	LocalFire(HitTarget); //在自己机器上直接走流程
+	ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
+}
+
+void UCombatComponent::FireHitScanWeapon()
+{
+	if (EquippedWeapon)
+	{
+		HitTarget = EquippedWeapon->bUseSactter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		LocalFire(HitTarget);
+		ServerFire(HitTarget);
+	}
+}
+
+void UCombatComponent::FireShotgunWeapon()
+{
+
 }
 
 bool UCombatComponent::CanFire()

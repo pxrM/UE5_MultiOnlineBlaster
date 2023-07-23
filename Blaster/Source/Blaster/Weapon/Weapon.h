@@ -19,6 +19,15 @@ enum class EWeaponState :uint8
 	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
 };
 
+UENUM(BlueprintType)
+enum class EFireType :uint8
+{
+	EFT_HitScan UMETA(DisplayName = "单射线射击"),
+	EFT_Projectile UMETA(DisplayName = "子弹射击"),
+	EFT_Shotgun UMETA(DisplayName = "多射线射击"),
+
+	EFT_MAX UMETA(DisplayName = "DefaultMAX"),
+};
 
 UCLASS()
 class BLASTER_API AWeapon : public AActor
@@ -35,6 +44,11 @@ protected:
 
 
 private:
+	UPROPERTY()
+		class ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+		class ABlasterPlayerController* BlasterOwnerController;
+
 	/// <summary>
 	/// 武器网格
 	/// </summary>
@@ -80,11 +94,11 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		EWeaponType WeaponType;
-
-	UPROPERTY()
-		class ABlasterCharacter* BlasterOwnerCharacter;
-	UPROPERTY()
-		class ABlasterPlayerController* BlasterOwnerController;
+	/// <summary>
+	/// 武器开火子弹类型
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+		EFireType FireType;
 
 
 public:
@@ -127,6 +141,23 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 		class USoundCue* EquipSouund;
 
+	/* 分散子弹 */
+	/// <summary>
+	/// 分散球体和枪口的距离
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+		float DistanceToSphere = 800.f;
+	/// <summary>
+	/// 分散球体半径
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+		float SphereRadius = 75.f;
+	/// <summary>
+	/// 是否使用分散子弹
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+		bool bUseSactter = false;
+
 	/// <summary>
 	/// 玩家淘汰时是否销毁武器，一般只对玩家的默认武器生效
 	/// </summary>
@@ -162,6 +193,7 @@ protected:
 			UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex
 		);
+
 	/* 设置武器状态 */
 	virtual void OnSetWeaponState();
 	virtual void OnEquippedState();
@@ -184,8 +216,17 @@ public:
 	FORCEINLINE bool IsAmmoEmpty() const { return AmmoNum <= 0; }
 	FORCEINLINE bool IsAmmoFull() const { return AmmoNum == MagCapacity; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE EFireType GetFireType() const { return FireType; }
 	FORCEINLINE int32 GetAmmoNum() const { return AmmoNum; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
+
+	/// <summary>
+	/// 获取一个扩散后的目标方向
+	/// </summary>
+	/// <param name="TraceStart">起始点，废弃，改为由该函数自己计算</param>
+	/// <param name="HitTarget">射线目标点</param>
+	/// <returns></returns>
+	FVector TraceEndWithScatter(const FVector& HitTarget);
 
 
 private:

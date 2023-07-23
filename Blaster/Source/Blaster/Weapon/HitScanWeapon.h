@@ -23,13 +23,6 @@ public:
 
 protected:
 	/// <summary>
-	/// 获取一个扩散后的目标方向
-	/// </summary>
-	/// <param name="TraceStart">起始点</param>
-	/// <param name="HitTarget">射线目标点</param>
-	/// <returns></returns>
-	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
-	/// <summary>
 	/// 武器击中轨道
 	/// </summary>
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutFireHits);
@@ -55,15 +48,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 		USoundCue* FireSound;
-
-	/* 分赛子弹 */
-
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-		float DistanceToSphere = 800.f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-		float SphereRadius = 75.f;
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-		bool bUseSactter = false;
 
 
 };
