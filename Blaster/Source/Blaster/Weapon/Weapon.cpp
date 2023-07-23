@@ -63,17 +63,22 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority())	// GetLocalRole() == ENetRole::ROLE_Authority
-	{
-		//如果该武器是服务器端，即拥有权限的那个客户端
-		//则将 AreaSphere 的碰撞启用状态设置为 QueryAndPhysics，以便进行查询和物理模拟。
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		//将碰撞响应设置为 ECC_Pawn，表示 Pawn 可以与 AreaSphere 重叠。
-		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	//if (HasAuthority())	// GetLocalRole() == ENetRole::ROLE_Authority
+	//{
+	//	//如果该武器是服务器端，即拥有权限的那个客户端
+	//	//则将 AreaSphere 的碰撞启用状态设置为 QueryAndPhysics，以便进行查询和物理模拟。
+	//	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//	//将碰撞响应设置为 ECC_Pawn，表示 Pawn 可以与 AreaSphere 重叠。
+	//	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
-		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOerlap);
-	}
+	//	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
+	//	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOerlap);
+	//}
+	//修改为客户端也能监听碰撞，但是装备武器还是在服务器
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
+	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOerlap);
 
 	ShowPickupWidget(false);
 }
