@@ -454,14 +454,18 @@ void UCombatComponent::StartFireTimer()
 {
 	if (EquippedWeapon == nullptr || Character == nullptr) return;
 
-	// FTimerHandle 的结构体，用于标识该定时器
-	// 定时器到期后要调用的函数的对象
-	// 定时器到期后要调用的函数的名称
-	// 定时器的持续时间，即 FireDelay 参数，以秒为单位。
 	if (EquippedWeapon->bAutomatic)
 	{
-		bCanFire = false;
+		// FTimerHandle 的结构体，用于标识该定时器
+		// 定时器到期后要调用的函数的对象
+		// 定时器到期后要调用的函数的名称
+		// 定时器的持续时间，即 FireDelay 参数，以秒为单位。
 		Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
+	}
+	else 
+	{
+		bCanFire = true;
+		ReloadEmptyWeapon();
 	}
 }
 
