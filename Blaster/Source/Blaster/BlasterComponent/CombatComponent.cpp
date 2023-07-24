@@ -15,6 +15,7 @@
 #include "TimerManager.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/Weapon/Projectile.h"
+#include "Blaster/Weapon/ShotgunWeapon.h"
 
 
 // Sets default values for this component's properties
@@ -366,14 +367,21 @@ void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 
 void UCombatComponent::FireProjectileWeapon()
 {
-	LocalFire(HitTarget); //在自己机器上直接走流程
-	ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
+	if (EquippedWeapon) 
+	{
+		// 在调用本地和服务器之前设置命中目标的值
+		HitTarget = EquippedWeapon->bUseSactter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		LocalFire(HitTarget); //在自己机器上直接走流程
+		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
+	}
+
 }
 
 void UCombatComponent::FireHitScanWeapon()
 {
 	if (EquippedWeapon)
 	{
+		// 在调用本地和服务器之前设置命中目标的值
 		HitTarget = EquippedWeapon->bUseSactter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
 		LocalFire(HitTarget);
 		ServerFire(HitTarget);
@@ -382,7 +390,15 @@ void UCombatComponent::FireHitScanWeapon()
 
 void UCombatComponent::FireShotgunWeapon()
 {
-
+	if (EquippedWeapon)
+	{
+		AShotgunWeapon* Shotgun = Cast<AShotgunWeapon>(EquippedWeapon);
+		if (Shotgun)
+		{
+			TArray<FVector> HitTargets;
+			Shotgun->ShotgunTraceEndWithScatter(HitTarget, HitTargets);
+		}
+	}
 }
 
 bool UCombatComponent::CanFire()

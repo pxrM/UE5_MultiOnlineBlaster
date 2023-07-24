@@ -141,6 +141,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 		class USoundCue* EquipSouund;
 
+	/// <summary>
+	/// 玩家淘汰时是否销毁武器，一般只对玩家的默认武器生效
+	/// </summary>
+	bool bDestroyWeapon = false;
+
 	/* 分散子弹 */
 	/// <summary>
 	/// 分散球体和枪口的距离
@@ -157,11 +162,6 @@ public:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 		bool bUseSactter = false;
-
-	/// <summary>
-	/// 玩家淘汰时是否销毁武器，一般只对玩家的默认武器生效
-	/// </summary>
-	bool bDestroyWeapon = false;
 
 
 protected:

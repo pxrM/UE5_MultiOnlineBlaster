@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void AShotgunWeapon::Fire(const FVector& HitTarget)
 {
@@ -81,5 +82,35 @@ void AShotgunWeapon::Fire(const FVector& HitTarget)
 				);
 			}
 		}
+	}
+}
+
+void AShotgunWeapon::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector>& HitTargets)
+{
+	// 获取枪口位置
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
+	if (MuzzleFlashSocket == nullptr) return;
+
+	const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+	const FVector TraceStart = SocketTransform.GetLocation();
+
+	// 计算从 TraceStart 到 HitTarget 的方向向量，并进行单位化处理
+	const FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	// 以 TraceStart 为起点，沿着射线方向前进 DistanceToSphere 的距离，得到球体的中心点
+	const FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+
+	// 循环获取霰弹枪每个子弹的目标点
+	for (uint32 i = 0; i < NumberOfPellets; i++)
+	{
+		// 先调用 RandomUnitVector 生成一个随机单位向量，然后乘在 0 到 SphereRadius 范围内的随机浮点数，得到一个随机向量 RandVec
+		// 这样就可以获得一个随机的偏移向量，用于在球体的中心点周围进行散射偏移
+		const FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+		// 将球体的中心点 和 随机向量 相加，得到最终的结束位置 EndLoc。这样就完成了散射效果的计算，最终的结束位置将会稍稍偏离球体的中心点。
+		const FVector EndLoc = SphereCenter + RandVec;
+		// 将 散射后的最终结束位置 减去 射线起始位置，计算出一个从起始位置到结束位置的向量 ToEndLoc。这个向量表示了射线追踪的方向和距离。
+		FVector ToEndLoc = EndLoc - TraceStart;
+		// 避免溢出
+		ToEndLoc = TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size();
+		HitTargets.Add(ToEndLoc);
 	}
 }
