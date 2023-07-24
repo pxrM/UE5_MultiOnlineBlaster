@@ -196,6 +196,7 @@ protected:
 
 	void Fire();
 	void LocalFire(const FVector_NetQuantize& TraceHitTarget);
+	void LocalShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
 	void FireProjectileWeapon();
 	void FireHitScanWeapon();
 	void FireShotgunWeapon();
@@ -208,6 +209,11 @@ protected:
 	//在多人游戏中，此函数通常用于向所有客户端广播某些操作，例如在所有客户端上生成爆炸效果。
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+
+	UFUNCTION(Server, Reliable)
+		void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
 
 	UFUNCTION(Server, Reliable)
 		void ServerReloadMag();	//服务器调用

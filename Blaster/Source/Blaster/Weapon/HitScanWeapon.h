@@ -25,6 +25,9 @@ protected:
 	/// <summary>
 	/// 武器击中轨道
 	/// </summary>
+	/// <param name="TraceStart">开始位置</param>
+	/// <param name="HitTarget">结束位置</param>
+	/// <param name="OutFireHits">命中目标</param>
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutFireHits);
 
 

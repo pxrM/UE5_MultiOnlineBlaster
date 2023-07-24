@@ -85,7 +85,76 @@ void AShotgunWeapon::Fire(const FVector& HitTarget)
 	}
 }
 
-void AShotgunWeapon::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector>& HitTargets)
+void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize> HitTargets)
+{
+	AWeapon::Fire(FVector());
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	if (OwnerPawn == nullptr) return;
+	AController* InstigatorController = OwnerPawn->GetController();
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
+	if (MuzzleFlashSocket)
+	{
+		const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+		const FVector Start = SocketTransform.GetLocation();
+		TMap<ABlasterCharacter*, uint32> HitMap; // 击中次数
+
+		for (FVector_NetQuantize HitTargetItem : HitTargets)
+		{
+			FHitResult FireHit;
+			WeaponTraceHit(Start, HitTargetItem, FireHit);
+
+			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
+			if (BlasterCharacter)
+			{
+				if (HitMap.Contains(BlasterCharacter))
+				{
+					HitMap[BlasterCharacter]++;
+				}
+				else
+				{
+					HitMap.Emplace(BlasterCharacter, 1);
+				}
+			}
+
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					FireHit.ImpactPoint,
+					FireHit.ImpactNormal.Rotation()
+				);
+			}
+
+			if (HitSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					this,
+					HitSound,
+					FireHit.ImpactPoint,
+					0.5f,
+					FMath::FRandRange(-0.5f, 0.5f)
+				);
+			}
+		}
+
+		for (auto HitPair : HitMap)
+		{
+			if (HitPair.Key && InstigatorController && HasAuthority())
+			{
+				UGameplayStatics::ApplyDamage(
+					HitPair.Key,
+					Damage * HitPair.Value,
+					InstigatorController,
+					this,
+					UDamageType::StaticClass()
+				);
+			}
+		}
+	}
+}
+
+void AShotgunWeapon::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets)
 {
 	// 获取枪口位置
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");

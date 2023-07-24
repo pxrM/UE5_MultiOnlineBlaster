@@ -333,6 +333,52 @@ void UCombatComponent::Fire()
 	}
 }
 
+void UCombatComponent::FireProjectileWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		// 在调用本地和服务器之前设置命中目标的值
+		HitTarget = EquippedWeapon->bUseSactter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		if (!Character->HasAuthority())
+		{
+			LocalFire(HitTarget); //在自己机器上直接走流程
+		}
+		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
+	}
+}
+
+void UCombatComponent::FireHitScanWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		// 在调用本地和服务器之前设置命中目标的值
+		HitTarget = EquippedWeapon->bUseSactter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		if (!Character->HasAuthority())
+		{
+			LocalFire(HitTarget);
+		}
+		ServerFire(HitTarget);
+	}
+}
+
+void UCombatComponent::FireShotgunWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		AShotgunWeapon* Shotgun = Cast<AShotgunWeapon>(EquippedWeapon);
+		if (Shotgun)
+		{
+			TArray<FVector_NetQuantize> HitTargets;
+			Shotgun->ShotgunTraceEndWithScatter(HitTarget, HitTargets);
+			if (!Character->HasAuthority())
+			{
+				LocalShotgunFire(HitTargets);
+			}
+			ServerShotgunFire(HitTargets);
+		}
+	}
+}
+
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	MulticastFire(TraceHitTarget); //通知所有客户端
@@ -346,17 +392,30 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	LocalFire(TraceHitTarget);
 }
 
+void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	MulticastShotgunFire(TraceHitTargets);
+}
+
+void UCombatComponent::MulticastShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	if (Character && Character->IsLocallyControlled() && !Character->HasAuthority()) return;
+
+	LocalShotgunFire(TraceHitTargets);
+}
+
 void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 
-	if (CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
-	{
-		Character->PlayFireMontage(bAiming);
-		EquippedWeapon->Fire(TraceHitTarget);
-		CombatState = ECombatState::ECS_Unoccupied;
-		return;
-	}
+	// LocalShotgunFire() 专门处理
+	//if (CombatState == ECombatState::ECS_Reloading && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun)
+	//{
+	//	Character->PlayFireMontage(bAiming);
+	//	EquippedWeapon->Fire(TraceHitTarget);
+	//	CombatState = ECombatState::ECS_Unoccupied;
+	//	return;
+	//}
 
 	if (CombatState == ECombatState::ECS_Unoccupied)
 	{
@@ -365,39 +424,16 @@ void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 	}
 }
 
-void UCombatComponent::FireProjectileWeapon()
+void UCombatComponent::LocalShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets)
 {
-	if (EquippedWeapon) 
-	{
-		// 在调用本地和服务器之前设置命中目标的值
-		HitTarget = EquippedWeapon->bUseSactter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
-		LocalFire(HitTarget); //在自己机器上直接走流程
-		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
-	}
+	AShotgunWeapon* Shotgun = Cast<AShotgunWeapon>(EquippedWeapon);
+	if (Character == nullptr || Shotgun == nullptr) return;
 
-}
-
-void UCombatComponent::FireHitScanWeapon()
-{
-	if (EquippedWeapon)
+	if (CombatState == ECombatState::ECS_Reloading || CombatState == ECombatState::ECS_Unoccupied)
 	{
-		// 在调用本地和服务器之前设置命中目标的值
-		HitTarget = EquippedWeapon->bUseSactter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
-		LocalFire(HitTarget);
-		ServerFire(HitTarget);
-	}
-}
-
-void UCombatComponent::FireShotgunWeapon()
-{
-	if (EquippedWeapon)
-	{
-		AShotgunWeapon* Shotgun = Cast<AShotgunWeapon>(EquippedWeapon);
-		if (Shotgun)
-		{
-			TArray<FVector> HitTargets;
-			Shotgun->ShotgunTraceEndWithScatter(HitTarget, HitTargets);
-		}
+		Character->PlayFireMontage(bAiming);
+		Shotgun->FireShotgun(TraceHitTargets);
+		CombatState = ECombatState::ECS_Unoccupied;
 	}
 }
 

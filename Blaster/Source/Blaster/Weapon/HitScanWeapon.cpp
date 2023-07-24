@@ -86,8 +86,9 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		//多25%这样最终位置刚好超过目标点以确保成功，否则可能正好命中在目标表面这样可能会失去阻挡
+		// 多25%这样最终位置刚好超过目标点以确保成功，否则可能正好命中在目标表面这样可能会失去阻挡
 		FVector End = TraceStart + (HitTarget - TraceStart) * 1.25f;
+		// 沿指定通道进行单次线性射线检测
 		World->LineTraceSingleByChannel(
 			OutFireHit,
 			TraceStart,
@@ -96,7 +97,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		);
 		FVector BeamEnd = OutFireHit.bBlockingHit ? OutFireHit.ImpactPoint : End;
 		DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, FColor::Orange, true);
-		//播放弹道特效
+		// 播放弹道特效
 		if (BeamParticles)
 		{
 			UParticleSystemComponent* BeamCmp = UGameplayStatics::SpawnEmitterAtLocation(
