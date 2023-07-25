@@ -96,7 +96,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
-	DOREPLIFETIME(AWeapon, AmmoNum);
+	//DOREPLIFETIME(AWeapon, AmmoNum);
 }
 
 void AWeapon::OnRep_Owner()
@@ -237,14 +237,45 @@ void AWeapon::OnDroppedState()
 
 void AWeapon::SpeedRound()
 {
-	/*服务器执行*/
 	AmmoNum = FMath::Clamp(AmmoNum - 1, 0, MagCapacity);
+	SetHUDAmmo();
+	if (HasAuthority())
+	{
+		//在服务器：通知客户端
+		ClientUpdateAmmo(AmmoNum);
+	}
+	else 
+	{
+		//在客户端：增加未处理来自服务器消息序列
+		++SequenceAmmo;
+	}
+}
+
+void AWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
+{
+	if (HasAuthority()) return;
+	AmmoNum = ServerAmmo;
+	--SequenceAmmo;
+	AmmoNum -= SequenceAmmo;
 	SetHUDAmmo();
 }
 
 void AWeapon::AddAmmo(int32 AmmoToAdd)
 {
-	AmmoNum = FMath::Clamp(AmmoNum - AmmoToAdd, 0, MagCapacity);
+	AmmoNum = FMath::Clamp(AmmoNum + AmmoToAdd, 0, MagCapacity);
+	SetHUDAmmo();
+	ClientAddAmmo(AmmoToAdd);
+}
+
+void AWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
+{
+	if (HasAuthority()) return;
+	AmmoNum = FMath::Clamp(AmmoNum + AmmoToAdd, 0, MagCapacity);
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombatCmp() && IsAmmoFull() && WeaponType == EWeaponType::EWT_Shotgun)
+	{
+		BlasterOwnerCharacter->GetCombatCmp()->AnimJumpToShotgunEnd();
+	}
 	SetHUDAmmo();
 }
 
@@ -256,16 +287,16 @@ void AWeapon::EnableCustomDepth(bool bEnable)
 	}
 }
 
-void AWeapon::OnRep_AmmoNum()
-{
-	/*同步给客户端执行*/
-	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if(IsAmmoFull() && BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombatCmp())
-	{
-		BlasterOwnerCharacter->GetCombatCmp()->AnimJumpToShotgunEnd();
-	}
-	SetHUDAmmo();
-}
+//void AWeapon::OnRep_AmmoNum()
+//{
+//	/*同步给客户端执行*/
+//	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+//	if(IsAmmoFull() && BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombatCmp())
+//	{
+//		BlasterOwnerCharacter->GetCombatCmp()->AnimJumpToShotgunEnd();
+//	}
+//	SetHUDAmmo();
+//}
 
 void AWeapon::SetHUDAmmo()
 {
@@ -299,10 +330,7 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-	if (HasAuthority())
-	{
-		SpeedRound();
-	}
+	SpeedRound();
 }
 
 void AWeapon::Dropped()

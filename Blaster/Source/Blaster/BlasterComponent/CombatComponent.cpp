@@ -807,7 +807,7 @@ void UCombatComponent::UpdateAmmoValues()
 	{
 		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
 	}
-	EquippedWeapon->AddAmmo(-ReloadAmount); //弹夹添加子弹
+	EquippedWeapon->AddAmmo(ReloadAmount); //弹夹添加子弹
 }
 
 void UCombatComponent::UpdateShotgunAmmoValues()
@@ -824,7 +824,7 @@ void UCombatComponent::UpdateShotgunAmmoValues()
 	{
 		Controller->SetHUDCarriedAmmo(CurWeaponCarriedAmmo);
 	}
-	EquippedWeapon->AddAmmo(-1);
+	EquippedWeapon->AddAmmo(1);
 	bCanFire = true; //霰弹枪支持添加子弹途中切换到开火
 	if (EquippedWeapon->IsAmmoFull() || CurWeaponCarriedAmmo == 0)
 	{
