@@ -83,10 +83,10 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	//但是其他客户端变量更改后因为是在本地，所以不会触发，这里需要从客户端获取信息同步到服务器，服务器更改变量才会解决
 	//使用RPC解决，像ABlasterCharacter::ServerEquipBtnPressed_Implementation()一样
 	DOREPLIFETIME(UCombatComponent, bAiming);
-	//只同步到对应的客户端
-	DOREPLIFETIME_CONDITION(UCombatComponent, CurWeaponCarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME(UCombatComponent, Grenades);
+	//只同步到对应的客户端
+	DOREPLIFETIME_CONDITION(UCombatComponent, CurWeaponCarriedAmmo, COND_OwnerOnly);
 }
 
 void UCombatComponent::OnRep_CombatState()
@@ -698,10 +698,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 
 	bAiming = bIsAiming;
-	if (!Character->HasAuthority())
-	{
-		ServerSetAiming(bIsAiming);
-	}
+	ServerSetAiming(bIsAiming);
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
@@ -709,6 +706,18 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	if (Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
 	{
 		Character->ShowSniperScopeWidget(bIsAiming);
+	}
+	if (Character->IsLocallyControlled())
+	{
+		bAimBtnPressed = bIsAiming;
+	}
+}
+
+void UCombatComponent::OnRep_Aiming()
+{
+	if (Character && Character->IsLocallyControlled())
+	{
+		bAiming = bAimBtnPressed;
 	}
 }
 
