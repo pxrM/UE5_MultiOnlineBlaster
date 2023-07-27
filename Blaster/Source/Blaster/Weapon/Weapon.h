@@ -82,7 +82,7 @@ private:
 	/// <summary>
 	/// 弹夹容量中剩余子弹数量
 	/// </summary>
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_AmmoNum, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, /*ReplicatedUsing = OnRep_AmmoNum,*/ Category = "Weapon Properties")
 		int32 AmmoNum;
 	/// <summary>
 	/// 弹夹容量
@@ -99,6 +99,14 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		EFireType FireType;
+
+	/// <summary>
+	/// 客户端预测，需要存储最后的更新和一个请求服务器的消息序列号，
+	/// 当服务器回消息时，检查序列号，并检查有多少未处理的请求，然后处理更改。
+	/// 未处理的服务器同步过来Ammo的同步次数数量。
+	/// 在每一轮SpeedRound中增加，在ClientUpdateAmmo中减少
+	/// </summary>
+	int32 SequenceAmmo = 0;
 
 
 public:
@@ -232,8 +240,20 @@ public:
 private:
 	UFUNCTION()
 		void OnRep_WeaponState();
-	UFUNCTION()
-		void OnRep_AmmoNum();
+	//UFUNCTION()
+	//	void OnRep_AmmoNum();
 	void SpeedRound();
+	/// <summary>
+	/// 服务器通知客户端更新子弹数量
+	/// </summary>
+	/// <param name="ServerAmmo"></param>
+	UFUNCTION(Client, Reliable)
+		void ClientUpdateAmmo(int32 ServerAmmo);
+	/// <summary>
+	/// 服务器通知客户端添加子弹数量
+	/// </summary>
+	/// <param name="AmmoToAdd"></param>
+	UFUNCTION(Client, Reliable)
+		void ClientAddAmmo(int32 AmmoToAdd);
 
 };

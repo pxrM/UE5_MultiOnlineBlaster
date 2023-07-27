@@ -50,8 +50,9 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_SecsondaryWeapon)
 		AWeapon* SecondaryWeapon; //第二把武器
 
-	UPROPERTY(Replicated)
-		bool bAiming; //是否正在瞄准
+	UPROPERTY(ReplicatedUsing = OnRep_Aiming)
+		bool bAiming = false; //是否正在瞄准
+	bool bAimBtnPressed = false;
 
 	UPROPERTY(EditAnywhere)
 		float BaseWalkSpeed; //原始速度
@@ -181,6 +182,8 @@ protected:
 	void SetAiming(bool bIsAiming);
 	UFUNCTION(Server, Reliable)
 		void ServerSetAiming(bool bIsAiming);
+	UFUNCTION()
+		void OnRep_Aiming();
 
 	UFUNCTION()
 		void OnRep_EquippedWeapon();
