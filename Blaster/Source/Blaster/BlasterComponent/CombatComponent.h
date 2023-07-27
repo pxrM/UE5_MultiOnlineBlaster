@@ -83,6 +83,7 @@ private:
 	FTimerHandle FireTimer;	//开火计时器
 	bool bCanFire = true; //是否可以开火
 
+	bool bLocallyReloading = false; //本地变量，用来处理高延迟问题，是否在更换弹夹中
 	TMap<EWeaponType, int32> CarriedAmmoMap; //不同武器类型的携带弹药量
 	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
 		int32 CurWeaponCarriedAmmo;  //携带弹药量（角色当前武器类型的弹药数量）

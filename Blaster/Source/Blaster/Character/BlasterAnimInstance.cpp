@@ -136,6 +136,11 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	bUseFABRIK = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
+	if (BlasterCharacter->IsLocallyControlled() && BlasterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade)
+	{
+		//本地角色，单独处理，避免网络延迟带来的动画异常
+		bUseFABRIK = !BlasterCharacter->GetIsLocallyReloading();
+	}
 	bUseAimOffsets = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied && !BlasterCharacter->GetDisableGameplay();
 	bTransformRightHand = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied && !BlasterCharacter->GetDisableGameplay();
 }

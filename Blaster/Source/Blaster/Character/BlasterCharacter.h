@@ -254,9 +254,10 @@ public:
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
 	ECombatState GetCombatState() const;
+	bool GetIsLocallyReloading() const;
 
 	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
-		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umg
+		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umgg
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();

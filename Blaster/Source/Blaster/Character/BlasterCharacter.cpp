@@ -864,6 +864,12 @@ ECombatState ABlasterCharacter::GetCombatState() const
 	return CombatCmp->CombatState;
 }
 
+bool ABlasterCharacter::GetIsLocallyReloading() const
+{
+	if (CombatCmp) return CombatCmp->bLocallyReloading;
+	return false;
+}
+
 void ABlasterCharacter::Destroyed()
 {
 	Super::Destroyed();

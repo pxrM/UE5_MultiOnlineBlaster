@@ -52,8 +52,8 @@
 		50毫秒后server接收到rpc，并将server角色向前移动10，然后server回消息发送权威位置10到client，50毫秒后client接收到rpc权威位置，
 		此时由于client一直停留在10位置，已经在正确位置上，因此无需更正，这样做的好处是client在按下移动按钮后不必等待100毫秒才能看到角色的
 		移动。
-		再次假设从0位置开始，（1）client角色向前移动10单位，发送rpc到server，50毫秒后server接收到rpc，并将server角色向前移动10，server回消息，
-		（2）此时客户端再次移动到20位置，发送rpc到server，现在到了100毫秒，client的新位置20到达了server，server将发送消息20，同一时刻client
+		再次假设从0位置开始，client角色向前移动10单位，发送rpc到server（1），50毫秒后server接收到rpc，并将server角色向前移动10，server回消息，
+		此时客户端再次移动到20位置，发送rpc到server（2），现在到了100毫秒，client的新位置20到达了server，server将发送消息20，同一时刻client
 		收到（1）的server回包10，但是此时client的位置是20，这意味着client不在权威位置上，就会看到角色往后拉回原来的位置，再接着50毫秒后，
 		client回收到（2）server的回包20，此时角色又会被拉回到20的位置。这里在150毫秒内，角色会发生从0移动到10，然后到20，但是因为网络延迟，
 		会将角色从20拉倒10，再10到20。
@@ -65,4 +65,11 @@
 		回复，所以client知道有两次rpc没有处理，时间再次过去50毫秒来到了第100毫秒，server收到了第二次client的rpc，将server的角色前进10来到第20位置，
 		并且进行（2-20回包）给client，client这个时候收到了server的第一次rpc回包（1-10），根据client的缓存client可以知道这个server发送过来的是旧rpc，
 		client知道发送过去的第二次rpc（2-20）还没处理，但是client知道这一次的server发来的rpc对应上client第一次发送过去的rpc，因此可以继续，并且丢弃
-		第一次的rpc缓存。这里首先client告诉server角色位置是10，第二次rpc告诉server角色位置为20，可以得出两次rpc中角色移动的距离是10（10-20），
+		第一次的rpc缓存。这里首先client告诉server角色位置是10，第二次rpc告诉server角色位置为20，所以clien知道从第一个rpc到第二个rpc我们从10移动到了
+		20，收到第一次server回rpc会先匹配到client的缓存10，并且client知道第二次的回包还没收到，所以这里client可以先行移动到20的位置。时间再次过去50
+		毫秒来到了第150毫秒，client收到第二个rpc回包并应用于本地缓存，二次移动后client没有再继续移动，所以没有其它数据需要考虑，这里回包20和client
+		目前位置20相匹配，所以不需要移动。通过缓存client发送到server的rpc，client可以先应用本地移动，同时client知道哪些更新尚未被server处理，以便后
+		续进行更正。
+		这里服务器协调过程：客户端输入后，先移动
+							发送rpc到server，clien缓存这个发送给server的rpc，此时client知道有一个未处理的rpc
+							收到server回包，应用更正，丢弃已处理的rpc
