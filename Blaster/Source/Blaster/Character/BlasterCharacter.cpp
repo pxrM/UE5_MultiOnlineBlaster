@@ -23,6 +23,7 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/BoxComponent.h"
+#include "Blaster/BlasterComponent/LagCompensationComponent.h"
 
 // Sets default values 
 ABlasterCharacter::ABlasterCharacter()
@@ -60,6 +61,8 @@ ABlasterCharacter::ABlasterCharacter()
 
 	BuffCmp = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
 	BuffCmp->SetIsReplicated(true);
+
+	LagCompensationCmp = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("LagCompensationComponent"));
 
 	DissolveTimelineCmp = CreateDefaultSubobject<UTimelineComponent>(TEXT("DissolveTimelineComponent"));
 
@@ -234,6 +237,14 @@ void ABlasterCharacter::PostInitializeComponents()
 		BuffCmp->Character = this;
 		BuffCmp->SetInitialSpeeds(GetCharacterMovement()->MaxWalkSpeed, GetCharacterMovement()->MaxWalkSpeedCrouched);
 		BuffCmp->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
+	}
+	if (LagCompensationCmp)
+	{
+		LagCompensationCmp->Character = this;
+		if (Controller)
+		{
+			LagCompensationCmp->Controller = Cast<ABlasterPlayerController>(Controller);
+		}
 	}
 }
 

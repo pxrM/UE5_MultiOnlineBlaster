@@ -65,6 +65,8 @@ private://----------------------------------------------------------------------
 		class UCombatComponent* CombatCmp;
 	UPROPERTY(VisibleAnywhere)
 		class UBuffComponent* BuffCmp;
+	UPROPERTY(VisibleAnywhere)
+		class ULagCompensationComponent* LagCompensationCmp;
 
 	float AO_Yaw;
 	float InterpAO_Yaw;
