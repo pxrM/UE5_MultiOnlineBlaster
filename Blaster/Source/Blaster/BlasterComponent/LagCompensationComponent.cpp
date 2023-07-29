@@ -87,3 +87,69 @@ void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, c
 		);
 	}
 }
+
+void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
+{
+	bool bReturn = HitCharacter == nullptr ||
+		HitCharacter->GetLagCompensationComp() == nullptr ||
+		HitCharacter->GetLagCompensationComp()->FrameHistory.GetHead() == nullptr ||
+		HitCharacter->GetLagCompensationComp()->FrameHistory.GetTail() == nullptr;
+	if (bReturn) return;
+
+	// 受击角色的帧历史数据
+	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensationComp()->FrameHistory;
+	// 获取帧数据最旧的历史时间
+	const float OldestHistoryTime = History.GetTail()->GetValue().Time;
+	// 获取帧数据最新的历史时间
+	const float NewestHistoryTime = History.GetHead()->GetValue().Time;
+	// 最旧时间大于命中时间，时间太久远无法倒带
+	if (OldestHistoryTime > HitTime)
+	{
+		return;
+	}
+	// 是否需要进行差值
+	bool bShouldInterpolate = true;
+	FFramePackage FrameToCheck;
+	// 最旧的历史时间刚好等于命中时间
+	if (OldestHistoryTime == HitTime)
+	{
+		bShouldInterpolate = false;
+		FrameToCheck = History.GetTail()->GetValue();
+	}
+	// 最新的历史时间小于等于命中时间
+	if (NewestHistoryTime <= HitTime)
+	{
+		bShouldInterpolate = false;
+		FrameToCheck = History.GetHead()->GetValue();
+	}
+	
+	TDoubleLinkedList<FFramePackage>::TDoubleLinkedListNode* Younger = History.GetHead();
+	auto Older = Younger;
+	// 如果Older的时间比击中时间大
+	while (Older->GetValue().Time > HitTime)
+	{
+		// 结果： OlderTime < HitTime < YoungerTime
+		if (Older->GetNextNode() == nullptr) break;
+		Older = Older->GetNextNode();
+		if (Older->GetValue().Time > HitTime)
+		{
+			Younger = Older;
+		}
+	}
+	// 不太可能，但需要检查一下
+	if (Older->GetValue().Time == HitTime)
+	{
+		bShouldInterpolate = false;
+		FrameToCheck = Older->GetValue();
+	}
+
+	// 根据OlderTime < HitTime < YoungerTime进行插值
+	if (bShouldInterpolate)
+	{
+
+	}
+	else
+	{
+
+	}
+}

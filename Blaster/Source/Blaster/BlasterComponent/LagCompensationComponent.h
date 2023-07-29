@@ -77,6 +77,18 @@ protected:
 
 private:
 	void SaveFramePackage(FFramePackage& Package);
+	/// <summary>
+	/// 射击服务器倒带
+	/// </summary>
+	/// <param name="HitCharacter">击中的角色</param>
+	/// <param name="TraceStart">射击开始位置</param>
+	/// <param name="HitLocation">命中位置</param>
+	/// <param name="HitTime">命中时间</param>
+	void ServerSideRewind(
+		class ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation,
+		float HitTime);
 
 public:
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
