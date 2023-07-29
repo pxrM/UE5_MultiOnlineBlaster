@@ -201,6 +201,8 @@ private://----------------------------------------------------------------------
 		UBoxComponent* foot_l;
 	UPROPERTY(EditAnywhere)
 		UBoxComponent* foot_r;
+	UPROPERTY()
+		TMap<FName, UBoxComponent*> HitConllisionBoxs;
 
 	UPROPERTY()
 		class ABlasterPlayerController* BlasterPlayerController;
@@ -293,6 +295,7 @@ public:
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMagMontage; }
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
+	FORCEINLINE TMap<FName, UBoxComponent*> GetHitCollisionBoxs() const { return HitConllisionBoxs; }
 	ECombatState GetCombatState() const;
 	bool GetIsLocallyReloading() const;
 

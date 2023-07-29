@@ -76,6 +76,12 @@ protected:
 
 
 private:
+	void SaveFramePackage(FFramePackage& Package);
+
+public:
+	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
+
+private:
 	UPROPERTY()
 		ABlasterCharacter* Character;
 	UPROPERTY()
