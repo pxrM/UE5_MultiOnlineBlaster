@@ -86,6 +86,14 @@ private:
 		ABlasterCharacter* Character;
 	UPROPERTY()
 		class ABlasterPlayerController* Controller;
-
+	/// <summary>
+	/// 存储4秒的帧数据，时间太长和太短都会影响体验
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+		float MaxRecordTime = 4.f;
+	/// <summary>
+	/// 存储一段时间内发生的帧数据，使用双向链表方便从链表头尾节点执行添加和移除操作
+	/// </summary>
+	TDoubleLinkedList<FFramePackage> FrameHistory;
 
 };
