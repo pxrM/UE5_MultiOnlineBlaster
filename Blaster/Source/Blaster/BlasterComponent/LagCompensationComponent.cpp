@@ -73,34 +73,6 @@ void ULagCompensationComponent::SaveFramePackage(FFramePackage& Package)
 	}
 }
 
-FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime)
-{
-	// 两个帧之间的时间差 
-	const float Distance = YoungerFrame.Time - OlderFrmae.Time;
-	// 得到插值系数 InterpFraction。这个系数代表了 HitTime 在两个帧之间所占的比例，可以用于计算在插值时，两个帧之间的某个属性的值。
-	const float InterpFraction = (HitTime - OlderFrmae.Time) / Distance;
-	
-	FFramePackage InterpFramePackage;
-	InterpFramePackage.Time = HitTime;
-
-	for (auto& YoungerPair : YoungerFrame.HitBoxInfo)
-	{
-		const FName& BoxInfoName = YoungerPair.Key;
-
-		const FBoxInformation& OlderBox = OlderFrmae.HitBoxInfo[BoxInfoName];
-		const FBoxInformation& YoungerBox = YoungerPair.Value;
-
-		FBoxInformation InterpBoxInfo;
-		InterpBoxInfo.Location = FMath::VInterpTo(OlderBox.Location, YoungerBox.Location, 1.f, InterpFraction);
-		InterpBoxInfo.Rotation = FMath::RInterpTo(OlderBox.Rotation, YoungerBox.Rotation, 1.f, InterpFraction);
-		InterpBoxInfo.BoxExtent = YoungerBox.BoxExtent; // 由于盒子的范围不会变小，所以可以任意用一个
-
-		InterpFramePackage.HitBoxInfo.Add(BoxInfoName, InterpBoxInfo);
-	}
-
-	return InterpFramePackage;
-}
-
 void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, const FColor Color)
 {
 	for (auto& BoxInfo : Package.HitBoxInfo)
@@ -180,4 +152,32 @@ void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter
 	{
 
 	}
+}
+
+FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime)
+{
+	// 两个帧之间的时间差 
+	const float Distance = YoungerFrame.Time - OlderFrmae.Time;
+	// 得到插值系数 InterpFraction。这个系数代表了 HitTime 在两个帧之间所占的比例，可以用于计算在插值时，两个帧之间的某个属性的值。
+	const float InterpFraction = (HitTime - OlderFrmae.Time) / Distance;
+
+	FFramePackage InterpFramePackage;
+	InterpFramePackage.Time = HitTime;
+
+	for (auto& YoungerPair : YoungerFrame.HitBoxInfo)
+	{
+		const FName& BoxInfoName = YoungerPair.Key;
+
+		const FBoxInformation& OlderBox = OlderFrmae.HitBoxInfo[BoxInfoName];
+		const FBoxInformation& YoungerBox = YoungerPair.Value;
+
+		FBoxInformation InterpBoxInfo;
+		InterpBoxInfo.Location = FMath::VInterpTo(OlderBox.Location, YoungerBox.Location, 1.f, InterpFraction);
+		InterpBoxInfo.Rotation = FMath::RInterpTo(OlderBox.Rotation, YoungerBox.Rotation, 1.f, InterpFraction);
+		InterpBoxInfo.BoxExtent = YoungerBox.BoxExtent; // 由于盒子的范围不会变小，所以可以任意用一个
+
+		InterpFramePackage.HitBoxInfo.Add(BoxInfoName, InterpBoxInfo);
+	}
+
+	return InterpFramePackage;
 }
