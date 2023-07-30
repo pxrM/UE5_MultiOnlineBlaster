@@ -89,6 +89,14 @@ private:
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation,
 		float HitTime);
+	/// <summary>
+	/// 在命中时间的前一帧和后一帧之间进行插值运算
+	/// </summary>
+	/// <param name="OlderFrmae"></param>
+	/// <param name="YoungerFrame"></param>
+	/// <param name="HitTime"></param>
+	/// <returns></returns>
+	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime);
 
 public:
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
