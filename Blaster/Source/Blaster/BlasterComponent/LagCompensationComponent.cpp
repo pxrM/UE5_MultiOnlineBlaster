@@ -181,3 +181,9 @@ FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage
 
 	return InterpFramePackage;
 }
+
+FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackage& Package, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocaton)
+{
+
+	return FServerSideRewindResult();
+}

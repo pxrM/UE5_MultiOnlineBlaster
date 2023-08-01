@@ -35,7 +35,6 @@ public:
 		FVector BoxExtent;
 };
 
-
 /// <summary>
 /// 角色桢数据
 /// </summary>
@@ -56,7 +55,25 @@ public:
 		TMap<FName, FBoxInformation> HitBoxInfo;
 };
 
-
+/// <summary>
+/// 服务器倒带命中结果
+/// </summary>
+USTRUCT(BlueprintType)
+struct FServerSideRewindResult
+{
+	GENERATED_BODY()
+public:
+	/// <summary>
+	/// 是否命中
+	/// </summary>
+	UPROPERTY()
+		bool bHitConfirmed;
+	/// <summary>
+	/// 是否爆头
+	/// </summary>
+	UPROPERTY()
+		bool bHeadShot;
+};
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API ULagCompensationComponent : public UActorComponent
@@ -97,6 +114,19 @@ private:
 	/// <param name="HitTime"></param>
 	/// <returns></returns>
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime);
+	/// <summary>
+	/// 计算命中结果
+	/// </summary>
+	/// <param name="Package"></param>
+	/// <param name="HitCharacter"></param>
+	/// <param name="TraceStart"></param>
+	/// <param name="HitLocaton"></param>
+	/// <returns></returns>
+	FServerSideRewindResult ConfirmHit(
+		const FFramePackage& Package, 
+		ABlasterCharacter* HitCharacter, 
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocaton);
 
 public:
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
