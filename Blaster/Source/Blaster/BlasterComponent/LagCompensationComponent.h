@@ -117,17 +117,40 @@ private:
 	/// <summary>
 	/// 计算命中结果
 	/// </summary>
-	/// <param name="Package"></param>
-	/// <param name="HitCharacter"></param>
-	/// <param name="TraceStart"></param>
-	/// <param name="HitLocaton"></param>
+	/// <param name="Package">倒带出来的结果包</param>
+	/// <param name="HitCharacter">击中的角色</param>
+	/// <param name="TraceStart">射击开始位置</param>
+	/// <param name="HitLocaton">命中位置</param>
 	/// <returns></returns>
 	FServerSideRewindResult ConfirmHit(
 		const FFramePackage& Package, 
 		ABlasterCharacter* HitCharacter, 
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocaton);
-
+	/// <summary>
+	/// 缓存角色当前box的位置
+	/// </summary>
+	/// <param name="HitCharacter"></param>
+	/// <param name="OutFrameackage"></param>
+	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFrameackage);
+	/// <summary>
+	/// 移动命中角色的box到指定时间的位置
+	/// </summary>
+	/// <param name="HitCharacter"></param>
+	/// <param name="Package"></param>
+	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
+	/// <summary>
+	/// 恢复命中角色box的位置到最新位置
+	/// </summary>
+	/// <param name="HitCharacter"></param>
+	/// <param name="Package"></param>
+	void ResetHitBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
+	/// <summary>
+	/// 设置角色网格的碰撞是否开启
+	/// </summary>
+	/// <param name="HitCharacter"></param>
+	/// <param name="CollisionEnabled"></param>
+	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 public:
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
 
