@@ -101,7 +101,8 @@ private:
 	/// <param name="TraceStart">射击开始位置</param>
 	/// <param name="HitLocation">命中位置</param>
 	/// <param name="HitTime">命中时间</param>
-	void ServerSideRewind(
+	/// <returns>命中结果</returns>
+	FServerSideRewindResult ServerSideRewind(
 		class ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation,

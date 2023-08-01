@@ -88,13 +88,13 @@ void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, c
 	}
 }
 
-void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
+FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
 {
 	bool bReturn = HitCharacter == nullptr ||
 		HitCharacter->GetLagCompensationComp() == nullptr ||
 		HitCharacter->GetLagCompensationComp()->FrameHistory.GetHead() == nullptr ||
 		HitCharacter->GetLagCompensationComp()->FrameHistory.GetTail() == nullptr;
-	if (bReturn) return;
+	if (bReturn) return FServerSideRewindResult();
 
 	// 受击角色的帧历史数据
 	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensationComp()->FrameHistory;
@@ -105,7 +105,7 @@ void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter
 	// 最旧时间大于命中时间，时间太久远无法倒带
 	if (OldestHistoryTime > HitTime)
 	{
-		return;
+		return FServerSideRewindResult();
 	}
 	// 是否需要进行差值
 	bool bShouldInterpolate = true;
@@ -146,12 +146,10 @@ void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter
 	// 根据OlderTime < HitTime < YoungerTime进行插值
 	if (bShouldInterpolate)
 	{
-
+		FrameToCheck = InterpBetweenFrames(Older->GetValue(), Younger->GetValue(), HitTime);
 	}
-	else
-	{
 
-	}
+	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
 }
 
 FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime)
