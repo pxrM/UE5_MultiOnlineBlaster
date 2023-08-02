@@ -75,6 +75,8 @@ public:
 		bool bHeadShot;
 };
 
+
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API ULagCompensationComponent : public UActorComponent
 {
@@ -93,9 +95,17 @@ protected:
 
 
 private:
+	/// <summary>
+	/// 缓存每一帧的box数据包
+	/// </summary>
+	void SaveFramePackage();
+	/// <summary>
+	/// 缓存一帧的数据包
+	/// </summary>
+	/// <param name="Package"></param>
 	void SaveFramePackage(FFramePackage& Package);
 	/// <summary>
-	/// 射击服务器倒带
+	/// 服务器射击倒带
 	/// </summary>
 	/// <param name="HitCharacter">击中的角色</param>
 	/// <param name="TraceStart">射击开始位置</param>
@@ -152,8 +162,31 @@ private:
 	/// <param name="HitCharacter"></param>
 	/// <param name="CollisionEnabled"></param>
 	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
+	
+
 public:
+	/// <summary>
+	/// debug 显示数据的box框
+	/// </summary>
+	/// <param name="Package"></param>
+	/// <param name="Color"></param>
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
+	/// <summary>
+	/// 向服务器请求攻击结果，获取分数
+	/// </summary>
+	/// <param name="HitCharacter">击中的角色</param>
+	/// <param name="TraceStart">射击开始位置</param>
+	/// <param name="HitLocation">命中位置</param>
+	/// <param name="HitTime">命中时间</param>
+	/// <param name="DamageCauser">伤害原因</param>
+	UFUNCTION(Server, Reliable)
+		void ServerScoreRequest(
+			class ABlasterCharacter* HitCharacter,
+			const FVector_NetQuantize& TraceStart,
+			const FVector_NetQuantize& HitLocation,
+			float HitTime,
+			class AWeapon* DamageCauser);
+
 
 private:
 	UPROPERTY()
@@ -166,7 +199,7 @@ private:
 	UPROPERTY(EditAnywhere)
 		float MaxRecordTime = 4.f;
 	/// <summary>
-	/// 存储一段时间内发生的帧数据，使用双向链表方便从链表头尾节点执行添加和移除操作
+	/// 存储《MaxRecordTime》时间内发生的帧数据，使用双向链表方便从链表头尾节点执行添加和移除操作
 	/// </summary>
 	TDoubleLinkedList<FFramePackage> FrameHistory;
 

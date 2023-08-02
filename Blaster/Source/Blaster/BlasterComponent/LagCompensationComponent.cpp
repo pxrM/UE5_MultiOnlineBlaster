@@ -2,9 +2,11 @@
 
 
 #include "LagCompensationComponent.h"
-#include "Blaster/Character/BlasterCharacter.h"
 #include "Components/BoxComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/Weapon/Weapon.h"
 
 // Sets default values for this component's properties
 ULagCompensationComponent::ULagCompensationComponent()
@@ -33,25 +35,31 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+	SaveFramePackage();
+}
+
+void ULagCompensationComponent::SaveFramePackage()
+{
+	if (Character == nullptr || !Character->HasAuthority()) return;
 	FFramePackage ThisFrame;
 	if (FrameHistory.Num() <= 1)
 	{
 		SaveFramePackage(ThisFrame);
-		FrameHistory.AddHead(ThisFrame); //添加在头部
+		FrameHistory.AddHead(ThisFrame); // 添加在头部
 	}
 	else
 	{
-		//获取最新帧包和最旧帧包之间的时间差
+		// 获取最新帧包和最旧帧包之间的时间差
 		float HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
 		while (HistoryLength > MaxRecordTime)
 		{
-			//删除过期的旧包
+			// 删除过期的旧包
 			FrameHistory.RemoveNode(FrameHistory.GetTail());
 			HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
 		}
 		SaveFramePackage(ThisFrame);
 		FrameHistory.AddHead(ThisFrame);
-		ShowFramePackage(ThisFrame, FColor::Red);
+		//ShowFramePackage(ThisFrame, FColor::Red);
 	}
 }
 
@@ -85,6 +93,15 @@ void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, c
 			false,
 			4.f
 		);
+	}
+}
+
+void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCauser)
+{
+	FServerSideRewindResult Comfim = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime); 
+	if (Comfim.bHitConfirmed && Character && HitCharacter && DamageCauser)
+	{
+		UGameplayStatics::ApplyDamage(HitCharacter, DamageCauser->GetDameage(), Character->Controller, DamageCauser, UDamageType::StaticClass());
 	}
 }
 
@@ -128,7 +145,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 	// 如果Older的时间比击中时间大
 	while (Older->GetValue().Time > HitTime)
 	{
-		// 结果： OlderTime < HitTime < YoungerTime
+		// 结果：... < OlderTime < HitTime < YoungerTime < ...
 		if (Older->GetNextNode() == nullptr) break;
 		Older = Older->GetNextNode();
 		if (Older->GetValue().Time > HitTime)

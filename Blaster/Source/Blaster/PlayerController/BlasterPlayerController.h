@@ -155,4 +155,11 @@ private:
 	UPROPERTY(EditAnywhere)
 		float HighPingDuration = 5.f;
 
+
+public:
+	/// <summary>
+	/// rpc单程发送时间
+	/// </summary>
+	float SingleTripTime = 0.f;
+
 };

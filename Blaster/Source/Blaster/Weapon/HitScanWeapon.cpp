@@ -3,12 +3,14 @@
 
 #include "HitScanWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Blaster/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "WeaponTypes.h"
 #include "DrawDebugHelpers.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/BlasterComponent/LagCompensationComponent.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
 {
@@ -18,30 +20,50 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 	if (OwnerPawn == nullptr)
 		return;
 
-	AController* InstigatorController = OwnerPawn->GetController();
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
 	if (MuzzleFlashSocket)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
 
-		//线性射线检测
+		// 线性射线检测
 		FHitResult FireHit;
 		WeaponTraceHit(Start, HitTarget, FireHit);
 
-		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-		if (BlasterCharacter && InstigatorController && HasAuthority())
+		// 击中角色
+		ABlasterCharacter* HitBlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
+		// 发起射击角色的controller
+		AController* InstigatorController = OwnerPawn->GetController();
+		if (HitBlasterCharacter && InstigatorController)
 		{
-			//在服务器施加伤害
-			UGameplayStatics::ApplyDamage(
-				BlasterCharacter,
-				Damage,
-				InstigatorController,
-				this,
-				UDamageType::StaticClass()
-			);
+			if (HasAuthority() && !bUseServerSideRewind)
+			{
+				// 在服务器直接施加伤害
+				UGameplayStatics::ApplyDamage(
+					HitBlasterCharacter,
+					Damage,
+					InstigatorController,
+					this,
+					UDamageType::StaticClass()
+				);
+			}
+			else if (!HasAuthority() && bUseServerSideRewind)
+			{
+				// 在客户端请求服务器进行倒带施加伤害
+				BlasterOwnerCharacter = HitBlasterCharacter == nullptr ?
+					Cast<ABlasterCharacter>(OwnerPawn) : HitBlasterCharacter;
+				BlasterOwnerController = BlasterOwnerController == nullptr ?
+					Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
+				if (BlasterOwnerCharacter && BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensationComp())
+				{
+					// 攻击时间等于服务器时间减去单次发送时间
+					const float HitTime = BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime;
+					BlasterOwnerCharacter->GetLagCompensationComp()->ServerScoreRequest(
+						HitBlasterCharacter, Start, HitTarget, HitTime, this);
+				}
+			}
 		}
-		//播放特效
+		// 播放特效
 		if (ImpactParticles)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(
@@ -51,7 +73,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				FireHit.ImpactNormal.Rotation()
 			);
 		}
-		//播放击中音效
+		// 播放击中音效
 		if (HitSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(
@@ -60,7 +82,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				FireHit.ImpactPoint
 			);
 		}
-		//播放枪口特效
+		// 播放枪口特效
 		if (MuzzleFlash)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(
@@ -69,7 +91,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				SocketTransform
 			);
 		}
-		//播放开火音效
+		// 播放开火音效
 		if (FireSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(

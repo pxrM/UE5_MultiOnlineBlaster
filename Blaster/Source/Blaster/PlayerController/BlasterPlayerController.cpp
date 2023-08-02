@@ -337,6 +337,8 @@ void ABlasterPlayerController::SetHUDTime()
 	CountdownInt = SecondsLeft;
 }
 
+
+
 void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
 {
 	TimeSyncRunningTime += DeltaTime;
@@ -356,7 +358,8 @@ void ABlasterPlayerController::ServerRequestServerTime_Implementation(float Time
 void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceivedRequest)
 {
 	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest; //计算客户端请求的往返时间
-	float CurrentServerTime = TimeServerReceivedRequest + (RoundTripTime * 0.5f); //服务器回包的时间+往返时间的一半
+	SingleTripTime = RoundTripTime * 0.5f;
+	float CurrentServerTime = TimeServerReceivedRequest + SingleTripTime; //服务器回包的时间+往返时间的一半
 	ClientServerDelte = CurrentServerTime - GetWorld()->GetTimeSeconds();
 }
 
@@ -366,6 +369,8 @@ float ABlasterPlayerController::GetServerTime()
 		return GetWorld()->GetTimeSeconds();
 	return GetWorld()->GetTimeSeconds() + ClientServerDelte;
 }
+
+
 
 void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 {
@@ -494,6 +499,7 @@ void ABlasterPlayerController::HandleCooldown()
 		}
 	}
 }
+
 
 
 void ABlasterPlayerController::CheckPing(float DeltaTime)

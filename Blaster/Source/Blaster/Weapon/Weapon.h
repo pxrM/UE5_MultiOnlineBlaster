@@ -44,11 +44,6 @@ protected:
 
 
 private:
-	UPROPERTY()
-		class ABlasterCharacter* BlasterOwnerCharacter;
-	UPROPERTY()
-		class ABlasterPlayerController* BlasterOwnerController;
-
 	/// <summary>
 	/// 武器网格
 	/// </summary>
@@ -154,6 +149,19 @@ public:
 	/// </summary>
 	bool bDestroyWeapon = false;
 
+	/// <summary>
+	/// 是否使用分散子弹
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+		bool bUseSactter = false;
+
+
+protected:
+	UPROPERTY()
+		class ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+		class ABlasterPlayerController* BlasterOwnerController;
+
 	/* 分散子弹 */
 	/// <summary>
 	/// 分散球体和枪口的距离
@@ -165,11 +173,18 @@ public:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 		float SphereRadius = 75.f;
+
 	/// <summary>
-	/// 是否使用分散子弹
+	/// 武器伤害
 	/// </summary>
-	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-		bool bUseSactter = false;
+	UPROPERTY(EditAnywhere)
+		float Damage = 20.f;
+
+	/// <summary>
+	/// 是否启用服务器倒带
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+		bool bUseServerSideRewind = false;
 
 
 protected:
@@ -227,7 +242,7 @@ public:
 	FORCEINLINE EFireType GetFireType() const { return FireType; }
 	FORCEINLINE int32 GetAmmoNum() const { return AmmoNum; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
-
+	FORCEINLINE float GetDameage() const { return Damage; }
 	/// <summary>
 	/// 获取一个扩散后的目标方向
 	/// </summary>
