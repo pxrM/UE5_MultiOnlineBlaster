@@ -69,6 +69,7 @@ void ULagCompensationComponent::SaveFramePackage(FFramePackage& Package)
 	if (Character)
 	{
 		Package.Time = GetWorld()->GetTimeSeconds();
+		Package.Character = Character;
 		TMap<FName, UBoxComponent*> HitCollisionBoxes = Character->GetHitCollisionBoxs();
 		for (const auto& BoxPair : HitCollisionBoxes)
 		{
@@ -98,7 +99,7 @@ void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, c
 
 void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime, AWeapon* DamageCauser)
 {
-	FServerSideRewindResult Comfim = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime); 
+	FServerSideRewindResult Comfim = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
 	if (Comfim.bHitConfirmed && Character && HitCharacter && DamageCauser)
 	{
 		UGameplayStatics::ApplyDamage(HitCharacter, DamageCauser->GetDameage(), Character->Controller, DamageCauser, UDamageType::StaticClass());
@@ -107,11 +108,27 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharac
 
 FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize& HitLocation, float HitTime)
 {
+	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
+	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+}
+
+FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServerSideRewind(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime)
+{
+	TArray<FFramePackage> FrameToChecks;
+	for (ABlasterCharacter* HitCharacter : HitCharacters)
+	{
+		FrameToChecks.Add(GetFrameToCheck(HitCharacter, HitTime));
+	}
+	return FShotgunServerSideRewindResult();
+}
+
+FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime)
+{
 	bool bReturn = HitCharacter == nullptr ||
 		HitCharacter->GetLagCompensationComp() == nullptr ||
 		HitCharacter->GetLagCompensationComp()->FrameHistory.GetHead() == nullptr ||
 		HitCharacter->GetLagCompensationComp()->FrameHistory.GetTail() == nullptr;
-	if (bReturn) return FServerSideRewindResult();
+	if (bReturn) return FFramePackage();
 
 	// 受击角色的帧历史数据
 	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensationComp()->FrameHistory;
@@ -122,10 +139,12 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 	// 最旧时间大于命中时间，时间太久远无法倒带
 	if (OldestHistoryTime > HitTime)
 	{
-		return FServerSideRewindResult();
+		return FFramePackage();
 	}
+
 	// 是否需要进行差值
 	bool bShouldInterpolate = true;
+
 	FFramePackage FrameToCheck;
 	// 最旧的历史时间刚好等于命中时间
 	if (OldestHistoryTime == HitTime)
@@ -160,13 +179,13 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 		FrameToCheck = Older->GetValue();
 	}
 
-	// 根据OlderTime < HitTime < YoungerTime进行插值
 	if (bShouldInterpolate)
 	{
+		// 根据 OlderTime < HitTime < YoungerTime 进行插值
 		FrameToCheck = InterpBetweenFrames(Older->GetValue(), Younger->GetValue(), HitTime);
 	}
 
-	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+	return FrameToCheck;
 }
 
 FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime)
@@ -232,7 +251,7 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 		{
 			// 没有击中头部，开始其他部位检测
 			for (auto& HitBoxPair : HitCollisionBoxes)
-			{ 
+			{
 				if (HitBoxPair.Value != nullptr)
 				{
 					HitBoxPair.Value->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -253,6 +272,11 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
 	}
 	return FServerSideRewindResult{ false, false };
+}
+
+FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations)
+{
+	return FShotgunServerSideRewindResult();
 }
 
 void ULagCompensationComponent::CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFrameackage)

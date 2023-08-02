@@ -53,6 +53,11 @@ public:
 	/// </summary>
 	UPROPERTY()
 		TMap<FName, FBoxInformation> HitBoxInfo;
+	/// <summary>
+	/// 角色指针
+	/// </summary>
+	UPROPERTY()
+		ABlasterCharacter* Character;
 };
 
 /// <summary>
@@ -73,6 +78,26 @@ public:
 	/// </summary>
 	UPROPERTY()
 		bool bHeadShot;
+};
+
+/// <summary>
+/// 霰弹枪）服务器倒带命中结果
+/// </summary>
+USTRUCT(BlueprintType)
+struct FShotgunServerSideRewindResult
+{
+	GENERATED_BODY()
+public:
+	/// <summary>
+	/// 每个角色的头部击中次数
+	/// </summary>
+	UPROPERTY()
+		TMap<ABlasterCharacter*, uint32> HeadShots;
+	/// <summary>
+	/// 每个角色的身体击中次数
+	/// </summary>
+	UPROPERTY()
+		TMap<ABlasterCharacter*, uint32> BodyShots;
 };
 
 
@@ -113,10 +138,17 @@ private:
 	/// <param name="HitTime">命中时间</param>
 	/// <returns>命中结果</returns>
 	FServerSideRewindResult ServerSideRewind(
-		class ABlasterCharacter* HitCharacter,
+		ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation,
 		float HitTime);
+	/// <summary>
+	/// 根据命中时间获取需要检测的帧数据包
+	/// </summary>
+	/// <param name="HitCharacter">击中的角色</param>
+	/// <param name="HitTime">命中时间</param>
+	/// <returns></returns>
+	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
 	/// <summary>
 	/// 在命中时间的前一帧和后一帧之间进行插值运算
 	/// </summary>
@@ -134,8 +166,8 @@ private:
 	/// <param name="HitLocaton">命中位置</param>
 	/// <returns></returns>
 	FServerSideRewindResult ConfirmHit(
-		const FFramePackage& Package, 
-		ABlasterCharacter* HitCharacter, 
+		const FFramePackage& Package,
+		ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocaton);
 	/// <summary>
@@ -162,7 +194,33 @@ private:
 	/// <param name="HitCharacter"></param>
 	/// <param name="CollisionEnabled"></param>
 	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
-	
+
+	/* 霰弹枪倒带处理 */
+	/// <summary>
+	/// 服务器射击倒带
+	/// </summary>
+	/// <param name="HitCharacters">多个命中角色</param>
+	/// <param name="TraceStart">射击开始位置</param>
+	/// <param name="HitLocations">多个命中位置</param>
+	/// <param name="HitTime">命中时间</param>
+	/// <returns></returns>
+	FShotgunServerSideRewindResult ShotgunServerSideRewind(
+		const TArray<ABlasterCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations,
+		float HitTime);
+	/// <summary>
+	/// 计算命中结果
+	/// </summary>
+	/// <param name="HitCharacters"></param>
+	/// <param name="TraceStart"></param>
+	/// <param name="HitLocations"></param>
+	/// <returns></returns>
+	FShotgunServerSideRewindResult ShotgunConfirmHit(
+		const TArray<ABlasterCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations);
+
 
 public:
 	/// <summary>
