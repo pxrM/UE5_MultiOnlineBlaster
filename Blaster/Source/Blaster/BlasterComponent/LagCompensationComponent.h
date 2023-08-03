@@ -239,11 +239,18 @@ public:
 	/// <param name="DamageCauser">…À∫¶‘≠“Ú</param>
 	UFUNCTION(Server, Reliable)
 		void ServerScoreRequest(
-			class ABlasterCharacter* HitCharacter,
+			ABlasterCharacter* HitCharacter,
 			const FVector_NetQuantize& TraceStart,
 			const FVector_NetQuantize& HitLocation,
 			float HitTime,
 			class AWeapon* DamageCauser);
+	UFUNCTION(Server, Reliable)
+		void ShotgunServerScoreRequest(
+			const TArray<ABlasterCharacter*>& HitCharacters,
+			const FVector_NetQuantize& TraceStart,
+			const TArray<FVector_NetQuantize>& HitLocations,
+			float HitTime
+		);
 
 
 private:
