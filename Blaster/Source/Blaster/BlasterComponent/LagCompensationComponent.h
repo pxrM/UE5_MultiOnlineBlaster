@@ -169,7 +169,7 @@ private:
 		const FFramePackage& Package,
 		ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
-		const FVector_NetQuantize& HitLocaton);
+		const FVector_NetQuantize& HitLocation);
 	/// <summary>
 	/// 缓存角色当前box的位置
 	/// </summary>
@@ -217,7 +217,7 @@ private:
 	/// <param name="HitLocations"></param>
 	/// <returns></returns>
 	FShotgunServerSideRewindResult ShotgunConfirmHit(
-		const TArray<ABlasterCharacter*>& HitCharacters,
+		const TArray<FFramePackage>& FramePackages,
 		const FVector_NetQuantize& TraceStart,
 		const TArray<FVector_NetQuantize>& HitLocations);
 
