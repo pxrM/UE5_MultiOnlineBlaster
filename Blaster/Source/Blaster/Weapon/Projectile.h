@@ -29,7 +29,7 @@ protected:
 protected:
 	UFUNCTION()
 		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-	
+
 	virtual void CollideManifestation(); //碰撞后的表现
 
 	void SpawnTrailSystem(); //生成拖尾特效
@@ -68,6 +68,23 @@ protected:
 	UPROPERTY(EditAnywhere)
 		float DamageOuterRadius = 500.f; //范围伤害外半径
 
+	UPROPERTY(EditAnywhere)
+		float InitialSpeed = 15000.f; //弹丸的移动速度
+
+	/* 与服务器端倒带一起使用 */
+	/// <summary>
+	/// 是否启用服务器倒带验证
+	/// </summary>
+	bool bUseServerSideRewind = false;
+	/// <summary>
+	/// 开始发射位置（FVector_NetQuantize整数）
+	/// </summary>
+	FVector_NetQuantize TraceStart;
+	/// <summary>
+	/// 子弹初始发射速度（FVector_NetQuantize100精确到小数点后两位）
+	/// </summary>
+	FVector_NetQuantize100 InitialVelocity;
+
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -81,11 +98,8 @@ private:
 	UPROPERTY(EditAnywhere)
 		class USoundCue* ImpactSound;  //撞击时产生的音效
 
-	//拖尾特效延迟销毁计时器
-	FTimerHandle TrailDestroyTimer;
-	//延迟销毁时间
+	
+	FTimerHandle TrailDestroyTimer; //拖尾特效延迟销毁计时器
 	UPROPERTY(EditAnywhere)
-		float TrailDestroyTime = 3.f;
-
-
+		float TrailDestroyTime = 3.f;//延迟销毁时间
 };
