@@ -50,11 +50,12 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			else if (!HasAuthority() && bUseServerSideRewind)
 			{
 				// 在客户端请求服务器进行倒带施加伤害
-				BlasterOwnerCharacter = HitBlasterCharacter == nullptr ?
-					Cast<ABlasterCharacter>(OwnerPawn) : HitBlasterCharacter;
+				BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ?
+					Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 				BlasterOwnerController = BlasterOwnerController == nullptr ?
 					Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
-				if (BlasterOwnerCharacter && BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensationComp())
+				if (BlasterOwnerCharacter && BlasterOwnerCharacter->IsLocallyControlled() &&
+					BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensationComp())
 				{
 					// 攻击时间等于服务器时间减去单次发送时间
 					const float HitTime = BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime;

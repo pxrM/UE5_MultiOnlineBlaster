@@ -214,6 +214,7 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 		// 根据 OlderTime < HitTime < YoungerTime 进行插值
 		FrameToCheck = InterpBetweenFrames(Older->GetValue(), Younger->GetValue(), HitTime);
 	}
+	FrameToCheck.Character = HitCharacter;
 
 	return FrameToCheck;
 }

@@ -3,11 +3,13 @@
 
 #include "ShotgunWeapon.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Blaster/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/BlasterComponent/LagCompensationComponent.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 void AShotgunWeapon::Fire(const FVector& HitTarget)
 {
@@ -138,16 +140,39 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize> HitTargets)
 			}
 		}
 
-		for (auto HitPair : HitMap)
+		if (HasAuthority() && !bUseServerSideRewind)
 		{
-			if (HitPair.Key && InstigatorController && HasAuthority())
+			// 在服务器直接施加伤害
+			for (auto HitPair : HitMap)
 			{
-				UGameplayStatics::ApplyDamage(
-					HitPair.Key,
-					Damage * HitPair.Value,
-					InstigatorController,
-					this,
-					UDamageType::StaticClass()
+				if (HitPair.Key && InstigatorController && HasAuthority())
+				{
+					UGameplayStatics::ApplyDamage(
+						HitPair.Key,
+						Damage * HitPair.Value,
+						InstigatorController,
+						this,
+						UDamageType::StaticClass()
+					);
+				}
+			}
+		}
+		else if (!HasAuthority() && bUseServerSideRewind)
+		{
+			TArray<ABlasterCharacter*> HitCharacters;
+			HitMap.GenerateKeyArray(HitCharacters);
+			// 在客户端请求服务器进行倒带施加伤害
+			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ?
+				Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
+			BlasterOwnerController = BlasterOwnerController == nullptr ?
+				Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
+			if (BlasterOwnerCharacter && BlasterOwnerCharacter->IsLocallyControlled() &&
+				BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensationComp())
+			{
+				// 攻击时间等于服务器时间减去单次发送时间
+				const float HitTime = BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime;
+				BlasterOwnerCharacter->GetLagCompensationComp()->ShotgunServerScoreRequest(
+					HitCharacters, Start, HitTargets, HitTime
 				);
 			}
 		}
