@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "ProjectileBullet.h"
@@ -15,56 +15,73 @@ AProjectileBullet::AProjectileBullet()
 	ProjectileMovementComponent->MaxSpeed = InitialSpeed;
 }
 
+#if WITH_EDITOR
+void AProjectileBullet::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+
+	FName PropertyName = Event.Property != nullptr ? Event.Property->GetFName() : NAME_None;
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AProjectileBullet, InitialSpeed))
+	{
+		if (ProjectileMovementComponent)
+		{
+			ProjectileMovementComponent->InitialSpeed = InitialSpeed;
+			ProjectileMovementComponent->MaxSpeed = InitialSpeed;
+		}
+	}
+}
+#endif
+
 void AProjectileBullet::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ´æ´¢Ô¤²âÂ·¾¶µÄ²ÎÊı
+	// å­˜å‚¨é¢„æµ‹è·¯å¾„çš„å‚æ•°
 	FPredictProjectilePathParams PathParams;
-	// ¿ªÆôÊ¹ÓÃÅö×²Í¨µÀÀ´Ô¤²âÂ·¾¶
+	// å¼€å¯ä½¿ç”¨ç¢°æ’é€šé“æ¥é¢„æµ‹è·¯å¾„
 	PathParams.bTraceWithChannel = true;
-	// ¿ªÆôÊ¹ÓÃÅö×²¼ì²âÀ´Ô¤²âÂ·¾¶
+	// å¼€å¯ä½¿ç”¨ç¢°æ’æ£€æµ‹æ¥é¢„æµ‹è·¯å¾„
 	PathParams.bTraceWithCollision = true;
-	// ÉèÖÃÔÚÆÁÄ»ÉÏ»æÖÆÂ·¾¶µÄ³ÖĞøÊ±¼ä£¨ÒÔÃëÎªµ¥Î»£©
+	// è®¾ç½®åœ¨å±å¹•ä¸Šç»˜åˆ¶è·¯å¾„çš„æŒç»­æ—¶é—´ï¼ˆä»¥ç§’ä¸ºå•ä½ï¼‰
 	PathParams.DrawDebugTime = 5.f;
-	// ÉèÖÃÔÚÆÁÄ»ÉÏ»æÖÆÂ·¾¶µÄ·½Ê½£¨ÔÚÒ»¶¨Ê±¼äÄÚ»æÖÆ£©
+	// è®¾ç½®åœ¨å±å¹•ä¸Šç»˜åˆ¶è·¯å¾„çš„æ–¹å¼ï¼ˆåœ¨ä¸€å®šæ—¶é—´å†…ç»˜åˆ¶ï¼‰
 	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
-	// ÉèÖÃÅ×³öÎïÌåµÄËÙ¶ÈÊ¸Á¿£¬ÕâÀïÊ¹ÓÃÁËµ±Ç°½ÇÉ«µÄÇ°ÏòÏòÁ¿²¢³ËÒÔÒ»¸ö³£Êı
+	// è®¾ç½®æŠ›å‡ºç‰©ä½“çš„é€Ÿåº¦çŸ¢é‡ï¼Œè¿™é‡Œä½¿ç”¨äº†å½“å‰è§’è‰²çš„å‰å‘å‘é‡å¹¶ä¹˜ä»¥ä¸€ä¸ªå¸¸æ•°
 	PathParams.LaunchVelocity = GetActorForwardVector() * InitialSpeed;
-	// ÉèÖÃÔ¤²âµÄ×î³¤Ê±¼ä£¨ÒÔÃëÎªµ¥Î»£©
+	// è®¾ç½®é¢„æµ‹çš„æœ€é•¿æ—¶é—´ï¼ˆä»¥ç§’ä¸ºå•ä½ï¼‰
 	PathParams.MaxSimTime = 4.f;
-	// ÉèÖÃÅ×³öÎïÌåµÄ°ë¾¶£¬Õâ½«Ó°ÏìÂ·¾¶µÄÔ¤²â½á¹û
+	// è®¾ç½®æŠ›å‡ºç‰©ä½“çš„åŠå¾„ï¼Œè¿™å°†å½±å“è·¯å¾„çš„é¢„æµ‹ç»“æœ
 	PathParams.ProjectileRadius = 5.f;
-	// ÉèÖÃÔ¤²âµÄÆµÂÊ
+	// è®¾ç½®é¢„æµ‹çš„é¢‘ç‡
 	PathParams.SimFrequency = 30.f;
-	// ÉèÖÃÅ×³öÎïÌåµÄÆğÊ¼Î»ÖÃ£¬ÕâÀïÊ¹ÓÃÁËµ±Ç°½ÇÉ«µÄÎ»ÖÃ
+	// è®¾ç½®æŠ›å‡ºç‰©ä½“çš„èµ·å§‹ä½ç½®ï¼Œè¿™é‡Œä½¿ç”¨äº†å½“å‰è§’è‰²çš„ä½ç½®
 	PathParams.StartLocation = GetActorLocation();
-	// ÉèÖÃÓÃÓÚÔ¤²âÂ·¾¶µÄÅö×²Í¨µÀ£¬ÕâÀïÊ¹ÓÃÁËVisibilityÍ¨µÀ
+	// è®¾ç½®ç”¨äºé¢„æµ‹è·¯å¾„çš„ç¢°æ’é€šé“ï¼Œè¿™é‡Œä½¿ç”¨äº†Visibilityé€šé“
 	PathParams.TraceChannel = ECollisionChannel::ECC_Visibility;
-	// ½«µ±Ç°½ÇÉ«Ìí¼Óµ½ºöÂÔÁĞ±íÖĞ£¬ÒÔ±ÜÃâÔÚÔ¤²âÂ·¾¶Ê±Óë×ÔÉíÅö×²
+	// å°†å½“å‰è§’è‰²æ·»åŠ åˆ°å¿½ç•¥åˆ—è¡¨ä¸­ï¼Œä»¥é¿å…åœ¨é¢„æµ‹è·¯å¾„æ—¶ä¸è‡ªèº«ç¢°æ’
 	PathParams.ActorsToIgnore.Add(this);
 
-	// ´æ´¢Ô¤²âÂ·¾¶µÄ½á¹û
+	// å­˜å‚¨é¢„æµ‹è·¯å¾„çš„ç»“æœ
 	FPredictProjectilePathResult PathResult;
 
-	// À´Ô¤²âÂ·¾¶£¬½«²ÎÊıºÍ½á¹û½á¹¹Ìå´«Èë
+	// æ¥é¢„æµ‹è·¯å¾„ï¼Œå°†å‚æ•°å’Œç»“æœç»“æ„ä½“ä¼ å…¥
 	UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
 }
 
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()); //OwnerÔÚ AProjectileWeapon::Fire =¡· UCombatComponent::EquipWeaponÖĞÖ¸¶¨Îª½ÇÉ«
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner()); //Owneråœ¨ AProjectileWeapon::Fire =ã€‹ UCombatComponent::EquipWeaponä¸­æŒ‡å®šä¸ºè§’è‰²
 	if (OwnerCharacter)
 	{
 		AController* OwnerController = OwnerCharacter->Controller;
 		if (OwnerController)
 		{
-			//ÕâÀïÖ»ÊÇÍ¨Öª×÷ÓÃ£¬ĞèÒªÉËº¦½ÓÊÕº¯Êı
-			//¶ÔOtherActorÔì³ÉÁËÉËº¦£¬DamageValÊÇÉËº¦Öµ£¬OwnerControllerÊÇÔì³ÉÉËº¦µÄ¿ØÖÆÆ÷£¬this´ú±íÔì³ÉÉËº¦µÄ¶ÔÏó£¬UDamageType::StaticClass()Ôò´ú±íËùÊ¹ÓÃµÄÉËº¦ÀàĞÍ
+			//è¿™é‡Œåªæ˜¯é€šçŸ¥ä½œç”¨ï¼Œéœ€è¦ä¼¤å®³æ¥æ”¶å‡½æ•°
+			//å¯¹OtherActoré€ æˆäº†ä¼¤å®³ï¼ŒDamageValæ˜¯ä¼¤å®³å€¼ï¼ŒOwnerControlleræ˜¯é€ æˆä¼¤å®³çš„æ§åˆ¶å™¨ï¼Œthisä»£è¡¨é€ æˆä¼¤å®³çš„å¯¹è±¡ï¼ŒUDamageType::StaticClass()åˆ™ä»£è¡¨æ‰€ä½¿ç”¨çš„ä¼¤å®³ç±»å‹
 			UGameplayStatics::ApplyDamage(OtherActor, DamageVal, OwnerController, this, UDamageType::StaticClass());
 		}
 	}
 
-	// ÒòÎªsuperÀïÓĞdestroy£¬ËùÒÔĞèÒª·Åµ½ºóÃæÖ´ĞĞ
+	// å› ä¸ºsuperé‡Œæœ‰destroyï¼Œæ‰€ä»¥éœ€è¦æ”¾åˆ°åé¢æ‰§è¡Œ
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 }

@@ -1,6 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 /*
-	Éäµ¯ÎïÌå
+	å°„å¼¹ç‰©ä½“
 */
 
 #pragma once
@@ -19,7 +19,7 @@ public:
 	AProjectile();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	virtual void Destroyed() override; //»áÔÚËùÓĞ»úÆ÷ÉÏµ÷ÓÃ
+	virtual void Destroyed() override; //ä¼šåœ¨æ‰€æœ‰æœºå™¨ä¸Šè°ƒç”¨
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,12 +30,12 @@ protected:
 	UFUNCTION()
 		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	virtual void CollideManifestation(); //Åö×²ºóµÄ±íÏÖ
+	virtual void CollideManifestation(); //ç¢°æ’åçš„è¡¨ç°
 
-	void SpawnTrailSystem(); //Éú³ÉÍÏÎ²ÌØĞ§
+	void SpawnTrailSystem(); //ç”Ÿæˆæ‹–å°¾ç‰¹æ•ˆ
 
-	void StartDestroyTimer(); //Æô¶¯ÑÓ³ÙÏú»Ù¼ÆÊ±Æ÷
-	void TrailDestroyTimerFinished(); //ÍÏÎ²ÌØĞ§ÑÓ³ÙÏú»Ù¼ÆÊ±Æ÷Íê³É»Øµ÷
+	void StartDestroyTimer(); //å¯åŠ¨å»¶è¿Ÿé”€æ¯è®¡æ—¶å™¨
+	void TrailDestroyTimerFinished(); //æ‹–å°¾ç‰¹æ•ˆå»¶è¿Ÿé”€æ¯è®¡æ—¶å™¨å®Œæˆå›è°ƒ
 
 	void ExplodeDamage();
 
@@ -45,61 +45,61 @@ protected:
 		class UBoxComponent* CollisionBox;
 
 	UPROPERTY(EditAnywhere)
-		float DamageVal = 20.f; //ÉËº¦
+		float DamageVal = 20.f; //ä¼¤å®³
 
-	//ÍÏÎ²ÌØĞ§¹ÜÀí
-	//UNiagaraSystem ÊÇÓÃÓÚ´´½¨ºÍ¹ÜÀí Niagara ÏµÍ³µÄÀà¡£Niagara ÊÇUeµÄÒ»¸öÇ¿´óµÄÌØĞ§ÏµÍ³£¬ÓÃÓÚ´´½¨¸ß¶È¿É¶¨ÖÆµÄÁ£×ÓºÍÌØĞ§¡£
-	//UNiagaraSystem °üº¬ÁËÒ»ÏµÁĞÁ£×ÓÄ£¿éºÍ²ÎÊı£¬ÓÃÓÚ¶¨ÒåÌØĞ§µÄĞĞÎª¡¢Íâ¹ÛºÍ½»»¥¡£
-	//UNiagaraSystem ¿ÉÒÔ±»ÓÃÓÚ´´½¨ºÍ¹ÜÀíÒ»¸ö»ò¶à¸ö UNiagaraComponent ÊµÀı£¬²¢ÔÚ³¡¾°ÖĞ½øĞĞÊµÀı»¯ºÍ²¥·Å¡£
+	//æ‹–å°¾ç‰¹æ•ˆç®¡ç†
+	//UNiagaraSystem æ˜¯ç”¨äºåˆ›å»ºå’Œç®¡ç† Niagara ç³»ç»Ÿçš„ç±»ã€‚Niagara æ˜¯Ueçš„ä¸€ä¸ªå¼ºå¤§çš„ç‰¹æ•ˆç³»ç»Ÿï¼Œç”¨äºåˆ›å»ºé«˜åº¦å¯å®šåˆ¶çš„ç²’å­å’Œç‰¹æ•ˆã€‚
+	//UNiagaraSystem åŒ…å«äº†ä¸€ç³»åˆ—ç²’å­æ¨¡å—å’Œå‚æ•°ï¼Œç”¨äºå®šä¹‰ç‰¹æ•ˆçš„è¡Œä¸ºã€å¤–è§‚å’Œäº¤äº’ã€‚
+	//UNiagaraSystem å¯ä»¥è¢«ç”¨äºåˆ›å»ºå’Œç®¡ç†ä¸€ä¸ªæˆ–å¤šä¸ª UNiagaraComponent å®ä¾‹ï¼Œå¹¶åœ¨åœºæ™¯ä¸­è¿›è¡Œå®ä¾‹åŒ–å’Œæ’­æ”¾ã€‚
 	UPROPERTY(EditAnywhere)
 		class UNiagaraSystem* TrailSystem;
-	//ÊÇÒ»¸ö Unreal Engine ÖĞµÄ×é¼şÀà£¬ÓÃÓÚÔÚ³¡¾°ÖĞ·ÅÖÃºÍ¿ØÖÆ Niagara ÏµÍ³¡£
+	//æ˜¯ä¸€ä¸ª Unreal Engine ä¸­çš„ç»„ä»¶ç±»ï¼Œç”¨äºåœ¨åœºæ™¯ä¸­æ”¾ç½®å’Œæ§åˆ¶ Niagara ç³»ç»Ÿã€‚
 	UPROPERTY()
 		class UNiagaraComponent* TrailSystemComponent;
 
 	UPROPERTY(VisibleAnyWhere)
-		class UProjectileMovementComponent* ProjectileMovementComponent; //ÓÃÓÚÊµÏÖ×Óµ¯¡¢»ğ¼ıµÈÉäµ¯ÎïÌåÔË¶¯µÄ×é¼şÀà
+		class UProjectileMovementComponent* ProjectileMovementComponent; //ç”¨äºå®ç°å­å¼¹ã€ç«ç®­ç­‰å°„å¼¹ç‰©ä½“è¿åŠ¨çš„ç»„ä»¶ç±»
 
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* ProjectileMash;
 
 	UPROPERTY(EditAnywhere)
-		float DamageInnerRadius = 200.f; //·¶Î§ÉËº¦ÄÚ°ë¾¶
+		float DamageInnerRadius = 200.f; //èŒƒå›´ä¼¤å®³å†…åŠå¾„
 	UPROPERTY(EditAnywhere)
-		float DamageOuterRadius = 500.f; //·¶Î§ÉËº¦Íâ°ë¾¶
+		float DamageOuterRadius = 500.f; //èŒƒå›´ä¼¤å®³å¤–åŠå¾„
 
 	UPROPERTY(EditAnywhere)
-		float InitialSpeed = 15000.f; //µ¯ÍèµÄÒÆ¶¯ËÙ¶È
+		float InitialSpeed = 15000.f; //å¼¹ä¸¸çš„ç§»åŠ¨é€Ÿåº¦
 
-	/* Óë·şÎñÆ÷¶Ëµ¹´øÒ»ÆğÊ¹ÓÃ */
+	/* ä¸æœåŠ¡å™¨ç«¯å€’å¸¦ä¸€èµ·ä½¿ç”¨ */
 	/// <summary>
-	/// ÊÇ·ñÆôÓÃ·şÎñÆ÷µ¹´øÑéÖ¤
+	/// æ˜¯å¦å¯ç”¨æœåŠ¡å™¨å€’å¸¦éªŒè¯
 	/// </summary>
 	bool bUseServerSideRewind = false;
 	/// <summary>
-	/// ¿ªÊ¼·¢ÉäÎ»ÖÃ£¨FVector_NetQuantizeÕûÊı£©
+	/// å¼€å§‹å‘å°„ä½ç½®ï¼ˆFVector_NetQuantizeæ•´æ•°ï¼‰
 	/// </summary>
 	FVector_NetQuantize TraceStart;
 	/// <summary>
-	/// ×Óµ¯³õÊ¼·¢ÉäËÙ¶È£¨FVector_NetQuantize100¾«È·µ½Ğ¡ÊıµãºóÁ½Î»£©
+	/// å­å¼¹åˆå§‹å‘å°„é€Ÿåº¦ï¼ˆFVector_NetQuantize100ç²¾ç¡®åˆ°å°æ•°ç‚¹åä¸¤ä½ï¼‰
 	/// </summary>
 	FVector_NetQuantize100 InitialVelocity;
 
 
 private:
 	UPROPERTY(EditAnywhere)
-		class UParticleSystem* Tracer; //ÓÃÓÚ´´½¨ºÍ¹ÜÀíÁ£×ÓÌØĞ§µÄÀà£¬×Óµ¯·ÉĞĞÊ±ÓÃ
+		class UParticleSystem* Tracer; //ç”¨äºåˆ›å»ºå’Œç®¡ç†ç²’å­ç‰¹æ•ˆçš„ç±»ï¼Œå­å¼¹é£è¡Œæ—¶ç”¨
 	UPROPERTY()
-		class UParticleSystemComponent* TracerComponent; //Á£×ÓÏµÍ³Ïà¹ØµÄ×é¼şÀà¡£¸ÃÀà¿ÉÒÔ±»ÓÃÓÚ½« "UParticleSystem" ´´½¨µÄÁ£×ÓÌØĞ§¸½¼Óµ½ÓÎÏ·ÖĞµÄ½ÇÉ«¡¢³¡¾°¡¢ÎïÌåµÈÉÏ
+		class UParticleSystemComponent* TracerComponent; //ç²’å­ç³»ç»Ÿç›¸å…³çš„ç»„ä»¶ç±»ã€‚è¯¥ç±»å¯ä»¥è¢«ç”¨äºå°† "UParticleSystem" åˆ›å»ºçš„ç²’å­ç‰¹æ•ˆé™„åŠ åˆ°æ¸¸æˆä¸­çš„è§’è‰²ã€åœºæ™¯ã€ç‰©ä½“ç­‰ä¸Š
 
 	UPROPERTY(EditAnywhere)
-		UParticleSystem* ImpactParticles; //×²»÷Ê±²úÉúµÄÌØĞ§
+		UParticleSystem* ImpactParticles; //æ’å‡»æ—¶äº§ç”Ÿçš„ç‰¹æ•ˆ
 
 	UPROPERTY(EditAnywhere)
-		class USoundCue* ImpactSound;  //×²»÷Ê±²úÉúµÄÒôĞ§
+		class USoundCue* ImpactSound;  //æ’å‡»æ—¶äº§ç”Ÿçš„éŸ³æ•ˆ
 
 	
-	FTimerHandle TrailDestroyTimer; //ÍÏÎ²ÌØĞ§ÑÓ³ÙÏú»Ù¼ÆÊ±Æ÷
+	FTimerHandle TrailDestroyTimer; //æ‹–å°¾ç‰¹æ•ˆå»¶è¿Ÿé”€æ¯è®¡æ—¶å™¨
 	UPROPERTY(EditAnywhere)
-		float TrailDestroyTime = 3.f;//ÑÓ³ÙÏú»ÙÊ±¼ä
+		float TrailDestroyTime = 3.f;//å»¶è¿Ÿé”€æ¯æ—¶é—´
 };
