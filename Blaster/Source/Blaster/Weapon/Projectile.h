@@ -30,13 +30,28 @@ protected:
 	UFUNCTION()
 		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	virtual void CollideManifestation(); //碰撞后的表现
+	/// <summary>
+	/// 碰撞后的表现
+	/// </summary>
+	virtual void CollideManifestation();
 
-	void SpawnTrailSystem(); //生成拖尾特效
+	/// <summary>
+	/// 生成拖尾特效
+	/// </summary>
+	void SpawnTrailSystem();
 
-	void StartDestroyTimer(); //启动延迟销毁计时器
-	void TrailDestroyTimerFinished(); //拖尾特效延迟销毁计时器完成回调
+	/// <summary>
+	/// 启动延迟销毁计时器
+	/// </summary>
+	void StartDestroyTimer();
+	/// <summary>
+	/// 拖尾特效延迟销毁计时器完成回调
+	/// </summary>
+	void TrailDestroyTimerFinished();
 
+	/// <summary>
+	/// 爆炸产生伤害
+	/// </summary>
 	void ExplodeDamage();
 
 
@@ -57,19 +72,31 @@ protected:
 	UPROPERTY()
 		class UNiagaraComponent* TrailSystemComponent;
 
+	/// <summary>
+	/// 用于实现子弹、火箭等射弹物体运动的组件类
+	/// </summary>
 	UPROPERTY(VisibleAnyWhere)
-		class UProjectileMovementComponent* ProjectileMovementComponent; //用于实现子弹、火箭等射弹物体运动的组件类
+		class UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* ProjectileMash;
 
+	/// <summary>
+	/// 范围伤害内半径
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float DamageInnerRadius = 200.f; //范围伤害内半径
+		float DamageInnerRadius = 200.f;
+	/// <summary>
+	/// 范围伤害外半径
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float DamageOuterRadius = 500.f; //范围伤害外半径
+		float DamageOuterRadius = 500.f;
 
+	/// <summary>
+	/// 弹丸的移动速度
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float InitialSpeed = 15000.f; //弹丸的移动速度
+		float InitialSpeed = 15000.f;
 
 	/* 与服务器端倒带一起使用 */
 	/// <summary>
@@ -87,19 +114,36 @@ protected:
 
 
 private:
+	/// <summary>
+	/// 用于创建和管理粒子特效的类，子弹飞行时用
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-		class UParticleSystem* Tracer; //用于创建和管理粒子特效的类，子弹飞行时用
+		class UParticleSystem* Tracer;
+	/// <summary>
+	/// 粒子系统相关的组件类。该类可以被用于将 "UParticleSystem" 创建的粒子特效附加到游戏中的角色、场景、物体等上
+	/// </summary>
 	UPROPERTY()
-		class UParticleSystemComponent* TracerComponent; //粒子系统相关的组件类。该类可以被用于将 "UParticleSystem" 创建的粒子特效附加到游戏中的角色、场景、物体等上
+		class UParticleSystemComponent* TracerComponent;
 
+	/// <summary>
+	/// 撞击时产生的特效
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-		UParticleSystem* ImpactParticles; //撞击时产生的特效
+		UParticleSystem* ImpactParticles;
 
+	/// <summary>
+	/// 撞击时产生的音效
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-		class USoundCue* ImpactSound;  //撞击时产生的音效
+		class USoundCue* ImpactSound;
 
-	
-	FTimerHandle TrailDestroyTimer; //拖尾特效延迟销毁计时器
+	/// <summary>
+	/// 拖尾特效延迟销毁计时器
+	/// </summary>
+	FTimerHandle TrailDestroyTimer;
+	/// <summary>
+	/// 延迟销毁时间
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float TrailDestroyTime = 3.f;//延迟销毁时间
+		float TrailDestroyTime = 3.f;
 };
