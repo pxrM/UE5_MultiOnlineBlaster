@@ -9,25 +9,62 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 {
 	Super::Fire(HitTarget);
 
-	if (!HasAuthority()) return;
-
+	UWorld* World = GetWorld();
+	// 攻击发起者
+	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 	/*武器的枪口位置生成投射物对象*/
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
-	if (MuzzleFlashSocket)
+	if (World && InstigatorPawn && MuzzleFlashSocket)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector ToTarget = HitTarget - SocketTransform.GetLocation();
 		FRotator TargetRotation = ToTarget.Rotation();
-		APawn* InstigatorPawn = Cast<APawn>(GetOwner());
-		if (InstigatorPawn && ProjectileClass)
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = GetOwner();
+		SpawnParams.Instigator = InstigatorPawn;
+
+		AProjectile* SpawnProjectile = nullptr;
+		if (bUseServerSideRewind)
 		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = GetOwner();
-			SpawnParams.Instigator = InstigatorPawn;
-			UWorld* World = GetWorld();
-			if (World)
+			if (InstigatorPawn->HasAuthority()) //server
 			{
-				World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+				if (InstigatorPawn->IsLocallyControlled()) //server控制角色，使用复制弹
+				{
+					SpawnProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnProjectile->bUseServerSideRewind = false;
+					SpawnProjectile->DamageVal = Damage;
+				}
+				else //server其它客户端控制角色，使用非复制弹，不验证倒带
+				{
+					SpawnProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnProjectile->bUseServerSideRewind = false;
+				}
+			}
+			else //client, using SSR
+			{
+				if (InstigatorPawn->IsLocallyControlled()) //client本地控制角色，使用非复制弹验证倒带
+				{
+					SpawnProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnProjectile->bUseServerSideRewind = true;
+					SpawnProjectile->TraceStart = SocketTransform.GetLocation();
+					SpawnProjectile->InitialVelocity = SpawnProjectile->GetActorForwardVector() * SpawnProjectile->InitialSpeed;
+					SpawnProjectile->DamageVal = Damage;
+				}
+				else //client其它复制角色，使用非复制弹验证倒带，不验证倒带
+				{
+					SpawnProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+					SpawnProjectile->bUseServerSideRewind = false;
+				}
+			}
+		}
+		else
+		{
+			if (InstigatorPawn->HasAuthority())
+			{
+				SpawnProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
+				SpawnProjectile->bUseServerSideRewind = false;
+				SpawnProjectile->DamageVal = Damage;
 			}
 		}
 	}

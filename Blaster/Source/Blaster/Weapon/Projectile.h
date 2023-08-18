@@ -59,9 +59,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 		class UBoxComponent* CollisionBox;
 
-	UPROPERTY(EditAnywhere)
-		float DamageVal = 20.f; //伤害
-
 	//拖尾特效管理
 	//UNiagaraSystem 是用于创建和管理 Niagara 系统的类。Niagara 是Ue的一个强大的特效系统，用于创建高度可定制的粒子和特效。
 	//UNiagaraSystem 包含了一系列粒子模块和参数，用于定义特效的行为、外观和交互。
@@ -91,6 +88,13 @@ protected:
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		float DamageOuterRadius = 500.f;
+
+
+public:
+	/// <summary>
+	/// 伤害
+	/// </summary>
+	float DamageVal = 20.f;
 
 	/// <summary>
 	/// 弹丸的移动速度
