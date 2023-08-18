@@ -130,19 +130,6 @@ private:
 	/// <param name="Package"></param>
 	void SaveFramePackage(FFramePackage& Package);
 	/// <summary>
-	/// 服务器射击倒带
-	/// </summary>
-	/// <param name="HitCharacter">击中的角色</param>
-	/// <param name="TraceStart">射击开始位置</param>
-	/// <param name="HitLocation">命中位置</param>
-	/// <param name="HitTime">命中时间</param>
-	/// <returns>命中结果</returns>
-	FServerSideRewindResult ServerSideRewind(
-		ABlasterCharacter* HitCharacter,
-		const FVector_NetQuantize& TraceStart,
-		const FVector_NetQuantize& HitLocation,
-		float HitTime);
-	/// <summary>
 	/// 根据命中时间获取需要检测的帧数据包
 	/// </summary>
 	/// <param name="HitCharacter">击中的角色</param>
@@ -157,19 +144,6 @@ private:
 	/// <param name="HitTime"></param>
 	/// <returns></returns>
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime);
-	/// <summary>
-	/// 计算命中结果
-	/// </summary>
-	/// <param name="Package">倒带出来的结果包</param>
-	/// <param name="HitCharacter">击中的角色</param>
-	/// <param name="TraceStart">射击开始位置</param>
-	/// <param name="HitLocaton">命中位置</param>
-	/// <returns></returns>
-	FServerSideRewindResult ConfirmHit(
-		const FFramePackage& Package,
-		ABlasterCharacter* HitCharacter,
-		const FVector_NetQuantize& TraceStart,
-		const FVector_NetQuantize& HitLocation);
 	/// <summary>
 	/// 缓存角色当前box的位置
 	/// </summary>
@@ -195,7 +169,56 @@ private:
 	/// <param name="CollisionEnabled"></param>
 	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 
-	/* 霰弹枪倒带处理 */
+	/*
+		射线类武器倒带处理
+	*/
+	/// <summary>
+	/// 服务器射击倒带
+	/// </summary>
+	/// <param name="HitCharacter">击中的角色</param>
+	/// <param name="TraceStart">射击开始位置</param>
+	/// <param name="HitLocation">命中位置</param>
+	/// <param name="HitTime">命中时间</param>
+	/// <returns>命中结果</returns>
+	FServerSideRewindResult ServerSideRewind(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation,
+		float HitTime);
+	/// <summary>
+	/// 计算命中结果
+	/// </summary>
+	/// <param name="Package">倒带出来的结果包</param>
+	/// <param name="HitCharacter">击中的角色</param>
+	/// <param name="TraceStart">射击开始位置</param>
+	/// <param name="HitLocaton">命中位置</param>
+	/// <returns></returns>
+	FServerSideRewindResult ConfirmHit(
+		const FFramePackage& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation);
+
+	/*
+		弹射类武器倒带处理
+	*/
+	/// <summary>
+	/// 弹射类武器倒带处理
+	/// </summary>
+	/// <param name="HitCharacter"></param>
+	/// <param name="TraceStart">开始射击方向</param>
+	/// <param name="InitialVelocity">初始速度</param>
+	/// <param name="HitTime"></param>
+	/// <returns></returns>
+	FServerSideRewindResult ProjectileServerSideRewind(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime);
+
+	/* 
+		霰弹枪倒带处理
+	*/
 	/// <summary>
 	/// 服务器射击倒带
 	/// </summary>
