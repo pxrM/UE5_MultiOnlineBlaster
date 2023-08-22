@@ -143,6 +143,12 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(ABlasterChar
 	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
 }
 
+FServerSideRewindResult ULagCompensationComponent::ProjectileServerSideRewind(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+{
+	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
+	return ProjectileConfirmHit(FrameToCheck, HitCharacter, TraceStart, InitialVelocity, HitTime);
+}
+
 FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServerSideRewind(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime)
 {
 	TArray<FFramePackage> FrameToChecks;
@@ -305,6 +311,91 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 				if (ConfirmHitResult.Component.IsValid())
 				{
 					UBoxComponent* Box = Cast<UBoxComponent>(ConfirmHitResult.Component);
+					if (Box)
+					{
+						DrawDebugBox(World, Box->GetComponentLocation(), Box->GetScaledBoxExtent(), FQuat(Box->GetComponentRotation()), FColor::Blue, false, 8.f);
+					}
+				}
+				ResetHitBoxes(HitCharacter, CurrentFrame);
+				EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
+				return FServerSideRewindResult{ true, false };
+			}
+		}
+		// 默认恢复
+		ResetHitBoxes(HitCharacter, CurrentFrame);
+		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
+	}
+	return FServerSideRewindResult{ false, false };
+}
+
+FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FFramePackage& Package, ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+{
+	if (HitCharacter == nullptr) return FServerSideRewindResult();
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FFramePackage CurrentFrame;
+		// 保存boxes的当前位置
+		CacheBoxPositions(HitCharacter, CurrentFrame);
+		// 移动到倒带位置
+		MoveBoxes(HitCharacter, Package);
+		// 禁用角色本身的网格碰撞
+		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::NoCollision);
+		// 启用头部box碰撞
+		TMap<FName, UBoxComponent*> HitCollisionBoxes = HitCharacter->GetHitCollisionBoxs();
+		UBoxComponent* HeadBox = HitCollisionBoxes[FName("head")];
+		HeadBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		HeadBox->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
+
+		// 存储预测路径的参数
+		FPredictProjectilePathParams PathParams;
+		PathParams.bTraceWithCollision = true;
+		PathParams.MaxSimTime = MaxRecordTime;
+		PathParams.LaunchVelocity = InitialVelocity;
+		PathParams.StartLocation = TraceStart;
+		PathParams.SimFrequency = 15.f;
+		PathParams.ProjectileRadius = 5.f;
+		PathParams.TraceChannel = ECC_HitBox;
+		PathParams.ActorsToIgnore.Add(GetOwner());
+		PathParams.DrawDebugTime = 5.f;
+		PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
+		// 存储预测路径的结果
+		FPredictProjectilePathResult PathResult;
+		UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
+		// 是否击中了头部box（爆头）
+		if (PathResult.HitResult.bBlockingHit)
+		{
+			if (PathResult.HitResult.Component.IsValid())
+			{
+				UBoxComponent* Box = Cast<UBoxComponent>(PathResult.HitResult.Component);
+				if (Box)
+				{
+					DrawDebugBox(World, Box->GetComponentLocation(), Box->GetScaledBoxExtent(), FQuat(Box->GetComponentRotation()), FColor::Red, false, 8.f);
+				}
+			}
+			ResetHitBoxes(HitCharacter, CurrentFrame);
+			EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
+			return FServerSideRewindResult{ true, true };
+		}
+		else
+		{
+			// 没有击中头部，开始其他部位检测
+			for (auto& HitBoxPair : HitCollisionBoxes)
+			{
+				if (HitBoxPair.Value != nullptr)
+				{
+					HitBoxPair.Value->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+					HitBoxPair.Value->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
+				}
+			}
+			// 再次预测射弹路径，检查碰撞
+			UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
+			if (PathResult.HitResult.bBlockingHit)
+			{
+				if (PathResult.HitResult.Component.IsValid())
+				{
+					UBoxComponent* Box = Cast<UBoxComponent>(PathResult.HitResult.Component);
 					if (Box)
 					{
 						DrawDebugBox(World, Box->GetComponentLocation(), Box->GetScaledBoxExtent(), FQuat(Box->GetComponentRotation()), FColor::Blue, false, 8.f);

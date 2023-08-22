@@ -186,7 +186,7 @@ private:
 		const FVector_NetQuantize& HitLocation,
 		float HitTime);
 	/// <summary>
-	/// 计算命中结果
+	/// 计算命中结果（射线）
 	/// </summary>
 	/// <param name="Package">倒带出来的结果包</param>
 	/// <param name="HitCharacter">击中的角色</param>
@@ -215,6 +215,20 @@ private:
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize100& InitialVelocity,
 		float HitTime);
+	/// <summary>
+	/// 计算命中结果（弹射路径）
+	/// </summary>
+	/// <param name="HitCharacter"></param>
+	/// <param name="TraceStart"></param>
+	/// <param name="InitialVelocity"></param>
+	/// <param name="HitTime"></param>
+	/// <returns></returns>
+	FServerSideRewindResult ProjectileConfirmHit(
+		const FFramePackage& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime);
 
 	/* 
 		霰弹枪倒带处理
@@ -233,7 +247,7 @@ private:
 		const TArray<FVector_NetQuantize>& HitLocations,
 		float HitTime);
 	/// <summary>
-	/// 计算命中结果
+	/// 计算命中结果（多射线）
 	/// </summary>
 	/// <param name="HitCharacters"></param>
 	/// <param name="TraceStart"></param>

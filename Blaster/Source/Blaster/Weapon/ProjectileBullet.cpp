@@ -36,6 +36,7 @@ void AProjectileBullet::BeginPlay()
 {
 	Super::BeginPlay();
 
+	/*
 	// 存储预测路径的参数
 	FPredictProjectilePathParams PathParams;
 	// 开启使用碰撞通道来预测路径
@@ -66,6 +67,7 @@ void AProjectileBullet::BeginPlay()
 
 	// 来预测路径，将参数和结果结构体传入
 	UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
+	*/
 }
 
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
