@@ -107,6 +107,20 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(ABlasterCharac
 	}
 }
 
+void ULagCompensationComponent::ProjectileServerScoreRequest_Implementation(ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector_NetQuantize100& InitialVelocity, float HitTime)
+{
+	FServerSideRewindResult Comfim = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
+	if (Comfim.bHitConfirmed && Character && HitCharacter)
+	{
+		UGameplayStatics::ApplyDamage(HitCharacter,
+			Character->GetEquippedWeapon()->GetDameage(),
+			Character->Controller,
+			Character->GetEquippedWeapon(),
+			UDamageType::StaticClass()
+		);
+	}
+}
+
 void ULagCompensationComponent::ShotgunServerScoreRequest_Implementation(const TArray<ABlasterCharacter*>& HitCharacters, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations, float HitTime)
 {
 	if (Character->Controller == nullptr) return;

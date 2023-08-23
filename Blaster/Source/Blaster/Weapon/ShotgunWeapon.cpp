@@ -140,9 +140,10 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize> HitTargets)
 			}
 		}
 
-		if (HasAuthority() && !bUseServerSideRewind)
+		bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+		if (HasAuthority() && bCauseAuthDamage)
 		{
-			// 在服务器直接施加伤害
+			// server，没有开启倒带或者为本地控制角色，在服务器直接施加伤害
 			for (auto HitPair : HitMap)
 			{
 				if (HitPair.Key && InstigatorController && HasAuthority())
@@ -159,15 +160,14 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize> HitTargets)
 		}
 		else if (!HasAuthority() && bUseServerSideRewind)
 		{
+			// 客户端本地控制角色请求服务器进行倒带施加伤害
 			TArray<ABlasterCharacter*> HitCharacters;
 			HitMap.GenerateKeyArray(HitCharacters);
-			// 在客户端请求服务器进行倒带施加伤害
-			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ?
-				Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
-			BlasterOwnerController = BlasterOwnerController == nullptr ?
-				Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
-			if (BlasterOwnerCharacter && BlasterOwnerCharacter->IsLocallyControlled() &&
-				BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensationComp())
+			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
+			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
+			if (BlasterOwnerController && BlasterOwnerCharacter &&
+				BlasterOwnerCharacter->IsLocallyControlled() &&
+				BlasterOwnerCharacter->GetLagCompensationComp())
 			{
 				// 攻击时间等于服务器时间减去单次发送时间
 				const float HitTime = BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime;

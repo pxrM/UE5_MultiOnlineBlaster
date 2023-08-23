@@ -35,10 +35,10 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 					SpawnProjectile->bUseServerSideRewind = false;
 					SpawnProjectile->DamageVal = Damage;
 				}
-				else //server其它客户端控制角色，使用非复制弹，不验证倒带
+				else //server其它客户端控制角色，使用非复制弹，验证倒带
 				{
 					SpawnProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
-					SpawnProjectile->bUseServerSideRewind = false;
+					SpawnProjectile->bUseServerSideRewind = true;
 				}
 			}
 			else //client, using SSR

@@ -36,9 +36,10 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		AController* InstigatorController = OwnerPawn->GetController();
 		if (HitBlasterCharacter && InstigatorController)
 		{
-			if (HasAuthority() && !bUseServerSideRewind)
+			bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+			if (HasAuthority() && bCauseAuthDamage)
 			{
-				// 在服务器直接施加伤害
+				// server，没有开启倒带或者为本地控制角色，在服务器直接施加伤害
 				UGameplayStatics::ApplyDamage(
 					HitBlasterCharacter,
 					Damage,

@@ -230,7 +230,7 @@ private:
 		const FVector_NetQuantize100& InitialVelocity,
 		float HitTime);
 
-	/* 
+	/*
 		霰弹枪倒带处理
 	*/
 	/// <summary>
@@ -266,8 +266,9 @@ public:
 	/// <param name="Package"></param>
 	/// <param name="Color"></param>
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
+
 	/// <summary>
-	/// 向服务器请求攻击结果，获取分数
+	/// （射线类武器）向服务器请求攻击结果，获取分数
 	/// </summary>
 	/// <param name="HitCharacter">击中的角色</param>
 	/// <param name="TraceStart">射击开始位置</param>
@@ -281,6 +282,27 @@ public:
 			const FVector_NetQuantize& HitLocation,
 			float HitTime,
 			class AWeapon* DamageCauser);
+	/// <summary>
+	/// （射弹类武器）向服务器请求攻击结果，获取分数
+	/// </summary>
+	/// <param name="HitCharacter"></param>
+	/// <param name="TraceStart"></param>
+	/// <param name="InitialVelocity"></param>
+	/// <param name="HitTime"></param>
+	UFUNCTION(Server, Reliable)
+		void ProjectileServerScoreRequest(
+			ABlasterCharacter* HitCharacter,
+			const FVector_NetQuantize& TraceStart,
+			const FVector_NetQuantize100& InitialVelocity,
+			float HitTime
+		);
+	/// <summary>
+	/// （霰弹枪武器）向服务器请求攻击结果，获取分数
+	/// </summary>
+	/// <param name="HitCharacters"></param>
+	/// <param name="TraceStart"></param>
+	/// <param name="HitLocations"></param>
+	/// <param name="HitTime"></param>
 	UFUNCTION(Server, Reliable)
 		void ShotgunServerScoreRequest(
 			const TArray<ABlasterCharacter*>& HitCharacters,
