@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BlasterPlayerController.h"
@@ -320,7 +320,7 @@ void ABlasterPlayerController::SetHUDTime()
 		BlasterGameMode = BlasterGameMode == nullptr ? Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)) : BlasterGameMode;
 		if (BlasterGameMode)
 		{
-			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime); //·þÎñÆ÷Ö±½ÓÊ¹ÓÃGameModeÊ±¼ä
+			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime); //æœåŠ¡å™¨ç›´æŽ¥ä½¿ç”¨GameModeæ—¶é—´
 		}
 	}
 	if (CountdownInt != SecondsLeft)
@@ -351,15 +351,15 @@ void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
 
 void ABlasterPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
 {
-	float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds(); //ds·þÎñÆ÷»ñÈ¡×Ô¼ºµÄÊ±¼ä
-	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt); //È»ºó»Ø°ü¸ø¿Í»§¶Ë
+	float ServerTimeOfReceipt = GetWorld()->GetTimeSeconds(); //dsæœåŠ¡å™¨èŽ·å–è‡ªå·±çš„æ—¶é—´
+	ClientReportServerTime(TimeOfClientRequest, ServerTimeOfReceipt); //ç„¶åŽå›žåŒ…ç»™å®¢æˆ·ç«¯
 }
 
 void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeOfClientRequest, float TimeServerReceivedRequest)
 {
-	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest; //¼ÆËã¿Í»§¶ËÇëÇóµÄÍù·µÊ±¼ä
+	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest; //è®¡ç®—å®¢æˆ·ç«¯è¯·æ±‚çš„å¾€è¿”æ—¶é—´
 	SingleTripTime = RoundTripTime * 0.5f;
-	float CurrentServerTime = TimeServerReceivedRequest + SingleTripTime; //·þÎñÆ÷»Ø°üµÄÊ±¼ä+Íù·µÊ±¼äµÄÒ»°ë
+	float CurrentServerTime = TimeServerReceivedRequest + SingleTripTime; //æœåŠ¡å™¨å›žåŒ…çš„æ—¶é—´+å¾€è¿”æ—¶é—´çš„ä¸€åŠ
 	ClientServerDelte = CurrentServerTime - GetWorld()->GetTimeSeconds();
 }
 
@@ -492,10 +492,10 @@ void ABlasterPlayerController::HandleCooldown()
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
 	if (BlasterCharacter)
 	{
-		BlasterCharacter->SetDisableGameplay(true); //¹Ø±Õ²¿·ÖÊäÈë
+		BlasterCharacter->SetDisableGameplay(true); //å…³é—­éƒ¨åˆ†è¾“å…¥
 		if (BlasterCharacter->GetCombatCmp())
 		{
-			BlasterCharacter->GetCombatCmp()->FireBtnPressed(false); //Í£Ö¹¿ª»ð
+			BlasterCharacter->GetCombatCmp()->FireBtnPressed(false); //åœæ­¢å¼€ç«
 		}
 	}
 }
@@ -507,14 +507,20 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 	HighPingRunningTime += DeltaTime;
 	if (HighPingRunningTime > CheckPingFrequency)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetPing() * 4: %d"), PlayerState->GetPing() * 4);
 		PlayerState = PlayerState == nullptr ? GetPlayerState<APlayerState>() : PlayerState;
 		if (PlayerState)
 		{
-			//GetPing()·þÎñÆ÷ÔÚÍ¬²½¸ø¿Í»§¶ËÊ±»á½«¸ÃÖµ³ýÒÔ4½øÐÐÑ¹Ëõ£¬ÎªÁËµÃµ½ÕæÕýµÄÐèÒª*4
+			//GetPing()æœåŠ¡å™¨åœ¨åŒæ­¥ç»™å®¢æˆ·ç«¯æ—¶ä¼šå°†è¯¥å€¼é™¤ä»¥4è¿›è¡ŒåŽ‹ç¼©ï¼Œä¸ºäº†å¾—åˆ°çœŸæ­£çš„éœ€è¦*4
 			if (PlayerState->GetPing() * 4 > HighPingThreshold)
 			{
 				HighPingWarning();
 				PingAnimRunningTime = 0.f;
+				ServerReportPingStatus(true);
+			}
+			else
+			{
+				ServerReportPingStatus(false);
 			}
 		}
 		HighPingRunningTime = 0.f;
@@ -564,4 +570,9 @@ void ABlasterPlayerController::StopHigtPingWarning()
 			BlasterHUD->CharacterOverlayWidget->StopAnimation(BlasterHUD->CharacterOverlayWidget->HighPingAnim);
 		}
 	}
+}
+
+void ABlasterPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
+{
+	HighPingDelegate.Broadcast(bHighPing);
 }

@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "BlasterPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
+
 /**
  *
  */
@@ -89,6 +91,8 @@ protected:
 	void CheckPing(float DeltaTime);
 	void HighPingWarning();
 	void StopHigtPingWarning();
+	UFUNCTION(Server, Reliable)
+		void ServerReportPingStatus(bool bHighPing); //向server发送报告ping状态
 
 
 private:
@@ -149,11 +153,11 @@ private:
 	float HighPingRunningTime = 0.f;
 	float PingAnimRunningTime = 0.f;
 	UPROPERTY(EditAnywhere)
-		float CheckPingFrequency = 20.f;
+		float CheckPingFrequency = 20.f; //间隔多久检测一次ping
 	UPROPERTY(EditAnywhere)
-		float HighPingThreshold = 50.f;
+		float HighPingThreshold = 50.f; //超过这个值为高ping
 	UPROPERTY(EditAnywhere)
-		float HighPingDuration = 5.f;
+		float HighPingDuration = 5.f; //高ping的一次展示持续时间
 
 
 public:
@@ -161,5 +165,7 @@ public:
 	/// rpc单程发送时间
 	/// </summary>
 	float SingleTripTime = 0.f;
+
+	FHighPingDelegate HighPingDelegate;
 
 };

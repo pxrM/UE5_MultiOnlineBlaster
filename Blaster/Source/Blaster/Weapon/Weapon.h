@@ -183,7 +183,7 @@ protected:
 	/// <summary>
 	/// 是否启用服务器倒带
 	/// </summary>
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(Replicated, EditAnywhere)
 		bool bUseServerSideRewind = false;
 
 
@@ -222,6 +222,9 @@ protected:
 	virtual void OnEquippedState();
 	virtual void OnEquippedSecondaryState();
 	virtual void OnDroppedState();
+
+	// 启用/禁用服务器倒带
+	void OnPingTooHigh(bool bPingTooHigh);
 
 
 public:
