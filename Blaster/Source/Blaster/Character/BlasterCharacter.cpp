@@ -315,7 +315,7 @@ void ABlasterCharacter::EquipBtnPressed()
 {
 	if (bDisableGameplay) return;
 	//拾取武器需要服务器来验证
-	if (CombatCmp)
+	if (CombatCmp && CombatCmp->CombatState == ECombatState::ECS_Unoccupied)
 	{
 		//当装备按钮按下时，如果角色当前是服务端，则直接调用 CombatCmp 组件的 EquipWeapon 函数；
 		//否则，将该函数代理给 ServerEquipBtnPressed_Implementation 的远程过程调用（RPC）版本，以便由服务器验证并执行相应的操作。
@@ -336,6 +336,13 @@ void ABlasterCharacter::EquipBtnPressed()
 			ServerEquipBtnPressed();
 		}*/
 		ServerEquipBtnPressed();
+
+		bool bSwap = CombatCmp->IsShouldSwapWeapons() && !HasAuthority() && OverlappingWeapon == nullptr;
+		if (bSwap)
+		{
+			PlaySwapMontage();
+			CombatCmp->CombatState = ECombatState::ECS_SwappingWeapons;
+		}
 	}
 }
 
@@ -716,6 +723,15 @@ void ABlasterCharacter::PlayThrowGrenadeMontage()
 	if (AnimInstance && ThrowGrenadeMontage)
 	{
 		AnimInstance->Montage_Play(ThrowGrenadeMontage);
+	}
+}
+
+void ABlasterCharacter::PlaySwapMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && SwapMontage)
+	{
+		AnimInstance->Montage_Play(SwapMontage);
 	}
 }
 

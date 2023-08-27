@@ -97,7 +97,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
-	AO_Pitch = BlasterCharacter->GetAO_Pitch();	
+	AO_Pitch = BlasterCharacter->GetAO_Pitch();
 	//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
 	//UE_LOG(LogTemp, Log, TEXT("GetAO_Pitch(): %i"), AO_Pitch);
 
@@ -112,7 +112,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
-		
+
 
 		if (BlasterCharacter->IsLocallyControlled())
 		{
@@ -136,7 +136,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	bUseFABRIK = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
-	if (BlasterCharacter->IsLocallyControlled() && BlasterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade)
+	bool bFABRIKOverride = BlasterCharacter->IsLocallyControlled() &&
+		BlasterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade &&
+		BlasterCharacter->GetCombatState() != ECombatState::ECS_SwappingWeapons;
+	if (bFABRIKOverride)
 	{
 		//本地角色，单独处理，避免网络延迟带来的动画异常
 		bUseFABRIK = !BlasterCharacter->GetIsLocallyReloading();

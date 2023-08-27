@@ -106,6 +106,12 @@ private://----------------------------------------------------------------------
 		UAnimMontage* ThrowGrenadeMontage;
 
 	/// <summary>
+	/// 交换蒙太奇动画
+	/// </summary>
+	UPROPERTY(EditAnyWhere, Category = CombatMontage)
+		UAnimMontage* SwapMontage;
+
+	/// <summary>
 	/// 相机和角色距离阈值
 	/// </summary>
 	UPROPERTY(EditAnyWhere)
@@ -267,6 +273,7 @@ public:
 	void PlayHitReactMontage();
 	void PlayElimMontage();
 	void PlayThrowGrenadeMontage(); //投掷手榴弹蒙太奇
+	void PlaySwapMontage();
 
 	FVector GetHitTarget() const;
 

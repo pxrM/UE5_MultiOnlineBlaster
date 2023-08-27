@@ -141,6 +141,17 @@ public:
 		void FinishReloadMag();
 
 	/// <summary>
+	/// 交换武器蒙太奇播放完成
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+		void FinishSwapMontage();
+	/// <summary>
+	/// 交换武器蒙太奇播放到附加武器阶段
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+		void FinishSwapAttachWeapon();
+
+	/// <summary>
 	/// 开火
 	/// </summary>
 	/// <param name="bPressed"></param>
@@ -275,5 +286,5 @@ private:
 
 public:
 	FORCEINLINE int32 GetGrenades() const { return Grenades; }
-	bool IsShouldSwapWeapons();
+	bool IsShouldSwapWeapons(); //是否可以交换武器
 };
