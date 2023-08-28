@@ -136,9 +136,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	bUseFABRIK = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
-	bool bFABRIKOverride = BlasterCharacter->IsLocallyControlled() &&
-		BlasterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade &&
-		BlasterCharacter->GetCombatState() != ECombatState::ECS_SwappingWeapons;
+	bool bFABRIKOverride = BlasterCharacter->IsLocallyControlled() && 
+		BlasterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade && 
+		BlasterCharacter->GetFinishedSwapping();
 	if (bFABRIKOverride)
 	{
 		//本地角色，单独处理，避免网络延迟带来的动画异常

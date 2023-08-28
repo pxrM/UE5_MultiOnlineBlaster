@@ -218,6 +218,8 @@ private://----------------------------------------------------------------------
 	UPROPERTY(Replicated)
 		bool bDisableGameplay = false; //禁止游戏输入
 
+	bool bFinishedSwapping = false; //交换武器动作是否完成
+
 
 protected:
 	void MoveForward(float Value);
@@ -304,6 +306,8 @@ public:
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
 	FORCEINLINE TMap<FName, UBoxComponent*> GetHitCollisionBoxs() const { return HitConllisionBoxs; }
 	FORCEINLINE ULagCompensationComponent* GetLagCompensationComp() const { return LagCompensationCmp; }
+	FORCEINLINE bool GetFinishedSwapping() const { return bFinishedSwapping; }
+	FORCEINLINE void SetFinishedSwapping(const bool bFinished) { bFinishedSwapping = bFinished; }
 	ECombatState GetCombatState() const;
 	bool GetIsLocallyReloading() const;
 

@@ -148,6 +148,7 @@ void UCombatComponent::SwapWeapons()
 	if (Character == nullptr || CombatState != ECombatState::ECS_Unoccupied) return;
 
 	Character->PlaySwapMontage();
+	Character->SetFinishedSwapping(false);
 	CombatState = ECombatState::ECS_SwappingWeapons;
 
 	AWeapon* TempWeapon = EquippedWeapon;
@@ -822,21 +823,20 @@ void UCombatComponent::FinishSwapMontage()
 	if (Character && Character->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
-
-		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-		AttachActorToRightHand(EquippedWeapon);
-		EquippedWeapon->SetHUDAmmo();
-		UpdateCarriedAmmo();
-		PlayEquipWeaponSound(EquippedWeapon);
-
-		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
-		AttachActorToBackpack(SecondaryWeapon);
+		Character->SetFinishedSwapping(true);
 	}
 }
 
 void UCombatComponent::FinishSwapAttachWeapon()
 {
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	EquippedWeapon->SetHUDAmmo();
+	UpdateCarriedAmmo();
+	PlayEquipWeaponSound(EquippedWeapon);
 
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackpack(SecondaryWeapon);
 }
 
 void UCombatComponent::UpdateAmmoValues()

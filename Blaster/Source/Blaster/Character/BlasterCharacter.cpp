@@ -342,6 +342,7 @@ void ABlasterCharacter::EquipBtnPressed()
 		{
 			PlaySwapMontage();
 			CombatCmp->CombatState = ECombatState::ECS_SwappingWeapons;
+			bFinishedSwapping = false;
 		}
 	}
 }
