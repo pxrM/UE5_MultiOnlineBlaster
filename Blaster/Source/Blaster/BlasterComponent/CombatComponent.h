@@ -286,5 +286,6 @@ private:
 
 public:
 	FORCEINLINE int32 GetGrenades() const { return Grenades; }
-	bool IsShouldSwapWeapons(); //是否可以交换武器
+	//是否可以交换武器
+	bool IsShouldSwapWeapons(); 
 };
