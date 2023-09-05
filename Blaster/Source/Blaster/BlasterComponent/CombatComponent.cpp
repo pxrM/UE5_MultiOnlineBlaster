@@ -345,7 +345,7 @@ void UCombatComponent::FireProjectileWeapon()
 		{
 			LocalFire(HitTarget); //在自己机器上直接走流程
 		}
-		ServerFire(HitTarget); //调用服务器函数 ServerFire_Implementation
+		ServerFire(HitTarget, EquippedWeapon->FireDelay); //调用服务器函数 ServerFire_Implementation
 	}
 }
 
@@ -359,7 +359,7 @@ void UCombatComponent::FireHitScanWeapon()
 		{
 			LocalFire(HitTarget);
 		}
-		ServerFire(HitTarget);
+		ServerFire(HitTarget, EquippedWeapon->FireDelay);
 	}
 }
 
@@ -376,14 +376,25 @@ void UCombatComponent::FireShotgunWeapon()
 			{
 				LocalShotgunFire(HitTargets);
 			}
-			ServerShotgunFire(HitTargets);
+			ServerShotgunFire(HitTargets, EquippedWeapon->FireDelay);
 		}
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget, float FireDelay)
 {
 	MulticastFire(TraceHitTarget); //通知所有客户端
+}
+
+bool UCombatComponent::ServerFire_Validate(const FVector_NetQuantize& TraceHitTarget, float FireDelay)
+{
+	// ServerFire rpc验证函数
+	if (EquippedWeapon)
+	{
+		bool bNearlyEqual = FMath::IsNearlyEqual(EquippedWeapon->FireDelay, FireDelay, 0.001f);
+		return bNearlyEqual;
+	}
+	return true;
 }
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
@@ -394,9 +405,20 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	LocalFire(TraceHitTarget);
 }
 
-void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
+void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets, float FireDelay)
 {
 	MulticastShotgunFire(TraceHitTargets);
+}
+
+bool UCombatComponent::ServerShotgunFire_Validate(const TArray<FVector_NetQuantize>& TraceHitTarget, float FireDelay)
+{
+	// ServerShotgunFire rpc验证函数
+	if (EquippedWeapon)
+	{
+		bool bNearlyEqual = FMath::IsNearlyEqual(EquippedWeapon->FireDelay, FireDelay, 0.001f);
+		return bNearlyEqual;
+	}
+	return true;
 }
 
 void UCombatComponent::MulticastShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
@@ -467,7 +489,7 @@ void UCombatComponent::StartFireTimer()
 		// 定时器的持续时间，即 FireDelay 参数，以秒为单位。
 		Character->GetWorldTimerManager().SetTimer(FireTimer, this, &UCombatComponent::FireTimerFinished, EquippedWeapon->FireDelay);
 	}
-	else 
+	else
 	{
 		bCanFire = true;
 		ReloadEmptyWeapon();
@@ -831,7 +853,7 @@ void UCombatComponent::FinishSwapMontage()
 void UCombatComponent::FinishSwapAttachWeapon()
 {
 	if (Character == nullptr || !Character->HasAuthority()) return;
-	
+
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
 	SecondaryWeapon = TempWeapon;
