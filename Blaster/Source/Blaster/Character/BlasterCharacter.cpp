@@ -444,7 +444,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			InterpAO_Yaw = AO_Yaw;
 			//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
 		}
-		UE_LOG(LogTemp, Warning, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
+		//UE_LOG(LogTemp, Warning, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
 		bUseControllerRotationYaw = false;
 		TurnInPlace(DeltaTime);
 	}
@@ -484,7 +484,7 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		}
 	}
-	UE_LOG(LogTemp, Log, TEXT("AO_Yaw: %i   %i"), AO_Yaw, TurningInPlace);
+	//UE_LOG(LogTemp, Log, TEXT("AO_Yaw: %i   %i"), AO_Yaw, TurningInPlace);
 }
 
 

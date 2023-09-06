@@ -38,6 +38,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
+
 	void SetHUDTime();
 
 	/*
@@ -93,6 +95,8 @@ protected:
 	void StopHigtPingWarning();
 	UFUNCTION(Server, Reliable)
 		void ServerReportPingStatus(bool bHighPing); //向server发送报告ping状态
+
+	void ShowReturnToMainMenu();
 
 
 private:
@@ -158,6 +162,15 @@ private:
 		float HighPingThreshold = 50.f; //超过这个值为高ping
 	UPROPERTY(EditAnywhere)
 		float HighPingDuration = 5.f; //高ping的一次展示持续时间
+
+	/*
+	* 返回主界面ui
+	*/
+	UPROPERTY(EditAnywhere, Category = HUD)
+		TSubclassOf<class UUserWidget> ReturnToMainWidget;
+	UPROPERTY()
+		class UReturnToMainMenu* ReturnToMainMenu;
+	bool bReturnToMainMenuOpen = false;
 
 
 public:

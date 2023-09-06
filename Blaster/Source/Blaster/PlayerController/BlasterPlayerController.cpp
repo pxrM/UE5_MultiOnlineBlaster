@@ -1,20 +1,21 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
+#include "Net/UnrealNetwork.h"
+#include "Kismet/GamePlayStatics.h"
 #include "BlasterPlayerController.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlayWidget.h"
 #include "Blaster/HUD/AnnouncementWidget.h"
-#include "Components/ProgressBar.h"
-#include "Components/TextBlock.h"
-#include "Components/Image.h"
 #include "Blaster/Character/BlasterCharacter.h"
-#include "Net/UnrealNetwork.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
-#include "Kismet/GamePlayStatics.h"
 #include "Blaster/BlasterComponent/CombatComponent.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/HUD/ReturnToMainMenu.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -29,6 +30,14 @@ void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+}
+
+void ABlasterPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (InputComponent == nullptr) return;
+
+	InputComponent->BindAction("Quit", IE_Pressed, this, &ABlasterPlayerController::ShowReturnToMainMenu);
 }
 
 void ABlasterPlayerController::OnPossess(APawn* InPawn)
@@ -575,4 +584,26 @@ void ABlasterPlayerController::StopHigtPingWarning()
 void ABlasterPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
 {
 	HighPingDelegate.Broadcast(bHighPing);
+}
+
+
+void ABlasterPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainWidget == nullptr) return;
+	if (ReturnToMainMenu == nullptr)
+	{
+		ReturnToMainMenu = CreateWidget<UReturnToMainMenu>(this, ReturnToMainWidget);
+	}
+	if (ReturnToMainMenu)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenu->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenu->MenuTearDown();
+		}
+	}
 }
