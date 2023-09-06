@@ -149,7 +149,7 @@ void UCombatComponent::SwapWeapons()
 
 	Character->PlaySwapMontage();
 	CombatState = ECombatState::ECS_SwappingWeapons;
-	Character->SetFinishedSwapping(false);
+	Character->bFinishedSwapping = false;
 
 	if (SecondaryWeapon) SecondaryWeapon->EnableCustomDepth(false);
 }
@@ -844,7 +844,7 @@ void UCombatComponent::FinishSwapMontage()
 	if (Character && Character->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
-		Character->SetFinishedSwapping(true);
+		Character->bFinishedSwapping = true;
 	}
 
 	if (SecondaryWeapon) SecondaryWeapon->EnableCustomDepth(true);

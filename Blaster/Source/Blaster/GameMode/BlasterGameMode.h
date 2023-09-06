@@ -44,6 +44,11 @@ public:
 	/// <param name="ElimmedCharacter">被淘汰的角色</param>
 	/// <param name="ElimmedController">被淘汰的控制器</param>
 	virtual void ResquestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
+	/// <summary>
+	/// 角色请求退出游戏的处理
+	/// </summary>
+	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving);
+
 
 public:
 	FORCEINLINE float GetCountdownTime() { return CountdownTime; }

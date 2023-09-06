@@ -10,6 +10,11 @@
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+
+//退出当前游戏
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -137,10 +142,20 @@ private://----------------------------------------------------------------------
 	UPROPERTY(ReplicatedUsing = OnRep_CurShield, EditAnywhere, Category = "Player Stats")
 		float CurShield = 0.f;
 
-	bool bElimmed = false;  //是否淘汰
-	FTimerHandle ElimTimer; //淘汰结束倒计时 结束后复活
-	UPROPERTY(EditDefaultsOnly) //EditDefaultsOnly可以在编辑器编辑，但只能在默认值之上
-		float ElimDelay = 3.f; //淘汰计时器时间
+	/// <summary>
+	/// 是否淘汰
+	/// </summary>
+	bool bElimmed = false;
+	/// <summary>
+	/// 淘汰结束倒计时 结束后复活
+	/// </summary>
+	FTimerHandle ElimTimer;
+	/// <summary>
+	/// 淘汰计时器时间
+	///  EditDefaultsOnly可以在编辑器编辑，但只能在默认值之上
+	/// </summary>
+	UPROPERTY(EditDefaultsOnly)
+		float ElimDelay = 3.f;
 
 	/*  溶解特效  */
 	//溶解时间曲线
@@ -215,10 +230,16 @@ private://----------------------------------------------------------------------
 	UPROPERTY()
 		class ABlasterPlayerState* BlasterPlayerState;
 
+	/// <summary>
+	/// 禁止游戏输入
+	/// </summary>
 	UPROPERTY(Replicated)
-		bool bDisableGameplay = false; //禁止游戏输入
+		bool bDisableGameplay = false;
 
-	bool bFinishedSwapping = false; //交换武器动作是否完成
+	/// <summary>
+	/// 退出当前游戏
+	/// </summary>
+	bool bLeftGame = false;
 
 
 protected:
@@ -238,7 +259,7 @@ protected:
 
 	void AimOffset(float DeltaTime);
 	void CalculateAO_Pitch();
-	void SimProxiesTurn(); //模拟代理使用
+	void SimProxiesTurn();//模拟代理使用的旋转逻辑
 
 	//接收伤害回调
 	//即当角色受到伤害时（UGameplayStatics::ApplyDamage），引擎会自动调用该函数并传递伤害相关的参数，
@@ -246,11 +267,26 @@ protected:
 	UFUNCTION()
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
-	void PollInit(); // 轮询检查玩家数据有效时 初始化hud等工作
+	/* 轮询检查玩家数据有效时 初始化hud等工作 */
+	void PollInit();
 
-	void RotateInPlace(float DeltaTime); //原地旋转
+	/* 原地旋转 */
+	void RotateInPlace(float DeltaTime);
 
+	/* 丢掉或删除武器 */
 	void DropOrDestroyWeapon(AWeapon* Weapon);
+
+
+public:
+	/// <summary>
+	/// 交换武器动作是否完成
+	/// </summary>
+	bool bFinishedSwapping = false;
+
+	/// <summary>
+	/// 退出当前游戏事件
+	/// </summary>
+	FOnLeftGame OnLeftGame;
 
 
 public:
@@ -287,9 +323,23 @@ public:
 			//当该对象在服务器上的运动状态发生变化时，客户端会通过该函数收到通知并更新对应的运动状态。
 	virtual void OnRep_ReplicatedMovement() override;
 
-	void Elim();
+	/// <summary>
+	/// 淘汰，server上执行
+	/// </summary>
+	/// <param name="bPlayerLeftGame">是否是退出游戏</param>
+	void Elim(bool bPlayerLeftGame);
+	/// <summary>
+	/// 淘汰网络多播
+	/// </summary>
+	/// <param name="bPlayerLeftGame">是否是退出游戏</param>
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastElim(); //淘汰
+		void MulticastElim(bool bPlayerLeftGame);
+
+	/// <summary>
+	/// 要离开游戏，通知server
+	/// </summary>
+	UFUNCTION(Server, Reliable)
+		void ServerLeavaGame();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetCurHealth() const { return CurHealth; }
@@ -306,8 +356,6 @@ public:
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
 	FORCEINLINE TMap<FName, UBoxComponent*> GetHitCollisionBoxs() const { return HitConllisionBoxs; }
 	FORCEINLINE ULagCompensationComponent* GetLagCompensationComp() const { return LagCompensationCmp; }
-	FORCEINLINE bool GetFinishedSwapping() const { return bFinishedSwapping; }
-	FORCEINLINE void SetFinishedSwapping(const bool bFinished) { bFinishedSwapping = bFinished; }
 	ECombatState GetCombatState() const;
 	bool GetIsLocallyReloading() const;
 
@@ -349,14 +397,22 @@ private:
 
 	void TurnInPlace(float DeltaTime);
 
-	void HideCameraIfCharacterClose(); //解决角色靠墙时，相机离角色添加而挡住视野，太近时隐藏角色
+	/* 解决角色靠墙时，相机离角色添加而挡住视野，太近时隐藏角色 */
+	void HideCameraIfCharacterClose();
 
 	float CalculateSpeed();
 
 	void ElimTimerFinished();
 
+	/// <summary>
+	/// 更新溶解材质的参数值
+	/// </summary>
+	/// <param name="DissloveVal"></param>
 	UFUNCTION()
 		void UpdataDissloveMaterial(float DissloveVal);
-	void StartDisslove(); //开启溶解
+	/// <summary>
+	/// 开启溶解
+	/// </summary>
+	void StartDisslove();
 
 };

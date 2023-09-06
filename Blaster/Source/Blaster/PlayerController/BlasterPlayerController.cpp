@@ -1,11 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
-#include "Components/ProgressBar.h"
-#include "Components/TextBlock.h"
-#include "Components/Image.h"
-#include "Net/UnrealNetwork.h"
-#include "Kismet/GamePlayStatics.h"
 #include "BlasterPlayerController.h"
 #include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlayWidget.h"
@@ -16,6 +10,11 @@
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/HUD/ReturnToMainMenu.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
+#include "Net/UnrealNetwork.h"
+#include "Kismet/GamePlayStatics.h"
 
 void ABlasterPlayerController::BeginPlay()
 {

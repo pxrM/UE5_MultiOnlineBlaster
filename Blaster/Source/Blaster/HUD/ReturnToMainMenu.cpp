@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Components/Button.h"
 #include "MultiPlayerSessionSubsystem.h"
+#include "Blaster/Character/BlasterCharacter.h"
 
 
 bool UReturnToMainMenu::Initialize()
@@ -83,9 +84,23 @@ void UReturnToMainMenu::ReturnBtnClicked()
 {
 	ReturnBtn->SetIsEnabled(false);
 
-	if (MultiPlayerSessionSubsystem)
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		MultiPlayerSessionSubsystem->DestroySession();
+		APlayerController* FirstPlayerController = World->GetFirstPlayerController();
+		if (FirstPlayerController)
+		{
+			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FirstPlayerController->GetPawn());
+			if (BlasterCharacter)
+			{
+				BlasterCharacter->ServerLeavaGame();
+				BlasterCharacter->OnLeftGame.AddDynamic(this, &UReturnToMainMenu::OnPlayerLeftGame);
+			}
+			else
+			{
+				ReturnBtn->SetIsEnabled(true);
+			}
+		}
 	}
 }
 
@@ -113,5 +128,13 @@ void UReturnToMainMenu::OnDestroySession(bool bWasSuccessful)
 				PlayerCtl->ClientReturnToMainMenuWithTextReason(FText()); // 用于将玩家控制器切换回主菜单界面，并显示指定的文本原因
 			}
 		}
+	}
+}
+
+void UReturnToMainMenu::OnPlayerLeftGame()
+{
+	if (MultiPlayerSessionSubsystem)
+	{
+		MultiPlayerSessionSubsystem->DestroySession();
 	}
 }
