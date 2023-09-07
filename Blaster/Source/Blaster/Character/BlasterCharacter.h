@@ -35,6 +35,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	// 在 Actor 组件被初始化后，在 C++ 代码中进行额外的初始化操作。该函数在游戏运行时被调用。
 	virtual void PostInitializeComponents() override;
+	// 当该对象在服务器上的运动状态发生变化时，客户端会通过该函数收到通知并更新对应的运动状态。
+	virtual void OnRep_ReplicatedMovement() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -158,9 +160,8 @@ private://----------------------------------------------------------------------
 		float ElimDelay = 3.f;
 
 	/*  溶解特效  */
-	//溶解时间曲线
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UCurveFloat* DissolveCurve;
+		UCurveFloat* DissolveCurve;//溶解时间曲线
 	UPROPERTY(EditAnywhere)
 		UTimelineComponent* DissolveTimelineCmp;
 	FOnTimelineFloat DissolveTrack; //处理时间轴（timeline）中浮点数值变化的事件
@@ -169,13 +170,19 @@ private://----------------------------------------------------------------------
 	UPROPERTY(EditAnywhere, Category = Elim)
 		UMaterialInstance* DissolveMatInstance; //适合在需要多次使用相同材质但有不同属性的场景中使用，可在蓝图里使用
 
-	/* 淘汰回收机器人 */
+	/* 淘汰回收机器人特效 */
 	UPROPERTY(EditAnywhere, Category = Elim)
 		class USoundCue* ElimBotSound;
 	UPROPERTY(EditAnywhere, Category = Elim)
 		UParticleSystem* ElimBotEffect;
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 		UParticleSystemComponent* ElimBotComponent;
+
+	/* 皇冠 */
+	UPROPERTY(EditAnywhere)
+		class UNiagaraSystem* CrownSystem;
+	UPROPERTY(EditAnywhere)
+		class UNiagaraComponent* CrownComponent;
 
 	/* 手榴弹 */
 	UPROPERTY(VisibleAnywhere)
@@ -292,19 +299,28 @@ public:
 public:
 	//设置武器，内联函数
 	//FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon) { OverlappingWeapon = Weapon; }
+	/// <summary>
+	/// 设置与地面上的重叠武器
+	/// </summary>
+	/// <param name="Weapon"></param>
 	void SetOverlappingWeapon(AWeapon* Weapon);
-	//是否装备了武器
+	/// <summary>
+	/// 是否装备了武器
+	/// </summary>
+	/// <returns></returns>
 	bool IsWeaponEquipped();
-	//是否正在瞄准
+	/// <summary>
+	/// 是否正在瞄准
+	/// </summary>
+	/// <returns></returns>
 	bool IsAiming();
+	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
+		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umg
 
-	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
-	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }
-	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
-
+	FVector GetHitTarget() const;
 	AWeapon* GetEquippedWeapon();
-
-	FORCEINLINE ETurningInPlace GetTurningInPlace()const { return TurningInPlace; }
+	ECombatState GetCombatState() const;
+	bool GetIsLocallyReloading() const;
 
 	void PlayFireMontage(bool bAiming);
 	void PlayReloadMagMontage(); //播放装弹夹动画
@@ -313,15 +329,14 @@ public:
 	void PlayThrowGrenadeMontage(); //投掷手榴弹蒙太奇
 	void PlaySwapMontage();
 
-	FVector GetHitTarget() const;
+	void UpdateHUDHealth();
+	void UpdateHUDShield();
+	void UpdateHUDAmmo();
 
-	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	void SpawnDefaultWeapon();
 
 	/*	UFUNCTION(NetMulticast, Unreliable) //** 这里改为由更新角色健康值时触发，健康值会被同步到所有客服端，放到这那里会减少一次网络广播消耗
 			void MulticastHit();	*///播放受击动画 NetMulticast会从服务端同步到所有客户端 Unreliable表示同步消息不可靠
-
-			//当该对象在服务器上的运动状态发生变化时，客户端会通过该函数收到通知并更新对应的运动状态。
-	virtual void OnRep_ReplicatedMovement() override;
 
 	/// <summary>
 	/// 淘汰，server上执行
@@ -341,6 +356,22 @@ public:
 	UFUNCTION(Server, Reliable)
 		void ServerLeavaGame();
 
+	/// <summary>
+	/// 获得第一位置
+	/// </summary>
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastGainedTheLead();
+	/// <summary>
+	/// 失去第一位置
+	/// </summary>
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastLostTheLead();
+
+	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
+	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }
+	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+	FORCEINLINE ETurningInPlace GetTurningInPlace()const { return TurningInPlace; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetCurHealth() const { return CurHealth; }
 	FORCEINLINE void SetCurHealth(const float Amount) { CurHealth = Amount; }
@@ -356,17 +387,6 @@ public:
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
 	FORCEINLINE TMap<FName, UBoxComponent*> GetHitCollisionBoxs() const { return HitConllisionBoxs; }
 	FORCEINLINE ULagCompensationComponent* GetLagCompensationComp() const { return LagCompensationCmp; }
-	ECombatState GetCombatState() const;
-	bool GetIsLocallyReloading() const;
-
-	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
-		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umgg
-
-	void UpdateHUDHealth();
-	void UpdateHUDShield();
-	void UpdateHUDAmmo();
-
-	void SpawnDefaultWeapon();
 
 
 private:
