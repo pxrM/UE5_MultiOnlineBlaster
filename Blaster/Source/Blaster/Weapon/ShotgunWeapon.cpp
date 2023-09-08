@@ -87,7 +87,7 @@ void AShotgunWeapon::Fire(const FVector& HitTarget)
 	}
 }
 
-void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize> HitTargets)
+void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 {
 	AWeapon::Fire(FVector());
 	APawn* OwnerPawn = Cast<APawn>(GetOwner());
@@ -99,8 +99,8 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize> HitTargets)
 		const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		const FVector Start = SocketTransform.GetLocation();
 		TMap<ABlasterCharacter*, uint32> HitMap; // 击中次数
-
-		for (FVector_NetQuantize HitTargetItem : HitTargets)
+		TMap<ABlasterCharacter*, uint32> HeadShotHitMap; // 爆头击中次数
+		for (const FVector_NetQuantize& HitTargetItem : HitTargets)
 		{
 			FHitResult FireHit;
 			WeaponTraceHit(Start, HitTargetItem, FireHit);
@@ -108,61 +108,81 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize> HitTargets)
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
 			if (BlasterCharacter)
 			{
-				if (HitMap.Contains(BlasterCharacter))
+				const bool bHeadShot = FireHit.BoneName.ToString() == FString("head");
+				if (bHeadShot)
 				{
-					HitMap[BlasterCharacter]++;
+					if (HeadShotHitMap.Contains(BlasterCharacter)) HeadShotHitMap[BlasterCharacter]++;
+					else HeadShotHitMap.Emplace(BlasterCharacter, 1);
 				}
 				else
 				{
-					HitMap.Emplace(BlasterCharacter, 1);
+					if (HitMap.Contains(BlasterCharacter)) HitMap[BlasterCharacter]++;
+					else HitMap.Emplace(BlasterCharacter, 1);
+				}
+
+				if (ImpactParticles)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(
+						GetWorld(),
+						ImpactParticles,
+						FireHit.ImpactPoint,
+						FireHit.ImpactNormal.Rotation()
+					);
+				}
+
+				if (HitSound)
+				{
+					UGameplayStatics::PlaySoundAtLocation(
+						this,
+						HitSound,
+						FireHit.ImpactPoint,
+						0.5f,
+						FMath::FRandRange(-0.5f, 0.5f)
+					);
 				}
 			}
-
-			if (ImpactParticles)
+		}
+		// 被击中到的角色，服务器倒带使用
+		TArray<ABlasterCharacter*> HitCharacters;
+		// 被击中角色所受到的总伤害
+		TMap<ABlasterCharacter*, float> DamageMap;
+		for (auto& HitPair : HitMap)
+		{
+			if (HitPair.Key)
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(
-					GetWorld(),
-					ImpactParticles,
-					FireHit.ImpactPoint,
-					FireHit.ImpactNormal.Rotation()
-				);
+				DamageMap.Emplace(HitPair.Key, HitPair.Value * Damage);
+				HitCharacters.AddUnique(HitPair.Key);
 			}
-
-			if (HitSound)
+		}
+		for (auto& HeadShotHitPair : HeadShotHitMap)
+		{
+			if (HeadShotHitPair.Key)
 			{
-				UGameplayStatics::PlaySoundAtLocation(
-					this,
-					HitSound,
-					FireHit.ImpactPoint,
-					0.5f,
-					FMath::FRandRange(-0.5f, 0.5f)
-				);
+				if (DamageMap.Contains(HeadShotHitPair.Key)) DamageMap[HeadShotHitPair.Key] += HeadShotHitPair.Value * HeadShotDamage;
+				else DamageMap.Emplace(HeadShotHitPair.Key, HeadShotHitPair.Value * HeadShotDamage);
+
+				HitCharacters.AddUnique(HeadShotHitPair.Key);
 			}
 		}
 
 		bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
 		if (HasAuthority() && bCauseAuthDamage)
 		{
-			// server，没有开启倒带或者为本地控制角色，在服务器直接施加伤害
-			for (auto HitPair : HitMap)
+			for (auto& DamagePair : DamageMap)
 			{
-				if (HitPair.Key && InstigatorController && HasAuthority())
-				{
-					UGameplayStatics::ApplyDamage(
-						HitPair.Key,
-						Damage * HitPair.Value,
-						InstigatorController,
-						this,
-						UDamageType::StaticClass()
-					);
-				}
+				UGameplayStatics::ApplyDamage(
+					DamagePair.Key,
+					DamagePair.Value,
+					InstigatorController,
+					this,
+					UDamageType::StaticClass()
+				);
 			}
 		}
-		else if (!HasAuthority() && bUseServerSideRewind)
+		
+		if (!HasAuthority() && bUseServerSideRewind)
 		{
 			// 客户端本地控制角色请求服务器进行倒带施加伤害
-			TArray<ABlasterCharacter*> HitCharacters;
-			HitMap.GenerateKeyArray(HitCharacters);
 			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
 			if (BlasterOwnerController && BlasterOwnerCharacter &&

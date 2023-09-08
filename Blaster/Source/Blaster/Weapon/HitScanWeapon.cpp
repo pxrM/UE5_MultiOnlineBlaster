@@ -39,10 +39,11 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
 			if (HasAuthority() && bCauseAuthDamage)
 			{
+				const float DamageToCause = FireHit.BoneName.ToString() == FString("head") ? HeadShotDamage : Damage;
 				// server，没有开启倒带或者为本地控制角色，在服务器直接施加伤害
 				UGameplayStatics::ApplyDamage(
 					HitBlasterCharacter,
-					Damage,
+					DamageToCause,
 					InstigatorController,
 					this,
 					UDamageType::StaticClass()

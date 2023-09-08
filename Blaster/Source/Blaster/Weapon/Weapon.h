@@ -179,6 +179,11 @@ protected:
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		float Damage = 20.f;
+	/// <summary>
+	/// 爆头伤害
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+		float HeadShotDamage = 40.f;
 
 	/// <summary>
 	/// 是否启用服务器倒带
@@ -246,6 +251,7 @@ public:
 	FORCEINLINE int32 GetAmmoNum() const { return AmmoNum; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE float GetDameage() const { return Damage; }
+	FORCEINLINE float GetHeadShotDameage() const { return HeadShotDamage; }
 	/// <summary>
 	/// 获取一个扩散后的目标方向
 	/// </summary>
