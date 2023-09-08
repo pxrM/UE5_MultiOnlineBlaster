@@ -24,6 +24,9 @@
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/BoxComponent.h"
 #include "Blaster/BlasterComponent/LagCompensationComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "Blaster/GameState/BlasterGameState.h"
 
 // Sets default values 
 ABlasterCharacter::ABlasterCharacter()
@@ -278,6 +281,14 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ABlasterCharacter, CurHealth);
 	DOREPLIFETIME(ABlasterCharacter, CurShield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
+}
+
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
 }
 
 /*--------------------------------------input start--------------------------------------------*/
@@ -742,14 +753,6 @@ FVector ABlasterCharacter::GetHitTarget() const
 	return CombatCmp->HitTarget;
 }
 
-void ABlasterCharacter::OnRep_ReplicatedMovement()
-{
-	Super::OnRep_ReplicatedMovement();
-
-	SimProxiesTurn();
-	TimeSinceLastMovementReplication = 0.f;
-}
-
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
 	if (OverlappingWeapon)
@@ -856,6 +859,12 @@ void ABlasterCharacter::PollInit()
 		{
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+
+			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+			if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(BlasterPlayerState))
+			{
+				MulticastGainedTheLead();
+			}
 		}
 	}
 }
@@ -924,19 +933,24 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 		FVector ElimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
 		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ElimBotEffect, ElimBotSpawnPoint, GetActorRotation());
 	}
-	//生成淘汰回收机器人 音效
+	// 生成淘汰回收机器人 音效
 	if (ElimBotSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
 	}
-	//关闭瞄准ui
+	// 关闭瞄准ui
 	bool bHideSniperScope = IsLocallyControlled() && CombatCmp && CombatCmp->bAiming &&
 		CombatCmp->EquippedWeapon && CombatCmp->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle;
 	if (bHideSniperScope)
 	{
 		ShowSniperScopeWidget(false);
 	}
-
+	// 关闭第一的皇冠
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
+	}
+	// 开启复活计时器
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
 }
 
@@ -1033,5 +1047,34 @@ void ABlasterCharacter::SpawnDefaultWeapon()
 		{
 			CombatCmp->EquipWeapon(StartingWeapon);
 		}
+	}
+}
+
+void ABlasterCharacter::MulticastGainedTheLead_Implementation()
+{
+	if (CrownSystem == nullptr) return;
+	if (CrownComponent == nullptr)
+	{
+		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			CrownSystem,
+			GetCapsuleComponent(),
+			FName(),
+			GetActorLocation() + FVector(0.f, 0.f, 110.f),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+	if (CrownComponent)
+	{
+		CrownComponent->Activate();
+	}
+}
+
+void ABlasterCharacter::MulticastLostTheLead_Implementation()
+{
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
 	}
 }
