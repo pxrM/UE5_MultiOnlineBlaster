@@ -94,7 +94,13 @@ public:
 	/// <summary>
 	/// 伤害
 	/// </summary>
-	float DamageVal = 20.f;
+	UPROPERTY(EditAnywhere)
+		float DamageVal = 20.f;
+	/// <summary>
+	/// 爆头伤害，射击类使用，和手榴弹无关
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+		float HeadShotDamageVal = 40.f;
 
 	/// <summary>
 	/// 弹丸的移动速度

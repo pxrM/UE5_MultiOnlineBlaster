@@ -35,6 +35,42 @@ void AProjectileBullet::PostEditChangeProperty(FPropertyChangedEvent& Event)
 }
 #endif
 
+void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()); //Owner在 AProjectileWeapon::Fire =》 UCombatComponent::EquipWeapon中指定为角色
+	if (OwnerCharacter)
+	{
+		ABlasterPlayerController* OwnerController = Cast<ABlasterPlayerController>(OwnerCharacter->Controller);
+		if (OwnerController)
+		{
+			// 在服务器上且没有启用倒带
+			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind) 
+			{
+				//这里只是通知作用，需要伤害接收函数
+				//对OtherActor造成了伤害，DamageVal是伤害值，OwnerController是造成伤害的控制器，this代表造成伤害的对象，UDamageType::StaticClass()则代表所使用的伤害类型
+				UGameplayStatics::ApplyDamage(OtherActor, DamageVal, OwnerController, this, UDamageType::StaticClass());
+				// 因为super里有destroy，所以需要放到后面执行
+				Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
+				return;
+			}
+
+			ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(OtherActor);
+			if (bUseServerSideRewind && OwnerCharacter->GetLagCompensationComp() && OwnerCharacter->IsLocallyControlled() && HitCharacter)
+			{
+				OwnerCharacter->GetLagCompensationComp()->ProjectileServerScoreRequest(
+					HitCharacter,
+					TraceStart,
+					InitialVelocity,
+					OwnerController->GetServerTime() - OwnerController->SingleTripTime
+				);
+			}
+		}
+	}
+	// 因为super里有destroy，所以需要放到后面执行
+	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
+}
+
+
 void AProjectileBullet::BeginPlay()
 {
 	Super::BeginPlay();
@@ -71,39 +107,4 @@ void AProjectileBullet::BeginPlay()
 	// 来预测路径，将参数和结果结构体传入
 	UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
 	*/
-}
-
-void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()); //Owner在 AProjectileWeapon::Fire =》 UCombatComponent::EquipWeapon中指定为角色
-	if (OwnerCharacter)
-	{
-		ABlasterPlayerController* OwnerController = Cast<ABlasterPlayerController>(OwnerCharacter->Controller);
-		if (OwnerController)
-		{
-			// 在服务器上且没有启用倒带
-			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind) 
-			{
-				//这里只是通知作用，需要伤害接收函数
-				//对OtherActor造成了伤害，DamageVal是伤害值，OwnerController是造成伤害的控制器，this代表造成伤害的对象，UDamageType::StaticClass()则代表所使用的伤害类型
-				UGameplayStatics::ApplyDamage(OtherActor, DamageVal, OwnerController, this, UDamageType::StaticClass());
-				// 因为super里有destroy，所以需要放到后面执行
-				Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
-				return;
-			}
-
-			ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(OtherActor);
-			if (bUseServerSideRewind && OwnerCharacter->GetLagCompensationComp() && OwnerCharacter->IsLocallyControlled() && HitCharacter)
-			{
-				OwnerCharacter->GetLagCompensationComp()->ProjectileServerScoreRequest(
-					HitCharacter,
-					TraceStart,
-					InitialVelocity,
-					OwnerController->GetServerTime() - OwnerController->SingleTripTime
-				);
-			}
-		}
-	}
-	// 因为super里有destroy，所以需要放到后面执行
-	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 }
