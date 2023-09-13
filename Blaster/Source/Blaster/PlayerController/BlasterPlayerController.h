@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "BlasterPlayerController.generated.h"
 
+/* 高ping委托回调 */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
 
 /**
@@ -16,6 +17,10 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
+
 public:
 	//当一个控制器获取一个 Pawn 后，引擎会调用该控制器的 OnPossess 函数，并将获取的 Pawn 作为参数传入其中。
 	virtual void OnPossess(APawn* InPawn)override;
@@ -23,7 +28,10 @@ public:
 	virtual void ReceivedPlayer() override;
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
+
+public:
 	virtual float GetServerTime(); //与服务器时间同步
+	void SetHUDTime();
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDShield(float Shield, float MaxShield);
 	void SetHUDScore(float Score);
@@ -34,14 +42,15 @@ public:
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
 	void OnMatchStateSet(FName State);
+	/// <summary>
+	/// 广播淘汰公告，server call
+	/// </summary>
+	/// <param name="Attacker"></param>
+	/// <param name="Victim"></param>
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void SetupInputComponent() override;
-
-	void SetHUDTime();
-
 	/*
 		服务器和客户端之间的时间同步
 	*/
@@ -90,13 +99,27 @@ protected:
 	/// </summary>
 	void HandleCooldown();
 
+	/*
+	*  ping相关
+	*/
 	void CheckPing(float DeltaTime);
 	void HighPingWarning();
 	void StopHigtPingWarning();
 	UFUNCTION(Server, Reliable)
 		void ServerReportPingStatus(bool bHighPing); //向server发送报告ping状态
 
+	/// <summary>
+	/// 显示退出游戏菜单
+	/// </summary>
 	void ShowReturnToMainMenu();
+
+	/// <summary>
+	/// 广播淘汰公告，server call client
+	/// </summary>
+	/// <param name="Attacker">攻击者</param>
+	/// <param name="Victim">受击者</param>
+	UPROPERTY(Client, Reliable)
+		void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
 
 private:
@@ -178,7 +201,6 @@ public:
 	/// rpc单程发送时间
 	/// </summary>
 	float SingleTripTime = 0.f;
-
 	FHighPingDelegate HighPingDelegate;
 
 };

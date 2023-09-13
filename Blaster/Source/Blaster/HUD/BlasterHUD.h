@@ -29,15 +29,16 @@ class BLASTER_API ABlasterHUD : public AHUD
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+
+
 public:
 	virtual void DrawHUD() override;	//重写父类中的DrawHUD()函数，以实现自定义的用户界面（UI）渲染逻辑
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 	void AddCharacterOverlay();
 	void AddAnnouncement();
-
-
-protected:
-	virtual void BeginPlay() override;
+	void AddElimAnnouncement(FString AttackerName, FString VictimName);
 
 
 private:
@@ -45,6 +46,9 @@ private:
 
 
 private:
+	UPROPERTY()
+		class APlayerController* OwningPlayerCtr;
+
 	FHUDPackage HUDPackage;
 
 	UPROPERTY(EditAnywhere)
@@ -61,5 +65,7 @@ public:
 		TSubclassOf<class UUserWidget> AnnouncementClass;
 	UPROPERTY()
 		class UAnnouncementWidget* AnnouncementWidget;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
 
 };

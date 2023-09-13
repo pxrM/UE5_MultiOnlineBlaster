@@ -5,12 +5,14 @@
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlayWidget.h"
 #include "AnnouncementWidget.h"
+#include "ElimAnnouncement.h"
 
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
 	//AddCharacterOverlay(); 改为游戏进行中再开始添加
+	AddElimAnnouncement("Player1", "Player2");
 }
 
 void ABlasterHUD::AddCharacterOverlay()
@@ -28,13 +30,27 @@ void ABlasterHUD::AddCharacterOverlay()
 
 void ABlasterHUD::AddAnnouncement()
 {
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && AnnouncementClass)
+	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
+	if (OwningPlayerCtr && AnnouncementClass)
 	{
-		AnnouncementWidget = CreateWidget<UAnnouncementWidget>(PlayerController, AnnouncementClass);
+		AnnouncementWidget = CreateWidget<UAnnouncementWidget>(OwningPlayerCtr, AnnouncementClass);
 		if (AnnouncementWidget)
 		{
 			AnnouncementWidget->AddToViewport();
+		}
+	}
+}
+
+void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
+{
+	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
+	if (OwningPlayerCtr && ElimAnnouncementClass)
+	{
+		UElimAnnouncement* ElimAnnouncement = CreateWidget<UElimAnnouncement>(OwningPlayerCtr, ElimAnnouncementClass);
+		if (ElimAnnouncement)
+		{
+			ElimAnnouncement->SetElimAnnouncementText(AttackerName, VictimName);
+			ElimAnnouncement->AddToViewport();
 		}
 	}
 }

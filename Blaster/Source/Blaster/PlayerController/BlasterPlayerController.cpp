@@ -606,3 +606,13 @@ void ABlasterPlayerController::ShowReturnToMainMenu()
 		}
 	}
 }
+
+
+void ABlasterPlayerController::BroadcastElim(APlayerState* Attacker, APlayerState* Victim)
+{
+	ClientElimAnnouncement(Attacker, Victim);
+}
+
+void ABlasterPlayerController::ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim)
+{
+}
