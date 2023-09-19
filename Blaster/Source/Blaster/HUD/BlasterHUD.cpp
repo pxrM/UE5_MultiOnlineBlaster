@@ -12,7 +12,7 @@ void ABlasterHUD::BeginPlay()
 	Super::BeginPlay();
 
 	//AddCharacterOverlay(); 改为游戏进行中再开始添加
-	AddElimAnnouncement("Player1", "Player2");
+	//AddElimAnnouncement("Player1", "Player2");
 }
 
 void ABlasterHUD::AddCharacterOverlay()

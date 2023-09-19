@@ -42,7 +42,14 @@ public:
 
 
 private:
-	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);  //绘制准心
+	/// <summary>
+	/// 绘制准心
+	/// </summary>
+	/// <param name="Texture"></param>
+	/// <param name="ViewportCenter"></param>
+	/// <param name="Spread"></param>
+	/// <param name="CrosshairColor"></param>
+	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
 
 
 private:
@@ -65,6 +72,7 @@ public:
 		TSubclassOf<class UUserWidget> AnnouncementClass;
 	UPROPERTY()
 		class UAnnouncementWidget* AnnouncementWidget;
+
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
 

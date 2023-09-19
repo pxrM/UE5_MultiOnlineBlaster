@@ -118,7 +118,7 @@ protected:
 	/// </summary>
 	/// <param name="Attacker">¹¥»÷Õß</param>
 	/// <param name="Victim">ÊÜ»÷Õß</param>
-	UPROPERTY(Client, Reliable)
+	UFUNCTION(Client, Reliable)
 		void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
 
