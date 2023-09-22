@@ -15,46 +15,6 @@ void ABlasterHUD::BeginPlay()
 	//AddElimAnnouncement("Player1", "Player2");
 }
 
-void ABlasterHUD::AddCharacterOverlay()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && CharacterOverlayClass)
-	{
-		CharacterOverlayWidget = CreateWidget<UCharacterOverlayWidget>(PlayerController, CharacterOverlayClass);
-		if (CharacterOverlayWidget)
-		{
-			CharacterOverlayWidget->AddToViewport();
-		}
-	}
-}
-
-void ABlasterHUD::AddAnnouncement()
-{
-	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
-	if (OwningPlayerCtr && AnnouncementClass)
-	{
-		AnnouncementWidget = CreateWidget<UAnnouncementWidget>(OwningPlayerCtr, AnnouncementClass);
-		if (AnnouncementWidget)
-		{
-			AnnouncementWidget->AddToViewport();
-		}
-	}
-}
-
-void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
-{
-	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
-	if (OwningPlayerCtr && ElimAnnouncementClass)
-	{
-		UElimAnnouncement* ElimAnnouncement = CreateWidget<UElimAnnouncement>(OwningPlayerCtr, ElimAnnouncementClass);
-		if (ElimAnnouncement)
-		{
-			ElimAnnouncement->SetElimAnnouncementText(AttackerName, VictimName);
-			ElimAnnouncement->AddToViewport();
-		}
-	}
-}
-
 void ABlasterHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -93,4 +53,45 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, F
 		1.f, 1.f, //指定从纹理中绘制的区域的宽度和高度（以 UV 坐标为单位）。默认值是 1。将这些参数设置为小于 1 的数字可以只绘制部分纹理
 		CrosshairColor //Tint 颜色，可以用来着色纹理
 	);
+}
+
+
+void ABlasterHUD::AddCharacterOverlay()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && CharacterOverlayClass)
+	{
+		CharacterOverlayWidget = CreateWidget<UCharacterOverlayWidget>(PlayerController, CharacterOverlayClass);
+		if (CharacterOverlayWidget)
+		{
+			CharacterOverlayWidget->AddToViewport();
+		}
+	}
+}
+
+void ABlasterHUD::AddStateAnnouncement()
+{
+	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
+	if (OwningPlayerCtr && AnnouncementClass)
+	{
+		AnnouncementWidget = CreateWidget<UAnnouncementWidget>(OwningPlayerCtr, AnnouncementClass);
+		if (AnnouncementWidget)
+		{
+			AnnouncementWidget->AddToViewport();
+		}
+	}
+}
+
+void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
+{
+	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
+	if (OwningPlayerCtr && ElimAnnouncementClass)
+	{
+		UElimAnnouncement* ElimAnnouncement = CreateWidget<UElimAnnouncement>(OwningPlayerCtr, ElimAnnouncementClass);
+		if (ElimAnnouncement)
+		{
+			ElimAnnouncement->SetElimAnnouncementText(AttackerName, VictimName);
+			ElimAnnouncement->AddToViewport();
+		}
+	}
 }
