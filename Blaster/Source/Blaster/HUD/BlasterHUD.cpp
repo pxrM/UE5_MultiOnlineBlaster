@@ -87,11 +87,24 @@ void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
 	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
 	if (OwningPlayerCtr && ElimAnnouncementClass)
 	{
-		UElimAnnouncement* ElimAnnouncement = CreateWidget<UElimAnnouncement>(OwningPlayerCtr, ElimAnnouncementClass);
-		if (ElimAnnouncement)
+		UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwningPlayerCtr, ElimAnnouncementClass);
+		if (ElimAnnouncementWidget)
 		{
-			ElimAnnouncement->SetElimAnnouncementText(AttackerName, VictimName);
-			ElimAnnouncement->AddToViewport();
+			ElimAnnouncementWidget->SetElimAnnouncementText(AttackerName, VictimName);
+			ElimAnnouncementWidget->AddToViewport();
+
+			FTimerHandle ElimmMsgTimer;
+			FTimerDelegate ElimDelegate;
+			ElimDelegate.BindUFunction(this, FName("ElimAnnouncementTimerFinish"), ElimAnnouncementWidget);
+			GetWorldTimerManager().SetTimer(ElimmMsgTimer, ElimDelegate, ElimAnnouncementTime, false);
 		}
+	}
+}
+
+void ABlasterHUD::ElimAnnouncementTimerFinish(UElimAnnouncement* MsgToRemove)
+{
+	if (MsgToRemove)
+	{
+		MsgToRemove->RemoveFromParent();
 	}
 }

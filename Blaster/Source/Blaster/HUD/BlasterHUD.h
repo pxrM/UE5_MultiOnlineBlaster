@@ -50,6 +50,12 @@ public:
 	/// <param name="VictimName"></param>
 	void AddElimAnnouncement(FString AttackerName, FString VictimName);
 
+	/// <summary>
+	/// 淘汰公告item的计时器结束回调
+	/// </summary>
+	/// <param name="MsgToRemove">要删除的umg</param>
+	UFUNCTION()
+		void ElimAnnouncementTimerFinish(UElimAnnouncement* MsgToRemove);
 
 public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
