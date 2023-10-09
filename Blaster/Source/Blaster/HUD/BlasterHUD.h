@@ -7,6 +7,9 @@
 #include "BlasterHUD.generated.h"
 
 
+/// <summary>
+/// 准心结构体
+/// </summary>
 USTRUCT(BlueprintType)
 struct FHUDPackage
 {
@@ -94,7 +97,7 @@ private:
 	/// 淘汰公告item的持续展示时间
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float ElimAnnouncementTime = 1.5f;
+		float ElimAnnouncementTime = 2.5f;
 
 
 public:
@@ -108,5 +111,8 @@ public:
 
 	UPROPERTY()
 		class UAnnouncementWidget* AnnouncementWidget;
+
+	UPROPERTY()
+		TArray<UElimAnnouncement*> ElimMessages;
 
 };

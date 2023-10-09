@@ -7,7 +7,7 @@
 #include "AnnouncementWidget.generated.h"
 
 /**
- *
+ * ×´Ì¬¹«¸æ
  */
 UCLASS()
 class BLASTER_API UAnnouncementWidget : public UUserWidget
