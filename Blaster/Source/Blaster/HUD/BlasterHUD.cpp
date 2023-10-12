@@ -100,12 +100,23 @@ void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
 			{
 				if (Msg && Msg->AnnouncementBox)
 				{
+					//Canvas Panel Slot 类型是UE4中的一种布局槽类型，用于控制在 Canvas Panel 中放置的 Widget 在 Canvas 中的布局和位置。
+					//UCanvasPanelSlot 类是 UPanelSlot 类的子类，它包含了与 Canvas 布局相关的属性，
+					//例如位置、大小、对齐等。通过修改 UCanvasPanelSlot 的属性，可以实现对 Canvas Panel 中各个 Widget 的布局和位置进行精确控制。
+					//使用 UCanvasPanelSlot 类型的变量，我们可以获取和设置在 Canvas Panel 中特定 Widget 的布局信息。
+					//		例如，我们可以使用 UCanvasPanelSlot 的属性来设置 Widget 的位置、大小、对齐方式以及其他与布局相关的属性。
+					//通过将 Widget 的 Slot 转换为 Canvas Panel Slot 类型，我们可以访问和修改 Canvas Panel Slot 特有的属性，
+					//并通过这些属性来控制 Widget 在 Canvas Panel 中的布局。
+					// 
+					//在Canvas Panel中，Widget 是通过 Canvas Panel Slot 来控制位置和大小的。如果直接使用 Widget的Slot修改位置和大小，将不会生效。
+					//因此，在Canvas Panel中控制Widget的位置和大小需要先获取该Widget对应的Canvas Panel Slot，并使用Canvas Panel Slot的属性来修改位置和大小等布局信息。
 					UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Msg->AnnouncementBox);
 					if (CanvasSlot)
 					{
 						FVector2D Position = CanvasSlot->GetPosition();
 						// 向屏幕上方移动
 						FVector2D NewPosition(CanvasSlot->GetPosition().X, Position.Y - CanvasSlot->GetPosition().Y);
+						CanvasSlot->SetPosition(NewPosition);
 					}
 				}
 			}
