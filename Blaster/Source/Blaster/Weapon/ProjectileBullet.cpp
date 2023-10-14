@@ -46,9 +46,10 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 			// 在服务器上且没有启用倒带
 			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind) 
 			{
+				const float DamageToCause = Hit.BoneName.ToString() == FString("head") ? HeadShotDamageVal : DamageVal;
 				//这里只是通知作用，需要伤害接收函数
 				//对OtherActor造成了伤害，DamageVal是伤害值，OwnerController是造成伤害的控制器，this代表造成伤害的对象，UDamageType::StaticClass()则代表所使用的伤害类型
-				UGameplayStatics::ApplyDamage(OtherActor, DamageVal, OwnerController, this, UDamageType::StaticClass());
+				UGameplayStatics::ApplyDamage(OtherActor, DamageToCause, OwnerController, this, UDamageType::StaticClass());
 				// 因为super里有destroy，所以需要放到后面执行
 				Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 				return;

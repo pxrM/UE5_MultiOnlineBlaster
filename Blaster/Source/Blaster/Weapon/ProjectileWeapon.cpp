@@ -34,6 +34,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 					SpawnProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnProjectile->bUseServerSideRewind = false;
 					SpawnProjectile->DamageVal = Damage;
+					SpawnProjectile->HeadShotDamageVal = HeadShotDamage;
 				}
 				else //server其它客户端控制角色，使用非复制弹，验证倒带
 				{
@@ -49,7 +50,6 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 					SpawnProjectile->bUseServerSideRewind = true;
 					SpawnProjectile->TraceStart = SocketTransform.GetLocation();
 					SpawnProjectile->InitialVelocity = SpawnProjectile->GetActorForwardVector() * SpawnProjectile->InitialSpeed;
-					SpawnProjectile->DamageVal = Damage;
 				}
 				else //client其它复制角色，使用非复制弹验证倒带，不验证倒带
 				{
@@ -65,6 +65,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 				SpawnProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 				SpawnProjectile->bUseServerSideRewind = false;
 				SpawnProjectile->DamageVal = Damage;
+				SpawnProjectile->HeadShotDamageVal = HeadShotDamage;
 			}
 		}
 	}

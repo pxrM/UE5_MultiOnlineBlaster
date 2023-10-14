@@ -97,7 +97,7 @@ public:
 	UPROPERTY(EditAnywhere)
 		float DamageVal = 20.f;
 	/// <summary>
-	/// 爆头伤害，射击类使用，和手榴弹无关
+	/// 爆头伤害，射弹类使用，和投掷武器（手榴弹）无关
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		float HeadShotDamageVal = 40.f;
