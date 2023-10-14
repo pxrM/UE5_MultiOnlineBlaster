@@ -280,8 +280,8 @@ public:
 			ABlasterCharacter* HitCharacter,
 			const FVector_NetQuantize& TraceStart,
 			const FVector_NetQuantize& HitLocation,
-			float HitTime,
-			class AWeapon* DamageCauser);
+			float HitTime
+		);
 	/// <summary>
 	/// （射弹类武器）向服务器请求攻击结果，获取分数
 	/// </summary>

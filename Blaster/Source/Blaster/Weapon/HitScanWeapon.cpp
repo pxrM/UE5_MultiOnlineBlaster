@@ -61,8 +61,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				{
 					// 攻击时间等于服务器时间减去单次发送时间
 					const float HitTime = BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime;
-					BlasterOwnerCharacter->GetLagCompensationComp()->ServerScoreRequest(
-						HitBlasterCharacter, Start, HitTarget, HitTime, this);
+					BlasterOwnerCharacter->GetLagCompensationComp()->ServerScoreRequest(HitBlasterCharacter, Start, HitTarget, HitTime);
 				}
 			}
 		}
