@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "BlasterPlayerState.generated.h"
 
 /**
- * 储存玩家状态
+ * APlayerState是一个用于存储玩家状态的类，在一个游戏客户端，尤其是网络游戏客户端中是可以存在多个APlayerState对象的，
+ * 不同的APlayerState保存不同玩家的状态，同时APlayerState也可以存在于服务器中。
  */
 UCLASS()
 class BLASTER_API ABlasterPlayerState : public APlayerState
@@ -23,6 +25,10 @@ public:
 	void AddToDefeats(int32 DefeatsAmount);
 	UFUNCTION()
 		virtual void OnRep_Defeats();
+
+public:
+	FORCEINLINE ETeam GetTeam() const { return Team; }
+	FORCEINLINE void SetTeam(ETeam TeamToSet) { Team = TeamToSet; }
 
 private:
 	/*
@@ -47,5 +53,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
 		int32 Defeats; //失败次数
+
+	UPROPERTY(Replicated)
+		ETeam Team = ETeam::ET_NoTeam;
 
 };
