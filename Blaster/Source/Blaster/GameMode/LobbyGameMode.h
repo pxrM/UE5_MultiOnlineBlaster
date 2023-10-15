@@ -18,6 +18,10 @@ class BLASTER_API ALobbyGameMode : public AGameMode
 	GENERATED_BODY()
 
 public:
+	/// <summary>
+	/// 登录
+	/// </summary>
+	/// <param name="NewPlayer">新加入的玩家控制器</param>
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	
 };
