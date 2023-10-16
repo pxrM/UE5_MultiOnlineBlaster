@@ -33,6 +33,9 @@ void ATeamGameMode::PostLogin(APlayerController* NewPlayer)
 
 void ATeamGameMode::Logout(AController* Exiting)
 {
+	Super::Logout(Exiting);
+
+	// Íæ¼ÒÍË³ö
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 	if (BGameState)
 	{

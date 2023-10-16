@@ -606,6 +606,10 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		{
 			CombatCmp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 		}
+		if (CombatCmp && CombatCmp->SecondaryWeapon && CombatCmp->SecondaryWeapon->GetWeaponMesh())
+		{
+			CombatCmp->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
 	}
 	else
 	{
@@ -613,6 +617,10 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		if (CombatCmp && CombatCmp->EquippedWeapon && CombatCmp->EquippedWeapon->GetWeaponMesh())
 		{
 			CombatCmp->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+		if (CombatCmp && CombatCmp->SecondaryWeapon && CombatCmp->SecondaryWeapon->GetWeaponMesh())
+		{
+			CombatCmp->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 		}
 	}
 }
