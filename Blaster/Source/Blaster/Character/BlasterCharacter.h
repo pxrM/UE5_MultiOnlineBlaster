@@ -8,6 +8,7 @@
 #include "Blaster/Interface/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "BlasterCharacter.generated.h"
 
 
@@ -42,7 +43,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override; //会在所有机器上调用
-	
+
 
 private://-----------------------------------------------------------------------------------------------------------
 	/// <summary>
@@ -167,8 +168,20 @@ private://----------------------------------------------------------------------
 	FOnTimelineFloat DissolveTrack; //处理时间轴（timeline）中浮点数值变化的事件
 	UPROPERTY(VisibleAnywhere, Category = Elim)
 		UMaterialInstanceDynamic* DynamicDissolveMatInstance; //在运行时动态创建的材质实例。它可以用于在游戏或应用程序中即时修改材质的属性，例如改变颜色、纹理、参数等等。
+	UPROPERTY(VisibleAnywhere, Category = Elim)
+		UMaterialInstance* DissolveMatInstance; //溶解材质实例，适合在需要多次使用相同材质但有不同属性的场景中使用，可在蓝图里使用
+
+	/* team color */
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UMaterialInstance* DissolveMatInstance; //适合在需要多次使用相同材质但有不同属性的场景中使用，可在蓝图里使用
+		UMaterialInstance* OriginalMaterial;
+	UPROPERTY(EditAnywhere, Category = Elim)
+		UMaterialInstance* RedDissolveMatInst;
+	UPROPERTY(EditAnywhere, Category = Elim)
+		UMaterialInstance* RedMaterial;
+	UPROPERTY(EditAnywhere, Category = Elim)
+		UMaterialInstance* BlueDissolveMatInst;
+	UPROPERTY(EditAnywhere, Category = Elim)
+		UMaterialInstance* BlueMaterial;
 
 	/* 淘汰回收机器人特效 */
 	UPROPERTY(EditAnywhere, Category = Elim)
@@ -249,6 +262,18 @@ private://----------------------------------------------------------------------
 	bool bLeftGame = false;
 
 
+public:
+	/// <summary>
+	/// 交换武器动作是否完成
+	/// </summary>
+	bool bFinishedSwapping = false;
+
+	/// <summary>
+	/// 退出当前游戏事件
+	/// </summary>
+	FOnLeftGame OnLeftGame;
+
+
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -282,18 +307,6 @@ protected:
 
 	/* 丢掉或删除武器 */
 	void DropOrDestroyWeapon(AWeapon* Weapon);
-
-
-public:
-	/// <summary>
-	/// 交换武器动作是否完成
-	/// </summary>
-	bool bFinishedSwapping = false;
-
-	/// <summary>
-	/// 退出当前游戏事件
-	/// </summary>
-	FOnLeftGame OnLeftGame;
 
 
 public:
@@ -338,10 +351,10 @@ public:
 	/*	UFUNCTION(NetMulticast, Unreliable) //** 这里改为由更新角色健康值时触发，健康值会被同步到所有客服端，放到这那里会减少一次网络广播消耗
 			void MulticastHit();	*///播放受击动画 NetMulticast会从服务端同步到所有客户端 Unreliable表示同步消息不可靠
 
-	/// <summary>
-	/// 淘汰，server上执行
-	/// </summary>
-	/// <param name="bPlayerLeftGame">是否是退出游戏</param>
+			/// <summary>
+			/// 淘汰，server上执行
+			/// </summary>
+			/// <param name="bPlayerLeftGame">是否是退出游戏</param>
 	void Elim(bool bPlayerLeftGame);
 	/// <summary>
 	/// 淘汰网络多播
@@ -366,6 +379,12 @@ public:
 	/// </summary>
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastLostTheLead();
+
+	/// <summary>
+	/// 设置队伍颜色
+	/// </summary>
+	/// <param name="Team"></param>
+	void SetTeamColor(ETeam Team);
 
 	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }

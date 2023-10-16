@@ -867,6 +867,7 @@ void ABlasterCharacter::PollInit()
 		{
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+			SetTeamColor(BlasterPlayerState->GetTeam());
 
 			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 			if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(BlasterPlayerState))
@@ -886,6 +887,27 @@ void ABlasterCharacter::Elim(bool bPlayerLeftGame)
 	}
 
 	MulticastElim(bPlayerLeftGame); //ÍøÂç¶à²¥
+}
+
+void ABlasterCharacter::SetTeamColor(ETeam Team)
+{
+	if (GetMesh() == nullptr || OriginalMaterial == nullptr) return;
+
+	switch (Team)
+	{
+	case ETeam::ET_RedTeam:
+		GetMesh()->SetMaterial(0, RedMaterial);
+		DissolveMatInstance = RedDissolveMatInst;
+		break;
+	case ETeam::ET_BlueTeam:
+		GetMesh()->SetMaterial(0, BlueMaterial);
+		DissolveMatInstance = BlueDissolveMatInst;
+		break;
+	case ETeam::ET_NoTeam:
+		GetMesh()->SetMaterial(0, OriginalMaterial);
+		DissolveMatInstance = BlueDissolveMatInst;
+		break;
+	}
 }
 
 void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
