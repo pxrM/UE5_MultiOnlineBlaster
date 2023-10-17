@@ -19,6 +19,8 @@ public:
 
 	void UpdateTopScore(class ABlasterPlayerState* ScoringPlayer);
 
+	void RedTeamScores();
+	void BlueTeamScores();
 	UFUNCTION()
 		void OnRep_RedTeamScore();
 	UFUNCTION()

@@ -620,7 +620,7 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		}
 		if (CombatCmp && CombatCmp->SecondaryWeapon && CombatCmp->SecondaryWeapon->GetWeaponMesh())
 		{
-			CombatCmp->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+			CombatCmp->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
 }
@@ -795,8 +795,12 @@ void ABlasterCharacter::OnRep_CurShield(float LastShield)
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	if (bElimmed) return; //防止重复向淘汰者施加伤害
+	//GetAuthGameMode<T>()是一个由UE引擎提供的模板函数，用于获取当前场景中存在的并继承自T(AGameMode)类型
+	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	// bElimmed 防止重复向淘汰者施加伤害
+	if (bElimmed || BlasterGameMode == nullptr) return; 
 
+	Damage = BlasterGameMode->CalculateDamage(InstigatorController, Controller, Damage);
 	float DamageToHealth = Damage;
 	if (CurHealth > 0.f)
 	{
@@ -819,14 +823,9 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 
 	if (CurHealth == 0.f)
 	{
-		//GetAuthGameMode<T>()是一个由UE引擎提供的模板函数，用于获取当前场景中存在的并继承自T(AGameMode)类型
-		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-		if (BlasterGameMode)
-		{
-			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
-		}
+		BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+		ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+		BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
 	}
 }
 
@@ -986,7 +985,7 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 
 void ABlasterCharacter::ElimTimerFinished()
 {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	if (BlasterGameMode && !bLeftGame)
 	{
 		BlasterGameMode->ResquestRespawn(this, Controller);
@@ -1000,7 +999,7 @@ void ABlasterCharacter::ElimTimerFinished()
 
 void ABlasterCharacter::ServerLeavaGame_Implementation()
 {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	BlasterPlayerState = BlasterPlayerState ? BlasterPlayerState : GetPlayerState<ABlasterPlayerState>();
 	if (BlasterGameMode)
 	{
@@ -1055,7 +1054,7 @@ void ABlasterCharacter::Destroyed()
 		ElimBotComponent->DestroyComponent();
 	}
 
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
 	if (CombatCmp && CombatCmp->EquippedWeapon && bMatchNotInProgress)  //如果不是游戏进行中状态删除武器
 	{
@@ -1067,7 +1066,7 @@ void ABlasterCharacter::Destroyed()
 void ABlasterCharacter::SpawnDefaultWeapon()
 {
 	// 不在服务器GameMode会返回null
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	BlasterGameMode = BlasterGameMode ? BlasterGameMode : Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
 	UWorld* World = GetWorld();
 	if (BlasterGameMode && World && !bElimmed && DefaultWeaponClass)
 	{

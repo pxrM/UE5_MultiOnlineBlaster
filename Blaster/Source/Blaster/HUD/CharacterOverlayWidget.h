@@ -36,6 +36,12 @@ public:
 	UPROPERTY(meta = (BindWidget))
 		UTextBlock* GrenadesText;
 	UPROPERTY(meta = (BindWidget))
+		UTextBlock* RedTeamSocre;
+	UPROPERTY(meta = (BindWidget))
+		UTextBlock* BlueTeamSocre;
+	UPROPERTY(meta = (BindWidget))
+		UWidget* TeamHorizontalBox;
+	UPROPERTY(meta = (BindWidget))
 		class UImage* HighPingImage;
 	//标记为 Transient，它不会被序列化和保存到磁盘上，而是只存在于运行时内存中。
 	//这意味着，每次重新启动游戏或重新加载关卡时，该属性都会被重置为默认值。

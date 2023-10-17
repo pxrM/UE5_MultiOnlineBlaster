@@ -246,6 +246,8 @@ private://----------------------------------------------------------------------
 		TMap<FName, UBoxComponent*> HitConllisionBoxs;
 
 	UPROPERTY()
+		class ABlasterGameMode* BlasterGameMode;
+	UPROPERTY()
 		class ABlasterPlayerController* BlasterPlayerController;
 	UPROPERTY()
 		class ABlasterPlayerState* BlasterPlayerState;
@@ -293,9 +295,15 @@ protected:
 	void CalculateAO_Pitch();
 	void SimProxiesTurn();//模拟代理使用的旋转逻辑
 
-	//接收伤害回调
-	//即当角色受到伤害时（UGameplayStatics::ApplyDamage），引擎会自动调用该函数并传递伤害相关的参数，
-	//被攻击的角色DamagedActor、造成的伤害Damage、伤害类型DamageType、造成伤害的控制器InstigatorController和造成伤害的对象DamageCauser。
+	/// <summary>
+	/// 接收伤害回调
+	/// 即当角色受到伤害时（UGameplayStatics::ApplyDamage），引擎会自动调用该函数并传递伤害相关的参数，
+	/// </summary>
+	/// <param name="DamagedActor">被攻击的角色</param>
+	/// <param name="Damage">造成的伤害</param>
+	/// <param name="DamageType">伤害类型</param>
+	/// <param name="InstigatorController">造成伤害的控制器</param>
+	/// <param name="DamageCauser">造成伤害的对象</param>
 	UFUNCTION()
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
