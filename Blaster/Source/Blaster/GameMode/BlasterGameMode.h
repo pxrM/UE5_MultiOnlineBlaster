@@ -48,6 +48,14 @@ public:
 	/// 角色请求退出游戏的处理
 	/// </summary>
 	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving);
+	/// <summary>
+	/// 计算伤害值
+	/// </summary>
+	/// <param name="Attacker">攻击者</param>
+	/// <param name="Victim">受击者</param>
+	/// <param name="BaseDamage">基础伤害</param>
+	/// <returns></returns>
+	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
 
 
 public:
@@ -74,6 +82,10 @@ public:
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
 		float CooldownTime = 10.f;
+	/// <summary>
+	/// 是否是团队模式
+	/// </summary>
+	bool bTeamsMatch = false;
 
 
 private:

@@ -6,6 +6,11 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 
+ATeamGameMode::ATeamGameMode()
+{
+	bTeamsMatch = true;
+}
+
 void ATeamGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);

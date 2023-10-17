@@ -41,13 +41,20 @@ public:
 	void SetHUDMatchCountdown(float CountdownTime);
 	void SetHUDAnnouncementCountdown(float CountdownTime);
 	void SetHUDGrenades(int32 Grenades);
-	void OnMatchStateSet(FName State);
+	void OnMatchStateSet(FName State, bool bTeamsMatch = false);
 	/// <summary>
 	/// 广播淘汰公告，server call
 	/// </summary>
 	/// <param name="Attacker"></param>
 	/// <param name="Victim"></param>
 	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
+	/*
+		队伍hud相关函数 
+	*/
+	void HideTeamSocres();
+	void InitTeamScores();
+	void SetHUDRedTeamScore(int32 RedScore);
+	void SetHUDBlueTeamScore(int32 BlueScore);
 
 
 protected:
@@ -93,7 +100,7 @@ protected:
 	/// <summary>
 	/// 比赛开始设置
 	/// </summary>
-	void HandleMatchHasStarted();
+	void HandleMatchHasStarted(bool bTeamsMatch = false);
 	/// <summary>
 	/// 比赛结束冷却阶段设置
 	/// </summary>
@@ -125,6 +132,8 @@ protected:
 private:
 	UFUNCTION()
 		void OnRep_MatchState();
+	UFUNCTION()
+		void OnRep_ShowTeamScores();
 
 
 protected:
@@ -176,6 +185,9 @@ private:
 	float WarmupTime = 0.f;	 // 预热时长
 	float CooldownTime = 0.f; // 比赛冷却时长
 	uint32 CountdownInt = 0;  // 上一次倒计时的时间，如果与当前不同则更新hud
+
+	UPROPERTY(ReplicatedUsing = OnRep_ShowTeamScores)
+		bool bShowTeamScores = false;
 
 	float HighPingRunningTime = 0.f;
 	float PingAnimRunningTime = 0.f;
