@@ -10,7 +10,13 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
 
 /**
- *
+ * APlayerController是由AController派生出来专门用于负责玩家交互逻辑的AController，APlayerController提供了：
+ * Camera管理
+ * Input输入响应
+ * UPlayer关联
+ * HUD显示
+ * Level切换
+ * Voice音源监听
  */
 UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
@@ -49,7 +55,7 @@ public:
 	/// <param name="Victim"></param>
 	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 	/*
-		队伍hud相关函数 
+		队伍hud相关函数
 	*/
 	void HideTeamSocres();
 	void InitTeamScores();
