@@ -111,6 +111,18 @@ protected:
 	/// 比赛结束冷却阶段设置
 	/// </summary>
 	void HandleCooldown();
+	/// <summary>
+	/// 比赛结束 获胜玩家的描述文本
+	/// </summary>
+	/// <param name="TopPlayers"></param>
+	/// <returns></returns>
+	FString GetInfoText(const TArray<class ABlasterPlayerState*>& TopPlayers);
+	/// <summary>
+	/// 团队比赛结束 获胜团队的描述文本
+	/// </summary>
+	/// <param name="BlasterGameState"></param>
+	/// <returns></returns>
+	FString GetTeamInfoText(class ABlasterGameState* BlasterGameState);
 
 	/*
 	*  ping相关

@@ -27,8 +27,11 @@ public:
 		void OnRep_BlueTeamScore();
 
 public:
+	/// <summary>
+	/// 最高分玩家，可能有玩家并列高分，所以用TArray
+	/// </summary>
 	UPROPERTY(Replicated)
-		TArray<class ABlasterPlayerState*> TopScoringPlayers; //最高分玩家，可能有玩家并列高分，所以用TArray
+		TArray<class ABlasterPlayerState*> TopScoringPlayers;
 
 	TArray<ABlasterPlayerState*> RedTeam;
 	TArray<ABlasterPlayerState*> BlueTeam;
@@ -38,6 +41,9 @@ public:
 		float BlueTeamScore = 0.f;
 
 private:
-	float CurTopScore = 0.f; //当前最高分
+	/// <summary>
+	/// 当前最高分
+	/// </summary>
+	float CurTopScore = 0.f;
 
 };
