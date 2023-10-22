@@ -402,9 +402,10 @@ void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMat
 	WarmupTime = Warmup;
 	MatchTime = Match;
 	CooldownTime = Cooldown;
+	MatchState = StateOfMatch;
 	OnMatchStateSet(StateOfMatch);
 
-	if (BlasterHUD && MatchState == MatchState::WaitingToStart)
+	if (BlasterHUD && MatchState == MatchState::WaitingToStart )
 	{
 		BlasterHUD->AddStateAnnouncement();
 	}
@@ -498,7 +499,7 @@ void ABlasterPlayerController::HandleCooldown()
 			if (BGameState && BPlayerState)
 			{
 				auto& TopPlayers = BGameState->TopScoringPlayers;
-				FString InfoTextStr = GetInfoText(TopPlayers);
+				FString InfoTextStr = bShowTeamScores ? GetTeamInfoText(BGameState) : GetInfoText(TopPlayers);
 				BlasterHUD->AnnouncementWidget->InfoText->SetText(FText::FromString(InfoTextStr));
 			}
 		}
@@ -569,15 +570,15 @@ FString ABlasterPlayerController::GetTeamInfoText(ABlasterGameState* BlasterGame
 	{
 		InfoTextStr = Announcement::RedTeamWins;
 		InfoTextStr.Append(TEXT("\n"));
-		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), Announcement::RedTeam, RedTeamScore));
-		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), Announcement::BlueTeam, BlueTeamScore));
+		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::RedTeam, RedTeamScore));
+		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::BlueTeam, BlueTeamScore));
 	}
 	else if (RedTeamScore < BlueTeamScore)
 	{
 		InfoTextStr = Announcement::BlueTeamWins;
 		InfoTextStr.Append(TEXT("\n"));
-		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), Announcement::BlueTeam, BlueTeamScore));
-		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), Announcement::RedTeam, RedTeamScore));
+		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::BlueTeam, BlueTeamScore));
+		InfoTextStr.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::RedTeam, RedTeamScore));
 	}
 
 	return InfoTextStr;
