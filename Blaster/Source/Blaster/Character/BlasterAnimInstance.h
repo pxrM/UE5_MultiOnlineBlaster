@@ -101,8 +101,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
 		bool bTransformRightHand; //是否启用右手变换
 
-
-private:
-
+	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
+		bool bHoldingTheFlag; //是否持有旗帜
 
 };

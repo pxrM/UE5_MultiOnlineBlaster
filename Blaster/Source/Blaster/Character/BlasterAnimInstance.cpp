@@ -64,6 +64,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
 	bElimmed = BlasterCharacter->IsElimmed();
 
+	bHoldingTheFlag = BlasterCharacter->IsHoldingTheFlag();
+
 	/*获取一个角色的移动方向和视角旋转之间的偏移量*/
 	//获取角色的瞄准方向
 	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();

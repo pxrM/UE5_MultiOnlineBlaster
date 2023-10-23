@@ -1107,3 +1107,14 @@ void ABlasterCharacter::MulticastLostTheLead_Implementation()
 		CrownComponent->DestroyComponent();
 	}
 }
+
+
+
+bool ABlasterCharacter::IsHoldingTheFlag() const
+{
+	if (CombatCmp)
+	{
+		CombatCmp->bHoldingTheFlag;
+	}
+	return false;
+}

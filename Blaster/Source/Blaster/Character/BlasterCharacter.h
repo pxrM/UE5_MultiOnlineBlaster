@@ -414,6 +414,7 @@ public:
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
 	FORCEINLINE TMap<FName, UBoxComponent*> GetHitCollisionBoxs() const { return HitConllisionBoxs; }
 	FORCEINLINE ULagCompensationComponent* GetLagCompensationComp() const { return LagCompensationCmp; }
+	FORCEINLINE bool IsHoldingTheFlag() const;
 
 
 private:

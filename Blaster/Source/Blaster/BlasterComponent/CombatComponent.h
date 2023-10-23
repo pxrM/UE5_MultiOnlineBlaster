@@ -111,6 +111,8 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
 
+	bool bHoldingTheFlag = false; //是否持有旗帜
+
 
 protected:
 	UPROPERTY(EditAnywhere)
