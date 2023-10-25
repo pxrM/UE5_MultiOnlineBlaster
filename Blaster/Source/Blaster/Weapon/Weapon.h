@@ -240,6 +240,14 @@ public:
 	void SetHUDAmmo();
 	void AddAmmo(int32 AmmoToAdd);
 	void EnableCustomDepth(bool bEnable); //是否开启RnderCustomDepth，以显示轮廓
+	/// <summary>
+	/// 获取一个扩散后的目标方向
+	/// </summary>
+	/// <param name="TraceStart">起始点，废弃，改为由该函数自己计算</param>
+	/// <param name="HitTarget">射线目标点</param>
+	/// <returns></returns>
+	FVector TraceEndWithScatter(const FVector& HitTarget);
+
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
@@ -252,13 +260,7 @@ public:
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 	FORCEINLINE float GetDameage() const { return Damage; }
 	FORCEINLINE float GetHeadShotDameage() const { return HeadShotDamage; }
-	/// <summary>
-	/// 获取一个扩散后的目标方向
-	/// </summary>
-	/// <param name="TraceStart">起始点，废弃，改为由该函数自己计算</param>
-	/// <param name="HitTarget">射线目标点</param>
-	/// <returns></returns>
-	FVector TraceEndWithScatter(const FVector& HitTarget);
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 
 
 private:
