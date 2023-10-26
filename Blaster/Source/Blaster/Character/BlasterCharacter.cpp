@@ -223,6 +223,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	//角色输入绑定按键
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABlasterCharacter::Jump);
+
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipBtnPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ABlasterCharacter::CrouchBtnPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimBtnPressed);
@@ -328,6 +329,7 @@ void ABlasterCharacter::EquipBtnPressed()
 	//拾取武器需要服务器来验证
 	if (CombatCmp && CombatCmp->CombatState == ECombatState::ECS_Unoccupied)
 	{
+		if (CombatCmp->bHoldingTheFlag) return;
 		//当装备按钮按下时，如果角色当前是服务端，则直接调用 CombatCmp 组件的 EquipWeapon 函数；
 		//否则，将该函数代理给 ServerEquipBtnPressed_Implementation 的远程过程调用（RPC）版本，以便由服务器验证并执行相应的操作。
 		//通过这种方式，确保装备按钮按下事件在所有客户端和服务器之间正确同步，并且在需要访问服务器资源或执行敏感操作时，由服务端进行验证和控制，从而提高游戏的安全性和可靠性。
@@ -376,6 +378,7 @@ void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
 
 void ABlasterCharacter::CrouchBtnPressed()
 {
+	if (CombatCmp && CombatCmp->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
 	//这里会设置ACharacter->bIsCrouched
 	//这里会设置角色胶囊体的大小，可在运行期间按~键输入ShowCollision查看
@@ -394,6 +397,7 @@ void ABlasterCharacter::AimBtnPressed()
 	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
+		if (CombatCmp->bHoldingTheFlag) return;
 		CombatCmp->SetAiming(true);
 	}
 }
@@ -403,6 +407,7 @@ void ABlasterCharacter::AimBtnReleased()
 	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
+		if (CombatCmp->bHoldingTheFlag) return;
 		CombatCmp->SetAiming(false);
 	}
 }
@@ -575,6 +580,7 @@ void ABlasterCharacter::FireBtnPressed()
 	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
+		if (CombatCmp->bHoldingTheFlag) return;
 		CombatCmp->FireBtnPressed(true);
 	}
 }
@@ -584,6 +590,7 @@ void ABlasterCharacter::FireBtnReleased()
 	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
+		if (CombatCmp->bHoldingTheFlag) return;
 		CombatCmp->FireBtnPressed(false);
 	}
 }
@@ -593,6 +600,7 @@ void ABlasterCharacter::ReloadMagBtnPressed()
 	if (bDisableGameplay) return;
 	if (CombatCmp)
 	{
+		if (CombatCmp->bHoldingTheFlag) return;
 		CombatCmp->ReloadMag();
 	}
 }
@@ -601,6 +609,7 @@ void ABlasterCharacter::GrenadeBtnPressed()
 {
 	if (CombatCmp)
 	{
+		if (CombatCmp->bHoldingTheFlag) return;
 		CombatCmp->ThrowGrenade();
 	}
 }
