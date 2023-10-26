@@ -9,6 +9,8 @@
 AFlag::AFlag()
 {
 	FlagMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FlagMesh"));
+	FlagMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	FlagMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetRootComponent(FlagMesh);
 	GetAreaSphere()->SetupAttachment(FlagMesh);
 	GetPickupWidget()->SetupAttachment(FlagMesh);

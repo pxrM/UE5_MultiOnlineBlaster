@@ -111,7 +111,8 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
 		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
 
-	bool bHoldingTheFlag = false; //是否持有旗帜
+	UPROPERTY(ReplicatedUsing = OnRep_HoldingTheFlag)
+		bool bHoldingTheFlag = false; //是否持有旗帜
 
 
 protected:
@@ -207,6 +208,7 @@ protected:
 	void AttachActorToRightHand(AActor* ActorToAttach);	//附加actor到角色的右手
 	void AttachActorToLeftHand(AActor* ActorToAttach);	//附加actor到角色的左手
 	void AttachActorToBackpack(AActor* ActorToAttach);	//附加actor到角色的背包
+	void AttachFlagToLeftHand(AWeapon* Flag);	//附加旗帜到角色的左手
 	void UpdateCarriedAmmo(); //更新当前装备武器的携带弹药量及hud
 	void PlayEquipWeaponSound(AWeapon* WeaponToEquip); //播放装备武器音效
 	void ReloadEmptyWeapon(); //更换武器空弹夹
@@ -285,9 +287,14 @@ private:
 		void OnRep_Grenades();
 	void UpdateHUDGrenades();
 
+	UFUNCTION()
+		void OnRep_HoldingTheFlag();
+
 
 public:
-	FORCEINLINE int32 GetGrenades() const { return Grenades; }
 	//是否可以交换武器
-	bool IsShouldSwapWeapons(); 
+	bool IsShouldSwapWeapons();
+	FORCEINLINE int32 GetGrenades() const { return Grenades; }
+
+
 };

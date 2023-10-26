@@ -85,6 +85,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UCombatComponent, bAiming);
 	DOREPLIFETIME(UCombatComponent, CombatState);
 	DOREPLIFETIME(UCombatComponent, Grenades);
+	DOREPLIFETIME(UCombatComponent, bHoldingTheFlag);
 	//只同步到对应的客户端
 	DOREPLIFETIME_CONDITION(UCombatComponent, CurWeaponCarriedAmmo, COND_OwnerOnly);
 }
@@ -130,17 +131,27 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
 
-	if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)
+	if (WeaponToEquip->GetWeaponType() == EWeaponType::EWT_Flag)
 	{
-		EquipSecondaryWeapon(WeaponToEquip);
+		Character->Crouch();
+		bHoldingTheFlag = true;
+		AttachFlagToLeftHand(WeaponToEquip);
+		WeaponToEquip->SetWeaponState(EWeaponState::EWS_Equipped);
+		WeaponToEquip->SetOwner(Character);
 	}
 	else
 	{
-		EquipPrimaryWeapon(WeaponToEquip);
+		if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)
+		{
+			EquipSecondaryWeapon(WeaponToEquip);
+		}
+		else
+		{
+			EquipPrimaryWeapon(WeaponToEquip);
+		}
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
 	}
-
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
 }
 
 void UCombatComponent::SwapWeapons()
@@ -245,6 +256,7 @@ void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
 void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
 {
 	if (Character == nullptr || Character->GetMesh() == nullptr || ActorToAttach == nullptr || EquippedWeapon == nullptr) return;
+
 	bool bUsePistolScoket = EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol ||
 		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SubmachineGun;
 	FName SocketName = bUsePistolScoket ? FName("PistolSocket") : FName("LeftHand_Socket");
@@ -263,6 +275,17 @@ void UCombatComponent::AttachActorToBackpack(AActor* ActorToAttach)
 	if (BackpackSocket)
 	{
 		BackpackSocket->AttachActor(ActorToAttach, Character->GetMesh());
+	}
+}
+
+void UCombatComponent::AttachFlagToLeftHand(AWeapon* Flag)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || Flag == nullptr) return;
+
+	const USkeletalMeshSocket* BackpackSocket = Character->GetMesh()->GetSocketByName(FName(TEXT("FlagSocket")));
+	if (BackpackSocket)
+	{
+		BackpackSocket->AttachActor(Flag, Character->GetMesh());
 	}
 }
 
@@ -294,6 +317,14 @@ void UCombatComponent::ReloadEmptyWeapon()
 	if (EquippedWeapon && EquippedWeapon->IsAmmoEmpty())
 	{
 		ReloadMag();
+	}
+}
+
+void UCombatComponent::OnRep_HoldingTheFlag()
+{
+	if (bHoldingTheFlag && Character && Character->IsLocallyControlled())
+	{
+		Character->Crouch();
 	}
 }
 

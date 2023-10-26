@@ -291,7 +291,7 @@ protected:
 	void ReloadMagBtnPressed();
 	void GrenadeBtnPressed();
 
-	void AimOffset(float DeltaTime);
+	void AimOffset(float DeltaTime); //瞄准偏移
 	void CalculateAO_Pitch();
 	void SimProxiesTurn();//模拟代理使用的旋转逻辑
 

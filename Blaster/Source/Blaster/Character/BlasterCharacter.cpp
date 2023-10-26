@@ -416,18 +416,28 @@ float ABlasterCharacter::CalculateSpeed()
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
 {
+	if (CombatCmp && CombatCmp->bHoldingTheFlag)
+	{
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		return;
+	}
+
 	if (bDisableGameplay)
 	{
 		bUseControllerRotationYaw = false;
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 		return;
 	}
+
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled())
 	{
 		AimOffset(DeltaTime);
 	}
 	else
 	{
+		// 本地机器上的其他玩家
 		TimeSinceLastMovementReplication += DeltaTime;
 		if (TimeSinceLastMovementReplication > 0.25f)
 		{
