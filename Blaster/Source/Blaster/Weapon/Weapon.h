@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WeaponTypes.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "Weapon.generated.h"
 
 
@@ -28,6 +29,8 @@ enum class EFireType :uint8
 
 	EFT_MAX UMETA(DisplayName = "DefaultMAX"),
 };
+
+
 
 UCLASS()
 class BLASTER_API AWeapon : public AActor
@@ -94,7 +97,6 @@ private:
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 		EFireType FireType;
-
 	/// <summary>
 	/// 客户端预测，需要存储最后的更新和一个请求服务器的消息序列号，
 	/// 当服务器回消息时，检查序列号，并检查有多少未处理的请求，然后处理更改。
@@ -102,6 +104,11 @@ private:
 	/// 在每一轮SpeedRound中增加，在ClientUpdateAmmo中减少
 	/// </summary>
 	int32 SequenceAmmo = 0;
+	/// <summary>
+	/// 所属队伍
+	/// </summary>
+	UPROPERTY(EditAnywhere)
+		ETeam Team;
 
 
 public:

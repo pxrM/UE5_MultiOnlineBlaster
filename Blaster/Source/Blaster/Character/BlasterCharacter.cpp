@@ -817,7 +817,7 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	//GetAuthGameMode<T>()是一个由UE引擎提供的模板函数，用于获取当前场景中存在的并继承自T(AGameMode)类型
 	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	// bElimmed 防止重复向淘汰者施加伤害
-	if (bElimmed || BlasterGameMode == nullptr) return; 
+	if (bElimmed || BlasterGameMode == nullptr) return;
 
 	Damage = BlasterGameMode->CalculateDamage(InstigatorController, Controller, Damage);
 	float DamageToHealth = Damage;
@@ -926,6 +926,13 @@ void ABlasterCharacter::SetTeamColor(ETeam Team)
 		DissolveMatInstance = BlueDissolveMatInst;
 		break;
 	}
+}
+
+ETeam ABlasterCharacter::GetTeam()
+{
+	BlasterPlayerState = BlasterPlayerState ? BlasterPlayerState : GetPlayerState<ABlasterPlayerState>();
+	if (BlasterPlayerState) return BlasterPlayerState->GetTeam();
+	return ETeam::ET_NoTeam;
 }
 
 void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)

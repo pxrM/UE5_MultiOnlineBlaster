@@ -335,8 +335,16 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	bool IsAiming();
+	/// <summary>
+	/// 是否显示瞄准umg
+	/// </summary>
+	/// <param name="bShowScope"></param>
 	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
-		void ShowSniperScopeWidget(bool bShowScope);//是否显示瞄准umg
+		void ShowSniperScopeWidget(bool bShowScope);
+	/// <summary>
+	/// 出生时生成默认武器
+	/// </summary>
+	void SpawnDefaultWeapon();
 
 	FVector GetHitTarget() const;
 	AWeapon* GetEquippedWeapon();
@@ -353,8 +361,6 @@ public:
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
 	void UpdateHUDAmmo();
-
-	void SpawnDefaultWeapon();
 
 	/*	UFUNCTION(NetMulticast, Unreliable) //** 这里改为由更新角色健康值时触发，健康值会被同步到所有客服端，放到这那里会减少一次网络广播消耗
 			void MulticastHit();	*///播放受击动画 NetMulticast会从服务端同步到所有客户端 Unreliable表示同步消息不可靠
@@ -388,11 +394,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastLostTheLead();
 
-	/// <summary>
-	/// 设置队伍颜色
-	/// </summary>
-	/// <param name="Team"></param>
+	// 设置队伍材质颜色
 	void SetTeamColor(ETeam Team);
+	ETeam GetTeam();
 
 	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }
