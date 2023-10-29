@@ -295,6 +295,17 @@ protected:
 	void CalculateAO_Pitch();
 	void SimProxiesTurn();//模拟代理使用的旋转逻辑
 
+	/* 轮询检查玩家数据有效时 初始化hud等工作 */
+	void PollInit();
+	/* 处理玩家首次初始化并拉取到数据是应该发生的事件 */
+	void OnPlayerStateInitialized();
+	/* 原地旋转 */
+	void RotateInPlace(float DeltaTime);
+	/* 丢掉或删除武器 */
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+	/* 设置角色出生点 */
+	void SetSpawnPoint();
+
 	/// <summary>
 	/// 接收伤害回调
 	/// 即当角色受到伤害时（UGameplayStatics::ApplyDamage），引擎会自动调用该函数并传递伤害相关的参数，
@@ -306,15 +317,6 @@ protected:
 	/// <param name="DamageCauser">造成伤害的对象</param>
 	UFUNCTION()
 		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
-
-	/* 轮询检查玩家数据有效时 初始化hud等工作 */
-	void PollInit();
-
-	/* 原地旋转 */
-	void RotateInPlace(float DeltaTime);
-
-	/* 丢掉或删除武器 */
-	void DropOrDestroyWeapon(AWeapon* Weapon);
 
 
 public:
@@ -384,7 +386,7 @@ public:
 		void ServerLeavaGame();
 
 	/// <summary>
-	/// 获得第一位置
+	/// 设置第一名的状态
 	/// </summary>
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastGainedTheLead();
