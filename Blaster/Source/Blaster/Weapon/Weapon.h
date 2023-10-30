@@ -243,7 +243,7 @@ public:
 	void ShowPickupWidget(bool bShow);
 	void SetWeaponState(EWeaponState State);
 	virtual void Fire(const FVector& HitTarget);
-	void Dropped(); //掉落
+	virtual void Dropped(); //掉落
 	void SetHUDAmmo();
 	void AddAmmo(int32 AmmoToAdd);
 	void EnableCustomDepth(bool bEnable); //是否开启RnderCustomDepth，以显示轮廓
