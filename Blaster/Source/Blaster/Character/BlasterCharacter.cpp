@@ -968,6 +968,14 @@ ETeam ABlasterCharacter::GetTeam()
 	return ETeam::ET_NoTeam;
 }
 
+void ABlasterCharacter::SetHoldingTheFlag(bool bHolding)
+{
+	if (CombatCmp)
+	{
+		CombatCmp->bHoldingTheFlag = bHolding;
+	}
+}
+
 void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
 {
 	if (Weapon)

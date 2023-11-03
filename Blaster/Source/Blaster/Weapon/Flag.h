@@ -27,5 +27,10 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* FlagMesh;
+
+	FVector InitialLocation;
+
+public:
+	FORCEINLINE FVector GetInitialLocation() const { return InitialLocation; }
 	
 };

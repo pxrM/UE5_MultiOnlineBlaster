@@ -268,6 +268,7 @@ public:
 	FORCEINLINE float GetDameage() const { return Damage; }
 	FORCEINLINE float GetHeadShotDameage() const { return HeadShotDamage; }
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
+	FORCEINLINE ETeam GetTeam() const { return Team; }
 
 
 private:

@@ -399,6 +399,7 @@ public:
 	// 设置队伍材质颜色
 	void SetTeamColor(ETeam Team);
 	ETeam GetTeam();
+	void SetHoldingTheFlag(bool bHolding);
 
 	FORCEINLINE float GetAO_Yaw()const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch()const { return AO_Pitch; }
