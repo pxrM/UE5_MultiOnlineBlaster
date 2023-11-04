@@ -18,6 +18,7 @@ void AFlagZone::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	ZoneSphere->OnComponentBeginOverlap.AddDynamic(this, &AFlagZone::OnSphereOverlap);
 }
 
 void AFlagZone::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -29,9 +30,9 @@ void AFlagZone::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		if (GameMode)
 		{
 			GameMode->FlagCaptured(OverlapingFlag, this);
-			// 加分后，从角色身上卸掉旗帜并让旗帜回归原点
-
 		}
+		// 加分后，从角色身上卸掉旗帜并让旗帜回归原点
+		OverlapingFlag->ResetFlag();
 	}
 }
 

@@ -17,6 +17,11 @@ class BLASTER_API ACaptureTheFlagGameMode : public ATeamGameMode
 	
 public:
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
+	/// <summary>
+	/// server处理加分
+	/// </summary>
+	/// <param name="Flag"></param>
+	/// <param name="Zone"></param>
 	void FlagCaptured(class AFlag* Flag, class AFlagZone* Zone);
 
 };

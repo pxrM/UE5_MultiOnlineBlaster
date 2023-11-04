@@ -302,6 +302,7 @@ protected:
 	/* 原地旋转 */
 	void RotateInPlace(float DeltaTime);
 	/* 丢掉或删除武器 */
+	void DropOrDestroyWeapons();
 	void DropOrDestroyWeapon(AWeapon* Weapon);
 	/* 设置角色出生点 */
 	void SetSpawnPoint();

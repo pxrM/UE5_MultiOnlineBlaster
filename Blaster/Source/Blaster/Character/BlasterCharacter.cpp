@@ -429,7 +429,11 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		return;
 	}
-
+	if (CombatCmp && CombatCmp->EquippedWeapon)
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+	}
 	if (bDisableGameplay)
 	{
 		bUseControllerRotationYaw = false;
@@ -933,8 +937,7 @@ void ABlasterCharacter::Elim(bool bPlayerLeftGame)
 {
 	if (CombatCmp)
 	{
-		DropOrDestroyWeapon(CombatCmp->EquippedWeapon);
-		DropOrDestroyWeapon(CombatCmp->SecondaryWeapon);
+		DropOrDestroyWeapons();
 	}
 
 	MulticastElim(bPlayerLeftGame); //ÍøÂç¶à²¥
@@ -973,6 +976,25 @@ void ABlasterCharacter::SetHoldingTheFlag(bool bHolding)
 	if (CombatCmp)
 	{
 		CombatCmp->bHoldingTheFlag = bHolding;
+	}
+}
+
+void ABlasterCharacter::DropOrDestroyWeapons()
+{
+	if (CombatCmp)
+	{
+		if (CombatCmp->EquippedWeapon)
+		{
+			DropOrDestroyWeapon(CombatCmp->EquippedWeapon);
+		}
+		if (CombatCmp->SecondaryWeapon)
+		{
+			DropOrDestroyWeapon(CombatCmp->SecondaryWeapon);
+		}
+		if (CombatCmp->TheFlag)
+		{
+			CombatCmp->TheFlag->Dropped();
+		}
 	}
 }
 

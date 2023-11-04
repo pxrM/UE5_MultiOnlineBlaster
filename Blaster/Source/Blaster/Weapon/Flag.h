@@ -17,20 +17,25 @@ class BLASTER_API AFlag : public AWeapon
 public:
 	AFlag();
 
-public:
-	virtual void Dropped() override;
-
 protected:
+	virtual void BeginPlay() override;
 	virtual void OnEquippedState() override;
 	virtual void OnDroppedState() override;
+
+public:
+	virtual void Dropped() override;
+	void ResetFlag();
 
 private:
 	UPROPERTY(VisibleAnywhere)
 		UStaticMeshComponent* FlagMesh;
 
-	FVector InitialLocation;
+	/// <summary>
+	/// 旗帜的初始位置，方便回归
+	/// </summary>
+	FTransform InitialTransform;
 
 public:
-	FORCEINLINE FVector GetInitialLocation() const { return InitialLocation; }
+	FORCEINLINE FTransform GetInitialTransform() const { return InitialTransform; }
 	
 };
