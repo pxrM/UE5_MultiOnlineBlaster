@@ -53,6 +53,7 @@ public:
 	/// </summary>
 	void StartSession();
 
+
 public:
 	/// <summary>
 	/// 创建回调 外部使用
@@ -74,6 +75,7 @@ public:
 	/// 开始回调 外部使用
 	/// </summary>
 	FMultiplayerOnStartSessionComplete MultiplayerExternalOnStartSessionComplete;
+
 
 protected:
 	//
@@ -102,7 +104,10 @@ private:
 	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
 
 
+	//
 	//销毁旧会话时创建新的会话
+	//
+
 	bool bCreateSessionOnDestroy{ false };
 	int32 LastNumPublicConnections;
 	FString LastMatchType;
@@ -118,6 +123,7 @@ private:
 	FOnDestroySessionCompleteDelegate DestroySessionCompleteDelegate;
 	FOnStartSessionCompleteDelegate StartSessionCompleteDelegate;
 
+
 	//
 	//	委托句柄
 	//
@@ -127,5 +133,15 @@ private:
 	FDelegateHandle JoinSessionCompleteDelegateHandle;
 	FDelegateHandle DestroySessionCompleteDelegateHandle;
 	FDelegateHandle StartSessionCompleteDelegateHandle;
+
+
+public:
+	//
+	// 玩家选择的期望设置
+	//
+
+	int32 DesiredNumPublicConnections{};
+	FString DesiredMatchType{};
+
 
 };
