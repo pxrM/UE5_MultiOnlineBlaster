@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FMHttpDownloadModule : public IModuleInterface
+class FMHttpdownloaderModule : public IModuleInterface
 {
 public:
 

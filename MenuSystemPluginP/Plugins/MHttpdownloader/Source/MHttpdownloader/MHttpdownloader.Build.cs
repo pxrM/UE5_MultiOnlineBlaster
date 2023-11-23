@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class MHttpDownload : ModuleRules
+public class MHttpdownloader : ModuleRules
 {
-	public MHttpDownload(ReadOnlyTargetRules Target) : base(Target)
+	public MHttpdownloader(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -39,6 +39,9 @@ public class MHttpDownload : ModuleRules
 				"Slate",
 				"SlateCore",
 				// ... add private dependencies that you statically link with here ...	
+				"Http",
+				"JsonUtilities",
+				"Json",
 			}
 			);
 		
