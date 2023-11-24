@@ -17,6 +17,7 @@
 #include "HttpModule.h"					// 提供了访问 HTTP 服务的功能
 #include "HttpManager.h"				// 提供了更高层次的 HTTP 请求封装和管理
 #include "GenericPlatform/GenericPlatformHttp.h"
+#include "Unix/UnixPlatformHttp.h"
 
 
 const FString TEMP_FILE_EXTERN = TEXT(".dlFile");	// 临时文件的扩展名
@@ -55,7 +56,7 @@ FMDownloadTask::FMDownloadTask(const FString& InUrl, const FString& InDirectory,
 	{
 		if (PlatformFilePtr->CreateDirectoryTree(*Dir))
 		{
-			UE_LOG(MHttpdownloader, Warning, TEXT("Cannot create directory(创建目录失败) : %s"), *Dir);
+			UE_LOG(LogFileDownloader, Warning, TEXT("Cannot create directory(创建目录失败) : %s"), *Dir);
 		}
 	}
 
@@ -73,7 +74,7 @@ FMDownloadTask::FMDownloadTask(const FMTaskInformation& InTaskInfo)
 	{
 		if (PlatformFilePtr->CreateDirectoryTree(*Dir))
 		{
-			UE_LOG(MHttpdownloader, Warning, TEXT("Cannot create directory(创建目录失败) : %s"), *Dir);
+			UE_LOG(LogFileDownloader, Warning, TEXT("Cannot create directory(创建目录失败) : %s"), *Dir);
 		}
 	}
 	
@@ -243,11 +244,7 @@ void FMDownloadTask::GetHead()
 			解码后为：http://www.example.com/path/to file.html
 	*/
 	EncodedUrl = GetSourceUrl();
-	
 	static int32 URLTag = 8;
-	// FString("/") 表示要查找的目标字符串，即斜杠字符。
-	// ESearchCase::IgnoreCase 表示在查找时不区分大小写。
-	// ESearchDir::FromStart 表示从字符串开头开始向后查找。
 	int32 StartSlash = GetSourceUrl().Find(FString("/"), ESearchCase::IgnoreCase, ESearchDir::FromStart, URLTag);
 	if(StartSlash > INDEX_NONE)
 	{
@@ -259,10 +256,10 @@ void FMDownloadTask::GetHead()
 		TArray<FString> UrlDirectory;
 		UrlRight.ParseIntoArray(UrlDirectory, *FString("/"));
 
-		EncodedUrl = UrlLeft; //
+		EncodedUrl = UrlLeft;  // eg = http://www.example.com
 		for (int32 i = 0; i < UrlDirectory.Num(); ++i)
 		{
-			UrlDirectory[i] = FGenericPlatformHttp::UrlDecode(UrlDirectory[i]);
+			UrlDirectory[i] = FPlatformHttp::UrlDecode(UrlDirectory[i]);
 			// 重新组合 URL
 			EncodedUrl += FString("/");
 			EncodedUrl += UrlDirectory[i];

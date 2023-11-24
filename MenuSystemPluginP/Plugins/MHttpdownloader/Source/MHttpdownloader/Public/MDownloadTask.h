@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MTaskInformation.h"
 #include "MDownloadEvent.h"
+#include "MHttpdownloader.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 
@@ -99,7 +100,7 @@ public:
 			if (InEvent == EMTaskEvent::START_DOWNLOAD)
 			{
 				// __FUNCTION__ 和 __LINE__ 是 C++ 中的预定义宏，用于获取当前代码所在的函数名称和行号。
-				UE_LOG(MHttpdownloader,
+				UE_LOG(LogFileDownloader,
 					Warning, 
 					TEXT("%s  %d  Please use FileDownloadManager instead DownloadTask to download file.（请使用FileDownloadManager而不是DownloadTask来下载文件。）"),
 					__FUNCTION__,
@@ -135,7 +136,7 @@ protected:
 	EMTaskState TaskState = EMTaskState::WAIT;
 	int32 ChunkSize = 2 * 1024 * 1024;	// 2MB作为每块的大小
 	TArray<uint8> DataBuffer;
-	FString EncodedUrl;
+	FString EncodedUrl;	// 编码处理后的url
 	IFileHandle* TargetFilePtr = nullptr;
 	FHttpRequestPtr RequestPtr = nullptr;
 	int32 CurrentTypeCount = 0;	// 当前尝试请求的次数
