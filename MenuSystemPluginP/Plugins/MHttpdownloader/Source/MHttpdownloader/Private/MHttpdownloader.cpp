@@ -18,3 +18,6 @@ void FMHttpdownloaderModule::ShutdownModule()
 #undef LOCTEXT_NAMESPACE
 	
 IMPLEMENT_MODULE(FMHttpdownloaderModule, MHttpdownloader)
+
+// 用于定义一个日志类别对象的实例，在源文件中进行定义。
+DEFINE_LOG_CATEGORY(MHttpdownloader);
