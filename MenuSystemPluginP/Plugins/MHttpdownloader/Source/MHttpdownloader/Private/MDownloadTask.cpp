@@ -17,7 +17,7 @@
 #include "HttpModule.h"					// 提供了访问 HTTP 服务的功能
 #include "HttpManager.h"				// 提供了更高层次的 HTTP 请求封装和管理
 #include "GenericPlatform/GenericPlatformHttp.h"
-#include "Unix/UnixPlatformHttp.h"
+#include "Async/Async.h"
 
 
 const FString TEMP_FILE_EXTERN = TEXT(".dlFile");	// 临时文件的扩展名
@@ -34,7 +34,7 @@ FMDownloadTask::FMDownloadTask()
 		PlatformFilePtr = &FPlatformFileManager::Get().GetPlatformFile();
 		/*
 			GetLowerLevel()方法返回文件管理器的下一级别（低级别）的文件管理器实例
-			UE中，文件管理器可以有多个级别，每个级别处理不同的文件操作。 
+			UE中，文件管理器可以有多个级别，每个级别处理不同的文件操作。
 			更高级别的文件管理器通常会提供更高级别的文件操作接口，封装了更多的功能和抽象，以便开发人员可以更方便地进行文件操作。
 			而更低级别的文件管理器则可能提供更底层、更直接的文件操作接口，适用于一些特定的需求或者平台限制。
 			通过获取更低级别的文件管理器，开发人员可以绕过更高级别的抽象，并直接访问底层的文件操作接口，
@@ -166,7 +166,7 @@ bool FMDownloadTask::Start()
 	if (GetSourceUrl().IsEmpty() || GetFileName().IsEmpty())
 	{
 		TaskState = EMTaskState::ERROR;
-		PregressTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, -1);
+		ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, -1);
 		return false;
 	}
 
@@ -201,7 +201,16 @@ void FMDownloadTask::ReGenerateGUID()
 
 bool FMDownloadTask::SaveTaskToJsonFile(const FString& InFileName) const
 {
-	return false;
+	FString TmpName = InFileName;
+	if (TmpName.IsEmpty() == true)
+	{
+		TmpName = GetFullFileName() + TASK_JSON;
+	}
+
+	FString OutStr;
+	TaskInfo.SerializeToJsonString(OutStr);
+
+	return FFileHelper::SaveStringToFile(OutStr, *TmpName);
 }
 
 void FMDownloadTask::CreateDirectory(const FString& InDirectory)
@@ -241,7 +250,7 @@ FString FMDownloadTask::ProcessUrl()
 		Url = UrlLeft;  // eg = http://www.example.com
 		for (int32 i = 0; i < UrlDirectory.Num(); ++i)
 		{
-			UrlDirectory[i] = FPlatformHttp::UrlDecode(UrlDirectory[i]);
+			UrlDirectory[i] = FGenericPlatformHttp::UrlDecode(UrlDirectory[i]);
 			// 重新组合 URL
 			Url += FString("/");
 			Url += UrlDirectory[i];
@@ -249,7 +258,7 @@ FString FMDownloadTask::ProcessUrl()
 	}
 }
 
-void FMDownloadTask::GetHead()
+void FMDownloadTask::InitializeRequestPtr()
 {
 #if PLATFORM_IOS
 	RequestPtr = FHttpModule::Get().CreateRequest();
@@ -261,6 +270,11 @@ void FMDownloadTask::GetHead()
 		FHttpModule::Get().GetHttpManager().AddRequest(RequestPtr.ToSharedRef());
 	}
 #endif // PLATFORM_IOS
+}
+
+void FMDownloadTask::GetHead()
+{
+	InitializeRequestPtr();
 
 	EncodedUrl = ProcessUrl();
 
@@ -270,24 +284,221 @@ void FMDownloadTask::GetHead()
 	RequestPtr->ProcessRequest();
 
 	TaskState = EMTaskState::DOWNLOADING;
-	PregressTaskFunc(EMTaskEvent::START_DOWNLOAD, TaskInfo, 0);
+	ProcessTaskFunc(EMTaskEvent::START_DOWNLOAD, TaskInfo, 0);
 }
 
 void FMDownloadTask::StartChunk()
 {
+	InitializeRequestPtr();
+
+	RequestPtr->SetVerb("GET");
+	RequestPtr->SetURL(EncodedUrl);
+
+	// 当前块的下载范围
+	int32 StartPostion = GetCurrentSize();
+	int32 EndPosition = StartPostion + ChunkSize - 1;
+
+	if (EndPosition >= GetTotalSize())
+	{
+		EndPosition = GetTotalSize() - 1;
+	}
+
+	if (StartPostion >= EndPosition)
+	{
+		UE_LOG(LogFileDownloader, Warning, TEXT("Error! StartPostion >= EndPosition"));
+		return;
+	}
+
+	FString RangeStr = FString::Printf(TEXT("bytes=%d-%d", StartPostion, EndPosition));
+	RequestPtr->SetHeader(TEXT("Range"), RangeStr);
+
+	RequestPtr->OnProcessRequestComplete().BindRaw(this, &FMDownloadTask::OnGetChunkCompleted);
+	RequestPtr->ProcessRequest();
 }
 
 FString FMDownloadTask::GetFullFileName() const
 {
-	return FString();
+	return  FPaths::Combine(GetDestDirectory(), GetFileName());
 }
 
-void FMDownloadTask::OnGetHeadCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWadSuccessful)
+void FMDownloadTask::OnGetHeadCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWasSuccessful)
 {
+	if (InResponse.IsValid() == false || bWasSuccessful == false)
+	{
+		UE_LOG(LogFileDownloader, Warning, TEXT("%s:%d"), UTF8_TO_TCHAR(__FUNCTION__), __LINE__);
+		if (CurrentTryCount >= MaxTryCount)
+		{
+			TaskState = EMTaskState::ERROR;
+			ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, InResponse.IsValid() ? InResponse->GetResponseCode() : 0);
+		}
+		else
+		{
+			TaskState = EMTaskState::WAIT;
+			++CurrentTryCount;
+			Start();
+		}
+		return;
+	}
+
+	int32 RetutnCode = InResponse->GetResponseCode();
+
+	if (EHttpResponseCodes::IsOk(RetutnCode) == false)
+	{
+		UE_LOG(LogFileDownloader, Warning, TEXT("Http return code error : %d"), RetutnCode);
+		if (TargetFilePtr)
+		{
+			delete TargetFilePtr;
+			TargetFilePtr = nullptr;
+		}
+		TaskState = EMTaskState::ERROR;
+		ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, RetutnCode);
+		return;
+	}
+
+	if (RetutnCode == EHttpResponseCodes::Ok)
+	{
+		SetTotalSize(InResponse->GetContentLength());
+	}
+
+	if (TargetFilePtr)
+	{
+		delete TargetFilePtr;
+		TargetFilePtr = nullptr;
+	}
+	// 重新分配内存并将其指向一个新的文件
+	TargetFilePtr = PlatformFilePtr->OpenWrite(*FString(GetFullFileName() + TEMP_FILE_EXTERN), true);
+
+	if (TargetFilePtr == nullptr)
+	{
+		UE_LOG(LogFileDownloader, Warning, TEXT("%s, %d, create temp file error !"));
+		ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, RetutnCode);
+		TaskState = EMTaskState::ERROR;
+		return;
+	}
+	else
+	{
+		SetCurrentSize(TargetFilePtr->Size());
+	}
+
+	FString TempJsonStr;
+	FMTaskInformation ExistTaskInfo;
+	if (FFileHelper::LoadFileToString(TempJsonStr, *FString(GetFullFileName() + TASK_JSON)))
+	{
+		ExistTaskInfo.DeserializeFromJsonString(TempJsonStr);
+	}
+
+	// 远程文件已更新，需要重新下载
+	FString NewETag = InResponse->GetHeader("ETag");
+	SetETag(NewETag);
+	if (NewETag.IsEmpty() || NewETag != ExistTaskInfo.ETag)
+	{
+		SetCurrentSize(0);
+	}
+
+	// 如果目标文件已经存在，则完成此任务
+	bool bExist = PlatformFilePtr->FileExists(*GetFullFileName());
+	if (bExist && !NewETag.IsEmpty() && NewETag == ExistTaskInfo.ETag)
+	{
+		delete TargetFilePtr;
+		TargetFilePtr = nullptr;
+		PlatformFilePtr->DeleteFile(*FString(GetFullFileName() + TEMP_FILE_EXTERN));
+
+		SetCurrentSize(GetTotalSize());
+
+		OnTaskCompleted();
+		return;
+	}
+
+	// 将任务信息保存到磁盘
+	SaveTaskToJsonFile(FString(""));
+
+	StartChunk();
 }
 
-void FMDownloadTask::OnGetChunkCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWadSuccessful)
+void FMDownloadTask::OnGetChunkCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWasSuccessful)
 {
+	if (bNeedStop)
+	{
+		TaskState = EMTaskState::WAIT;
+		ProcessTaskFunc(EMTaskEvent::STOP, TaskInfo, InResponse->GetResponseCode());
+
+		if (TargetFilePtr)
+		{
+			delete TargetFilePtr;
+			TargetFilePtr = nullptr;
+		}
+		return;
+	}
+
+	if (InResponse.IsValid() == false || bWasSuccessful == false)
+	{
+		UE_LOG(LogFileDownloader, Warning, TEXT("%s:%d"), UTF8_TO_TCHAR(__FUNCTION__), __LINE__);
+		if (CurrentTryCount >= MaxTryCount)
+		{
+			TaskState = EMTaskState::ERROR;
+			ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, InResponse.IsValid() ? InResponse->GetResponseCode() : 0);
+		}
+		else
+		{
+			TaskState = EMTaskState::WAIT;
+			++CurrentTryCount;
+			Start();
+		}
+		return;
+	}
+
+	int32 RetutnCode = InResponse->GetResponseCode();
+
+	if (EHttpResponseCodes::IsOk(RetutnCode) == false)
+	{
+		UE_LOG(LogFileDownloader, Warning, TEXT("%s, Return code error: %d"), *GetSourceUrl(), InResponse->GetResponseCode());
+		if (TargetFilePtr)
+		{
+			delete TargetFilePtr;
+			TargetFilePtr = nullptr;
+		}
+		TaskState = EMTaskState::ERROR;
+		ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, RetutnCode);
+		return;
+	}
+
+	DataBuffer = InResponse->GetContent();
+
+	// 异步写入块缓冲区到文件。AsyncExecution::ThreadPool表示将任务提交在全局队列线程池中执行。
+	Async(EAsyncExecution::ThreadPool, [this]()->int32
+		{
+			if (this->TargetFilePtr)
+			{
+				// 将文件指针定位到当前位置（即已经写入的数据之后的位置）
+				this->TargetFilePtr->Seek(this->GetCurrentSize());
+				bool bWriteRet = this->TargetFilePtr->Write(DataBuffer.GetData(), DataBuffer.Num());
+				if (bWriteRet)
+				{
+					// 刷新文件缓冲区到磁盘
+					this->TargetFilePtr->Flush();
+					// 返回游戏线程
+					FFunctionGraphTask::CreateAndDispatchWhenReady([this]()
+						{
+							this->OnWriteChunkEnd(this->DataBuffer.Num());
+						}, TStatId(), nullptr, ENamedThreads::GameThread);
+				}
+				else
+				{
+					// 返回游戏线程
+					FFunctionGraphTask::CreateAndDispatchWhenReady([this]()
+						{
+							UE_LOG(LogFileDownloader, Warning, TEXT("%s, %d, Async write file error !"), __FUNCTION__, __LINE__);
+							this->TaskState = EMTaskState::ERROR;
+							this->ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, this->TaskInfo, -1);
+						}, TStatId(), nullptr, ENamedThreads::GameThread);
+				}
+				return 0;
+			}
+			else
+			{
+				return -1;
+			}
+		}); 
 }
 
 void FMDownloadTask::OnTaskCompleted()
@@ -296,4 +507,5 @@ void FMDownloadTask::OnTaskCompleted()
 
 void FMDownloadTask::OnWriteChunkEnd(int32 DataSize)
 {
+
 }

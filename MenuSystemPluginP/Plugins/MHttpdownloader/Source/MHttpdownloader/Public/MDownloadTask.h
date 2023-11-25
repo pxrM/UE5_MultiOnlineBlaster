@@ -95,11 +95,12 @@ public:
 private:
 	void CreateDirectory(const FString& InDirectory);
 	FString ProcessUrl();
+	void InitializeRequestPtr();
 
 
 public:
 	// 用于通知下载事件的回调的函数指针
-	TFunction<void(EMTaskEvent InEvent, const FMTaskInformation& InInfo, int32 InHttpCode)> PregressTaskFunc = [this](EMTaskEvent InEvent, const FMTaskInformation& InInfo, int32 InHttpCode)
+	TFunction<void(EMTaskEvent InEvent, const FMTaskInformation& InInfo, int32 InHttpCode)> ProcessTaskFunc = [this](EMTaskEvent InEvent, const FMTaskInformation& InInfo, int32 InHttpCode)
 		{
 			// 默认指向的函数逻辑
 			if (InEvent == EMTaskEvent::START_DOWNLOAD)
@@ -129,8 +130,8 @@ protected:
 	/// <returns></returns>
 	virtual FString GetFullFileName() const;
 
-	virtual void OnGetHeadCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWadSuccessful);
-	virtual void OnGetChunkCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWadSuccessful);
+	virtual void OnGetHeadCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWasSuccessful);
+	virtual void OnGetChunkCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWasSuccessful);
 	
 	virtual void OnTaskCompleted();
 	virtual void OnWriteChunkEnd(int32 DataSize);
@@ -140,11 +141,11 @@ protected:
 	FMTaskInformation TaskInfo;
 	EMTaskState TaskState = EMTaskState::WAIT;
 	int32 ChunkSize = 2 * 1024 * 1024;	// 2MB作为每块的大小
-	TArray<uint8> DataBuffer;
+	TArray<uint8> DataBuffer;	// 请求到的数据
 	FString EncodedUrl;	// 编码处理后的url
-	IFileHandle* TargetFilePtr = nullptr;
+	IFileHandle* TargetFilePtr = nullptr;	// 文件操作的接口类，可以用于打开、读写、关闭文件等操作
 	FHttpRequestPtr RequestPtr = nullptr;
-	int32 CurrentTypeCount = 0;	// 当前尝试请求的次数
+	int32 CurrentTryCount = 0;	// 当前尝试请求的次数
 	int32 MaxTryCount = 5;	// 最大请求次数
 	bool bNeedStop = false;
 
