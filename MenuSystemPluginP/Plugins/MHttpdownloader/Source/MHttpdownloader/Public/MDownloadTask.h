@@ -92,6 +92,11 @@ public:
 	inline EMTaskState GetState() const { return TaskState; }
 
 
+private:
+	void CreateDirectory(const FString& InDirectory);
+	FString ProcessUrl();
+
+
 public:
 	// 用于通知下载事件的回调的函数指针
 	TFunction<void(EMTaskEvent InEvent, const FMTaskInformation& InInfo, int32 InHttpCode)> PregressTaskFunc = [this](EMTaskEvent InEvent, const FMTaskInformation& InInfo, int32 InHttpCode)

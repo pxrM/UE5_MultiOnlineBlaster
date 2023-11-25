@@ -50,17 +50,8 @@ FMDownloadTask::FMDownloadTask()
 FMDownloadTask::FMDownloadTask(const FString& InUrl, const FString& InDirectory, const FString& InFileName)
 	:FMDownloadTask()
 {
-	const FString& Dir = InDirectory;
-
-	if (PlatformFilePtr->DirectoryExists(*Dir) == false)
-	{
-		if (PlatformFilePtr->CreateDirectoryTree(*Dir))
-		{
-			UE_LOG(LogFileDownloader, Warning, TEXT("Cannot create directory(创建目录失败) : %s"), *Dir);
-		}
-	}
-
-	SetDestDirectory(Dir);
+	CreateDirectory(InDirectory);
+	SetDestDirectory(InDirectory);
 	SetSourceUrl(InUrl);
 	SetFileName(InFileName);
 }
@@ -68,16 +59,7 @@ FMDownloadTask::FMDownloadTask(const FString& InUrl, const FString& InDirectory,
 FMDownloadTask::FMDownloadTask(const FMTaskInformation& InTaskInfo)
 	:FMDownloadTask()
 {
-	const FString& Dir = InTaskInfo.DestDirectory;
-
-	if (PlatformFilePtr->DirectoryExists(*Dir) == false)
-	{
-		if (PlatformFilePtr->CreateDirectoryTree(*Dir))
-		{
-			UE_LOG(LogFileDownloader, Warning, TEXT("Cannot create directory(创建目录失败) : %s"), *Dir);
-		}
-	}
-	
+	CreateDirectory(InTaskInfo.DestDirectory);
 	TaskInfo = InTaskInfo;
 }
 
@@ -222,6 +204,51 @@ bool FMDownloadTask::SaveTaskToJsonFile(const FString& InFileName) const
 	return false;
 }
 
+void FMDownloadTask::CreateDirectory(const FString& InDirectory)
+{
+	if (PlatformFilePtr->DirectoryExists(*InDirectory) == false)
+	{
+		if (PlatformFilePtr->CreateDirectoryTree(*InDirectory))
+		{
+			UE_LOG(LogFileDownloader, Warning, TEXT("Cannot create directory(创建目录失败) : %s"), *InDirectory);
+		}
+	}
+}
+
+FString FMDownloadTask::ProcessUrl()
+{
+	/*
+		当Uri 路径中带中文字符时，需要进行百分比编码，否则无法正确解析Url路径和参数
+		对 URL 中的编码字符进行解码。在 URL 中，一些特殊字符（例如空格）需要进行编码，才能被正确传输和解析
+		例如，对于以下 URL：
+			http://www.example.com/path/to%20file.html
+			其中的 "%20" 表示空格字符，需要被解码还原。调用上述代码中的函数后，将得到以下结果：
+			解码后为：http://www.example.com/path/to file.html
+	*/
+	FString Url = GetSourceUrl();
+	static int32 URLTag = 8;
+	int32 StartSlash = GetSourceUrl().Find(FString("/"), ESearchCase::IgnoreCase, ESearchDir::FromStart, URLTag);
+	if (StartSlash > INDEX_NONE)
+	{
+		// 将 URL 分成左右两部分
+		FString UrlLeft = Url.Left(StartSlash);
+		FString UrlRight = Url.Mid(StartSlash);
+
+		// 将右半部分的 URL 按斜杠分割成数组
+		TArray<FString> UrlDirectory;
+		UrlRight.ParseIntoArray(UrlDirectory, *FString("/"));
+
+		Url = UrlLeft;  // eg = http://www.example.com
+		for (int32 i = 0; i < UrlDirectory.Num(); ++i)
+		{
+			UrlDirectory[i] = FPlatformHttp::UrlDecode(UrlDirectory[i]);
+			// 重新组合 URL
+			Url += FString("/");
+			Url += UrlDirectory[i];
+		}
+	}
+}
+
 void FMDownloadTask::GetHead()
 {
 #if PLATFORM_IOS
@@ -235,36 +262,15 @@ void FMDownloadTask::GetHead()
 	}
 #endif // PLATFORM_IOS
 
-	/*
-		当Uri 路径中带中文字符时，需要进行百分比编码，否则无法正确解析Url路径和参数
-		对 URL 中的编码字符进行解码。在 URL 中，一些特殊字符（例如空格）需要进行编码，才能被正确传输和解析
-		例如，对于以下 URL：
-			http://www.example.com/path/to%20file.html
-			其中的 "%20" 表示空格字符，需要被解码还原。调用上述代码中的函数后，将得到以下结果：
-			解码后为：http://www.example.com/path/to file.html
-	*/
-	EncodedUrl = GetSourceUrl();
-	static int32 URLTag = 8;
-	int32 StartSlash = GetSourceUrl().Find(FString("/"), ESearchCase::IgnoreCase, ESearchDir::FromStart, URLTag);
-	if(StartSlash > INDEX_NONE)
-	{
-		// 将 URL 分成左右两部分
-		FString UrlLeft = GetSourceUrl().Left(StartSlash);
-		FString UrlRight = GetSourceUrl().Mid(StartSlash);
+	EncodedUrl = ProcessUrl();
 
-		// 将右半部分的 URL 按斜杠分割成数组
-		TArray<FString> UrlDirectory;
-		UrlRight.ParseIntoArray(UrlDirectory, *FString("/"));
+	RequestPtr->SetVerb("HEAD");
+	RequestPtr->SetURL(EncodedUrl);
+	RequestPtr->OnProcessRequestComplete().BindRaw(this, &FMDownloadTask::OnGetHeadCompleted);
+	RequestPtr->ProcessRequest();
 
-		EncodedUrl = UrlLeft;  // eg = http://www.example.com
-		for (int32 i = 0; i < UrlDirectory.Num(); ++i)
-		{
-			UrlDirectory[i] = FPlatformHttp::UrlDecode(UrlDirectory[i]);
-			// 重新组合 URL
-			EncodedUrl += FString("/");
-			EncodedUrl += UrlDirectory[i];
-		}
-	}
+	TaskState = EMTaskState::DOWNLOADING;
+	PregressTaskFunc(EMTaskEvent::START_DOWNLOAD, TaskInfo, 0);
 }
 
 void FMDownloadTask::StartChunk()
