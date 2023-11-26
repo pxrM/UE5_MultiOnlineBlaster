@@ -45,6 +45,7 @@ FMDownloadTask::FMDownloadTask()
 			PlatformFilePtr = PlatformFilePtr->GetLowerLevel();
 		}
 	}
+	ReGenerateGUID();
 }
 
 FMDownloadTask::FMDownloadTask(const FString& InUrl, const FString& InDirectory, const FString& InFileName)
@@ -256,6 +257,7 @@ FString FMDownloadTask::ProcessUrl()
 			Url += UrlDirectory[i];
 		}
 	}
+	return Url;
 }
 
 void FMDownloadTask::InitializeRequestPtr()
@@ -309,7 +311,7 @@ void FMDownloadTask::StartChunk()
 		return;
 	}
 
-	FString RangeStr = FString::Printf(TEXT("bytes=%d-%d", StartPostion, EndPosition));
+	FString RangeStr = FString::Printf(TEXT("bytes=%d-%d"), StartPostion, EndPosition);
 	RequestPtr->SetHeader(TEXT("Range"), RangeStr);
 
 	RequestPtr->OnProcessRequestComplete().BindRaw(this, &FMDownloadTask::OnGetChunkCompleted);
@@ -503,9 +505,28 @@ void FMDownloadTask::OnGetChunkCompleted(FHttpRequestPtr InRequest, FHttpRespons
 
 void FMDownloadTask::OnTaskCompleted()
 {
+
 }
 
 void FMDownloadTask::OnWriteChunkEnd(int32 DataSize)
 {
+	if (GetState() != EMTaskState::DOWNLOADING)
+	{
+		return;
+	}
 
+	//update progress
+	SetCurrentSize(GetCurrentSize() + DataSize);
+
+	if (GetCurrentSize() < GetTotalSize())
+	{
+		ProcessTaskFunc(EMTaskEvent::DOWNLOAD_UPDATE, TaskInfo, 0);
+		//download next chunk
+		StartChunk();
+	}
+	else
+	{
+		//task have completed.
+		OnTaskCompleted();
+	}
 }
