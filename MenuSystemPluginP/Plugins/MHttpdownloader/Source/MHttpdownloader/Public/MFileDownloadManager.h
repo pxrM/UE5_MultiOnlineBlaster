@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMOnAllTaskCompleted, int32, ErrorCo
 /**
  * 该类是插件的接口，尽量使用该类下载文件(c++ +蓝图)
  */
-UCLASS()
+UCLASS(BlueprintType)
 class MHTTPDOWNLOADER_API UMFileDownloadManager : public UObject, public FTickableGameObject
 {
 	GENERATED_BODY()
