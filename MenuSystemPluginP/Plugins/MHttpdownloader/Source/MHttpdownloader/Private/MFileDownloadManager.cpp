@@ -168,7 +168,7 @@ int32 UMFileDownloadManager::AddTaskByUrl(const FString& InUrl, const FString& I
 		}
 	}
 
-	TSharedPtr<FMDownloadTask> TaskPtr = MakeShareable(new FMDownloadTask(InUrl, InDirectory, InFileName));
+	TSharedPtr<FMDownloadTask> TaskPtr = MakeShareable(new FMDownloadTask(InUrl, TmpDir, InFileName));
 	if (!TaskPtr)
 	{
 		return INDEX_NONE;

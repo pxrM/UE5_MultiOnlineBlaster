@@ -372,7 +372,7 @@ void FMDownloadTask::OnGetHeadCompleted(FHttpRequestPtr InRequest, FHttpResponse
 
 	if (TargetFilePtr == nullptr)
 	{
-		UE_LOG(LogFileDownloader, Warning, TEXT("%s, %d, create temp file error !"));
+		UE_LOG(LogFileDownloader, Warning, TEXT("create temp file error !"));
 		ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, RetutnCode);
 		TaskState = EMTaskState::ERROR;
 		return;
