@@ -320,7 +320,7 @@ void FMDownloadTask::StartChunk()
 
 FString FMDownloadTask::GetFullFileName() const
 {
-	return  FPaths::Combine(GetDestDirectory(), GetFileName());
+	return FPaths::Combine(GetDestDirectory(), GetFileName());
 }
 
 void FMDownloadTask::OnGetHeadCompleted(FHttpRequestPtr InRequest, FHttpResponsePtr InResponse, bool bWasSuccessful)
@@ -505,7 +505,63 @@ void FMDownloadTask::OnGetChunkCompleted(FHttpRequestPtr InRequest, FHttpRespons
 
 void FMDownloadTask::OnTaskCompleted()
 {
+	// 释放文件句柄，这样就可以通过IFileManager来更改文件名。
+	if (TargetFilePtr)
+	{
+		delete TargetFilePtr;
+		TargetFilePtr = nullptr;
+	}
 
+	FString TmpFileName = GetFullFileName() + TEMP_FILE_EXTERN;
+	bool bOldExist = PlatformFilePtr->FileExists(*GetFullFileName()); // 目标文件
+	bool bNewExist = PlatformFilePtr->FileExists(*TmpFileName);		  // 临时文件
+
+	if (!bOldExist && !bNewExist)
+	{
+		UE_LOG(LogFileDownloader, Warning, TEXT("%s, file not eixst !"), *GetFileName());
+		TaskState = EMTaskState::ERROR;
+		ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, -1);
+		return;
+	}
+
+	if (!bOldExist)
+	{
+		// 将临时文件名更改为目标文件名。
+		if (PlatformFilePtr->MoveFile(*GetFullFileName(), *TmpFileName))
+		{
+			UE_LOG(LogFileDownloader, Warning, TEXT("%s, completed !"), *GetFileName());
+			TaskState = EMTaskState::COMPLETED;
+			ProcessTaskFunc(EMTaskEvent::DOWNLOAD_COMPLETED, TaskInfo, 0);
+		}
+		else
+		{
+			// 更改文件名时出错。
+			UE_LOG(LogFileDownloader, Warning, TEXT("%s, Change temp file name error !"), *GetFileName());
+			TaskState = EMTaskState::ERROR;
+			ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, -1);
+		}
+	}
+	else if (bNewExist)
+	{
+		// 先调用PlatformFilePtr->DeleteFile()函数删除目标文件。如果删除成功，接着调用 PlatformFilePtr->MoveFile() 函数将临时文件重命名为目标文件。
+		if (PlatformFilePtr->DeleteFile(*GetFullFileName()) && PlatformFilePtr->MoveFile(*GetFullFileName(), *TmpFileName))
+		{
+			UE_LOG(LogFileDownloader, Warning, TEXT("%s, completed !"), *GetFileName());
+			TaskState = EMTaskState::COMPLETED;
+			ProcessTaskFunc(EMTaskEvent::DOWNLOAD_COMPLETED, TaskInfo, 0);
+		}
+		else
+		{
+			UE_LOG(LogFileDownloader, Warning, TEXT("%s, Canot delete old file or rename temp file!"), *GetFileName());
+			TaskState = EMTaskState::ERROR;
+			ProcessTaskFunc(EMTaskEvent::ERROR_OCCUR, TaskInfo, -1);
+		}
+	}
+	else
+	{
+		TaskState = EMTaskState::COMPLETED;
+		ProcessTaskFunc(EMTaskEvent::DOWNLOAD_COMPLETED, TaskInfo, 0);
+	}
 }
 
 void FMDownloadTask::OnWriteChunkEnd(int32 DataSize)
