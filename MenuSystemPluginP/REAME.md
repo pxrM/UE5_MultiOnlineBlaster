@@ -1,5 +1,0 @@
-将MenuSystemProject项目中的多人在线提升为插件 MultiplayerSession
-
-在DefaultGame.ini里设置游戏最多玩家人数
-[/Script/Engine/GameSession]
-MaxPlayers=100
