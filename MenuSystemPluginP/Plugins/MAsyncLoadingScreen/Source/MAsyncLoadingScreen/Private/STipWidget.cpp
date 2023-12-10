@@ -2,10 +2,11 @@
 
 
 #include "STipWidget.h"
+#include "SlateOptMacros.h"
 #include "LoadingScreenSettings.h"
 #include "AsyncLoadingScreenFuncLibrary.h"
 
-
+BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void STipWidget::Construct(const FArguments& InArgs, const FTipSettings& Settings)
 {
 	if (Settings.TipTexts.Num() > 0)
@@ -36,3 +37,4 @@ void STipWidget::Construct(const FArguments& InArgs, const FTipSettings& Setting
 
 	}
 }
+END_SLATE_FUNCTION_BUILD_OPTIMIZATION

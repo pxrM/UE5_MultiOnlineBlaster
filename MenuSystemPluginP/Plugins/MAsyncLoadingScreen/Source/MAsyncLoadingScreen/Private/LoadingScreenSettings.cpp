@@ -2,3 +2,7 @@
 
 
 #include "LoadingScreenSettings.h"
+
+ULoadingScreenSettings::ULoadingScreenSettings(const FObjectInitializer& ObjecInitializer)
+{
+}

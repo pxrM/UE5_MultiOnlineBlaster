@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,9 +11,9 @@
  */
 
 /*
-  config = Game ±íÊ¾Õâ¸öÉèÖÃÊÇÓÎÏ·¼¶±ğµÄÅäÖÃ£¬»á±£´æÔÚÓÎÏ·ÅäÖÃÎÄ¼şÖĞ£»
-  defaultconfig ±íÊ¾Õâ¸öÉèÖÃ¾ßÓĞÄ¬ÈÏÖµ²¢ÇÒ¿ÉÒÔÔÚÒıÇæ±à¼­Æ÷ÖĞ½øĞĞ±à¼­£»
-  mate = (DisplayName = "HttpMgrSetting") Ôò¶¨ÒåÁËÕâ¸öÉèÖÃÔÚÒıÇæ±à¼­Æ÷ÖĞÏÔÊ¾µÄÃû³Æ¡£
+  config = Game è¡¨ç¤ºè¿™ä¸ªè®¾ç½®æ˜¯æ¸¸æˆçº§åˆ«çš„é…ç½®ï¼Œä¼šä¿å­˜åœ¨æ¸¸æˆé…ç½®æ–‡ä»¶ä¸­ï¼›
+  defaultconfig è¡¨ç¤ºè¿™ä¸ªè®¾ç½®å…·æœ‰é»˜è®¤å€¼å¹¶ä¸”å¯ä»¥åœ¨å¼•æ“ç¼–è¾‘å™¨ä¸­è¿›è¡Œç¼–è¾‘ï¼›
+  mate = (DisplayName = "HttpMgrSetting") åˆ™å®šä¹‰äº†è¿™ä¸ªè®¾ç½®åœ¨å¼•æ“ç¼–è¾‘å™¨ä¸­æ˜¾ç¤ºçš„åç§°ã€‚
 */
 UCLASS(config = Game, DefaultConfig, DisplayName = "HttpManagerSettings")
 class MHTTPDOWNTOOL_API UHttpManagerSettings : public UDeveloperSettings
@@ -25,13 +25,13 @@ public:
 
 public:
 	UPROPERTY(config, EditAnywhere, Category = "Config | HttpManager")
-		int32 MaxParallel;	//×î´óÏÂÔØ²¢ĞĞÊı
+		int32 MaxParallel;	//æœ€å¤§ä¸‹è½½å¹¶è¡Œæ•°
 	UPROPERTY(config, EditAnywhere, Category = "Config | HttpManager")
-		int32 MaxTryCount;	//×î´óÖØÁ¬Êı
+		int32 MaxTryCount;	//æœ€å¤§é‡è¿æ•°
 	UPROPERTY(config, EditAnywhere, Category = "Config | HttpManager")
-		int32 RequestKBSize; //Ã¿¸ö×ÓÈÎÎñ´óĞ¡
+		int32 RequestKBSize; //æ¯ä¸ªå­ä»»åŠ¡å¤§å°
 	UPROPERTY(config, EditAnywhere, Category = "Config | HttpManager")
-		float ResponseTimeout; //ÇëÇó³¬Ê±µÄÊ±¼ä
+		float ResponseTimeout; //è¯·æ±‚è¶…æ—¶çš„æ—¶é—´
 	UPROPERTY(config, EditAnywhere, Category = "Config | HttpManager")
-		FString CurFilePath; //×ÓÎÄ¼şµÄ»º´æÎ»ÖÃ
+		FString CurFilePath; //å­æ–‡ä»¶çš„ç¼“å­˜ä½ç½®
 };
