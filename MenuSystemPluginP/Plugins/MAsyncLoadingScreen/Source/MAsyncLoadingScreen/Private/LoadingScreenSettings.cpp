@@ -3,6 +3,7 @@
 
 #include "LoadingScreenSettings.h"
 
-ULoadingScreenSettings::ULoadingScreenSettings(const FObjectInitializer& ObjecInitializer)
+ULoadingScreenSettings::ULoadingScreenSettings(const FObjectInitializer& ObjecInitializer) :Super(ObjecInitializer)
 {
+
 }

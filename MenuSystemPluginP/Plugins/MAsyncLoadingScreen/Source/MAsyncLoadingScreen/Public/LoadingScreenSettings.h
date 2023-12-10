@@ -44,7 +44,7 @@ struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 {
 	GENERATED_BODY()
 
-
+	
 };
 
 
