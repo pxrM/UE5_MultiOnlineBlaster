@@ -1,4 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
+// 
+// TEnumAsByte 是UE中用于包装枚举类型的模板类。它的作用是将一个普通的枚举类型包装成一个字节大小的数据，以便在内存中更高效地存储和传输。
 
 #pragma once
 
@@ -39,16 +41,150 @@ public:
 };
 
 
+/// <summary>
+/// 异步加载界面设置
+/// </summary>
 USTRUCT(BlueprintType)
 struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 {
 	GENERATED_BODY()
 
-	
+	/// <summary>
+	/// 设置异步加载屏幕最短显示时间，如果设置为-1，则表示没有最短显示时间。建议将其设置为-1，即不限制最短显示时间。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	float MinimumLoadingScreenDisplayTime = -1;
+
+	/// <summary>
+	/// 控制加载屏幕是否在加载完成后立即消失的设置。如果将该属性设置为true，加载完成后加载屏幕会立即消失。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	bool bAutoCompleteWhenLoadingCompletes = true;
+
+	/// <summary>
+	/// 如果为true，只要level加载完成，就可以通过点击加载屏幕跳过电影。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	bool bMoviesAreSkippable = true;
+
+	/// <summary>
+	/// 控制电影播放是否需要手动停止的设置。如果将该属性设置为true，电影会一直播放直到调用Stop函数进行停止。
+	///		需要注意的是，如果设置了"MinimumLoadingScreenDisplayTime"为-1，那么允许玩家按任意键来停止加载屏幕。
+	///		但如果"MinimumLoadingScreenDisplayTime"大于等于0，就需要在GameInstance、GameMode或PlayerController蓝图
+	///		的BeginPlay事件中调用"StopLoadingScreen"来停止加载屏幕（同时"bAllowEngineTick"必须为true）。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	bool bWaitForManualStop = false;
+
+	/// <summary>
+	/// 设置加载屏幕是否在早期启动时允许使用引擎功能的设置。
+	///		如果将该属性设置为true，加载屏幕将在早期启动阶段允许使用引擎功能。这将导致在支持此功能的平台上非常早地开始播放电影。
+	///		这意味着加载屏幕可能可以在游戏引擎的启动过程中就开始播放视频或动画，而不需要等待更多的引擎系统初始化完成。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	bool bAllowInEarlyStartup = false;
+
+	/// <summary>
+	/// 设置在游戏线程等待加载电影完成时是否调用引擎tick的设置。如果将该属性设置为true，在游戏线程等待加载电影完成时会调用引擎tick。
+	/// 这个功能仅适用于<启动后的加载屏幕>，并且潜在地存在一些不安全的风险。
+	///		通过允许引擎tick在加载电影时被调用，可以在等待过程中继续进行游戏逻辑的更新。
+	///		但需要注意，这可能导致一些未预料的问题和不稳定性，因为游戏线程和渲染线程之间的同步可能会受到影响。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	bool bAllowEngineTick = false;
+
 };
 
 
+/// <summary>
+/// 经典布局设置
+/// </summary>
+USTRUCT(BlueprintType)
+struct FClassicLayoutSettings
+{
+	GENERATED_BODY()
 
+	/// <summary>
+	/// 指定包含加载和提示部件的边框是位于底部还是顶部。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	bool bIsWidgetAtBottom = true;
+
+	/// <summary>
+	/// 指定加载部件是否在提示部件的左侧。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	bool bIsLoadingWidgetAtLeft = true;
+
+	/// <summary>
+	/// 指定加载部件和提示部件之间的空白间隔。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	float Space = 1.0f;
+
+	/// <summary>
+	/// 使用 TipAlignment 属性来设置提示部件在水平和垂直方向上的对齐方式
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	FWidgetAlignment TipAlignment;
+
+	/// <summary>
+	/// 边框背景的水平对齐。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	TEnumAsByte<EHorizontalAlignment> BorderHorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
+
+	/// <summary>
+	/// 边框和它所包含的小部件之间的填充区域。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	FMargin BorderPadding;
+
+	/// <summary>
+	/// 边框小部件的背景外观设置
+	/// FSlateBrush是UE中用于描述 Slate UI 框架中图像或矢量素材外观的数据结构。
+	/// 它包含了一系列属性，用于定义 UI 元素的外观，包括背景图片、颜色、边框、填充等。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	FSlateBrush BorderBackground;
+};
+
+
+/// <summary>
+/// 小部件的对齐方式
+/// </summary>
+USTRUCT(BlueprintType)
+struct FWidgetAlignment
+{
+	GENERATED_BODY()
+
+	/// <summary>
+	/// 水平对齐方式。
+	///		HAlign_Fill：填充整个可用空间。
+	///		HAlign_Left：左对齐。
+	///		HAlign_Center：居中对齐。
+	///		HAlign_Right：右对齐。
+	///		HAlign_Max：最大化对齐。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alignment Setting")
+	TEnumAsByte<EHorizontalAlignment> HorizontalAlignment = EHorizontalAlignment::HAlign_Center;
+
+	/// <summary>
+	/// 垂直对齐方式。
+	///		VAlign_Fill：填充整个可用空间。
+	///		VAlign_Top：顶部对齐。
+	///		VAlign_Center：居中对齐。
+	///		VAlign_Bottom：底部对齐。
+	///		VAlign_Max：最大化对齐。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Alignment Setting")
+	TEnumAsByte<EVerticalAlignment> VerticalAlignment = EVerticalAlignment::VAlign_Center;
+};
+
+
+/// <summary>
+/// 加载屏幕的背景小部件设置
+/// </summary>
 USTRUCT(BlueprintType)
 struct MASYNCLOADINGSCREEN_API FBackgroundSettings
 {
@@ -58,8 +194,6 @@ struct MASYNCLOADINGSCREEN_API FBackgroundSettings
 		元数据(meta)，用于提供额外的信息。这里指定了一个名为AllowedClasses
 		（用于在UE中指定属性可以引用的资源类）的元数据，并限定了该属性可以引用的资源类为Texture2D类型。
 		 "/Script/Engine.Texture2D"指的是引擎中的Texture2D类。
-
-		 TEnumAsByte 是UE中用于包装枚举类型的模板类。它的作用是将一个普通的枚举类型包装成一个字节大小的数据，以便在内存中更高效地存储和传输。
 	*/
 
 	/// <summary>
@@ -70,12 +204,12 @@ struct MASYNCLOADINGSCREEN_API FBackgroundSettings
 
 	/// <summary>
 	/// 应用于图像的缩放类型
-	///  EStretch::None: 表示不进行缩放，保持原始图像的大小和比例。
-	///  EStretch::Fill: 图像将被拉伸以完全填充目标区域，可能导致图像的比例发生变化。
-	///  EStretch::ScaleToFit : 图像将被等比例缩放以适应目标区域，在保持图像比例的同时，尽可能填充整个区域。
-	///  EStretch::ScaleToFitX : 图像将被等比例缩放以适应目标区域的宽度，高度可能超出目标区域。
-	///  EStretch::ScaleToFitY : 图像将被等比例缩放以适应目标区域的高度，宽度可能超出目标区域。
-	///  EStretch::ScaleToFill : 图像将被等比例缩放以填充整个目标区域，可能导致部分图像被裁剪。
+	///		EStretch::None: 表示不进行缩放，保持原始图像的大小和比例。
+	///		EStretch::Fill: 图像将被拉伸以完全填充目标区域，可能导致图像的比例发生变化。
+	///		EStretch::ScaleToFit : 图像将被等比例缩放以适应目标区域，在保持图像比例的同时，尽可能填充整个区域。
+	///		EStretch::ScaleToFitX : 图像将被等比例缩放以适应目标区域的宽度，高度可能超出目标区域。
+	///		EStretch::ScaleToFitY : 图像将被等比例缩放以适应目标区域的高度，宽度可能超出目标区域。
+	///		EStretch::ScaleToFill : 图像将被等比例缩放以填充整个目标区域，可能导致部分图像被裁剪。
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Background")
 	TEnumAsByte<EStretch::Type> ImageStretch = EStretch::ScaleToFit;
