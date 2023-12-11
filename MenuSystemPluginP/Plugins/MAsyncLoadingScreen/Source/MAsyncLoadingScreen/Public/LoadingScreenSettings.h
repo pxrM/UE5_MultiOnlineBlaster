@@ -82,6 +82,53 @@ struct FWidgetAlignment
 
 
 /// <summary>
+/// 旋转加载动画。它由多个旋转的部件组成，这些部件以循环的方式呈现动画效果。
+/// </summary>
+USTRUCT(BlueprintType)
+struct FThrobberSettings
+{
+	GENERATED_BODY()
+
+	/*
+		ClampMin = "1"：属性的最小值为1，如果尝试将属性的值设置为小于1的值，系统会自动将其调整为1。
+		ClampMax = "25"：属性的最大值为25，如果尝试将属性的值设置为大于25的值，系统会自动将其调整为25。
+		UIMin = "1"：在UE4蓝图编辑器中，可以通过滑块或其他UI元素将属性的值设置为最小值1。
+		UIMax = "25"：在UE4蓝图编辑器中，可以通过滑块或其他UI元素将属性的值设置为最大值25。
+	*/
+
+	/// <summary>
+	/// 动画部件的片段数量，默认值为3。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Appearance, meta = (ClampMin = "1", ClampMax = "25", UIMin = "1", UIMax = "25"))
+	int32 NumberOfPieces = 3;
+
+	/// <summary>
+	/// 是否水平动画。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Appearance)
+	bool bAnimateHorizontally = false;
+
+	/// <summary>
+	/// 是否垂直动画。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Appearance)
+	bool bAnimateVertically = true;
+
+	/// <summary>
+	/// 是否以动画方式改变其透明度。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Appearance)
+	bool bAnimateOpacity = true;
+
+	/// <summary>
+	/// 使用的图像。FSlateBrush 是一个结构体，其中包含了图像和其他相关属性的信息，例如图像的大小、颜色等。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Appearance)
+	FSlateBrush Image;
+};
+
+
+/// <summary>
 /// 经典布局设置
 /// </summary>
 USTRUCT(BlueprintType)
