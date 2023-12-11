@@ -11,6 +11,44 @@
 #include "LoadingScreenSettings.generated.h"
 
 
+UENUM(BlueprintType)
+enum class EAsyncLoadingScreenLayout :uint8
+{
+	/**
+	* 经典布局是一种简单、通用的布局，适用于许多设计。 Loading和tip小部件可以位于底部或顶部。
+	*/
+	ALSL_Classic UMETA(DisplayName = "Classic"),
+
+	/**
+	* 中心布局的特点是Loading小部件位于屏幕中心，而tip小部件可以位于底部或顶部。
+	* 该布局适合于加载图标是主要设计元素的情况，因此对于强调加载图标的场景来说是一个不错的选择。
+	*/
+	ALSL_Center UMETA(DisplayName = "Center"),
+
+	/**
+	* "Letterbox"布局在屏幕的顶部和底部各有两个边框。Loading小部件可以在顶部或底部，tip小部件在屏幕的另一端。
+	* 该布局适合于需要在加载过程中保留屏幕原始比例的情况，而且可以根据需要显示一些额外的信息，例如游戏提示、版权信息等。
+	* ("Letterbox"是一种游戏设计中的术语，它指的是在保持画面比例不变的情况下，将宽屏游戏的画面内容缩小并在上下两端添加黑色边框，以适应比例较小的屏幕。)
+	*/
+	ALSL_Letterbox UMETA(DisplayName = "Center"),
+
+	/**
+	* 侧边栏布局在屏幕的左侧或右侧有垂直边框。这种布局适合于叙事或显示长段落，因为提示小部件的高度可以提供足够的空间。
+	* 该布局允许在加载过程中显示额外的内容，提供视觉上有趣和信息丰富的体验。
+	* 
+	*/
+	ALSL_Sidebar UMETA(DisplayName = "Sidebar"),
+
+	/**
+	* "Dual Sidebar"布局与"Sidebar"布局类似，但在屏幕的左右两侧均有垂直边框。
+	* 此布局适合于叙事或显示长段落，因为提示小部件可以提供足够的高度空间。
+	* 与"Sidebar"布局相比，"Dual Sidebar"布局提供更多的可用空间，同时保持了信息的清晰度和可读性。
+	*/
+	ALSL_DualSidebar UMETA(DisplayName = "Dual Sidebar"),
+};
+
+
+
 /// <summary>
 /// Async Loading Screen Settings 
 /// </summary>
@@ -186,6 +224,15 @@ struct MASYNCLOADINGSCREEN_API FBackgroundSettings
 
 
 
+/// <summary>
+/// 加载完成时显示的文本设置。如果没有设置"bShowLoadingCompleteText" = true，忽略这个
+/// </summary>
+USTRUCT(BlueprintType)
+struct MASYNCLOADINGSCREEN_API FLoadingCompleteTextSettings
+{
+	GENERATED_BODY()
+};
+
 
 /// <summary>
 /// 文本外观设置
@@ -270,10 +317,20 @@ struct MASYNCLOADINGSCREEN_API FTipSettings
 
 
 /// <summary>
-/// 加载完成时显示的文本设置。如果没有设置"bShowLoadingCompleteText" = true，忽略这个
+///  Tips text settings
 /// </summary>
 USTRUCT(BlueprintType)
-struct MASYNCLOADINGSCREEN_API FLoadingCompleteTextSettings
+struct MASYNCLOADINGSCREEN_API FTipSettings
+{
+	GENERATED_BODY()
+};
+
+
+/// <summary>
+///  Loading widget settings
+/// </summary>
+USTRUCT(BlueprintType)
+struct MASYNCLOADINGSCREEN_API FLoadingWidgetSettings
 {
 	GENERATED_BODY()
 };
@@ -361,7 +418,6 @@ struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
 	bool bSetDisplayMoviesIndexManually = false;
 
-	/*-----------------------------------------------------------------------------------------------------------*/
 
 	/// <summary>
 	/// 是否显示加载画面的小部件(background/tips/loading widget)。一般来说，如果只想显示一个电影，那么将该属性设置为 false。
@@ -383,9 +439,26 @@ struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 	FLoadingCompleteTextSettings LoadingCompleteTextSettings;
 
 	/// <summary>
-	/// 加载屏幕的背景小部件。如果选择"bShowWidgetOverlay = false"，请忽略此选项。
+	/// 加载屏幕的BG小部件。如果选择"bShowWidgetOverlay = false"，请忽略此选项。
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
 	FBackgroundSettings Background;
 
+	/// <summary>
+	/// 加载屏幕的TEXT小部件。如果选择"bShowWidgetOverlay = false"，则可以忽略这部分设置。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
+	FTipSettings TipWidget;
+
+	/// <summary>
+	/// 加载屏幕的加载小部件。如果选择"bShowWidgetOverlay = false"，则可以忽略这部分设置。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
+	FLoadingWidgetSettings LoadingWidget;
+
+	/// <summary>
+	/// 选择 Async Loading Screen 的布局。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
+	EAsyncLoadingScreenLayout Layout = EAsyncLoadingScreenLayout::ALSL_Classic;
 };
