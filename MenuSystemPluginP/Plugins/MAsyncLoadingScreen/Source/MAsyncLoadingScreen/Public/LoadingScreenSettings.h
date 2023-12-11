@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "Widgets/Layout/SScaleBox.h"
 #include "Engine/DeveloperSettings.h"
+#include "MoviePlayer.h"
 #include "LoadingScreenSettings.generated.h"
 
 
@@ -37,7 +38,7 @@ public:
 	/// 配置游戏首次打开时的启动加载画面，可以在编辑器中进行修改，并且可以保存在配置文件中。
 	/// </summary>
 	//UPROPERTY(Config, EditAnywhere, Category = "General")
-	//FALoadingScreenSettings StartupLoadingScreen;
+	FALoadingScreenSettings StartupLoadingScreen;
 };
 
 
@@ -201,7 +202,7 @@ struct FTextAppearance
 	FSlateColor ColorAndOpacity = FSlateColor(FLinearColor::White);
 
 	/// <summary>
-	/// 要呈现文本的字体。
+	/// 文本字体。
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
 	FSlateFontInfo Font;
@@ -268,6 +269,15 @@ struct MASYNCLOADINGSCREEN_API FTipSettings
 };
 
 
+/// <summary>
+/// 加载完成时显示的文本设置。如果没有设置"bShowLoadingCompleteText" = true，忽略这个
+/// </summary>
+USTRUCT(BlueprintType)
+struct MASYNCLOADINGSCREEN_API FLoadingCompleteTextSettings
+{
+	GENERATED_BODY()
+};
+
 
 /// <summary>
 /// 异步加载界面设置
@@ -290,7 +300,7 @@ struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 	bool bAutoCompleteWhenLoadingCompletes = true;
 
 	/// <summary>
-	/// 如果为true，只要level加载完成，就可以通过点击加载屏幕跳过电影。
+	/// If true，只要level加载完成，就可以通过点击加载屏幕跳过电影。
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
 	bool bMoviesAreSkippable = true;
@@ -321,9 +331,59 @@ struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
 	bool bAllowEngineTick = false;
 
+	/// <summary>
+	/// 设置电影的播放类型
+	/// 如果设置为 MT_LoopLast，则会在播放到最后一帧时自动切换 bAutoCompleteWhenLoadingCompletes 属性为开启状态，以便在加载完成后自动完成播放。
+	///		MT_Normal: 正常播放电影，播放完毕后停止。
+	///		MT_Looped: 循环播放电影，无限循环播放。
+	///		MT_LoadingLoop : 加载循环播放电影，在电影加载期间循环播放。
+	///		MT_LoopLast : 最后一帧循环播放电影，播放到最后一帧后重新开始。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	TEnumAsByte<EMoviePlaybackType> PlaybackType = EMoviePlaybackType::MT_Normal;
 
 	/// <summary>
-	/// 加载屏幕的背景小部件。如果选择"Show Widget Overlay = false"，请忽略此选项。
+	/// 所有电影文件都必须位于 Content/Movies/ 目录下。建议使用 MPEG-4 格式 (mp4)。在输入字段中输入文件路径/名称，不需要包括文件扩展名。
+	///		例如，如果你有一个名为 my_movie.mp4 的电影文件位于 'Content/Movies' 文件夹中，那么只需要在输入字段中输入 my_movie 即可。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	TArray<FString> MoviePaths;
+
+	/// <summary>
+	/// If true, 播放前打乱电影列表。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	bool bShuffle = false;
+
+	/// <summary>
+	/// If true, 那么 "bShuffle" 选项将被忽略，需要在打开新关卡之前，在蓝图中手动调用 "SetDisplayMovieIndex" 函数来设置要显示在加载画面上的电影索引。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Movies Settings")
+	bool bSetDisplayMoviesIndexManually = false;
+
+	/*-----------------------------------------------------------------------------------------------------------*/
+
+	/// <summary>
+	/// 是否显示加载画面的小部件(background/tips/loading widget)。一般来说，如果只想显示一个电影，那么将该属性设置为 false。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
+	bool bShowWidgetOverlay = true;
+
+	/// <summary>
+	/// If true, 在关卡加载完成后会显示一段文本。如果选择将 "bShowWidgetOverlay" 设置为 false，则忽略此选项。
+	/// 注意，要正确启用这个选项，需要将"bWaitForManualStop"设置为 true，并且将"MinimumLoadingScreenDisplayTime"设置为 -1。这样做允许玩家按下任意按钮来停止加载画面。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
+	bool bShowLoadingCompleteText = false;
+
+	/// <summary>
+	/// 加载完成时显示的文本设置。如果没有设置"bShowLoadingCompleteText" = true，忽略这个
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
+	FLoadingCompleteTextSettings LoadingCompleteTextSettings;
+
+	/// <summary>
+	/// 加载屏幕的背景小部件。如果选择"bShowWidgetOverlay = false"，请忽略此选项。
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
 	FBackgroundSettings Background;
