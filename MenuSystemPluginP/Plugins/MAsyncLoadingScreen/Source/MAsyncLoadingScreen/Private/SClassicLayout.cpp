@@ -5,6 +5,7 @@
 #include "SlateOptMacros.h"
 #include "LoadingScreenSettings.h"
 #include "SBackgroundWidget.h"
+#include "STipWidget.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSettings& Settings, const FClassicLayoutSettings& LayoutSettings)
@@ -20,6 +21,12 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 		[
 			SNew(SBackgroundWidget, Settings.Background)
 		];
+
+	// 使用了SNullWidget::NullWidget静态函数创建一个空的SWidget，并将其转换为TSharedRef的形式。
+	// 这种写法常用于在程序中暂时不需要使用加载屏幕等UI组件时的占位符，以便在需要时方便地进行替换。
+	// 可以根据实际需要，将"SNullWidget::NullWidget"替换为其他的SWidget对象或自定义的UI组件。
+	TSharedRef<SWidget> LoadingWidget = SNullWidget::NullWidget;
+
 	/*
 	ChildSlot
 	[

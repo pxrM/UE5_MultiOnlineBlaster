@@ -8,7 +8,7 @@ struct FALoadingScreenSettings;
 struct FClassicLayoutSettings;
 
 /**
- * 经典布局加载画面
+ * 经典布局loading screen
  */
 class MASYNCLOADINGSCREEN_API SClassicLayout : public SLoadingScreenLayout
 {

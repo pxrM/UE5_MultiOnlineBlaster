@@ -50,37 +50,6 @@ enum class EAsyncLoadingScreenLayout :uint8
 
 
 /// <summary>
-/// Async Loading Screen Settings 
-/// </summary>
-UCLASS(Config = "Game", defaultconfig, meta = (DisplayName = "Async Loading Screen"))
-class MASYNCLOADINGSCREEN_API ULoadingScreenSettings :public UDeveloperSettings
-{
-	GENERATED_BODY()
-
-public:
-	ULoadingScreenSettings(const FObjectInitializer& ObjecInitializer = FObjectInitializer::Get());
-
-
-public:
-	/// <summary>
-	/// 如果为真，在游戏开始时加载所有背景图像。这是为了解决在 Standalone 或 Launch 模式下，背景图片加载过晚或缩放不正确的问题。
-	/// 但是，如果开发过程中没有遇到这个问题，不建议启用这个选项，因为它会一直占用内存资源。
-	/// 如果启用了该选项，可以通过调用蓝图函数 "RemovePreloadedBackgroundImages" 来手动删除所有预加载的背景图片。
-	/// 如果需要重新加载背景图片，则可以调用蓝图函数 "PreloadBackgroundImages"。
-	/// 注意，在调用 "OpenLevel" 函数之前应该先调用 "PreloadBackgroundImages" 函数。
-	/// </summary>
-	UPROPERTY(Config, EditAnywhere, Category = "General")
-	bool bPerloadBackgroundImage = false;
-
-	/// <summary>
-	/// 配置游戏首次打开时的启动加载画面，可以在编辑器中进行修改，并且可以保存在配置文件中。
-	/// </summary>
-	//UPROPERTY(Config, EditAnywhere, Category = "General")
-	FALoadingScreenSettings StartupLoadingScreen;
-};
-
-
-/// <summary>
 /// 小部件的对齐方式
 /// </summary>
 USTRUCT(BlueprintType)
@@ -316,15 +285,6 @@ struct MASYNCLOADINGSCREEN_API FTipSettings
 };
 
 
-/// <summary>
-///  Tips text settings
-/// </summary>
-USTRUCT(BlueprintType)
-struct MASYNCLOADINGSCREEN_API FTipSettings
-{
-	GENERATED_BODY()
-};
-
 
 /// <summary>
 ///  Loading widget settings
@@ -461,4 +421,36 @@ struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
 	EAsyncLoadingScreenLayout Layout = EAsyncLoadingScreenLayout::ALSL_Classic;
+};
+
+
+
+/// <summary>
+/// Async Loading Screen Settings 
+/// </summary>
+UCLASS(Config = "Game", defaultconfig, meta = (DisplayName = "Async Loading Screen"))
+class MASYNCLOADINGSCREEN_API ULoadingScreenSettings :public UDeveloperSettings
+{
+	GENERATED_BODY()
+
+public:
+	ULoadingScreenSettings(const FObjectInitializer& ObjecInitializer = FObjectInitializer::Get());
+
+
+public:
+	/// <summary>
+	/// 如果为真，在游戏开始时加载所有背景图像。这是为了解决在 Standalone 或 Launch 模式下，背景图片加载过晚或缩放不正确的问题。
+	/// 但是，如果开发过程中没有遇到这个问题，不建议启用这个选项，因为它会一直占用内存资源。
+	/// 如果启用了该选项，可以通过调用蓝图函数 "RemovePreloadedBackgroundImages" 来手动删除所有预加载的背景图片。
+	/// 如果需要重新加载背景图片，则可以调用蓝图函数 "PreloadBackgroundImages"。
+	/// 注意，在调用 "OpenLevel" 函数之前应该先调用 "PreloadBackgroundImages" 函数。
+	/// </summary>
+	UPROPERTY(Config, EditAnywhere, Category = "General")
+	bool bPerloadBackgroundImage = false;
+
+	/// <summary>
+	/// 配置游戏首次打开时的启动加载画面，可以在编辑器中进行修改，并且可以保存在配置文件中。
+	/// </summary>
+	//UPROPERTY(Config, EditAnywhere, Category = "General")
+	FALoadingScreenSettings StartupLoadingScreen;
 };
