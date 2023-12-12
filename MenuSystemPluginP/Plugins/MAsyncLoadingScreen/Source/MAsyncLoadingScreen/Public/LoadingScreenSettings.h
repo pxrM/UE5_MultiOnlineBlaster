@@ -48,6 +48,31 @@ enum class EAsyncLoadingScreenLayout :uint8
 };
 
 
+/// <summary>
+/// Loading Anim Icon Type
+/// </summary>
+UENUM(BlueprintType)
+enum class ELoadingIconType :uint8
+{
+	/** SThrobber widget */
+	LIT_Throbber UMETA(DisplayName = "Throbber"),
+	/** SCircularThrobber widget */
+	LIT_CircularThrobber UMETA(DisplayName = "Circular Throbber"),
+	/** Animated images */
+	LIT_ImageSequence UMETA(DisplayName = "Image Sequence"),
+};
+
+
+/** Loading Widget type */
+UENUM(BlueprintType)
+enum class ELoadingWidgetType : uint8
+{
+	/** Horizontal alignment */
+	LWT_Horizontal UMETA(DisplayName = "Horizontal"),
+	/** Vertical alignment */
+	LWT_Vertical UMETA(DisplayName = "Vertical"),
+};
+
 
 /// <summary>
 /// 小部件的对齐方式
@@ -129,6 +154,71 @@ struct FThrobberSettings
 
 
 /// <summary>
+/// 圆形loading小部件动画的设置参数
+/// </summary>
+USTRUCT(BlueprintType)
+struct FCircularThrobberSettings
+{
+	GENERATED_BODY()
+
+	/// <summary>
+	/// 圆形被分成的小扇形块数。取值范围为 1 到 25，默认值为 6。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Appearance, meta = (ClampMin = "1", ClampMax = "25", UIMin = "1", UIMax = "25"))
+	int32 NumberOfPieces = 6;
+
+	/// <summary>
+	/// 圆形旋转一周所需要的时间，以秒为单位。默认值为 0.75 秒
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Appearance, meta = (ClampMin = "0", UIMin = "0"))
+	float Period = 0.75f;
+
+	/// <summary>
+	/// 圆的半径。如果throbber是Canvas Panel的子控件，则必须启用“Size to Content”选项才能设置半径。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Appearance)
+	float Radius = 64.0f;
+
+	/// <summary>
+	/// 用于绘制每个小扇形块的图像。这是一个 FSlateBrush 类型的属性，可以设置图像资源、颜色、缩放等。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Appearance)
+	FSlateBrush Image;
+};
+
+
+/// <summary>
+/// 图像序列设置
+/// </summary>
+USTRUCT(BlueprintType)
+struct FImageSequenceSettings
+{
+	GENERATED_BODY()
+
+	/// <summary>
+	/// loading图标动画的图像数组。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting", meta = (AllowedClasses = "/Script/Engine.Texture2D"))
+	TArray<UTexture2D*> Images;
+
+	/// <summary>
+	/// 每个image的缩放
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FVector2D Scale = FVector2D(1.0f, 1.0f);
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting", meta = (UIMax = 1.00, UIMin = 0.00, ClampMin = "0", ClampMax = "1"))
+	float Interval = 0.05f;
+
+	/// <summary>
+	/// 是否反向播放图像序列
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	bool bPlayReverse = false;
+};
+
+
+/// <summary>
 /// 经典布局设置
 /// </summary>
 USTRUCT(BlueprintType)
@@ -180,6 +270,7 @@ struct FClassicLayoutSettings
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
 	FSlateBrush BorderBackground;
 };
+
 
 
 
@@ -340,7 +431,106 @@ USTRUCT(BlueprintType)
 struct MASYNCLOADINGSCREEN_API FLoadingWidgetSettings
 {
 	GENERATED_BODY()
+
+	FLoadingWidgetSettings();
+
+	/// <summary>
+	///  Loading icon type
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	ELoadingIconType LoadingIconType = ELoadingIconType::LIT_CircularThrobber;
+
+	/// <summary>
+	///  Loading Widget type
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	ELoadingWidgetType LoadingWidgetType = ELoadingWidgetType::LWT_Horizontal;
+
+	/// <summary>
+	/// loading小部件在渲染时的平移变换
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FVector2D TransformTranslation = FVector2D(0.0f, 0.0f);
+
+	/// <summary>
+	/// loading图标的变换比例，负值将翻转图标。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FVector2D TransformScale = FVector2D(1.0f, 1.0f);
+
+	/// <summary>
+	/// loading图标的轴心点(在标准化的局部空间中)
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FVector2D TransformPivot = FVector2D(0.5f, 0.5f);
+
+	/// <summary>
+	/// 显示在动画图标旁边的文本
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FText LoadingText;
+
+	/// <summary>
+	/// loading文本是否在加载图标的右侧? 如果没有选择LoadingWidgetType = Horizontal，忽略此选项。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	bool bLoadingTextRightPosition = true;
+
+	/// <summary>
+	///  loading文本是否在加载图标的顶部? 如果没有选择LoadingWidgetType = Vertical，忽略此选项。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	bool bLoadingTextTopPosition = true;
+
+	/// <summary>
+	/// loading text 的文本外观设置
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Tip Setting")
+	FTextAppearance Appearance;
+
+	/// <summary>
+	/// 动态浏览图示设置。如果不选择“Throbber”图标类型，忽略此选项
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FThrobberSettings ThrobberSettings;
+
+	/// <summary>
+	/// 如果没有选择 "Circular Throbber" 图标类型，那么可以忽略这个属性 "CircularThrobberSettings"
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FCircularThrobberSettings CircularThrobberSettings;
+
+	/// <summary>
+	/// 如果没有选择 "Image Sequence" 图标类型，那么可以忽略这个属性 "CircularThrobberSettings" 
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Setting")
+	FImageSequenceSettings ImageSequenceSettings;
+
+	/// <summary>
+	/// loading文本的对齐方式。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Widget Setting")
+	FWidgetAlignment TextAlignment;
+
+	/// <summary>
+	/// loading图片的对齐方式。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Widget Setting")
+	FWidgetAlignment LoadingIconAlignment;
+
+	/// <summary>
+	/// loading images 和loading icon 之间的间隔
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Widget Setting")
+	float Space = 1.0f;
+
+	/// <summary>
+	/// 控制在关卡加载完成时是否隐藏加载小部件。
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Widget Setting")
+	bool bHideLoadingWidgetWhenCompletes = false;
 };
+
 
 
 /// <summary>
@@ -498,6 +688,6 @@ public:
 	/// <summary>
 	/// 配置游戏首次打开时的启动加载画面，可以在编辑器中进行修改，并且可以保存在配置文件中。
 	/// </summary>
-	//UPROPERTY(Config, EditAnywhere, Category = "General")
+	UPROPERTY(Config, EditAnywhere, Category = "General")
 	FALoadingScreenSettings StartupLoadingScreen;
 };

@@ -7,3 +7,7 @@ ULoadingScreenSettings::ULoadingScreenSettings(const FObjectInitializer& ObjecIn
 {
 
 }
+
+FLoadingWidgetSettings::FLoadingWidgetSettings()
+{
+}
