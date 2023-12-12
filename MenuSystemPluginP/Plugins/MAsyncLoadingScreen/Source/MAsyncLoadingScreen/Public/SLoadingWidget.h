@@ -56,7 +56,8 @@ protected:
 	TSharedRef<SWidget> LoadingIcon = SNullWidget::NullWidget;
 
 	/// <summary>
-	///  Image slate brush list
+	/// Image slate brush list
+	/// FDeferredCleanupSlateBrush 是一个结构体，用于存储需要延迟清理的 Slate 图像资源。
 	/// </summary>
 	TArray<TSharedPtr<FDeferredCleanupSlateBrush>> CleanupBrushList;
 

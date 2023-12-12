@@ -673,7 +673,6 @@ class MASYNCLOADINGSCREEN_API ULoadingScreenSettings :public UDeveloperSettings
 public:
 	ULoadingScreenSettings(const FObjectInitializer& ObjecInitializer = FObjectInitializer::Get());
 
-
 public:
 	/// <summary>
 	/// 如果为真，在游戏开始时加载所有背景图像。这是为了解决在 Standalone 或 Launch 模式下，背景图片加载过晚或缩放不正确的问题。
