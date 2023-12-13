@@ -21,11 +21,6 @@ EVisibility SLoadingCompleteText::GetLoadingCompleteTextVisibility() const
 	return GetMoviePlayer()->IsLoadingFinished() ? EVisibility::Visible : EVisibility::Hidden;
 }
 
-FSlateColor SLoadingCompleteText::GetLoadingCompleteTextColor() const
-{
-	return FSlateColor();
-}
-
 EActiveTimerReturnType SLoadingCompleteText::AnimateText(double InCurrentTime, float InDeltaTime)
 {
 	const float MinAlpha = 0.1f;

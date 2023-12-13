@@ -51,7 +51,7 @@ protected:
 
 protected:
 	/// <summary>
-	/// Loading Iconռλ
+	/// Loading Icon Slate ռλ
 	/// </summary>
 	TSharedRef<SWidget> LoadingIcon = SNullWidget::NullWidget;
 
