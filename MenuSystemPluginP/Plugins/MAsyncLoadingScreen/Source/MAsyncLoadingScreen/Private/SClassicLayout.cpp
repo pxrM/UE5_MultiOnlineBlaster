@@ -6,6 +6,8 @@
 #include "LoadingScreenSettings.h"
 #include "SBackgroundWidget.h"
 #include "STipWidget.h"
+#include "SHorizontalLoadingWidget.h"
+#include "SVerticalLoadingWidget.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSettings& Settings, const FClassicLayoutSettings& LayoutSettings)
@@ -26,12 +28,25 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 	// 这种写法常用于在程序中暂时不需要使用加载屏幕等UI组件时的占位符，以便在需要时方便地进行替换。
 	// 可以根据实际需要，将"SNullWidget::NullWidget"替换为其他的SWidget对象或自定义的UI组件。
 	TSharedRef<SWidget> LoadingWidget = SNullWidget::NullWidget;
+	if (Settings.LoadingWidget.LoadingWidgetType == ELoadingWidgetType::LWT_Horizontal)
+	{
+		LoadingWidget = SNew(SHorizontalLoadingWidget, Settings.LoadingWidget);
+	}
+	else
+	{
+		LoadingWidget = SNew(SVerticalLoadingWidget, Settings.LoadingWidget);
+	}
 
-	/*
+	TSharedRef<SHorizontalBox> HorizontalBox = SNew(SHorizontalBox);
+	if (LayoutSettings.bIsLoadingWidgetAtLeft)
+	{
+
+	}
+	
 	ChildSlot
 	[
-		// Populate the widget
+		Root
 	];
-	*/
+	
 }
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
