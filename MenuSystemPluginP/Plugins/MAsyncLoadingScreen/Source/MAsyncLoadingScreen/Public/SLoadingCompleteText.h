@@ -18,7 +18,7 @@ public:
 	SLATE_END_ARGS()
 
 	/** Constructs this widget with InArgs */
-	void Construct(const FArguments& InArgs);
+	void Construct(const FArguments& InArgs, const FLoadingCompleteTextSettings& CompleteTextSettings);
 
 public:
 	/// <summary>

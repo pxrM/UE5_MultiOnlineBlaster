@@ -4,9 +4,10 @@
 #include "SLoadingCompleteText.h"
 #include "SlateOptMacros.h"
 #include "MoviePlayer.h"
+#include "LoadingScreenSettings.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
-void SLoadingCompleteText::Construct(const FArguments& InArgs)
+void SLoadingCompleteText::Construct(const FArguments& InArgs, const FLoadingCompleteTextSettings& CompleteTextSettings)
 {
 	/*
 	ChildSlot

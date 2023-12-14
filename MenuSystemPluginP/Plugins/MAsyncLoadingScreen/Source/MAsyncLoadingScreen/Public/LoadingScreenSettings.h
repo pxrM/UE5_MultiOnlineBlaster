@@ -107,6 +107,46 @@ struct FWidgetAlignment
 
 
 /// <summary>
+/// 文本外观设置
+/// </summary>
+USTRUCT(BlueprintType)
+struct FTextAppearance
+{
+	GENERATED_BODY()
+
+	/// <summary>
+	/// 文本颜色和不透明度
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
+	FSlateColor ColorAndOpacity = FSlateColor(FLinearColor::White);
+
+	/// <summary>
+	/// 文本字体。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
+	FSlateFontInfo Font;
+
+	/// <summary>
+	/// 描边偏移(以像素为单位)
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
+	FVector2D ShadowOffset = FVector2D::ZeroVector;
+
+	/// <summary>
+	/// 阴影颜色和不透明度
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
+	FLinearColor ShadowColorAndOpacity = FLinearColor::White;
+
+	/// <summary>
+	/// 文本与页边距对齐方式，默认居左对齐
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
+	TEnumAsByte<ETextJustify::Type> Justification = ETextJustify::Left;
+};
+
+
+/// <summary>
 /// 旋转加载动画。它由多个旋转的部件组成，这些部件以循环的方式呈现动画效果。
 /// </summary>
 USTRUCT(BlueprintType)
@@ -227,13 +267,13 @@ struct FClassicLayoutSettings
 	GENERATED_BODY()
 
 	/// <summary>
-	/// 指定包含加载和提示部件的边框是位于底部还是顶部。
+	/// 指定包含loading和tip部件的边框是位于底部还是顶部。
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
 	bool bIsWidgetAtBottom = true;
 
 	/// <summary>
-	/// 指定加载部件是否在提示部件的左侧。
+	/// 指定loading部件是否在tip部件的左侧。
 	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
 	bool bIsLoadingWidgetAtLeft = true;
@@ -329,8 +369,6 @@ struct MASYNCLOADINGSCREEN_API FBackgroundSettings
 };
 
 
-
-
 /// <summary>
 /// 加载完成时显示的文本设置。如果没有设置"bShowLoadingCompleteText" = true，忽略这个
 /// </summary>
@@ -338,46 +376,30 @@ USTRUCT(BlueprintType)
 struct MASYNCLOADINGSCREEN_API FLoadingCompleteTextSettings
 {
 	GENERATED_BODY()
-};
 
+	// 文本
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Complete Text Settings")
+	FText LoadingCompleteText;
 
-/// <summary>
-/// 文本外观设置
-/// </summary>
-USTRUCT(BlueprintType)
-struct FTextAppearance
-{
-	GENERATED_BODY()
+	// 文本外观
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Complete Text Settings")
+	FTextAppearance Appearance;
 
-	/// <summary>
-	/// 文本颜色和不透明度
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
-	FSlateColor ColorAndOpacity = FSlateColor(FLinearColor::White);
+	// 对齐方式
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Widget Settings")
+	FWidgetAlignment Alignment;
 
-	/// <summary>
-	/// 文本字体。
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
-	FSlateFontInfo Font;
+	// text填充
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Complete Text Settings")
+	FMargin Padding;
 
-	/// <summary>
-	/// 描边偏移(以像素为单位)
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
-	FVector2D ShadowOffset = FVector2D::ZeroVector;
+	// 动画文本
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Complete Text Settings")
+	bool bFadeInOutAnim = true;
 
-	/// <summary>
-	/// 阴影颜色和不透明度
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
-	FLinearColor ShadowColorAndOpacity = FLinearColor::White;
-
-	/// <summary>
-	/// 文本与页边距对齐方式，默认居左对齐
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, Config, EditAnywhere, Category = "Text Appearance")
-	TEnumAsByte<ETextJustify::Type> Justification = ETextJustify::Left;
+	// 动画速度
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Complete Text Settings")
+	float AnimationSpeed = 1.0f;
 };
 
 
