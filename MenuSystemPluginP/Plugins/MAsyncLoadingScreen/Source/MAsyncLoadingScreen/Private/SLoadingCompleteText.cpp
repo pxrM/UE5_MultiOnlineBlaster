@@ -9,12 +9,27 @@
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SLoadingCompleteText::Construct(const FArguments& InArgs, const FLoadingCompleteTextSettings& CompleteTextSettings)
 {
-	/*
+	CompleteTextColor = CompleteTextSettings.Appearance.ColorAndOpacity.GetSpecifiedColor();
+	CompleteTextAnimationSpeed = CompleteTextSettings.AnimationSpeed;
+
 	ChildSlot
-	[
-		// Populate the widget
-	];
-	*/
+		[
+			SNew(STextBlock)
+				.Font(CompleteTextSettings.Appearance.Font)
+				.ShadowOffset(CompleteTextSettings.Appearance.ShadowOffset)
+				.ShadowColorAndOpacity(CompleteTextSettings.Appearance.ShadowColorAndOpacity)
+				.Justification(CompleteTextSettings.Appearance.Justification)
+				.Text(CompleteTextSettings.LoadingCompleteText)
+				.ColorAndOpacity(this, &SLoadingCompleteText::GetLoadingCompleteTextColor)
+				.Visibility(this, &SLoadingCompleteText::GetLoadingCompleteTextVisibility)
+		];
+
+	// 注册动画图像序列活动计时器事件
+	if (CompleteTextSettings.bFadeInOutAnim && !bIsActiveTimerRegsitered)
+	{
+		bIsActiveTimerRegsitered = true;
+		RegisterActiveTimer(0.f, FWidgetActiveTimerDelegate::CreateSP(this, &SLoadingCompleteText::AnimateText));
+	}
 }
 
 EVisibility SLoadingCompleteText::GetLoadingCompleteTextVisibility() const
