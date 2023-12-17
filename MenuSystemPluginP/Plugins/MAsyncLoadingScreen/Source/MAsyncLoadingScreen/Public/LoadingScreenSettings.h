@@ -684,9 +684,9 @@ struct MASYNCLOADINGSCREEN_API FALoadingScreenSettings
 
 
 
-/// <summary>
-/// Async Loading Screen Settings 
-/// </summary>
+/**
+* Async Loading Screen Settings 异步场景加载设置
+**/
 UCLASS(Config = "Game", defaultconfig, meta = (DisplayName = "Async Loading Screen"))
 class MASYNCLOADINGSCREEN_API ULoadingScreenSettings :public UDeveloperSettings
 {
@@ -707,8 +707,28 @@ public:
 	bool bPerloadBackgroundImage = false;
 
 	/// <summary>
-	/// 配置游戏首次打开时的启动加载画面，可以在编辑器中进行修改，并且可以保存在配置文件中。
+	/// 用于设置游戏启动时的加载屏幕和工作室标志电影。
 	/// </summary>
 	UPROPERTY(Config, EditAnywhere, Category = "General")
 	FALoadingScreenSettings StartupLoadingScreen;
+
+	/// <summary>
+	/// 打开一个新关卡时，默认的加载屏幕就会出现。
+	/// </summary>
+	UPROPERTY(Config, EditAnywhere, Category = "General")
+	FALoadingScreenSettings DefaultLoadingScreen;
+
+	/// <summary>
+	/// 经典布局加载屏幕的设置
+	/// 经典是一个简单的，通用的布局和适合许多设计。
+	/// 包含加载和提示小部件的边界可以在底部或顶部。
+	/// </summary>
+	UPROPERTY(Config, EditAnywhere, Category = "General")
+	FClassicLayoutSettings Classic;
+
+	/// <summary>
+	/// 选择异步加载屏幕布局。如果您选择“ShowWidgetOverlay= false”，请忽略此选项。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
+	EAsyncLoadingScreenLayout Layout = EAsyncLoadingScreenLayout::ALSL_Classic;
 };
