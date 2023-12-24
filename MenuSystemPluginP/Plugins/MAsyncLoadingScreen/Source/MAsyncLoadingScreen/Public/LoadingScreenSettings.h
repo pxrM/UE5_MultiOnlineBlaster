@@ -258,60 +258,6 @@ struct FImageSequenceSettings
 };
 
 
-/// <summary>
-/// 经典布局设置
-/// </summary>
-USTRUCT(BlueprintType)
-struct FClassicLayoutSettings
-{
-	GENERATED_BODY()
-
-	/// <summary>
-	/// 指定包含loading和tip部件的边框是位于底部还是顶部。
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
-	bool bIsWidgetAtBottom = true;
-
-	/// <summary>
-	/// 指定loading部件是否在tip部件的左侧。
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
-	bool bIsLoadingWidgetAtLeft = true;
-
-	/// <summary>
-	/// 指定加载部件和提示部件之间的空白间隔。
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
-	float Space = 1.0f;
-
-	/// <summary>
-	/// 使用 TipAlignment 属性来设置提示部件在水平和垂直方向上的对齐方式
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
-	FWidgetAlignment TipAlignment;
-
-	/// <summary>
-	/// 边框背景的水平对齐。
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
-	TEnumAsByte<EHorizontalAlignment> BorderHorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
-
-	/// <summary>
-	/// 边框和它所包含的小部件之间的填充区域。
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
-	FMargin BorderPadding;
-
-	/// <summary>
-	/// 边框小部件的背景外观设置
-	/// FSlateBrush是UE中用于描述 Slate UI 框架中图像或矢量素材外观的数据结构。
-	/// 它包含了一系列属性，用于定义 UI 元素的外观，包括背景图片、颜色、边框、填充等。
-	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
-	FSlateBrush BorderBackground;
-};
-
-
 
 
 /// <summary>
@@ -447,7 +393,7 @@ struct MASYNCLOADINGSCREEN_API FTipSettings
 
 
 /// <summary>
-///  Loading widget settings
+///  Loading widget settings（转圈等loading）
 /// </summary>
 USTRUCT(BlueprintType)
 struct MASYNCLOADINGSCREEN_API FLoadingWidgetSettings
@@ -553,6 +499,104 @@ struct MASYNCLOADINGSCREEN_API FLoadingWidgetSettings
 	bool bHideLoadingWidgetWhenCompletes = false;
 };
 
+
+
+
+/// <summary>
+/// 经典布局设置
+/// </summary>
+USTRUCT(BlueprintType)
+struct FClassicLayoutSettings
+{
+	GENERATED_BODY()
+
+	/// <summary>
+	/// 指定包含loading和tip部件的边框是位于底部还是顶部。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	bool bIsWidgetAtBottom = true;
+
+	/// <summary>
+	/// 指定loading部件是否在tip部件的左侧。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	bool bIsLoadingWidgetAtLeft = true;
+
+	/// <summary>
+	/// 指定加载部件和提示部件之间的空白间隔。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	float Space = 1.0f;
+
+	/// <summary>
+	/// 使用 TipAlignment 属性来设置提示部件在水平和垂直方向上的对齐方式
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	FWidgetAlignment TipAlignment;
+
+	/// <summary>
+	/// 边框背景的水平对齐。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	TEnumAsByte<EHorizontalAlignment> BorderHorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
+
+	/// <summary>
+	/// 边框和它所包含的小部件之间的填充区域。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	FMargin BorderPadding;
+
+	/// <summary>
+	/// 边框小部件的背景外观设置
+	/// FSlateBrush是UE中用于描述 Slate UI 框架中图像或矢量素材外观的数据结构。
+	/// 它包含了一系列属性，用于定义 UI 元素的外观，包括背景图片、颜色、边框、填充等。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Classic Layout")
+	FSlateBrush BorderBackground;
+};
+
+/// <summary>
+///  中心布局设置
+/// </summary>
+USTRUCT(BlueprintType)
+struct FCenterLayoutSettings
+{
+	GENERATED_BODY()
+
+	/// <summary>
+	/// 提示文字是否在底部
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Center Layout")
+	bool bIsTipAtBottom = true;
+
+	/// <summary>
+	/// 对齐方式
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Center Layout")
+	FWidgetAlignment TipAlignment;
+
+	/// <summary>
+	/// 边界的水平对齐。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Center Layout")
+	TEnumAsByte<EHorizontalAlignment> BorderHorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
+
+	// 提示框（tip）在屏幕底部或顶部的位置来调整提示框距离屏幕底部或顶部的偏移量。
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Center Layout")
+	float BorderVerticalOffset = 0.0f;
+
+	/// <summary>
+	/// 边框与其包含的tip之间的填充区域。
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Center Layout")
+	FMargin BorderPadding;
+
+	/// <summary>
+	/// 提示 区域的背景外观设置
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Center Layout")
+	FSlateBrush BorderBackground;
+};
 
 
 /// <summary>
@@ -725,6 +769,14 @@ public:
 	/// </summary>
 	UPROPERTY(Config, EditAnywhere, Category = "General")
 	FClassicLayoutSettings Classic;
+
+	/// <summary>
+	/// 中心布局
+	/// 加载小部件在屏幕的中心，提示小部件可以在底部或顶部。
+	/// 如果你的加载图标是主要设计，中心布局是一个很好的选择。
+	/// </summary>
+	UPROPERTY(Config, EditAnywhere, Category = "General")
+	FCenterLayoutSettings Center;
 
 	/// <summary>
 	/// 选择异步加载屏幕布局。如果您选择“ShowWidgetOverlay= false”，请忽略此选项。

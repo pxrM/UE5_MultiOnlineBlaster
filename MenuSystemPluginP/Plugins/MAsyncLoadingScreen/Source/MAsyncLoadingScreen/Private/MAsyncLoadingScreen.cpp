@@ -113,7 +113,7 @@ void FMAsyncLoadingScreenModule::SetupLoadingScreen(const FALoadingScreenSetting
 		ShuffleMovies(MoviesList);
 	}
 
-	if (LoadingScreenSettings.bSetDisplayMoviesIndexManually == true)
+	if (LoadingScreenSettings.bSetDisplayMoviesIndexManually)
 	{
 		MoviesList.Empty();
 
