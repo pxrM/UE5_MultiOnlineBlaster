@@ -30,7 +30,7 @@ enum class EAsyncLoadingScreenLayout :uint8
 	* 该布局适合于需要在加载过程中保留屏幕原始比例的情况，而且可以根据需要显示一些额外的信息，例如游戏提示、版权信息等。
 	* ("Letterbox"是一种游戏设计中的术语，它指的是在保持画面比例不变的情况下，将宽屏游戏的画面内容缩小并在上下两端添加黑色边框，以适应比例较小的屏幕。)
 	*/
-	ALSL_Letterbox UMETA(DisplayName = "Center"),
+	ALSL_Letterbox UMETA(DisplayName = "Letterbox"),
 
 	/**
 	* 侧边栏布局在屏幕的左侧或右侧有垂直边框。这种布局适合于叙事或显示长段落，因为提示小部件的高度可以提供足够的空间。
@@ -597,6 +597,38 @@ struct FCenterLayoutSettings
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Center Layout")
 	FSlateBrush BorderBackground;
 };
+
+
+USTRUCT(BlueprintType)
+struct FLetterboxLayoutSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	bool bIsLoadingWidgetAtTip = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	FWidgetAlignment TipAlignment;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	FWidgetAlignment LoadingWidgetAlignment;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	TEnumAsByte<EHorizontalAlignment> TopBorderHorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	TEnumAsByte<EHorizontalAlignment> BottomBorderHorziontalAlignment = EHorizontalAlignment::HAlign_Fill;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	FMargin TopBorderPadding;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	FMargin BottomBorderPadding;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	FSlateBrush BottomBorderBackground;
+};
+
 
 
 /// <summary>
