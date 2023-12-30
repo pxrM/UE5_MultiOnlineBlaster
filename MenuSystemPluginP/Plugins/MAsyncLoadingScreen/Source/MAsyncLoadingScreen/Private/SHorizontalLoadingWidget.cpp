@@ -4,6 +4,8 @@
 #include "SHorizontalLoadingWidget.h"
 #include "SlateOptMacros.h"
 #include "LoadingScreenSettings.h"
+#include "Widgets/Layout/SSpacer.h"
+#include "Widgets/Text/STextBlock.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SHorizontalLoadingWidget::Construct(const FArguments& InArgs, const FLoadingWidgetSettings& Settings)

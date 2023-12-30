@@ -604,27 +604,57 @@ struct FLetterboxLayoutSettings
 {
 	GENERATED_BODY()
 
+	/// <summary>
+	/// loading是否在顶部
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
 	bool bIsLoadingWidgetAtTip = true;
 
+	/// <summary>
+	/// tips的对齐
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
 	FWidgetAlignment TipAlignment;
 
+	/// <summary>
+	/// loading的对齐
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
 	FWidgetAlignment LoadingWidgetAlignment;
 
+	/// <summary>
+	/// 控制顶部边框的水平对齐方式
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
 	TEnumAsByte<EHorizontalAlignment> TopBorderHorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
 
+	/// <summary>
+	/// 控制低部边框的水平对齐方式
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
-	TEnumAsByte<EHorizontalAlignment> BottomBorderHorziontalAlignment = EHorizontalAlignment::HAlign_Fill;
+	TEnumAsByte<EHorizontalAlignment> BottomBorderHorizontalAlignment = EHorizontalAlignment::HAlign_Fill;
 
+	/// <summary>
+	/// 边框和它所包含的小部件之间的顶部填充区域
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
 	FMargin TopBorderPadding;
 
+	/// <summary>
+	/// 边框和它所包含的小部件之间的低部填充区域
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
 	FMargin BottomBorderPadding;
 
+	/// <summary>
+	/// 顶部部边框的背景外观设置
+	/// </summary>
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
+	FSlateBrush TopBorderBackground;
+
+	/// <summary>
+	/// 底部边框的背景外观设置
+	/// </summary>
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Letterbox Layout")
 	FSlateBrush BottomBorderBackground;
 };
