@@ -660,6 +660,43 @@ struct FLetterboxLayoutSettings
 };
 
 
+USTRUCT(BlueprintType)
+struct FSidebarLayoutSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite,  EditAnywhere, Category = "Sidebar Layout")
+	bool bIsWidgetAtRight = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	bool bIsLoadingWidgetAtTop = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	float Space = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	TEnumAsByte<EVerticalAlignment> VerticalAlignment = EVerticalAlignment::VAlign_Center;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	FWidgetAlignment LoadingWidgetAlignment;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	FWidgetAlignment TipAlignment;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	TEnumAsByte<EVerticalAlignment> BorderVerticalAlignment = EVerticalAlignment::VAlign_Fill;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	float BorderHorizontalOffset = 0.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	FMargin BorderPadding;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Sidebar Layout")
+	FSlateBrush BorderBackground;
+};
+
+
 
 /// <summary>
 /// 异步加载界面设置
@@ -824,12 +861,19 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "General")
 	FALoadingScreenSettings DefaultLoadingScreen;
 
+
+	/// <summary>
+	/// 选择异步加载屏幕布局。如果您选择“ShowWidgetOverlay= false”，请忽略此选项。
+	/// </summary>
+	UPROPERTY(Config, EditAnywhere, Category = "General")
+	EAsyncLoadingScreenLayout Layout = EAsyncLoadingScreenLayout::ALSL_Classic;
+
 	/// <summary>
 	/// 经典布局加载屏幕的设置
 	/// 经典是一个简单的，通用的布局和适合许多设计。
 	/// 包含加载和提示小部件的边界可以在底部或顶部。
 	/// </summary>
-	UPROPERTY(Config, EditAnywhere, Category = "General")
+	UPROPERTY(Config, EditAnywhere, Category = "Layout")
 	FClassicLayoutSettings Classic;
 
 	/// <summary>
@@ -837,12 +881,20 @@ public:
 	/// 加载小部件在屏幕的中心，提示小部件可以在底部或顶部。
 	/// 如果你的加载图标是主要设计，中心布局是一个很好的选择。
 	/// </summary>
-	UPROPERTY(Config, EditAnywhere, Category = "General")
+	UPROPERTY(Config, EditAnywhere, Category = "Layout")
 	FCenterLayoutSettings Center;
 
 	/// <summary>
-	/// 选择异步加载屏幕布局。如果您选择“ShowWidgetOverlay= false”，请忽略此选项。
+	/// Letterbox 布局方式，用于在屏幕的顶部和底部创建两个边框，类似于书信信封的形状。
+	/// 这种布局方式可以用于在游戏或应用程序加载时显示相关信息或提示。
 	/// </summary>
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen Settings")
-	EAsyncLoadingScreenLayout Layout = EAsyncLoadingScreenLayout::ALSL_Classic;
+	UPROPERTY(Config, EditAnywhere, Category = "Layout")
+	FLetterboxLayoutSettings Letterbox;
+
+	/// <summary>
+	/// Sidebar 布局方式，它在屏幕的左侧或右侧创建一个垂直边框，类似于侧边栏的形状。
+	/// 这种布局方式适合用于讲故事或显示长段落文本，因为侧边栏的高度较大。
+	/// </summary>
+	UPROPERTY(Config, EditAnywhere, Category = "Layout")
+	FSidebarLayoutSettings Sidebar;
 };
