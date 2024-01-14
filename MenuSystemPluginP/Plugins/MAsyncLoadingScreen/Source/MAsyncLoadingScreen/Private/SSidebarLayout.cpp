@@ -5,6 +5,7 @@
 #include "SlateOptMacros.h"
 #include "Widgets/Layout/SSafeZone.h"
 #include "Widgets/Layout/SDPIScaler.h"
+#include "Widgets/Layout/SSpacer.h"
 #include "LoadingScreenSettings.h"
 #include "SBackgroundWidget.h"
 #include "SHorizontalLoadingWidget.h"
@@ -157,7 +158,7 @@ void SSidebarLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 	{
 		Root->AddSlot()
 			.HAlign(Settings.LoadingCompleteTextSettings.Alignment.HorizontalAlignment)
-			.Valign(Settings.LoadingCompleteTextSettings.Alignment.VerticalAlignment)
+			.VAlign(Settings.LoadingCompleteTextSettings.Alignment.VerticalAlignment)
 			.Padding(Settings.LoadingCompleteTextSettings.Padding)
 			[
 				SNew(SLoadingCompleteText, Settings.LoadingCompleteTextSettings)

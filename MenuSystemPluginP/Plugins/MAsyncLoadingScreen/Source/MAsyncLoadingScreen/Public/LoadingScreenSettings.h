@@ -660,6 +660,10 @@ struct FLetterboxLayoutSettings
 };
 
 
+/// <summary>
+/// Sidebar(侧边栏)布局方式，它在屏幕的左侧或右侧创建一个垂直边框，类似于侧边栏的形状。
+/// 这种布局方式适合用于讲故事或显示长段落文本，因为侧边栏的高度较大。
+/// </summary>
 USTRUCT(BlueprintType)
 struct FSidebarLayoutSettings
 {
@@ -696,6 +700,43 @@ struct FSidebarLayoutSettings
 	FSlateBrush BorderBackground;
 };
 
+
+/// <summary>
+/// 用于设置双边栏布局的参数。
+/// 双边栏布局类似于侧边栏布局，但双边栏布局在屏幕左右两侧有垂直边框。双边栏布局适合讲故事、长段落等因为提示小部件的高度而需要的情况。
+/// </summary>
+USTRUCT(BlueprintType)
+struct FDualSidebarLayoutSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	bool bIsLoadingWidgetAtRight = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	TEnumAsByte<EVerticalAlignment> LeftVerticalAlignment = EVerticalAlignment::VAlign_Center;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	TEnumAsByte<EVerticalAlignment> RightVerticalAlignment = EVerticalAlignment::VAlign_Center;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	TEnumAsByte<EVerticalAlignment> LeftBorderVerticalAlignment = EVerticalAlignment::VAlign_Fill;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	TEnumAsByte<EVerticalAlignment> RightBorderVerticalAlignment = EVerticalAlignment::VAlign_Fill;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	FMargin LeftBorderPadding;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	FMargin RightBorderPadding;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	FSlateBrush LeftBorderBackground;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Dual Sidebar Layout")
+	FSlateBrush RightBorderBackground;
+};
 
 
 /// <summary>
@@ -897,4 +938,10 @@ public:
 	/// </summary>
 	UPROPERTY(Config, EditAnywhere, Category = "Layout")
 	FSidebarLayoutSettings Sidebar;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	UPROPERTY(Config, EditAnywhere, Category = "Layout")
+	FDualSidebarLayoutSettings DualSidebar;
 };
