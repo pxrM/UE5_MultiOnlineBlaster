@@ -14,7 +14,11 @@ public class CustomDataTypeEditor : ModuleRules
 			"CoreUObject", 
 			"Engine", 
 			"InputCore",
-			"CustomDataType",
+            "Slate",
+			"SlateCore",
+            "CustomDataType",
+			"UnrealEd",
+			"AssetTools",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
