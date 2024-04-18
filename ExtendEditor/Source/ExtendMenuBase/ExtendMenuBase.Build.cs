@@ -13,8 +13,10 @@ public class ExtendMenuBase : ModuleRules
 			"Core", 
 			"CoreUObject", 
 			"Engine", 
-			"InputCore" 
-		});
+			"InputCore",
+            "SlateCore",
+            "Slate"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 	}
