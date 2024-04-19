@@ -65,4 +65,14 @@ private:
 	/** 菜单触发事件 */
 	void ViewportActorMenuEntryAction();
 
+
+
+
+	/** UToolMenus拓展方式入口函数 */
+	void ExtendByUToolMenus();
+
+	/** NewMenu2Button触发事件 */
+	void NewMenu2ButtonAction();
+
+
 };

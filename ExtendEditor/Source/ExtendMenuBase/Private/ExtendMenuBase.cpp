@@ -5,6 +5,7 @@
 #include "ExtendMenuBase.h"
 #include "LevelEditor.h"
 #include "ContentBrowserModule.h"
+#include "ToolMenus.h"
 
 IMPLEMENT_GAME_MODULE(FExtendMenuBase, ExtendMenuBase)
 
@@ -15,6 +16,7 @@ void FExtendMenuBase::StartupModule()
 	ExtendMenuByFExtend();
 	ExtendContentBrowserByFExtend();
 	ExtendViewportByFExtend();
+	ExtendByUToolMenus();
 }
 
 void FExtendMenuBase::ShutdownModule()
@@ -244,4 +246,50 @@ void FExtendMenuBase::MakeViewportActorMenuEntry(FMenuBuilder& MenuBuilder)
 void FExtendMenuBase::ViewportActorMenuEntryAction()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ViewportActorMenuEntryAction is called."));
+}
+
+// 将名称空间标识符 LOCTEXT_NAMESPACE 定义为 "ExtendByToolMenus"。
+// 名称空间标识符通常用于帮助管理本地化文本（Localized Text），它们允许在不同的上下文中使用相同的文本字符串，以便进行国际化和本地化。
+#define LOCTEXT_NAMESPACE "ExtendByToolMenus"
+void FExtendMenuBase::ExtendByUToolMenus()
+{
+	/**
+	 * Name”是使用 UToolMenus 拓展的关键。
+	 * 编辑器中的几乎每个菜单都有自己的 Name。打开 Window > Enable Menu Editing 开关，可以在大多数菜单中发现 Open Menu Editor 按钮，
+	 * 点击该按钮打开 Menu Editor，可以在其中找到该菜单的 Name。
+	 * Name 有固定的规律：
+	 *	主菜单栏：http://LevelEditor.MainMenu.XXX
+	 *	主菜单栏：http://LevelEditor.MainMenu.XXX
+	 *	ToolBar：http://LevelEditor.LevelEditorToolBar.XXX
+	 *	ContentBrowser菜单：http://ContentBrowser.XXX
+	 *	蓝图编辑器：http://AssetEditor.BlueprintEditor.XXX
+	 *	材质编辑器：http://AssetEditor.MaterialEditor.XXX
+	 *	如此等等...
+	 * 当我们要拓展一个菜单时，需要持有该菜单的 UToolMenu，该 UToolMenu 可以通过菜单的 Name 找到。
+	 * 拓展已有菜单基本的流程是：
+	 *	通过 Name 持有菜单的 UToolMenu。
+	 *	通过该 UToolMenu 找到或添加 FToolMenuSection。
+	 *	通过 FToolMenuSection 添加菜单项。
+	 * 
+	 */
+
+	// 持有LevelEditor.MainMenu
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu");
+	// 定位LevelEditor.MainMenu中的Section
+	// LevelEditor.MainMenu没有Section因此传入NAME_None
+	FToolMenuSection& Section = Menu->FindOrAddSection(NAME_None);
+	// 开始制作子菜单Entry
+	FToolMenuEntry& MakeEntry = Section.AddSubMenu(
+		"NewMenuByUToolMenus",// 新子菜单 Name
+		LOCTEXT("NewMenu2", "New Menu 2"),      // 标签
+		LOCTEXT("NewMenu2_ToolTip", "This is a extended menu by UToolMenus"), // ToolTip
+		FNewToolMenuChoice()
+	);
+	// 设置Entry出现的位置
+	MakeEntry.InsertPosition = FToolMenuInsert("Help", EToolMenuInsertType::After);
+}
+#undef LOCTEXT_NAMESPACE
+
+void FExtendMenuBase::NewMenu2ButtonAction()
+{
 }
