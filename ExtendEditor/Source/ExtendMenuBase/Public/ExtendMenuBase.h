@@ -45,4 +45,11 @@ private:
 	/** 新资产面板上下文菜单按钮触发事件 */
 	void AssetContextMenuEntryAction();
 
+	/** 拓展选定资产上下文菜单 */
+	TSharedRef<FExtender> ExtendAssetViewContextMenu(const TArray<FAssetData>& SelectedAssets);
+	/** 生成一个选定资产上下文菜单按钮 */
+	void MakeAssetViewContextMenuEntry(FMenuBuilder& MenuBuilder);
+	/** 新选定资产上下文菜单按钮触发事件 */
+	void AssetViewContextMenuEntryAction();
+
 };

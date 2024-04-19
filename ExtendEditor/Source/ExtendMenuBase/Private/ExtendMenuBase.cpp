@@ -131,6 +131,10 @@ void FExtendMenuBase::ExtendContentBrowserByFExtend()
 	TArray<FContentBrowserMenuExtender_SelectedPaths>& Extenders = ContentBrowserModule.GetAllAssetContextMenuExtenders();
 	// 注意此处添加代理应与Extenders中对应
 	Extenders.Add(FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FExtendMenuBase::ExtendAssetContextMenu));
+
+	// 通过AssetViewContextMenuExtenders拓展选定资产上下文菜单
+	TArray<FContentBrowserMenuExtender_SelectedAssets>& Extenders2 = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
+	Extenders2.Add(FContentBrowserMenuExtender_SelectedAssets::CreateRaw(this, &FExtendMenuBase::ExtendAssetViewContextMenu));
 }
 
 TSharedRef<FExtender> FExtendMenuBase::ExtendAssetContextMenu(const TArray<FString>& SelectedPaths)
@@ -161,4 +165,37 @@ void FExtendMenuBase::MakeAssetContextMenuEntry(FMenuBuilder& MenuBuilder)
 void FExtendMenuBase::AssetContextMenuEntryAction()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AssetContextMenuEntryAction is called."));
+}
+
+TSharedRef<FExtender> FExtendMenuBase::ExtendAssetViewContextMenu(const TArray<FAssetData>& SelectedAssets)
+{
+	TSharedRef<FExtender> MenuExtender(new FExtender());
+	if (SelectedAssets.Num() > 0)
+	{
+		MenuExtender->AddMenuExtension(
+			"GetAssetActions",
+			EExtensionHook::Before,
+			nullptr,
+			FMenuExtensionDelegate::CreateRaw(this, &FExtendMenuBase::MakeAssetViewContextMenuEntry)
+		);
+	}
+	return MenuExtender;
+}
+
+void FExtendMenuBase::MakeAssetViewContextMenuEntry(FMenuBuilder& MenuBuilder)
+{
+	MenuBuilder.BeginSection("Section 1", FText::FromString("Section 1"));
+	MenuBuilder.AddMenuEntry(
+		FText::FromString("Asset View Context Menu Button"),
+		FText::FromString("This is a asset view context menu button"),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateRaw(this, &FExtendMenuBase::AssetViewContextMenuEntryAction))
+	);
+
+	MenuBuilder.EndSection();
+}
+
+void FExtendMenuBase::AssetViewContextMenuEntryAction()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AssetViewContextMenuEntryAction is called."));
 }
