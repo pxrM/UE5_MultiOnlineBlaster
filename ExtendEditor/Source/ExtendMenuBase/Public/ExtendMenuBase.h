@@ -35,6 +35,7 @@ private:
 
 
 
+
 	/** FExtend拓展ContentBrowser入口函数 */
 	void ExtendContentBrowserByFExtend();
 
@@ -51,5 +52,17 @@ private:
 	void MakeAssetViewContextMenuEntry(FMenuBuilder& MenuBuilder);
 	/** 新选定资产上下文菜单按钮触发事件 */
 	void AssetViewContextMenuEntryAction();
+
+
+
+
+	/** 拓展视口菜单入口函数 */
+	void ExtendViewportByFExtend();
+	/** 拓展视口中 Actor 菜单 */
+	TSharedRef<FExtender> ExtendViewportSelectedActorMenu(const TSharedRef<FUICommandList> UICommandList, const TArray<AActor*> SelectedActors);
+	/** 生成一个视口中 Actor 菜单按钮 */
+	void MakeViewportActorMenuEntry(FMenuBuilder& MenuBuilder);
+	/** 菜单触发事件 */
+	void ViewportActorMenuEntryAction();
 
 };

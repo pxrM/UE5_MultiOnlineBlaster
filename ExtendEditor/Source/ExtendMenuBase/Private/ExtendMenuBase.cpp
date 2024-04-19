@@ -14,6 +14,7 @@ void FExtendMenuBase::StartupModule()
 
 	ExtendMenuByFExtend();
 	ExtendContentBrowserByFExtend();
+	ExtendViewportByFExtend();
 }
 
 void FExtendMenuBase::ShutdownModule()
@@ -198,4 +199,49 @@ void FExtendMenuBase::MakeAssetViewContextMenuEntry(FMenuBuilder& MenuBuilder)
 void FExtendMenuBase::AssetViewContextMenuEntryAction()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AssetViewContextMenuEntryAction is called."));
+}
+
+void FExtendMenuBase::ExtendViewportByFExtend()
+{
+	/*
+	* 先获取拓展相关的 Extenders，然后 Add 自己想要添加的内容。我们可以获取到几种不同的 Extenders:
+	*	GetAllLevelViewportContextMenuExtenders：Level 场景中选中 Actor 的右键菜单。
+	*	GetAllLevelViewportOptionsMenuExtenders：视口选项菜单，点击视口右上角小齿轮时弹出的菜单。
+	*	GetAllLevelViewportShowMenuExtenders：视口视图菜单。点击视口右上角小眼睛时弹出的菜单。
+	*	GetAllLevelViewportDragDropContextMenuExtenders：按住右键并拖拽 Object 到视口中松开时弹出的菜单。
+	*/
+
+	/*向视口中 Actor 菜单添加菜单项的示例*/
+	FLevelEditorModule& LevelEditorModule = FModuleManager::Get().LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	TArray<FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors>& LevelViewportContextMenuExtenders = LevelEditorModule.GetAllLevelViewportContextMenuExtenders();
+	LevelViewportContextMenuExtenders.Add(FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors::CreateRaw(this, &FExtendMenuBase::ExtendViewportSelectedActorMenu));
+}
+
+TSharedRef<FExtender> FExtendMenuBase::ExtendViewportSelectedActorMenu(const TSharedRef<FUICommandList> UICommandList, const TArray<AActor*> SelectedActors)
+{
+	TSharedRef<FExtender> MenuExtender(new FExtender());
+	if (SelectedActors.Num() > 0)
+	{
+		MenuExtender->AddMenuExtension(
+			"ActorOptions",
+			EExtensionHook::Before,
+			nullptr,
+			FMenuExtensionDelegate::CreateRaw(this, &FExtendMenuBase::MakeViewportActorMenuEntry)
+		);
+	}
+	return MenuExtender;
+}
+
+void FExtendMenuBase::MakeViewportActorMenuEntry(FMenuBuilder& MenuBuilder)
+{
+	MenuBuilder.AddMenuEntry(
+		FText::FromString("Viewport Actor Menu Button"),
+		FText::FromString("This is a viewport actor menu button"),
+		FSlateIcon(),
+		FUIAction(FExecuteAction::CreateRaw(this, &FExtendMenuBase::ViewportActorMenuEntryAction)));
+}
+
+void FExtendMenuBase::ViewportActorMenuEntryAction()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ViewportActorMenuEntryAction is called."));
 }
