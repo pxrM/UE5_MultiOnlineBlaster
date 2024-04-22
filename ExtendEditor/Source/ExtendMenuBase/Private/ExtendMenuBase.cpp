@@ -6,6 +6,7 @@
 #include "LevelEditor.h"
 #include "ContentBrowserModule.h"
 #include "ToolMenus.h"
+#include "ExtendEditorStyle.h"
 
 IMPLEMENT_GAME_MODULE(FExtendMenuBase, ExtendMenuBase)
 
@@ -21,6 +22,8 @@ void FExtendMenuBase::StartupModule()
 	// 由FLevelEditorModule管理的拓展入口
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	LevelEditorModule.OnLevelEditorCreated().AddRaw(this, &FExtendMenuBase::OnLevelEditorCreatedEvent);
+
+	StyleSample();
 }
 
 void FExtendMenuBase::ShutdownModule()
@@ -274,12 +277,12 @@ void FExtendMenuBase::ExtendByUToolMenus()
 	 *	通过 Name 持有菜单的 UToolMenu。
 	 *	通过该 UToolMenu 找到或添加 FToolMenuSection。
 	 *	通过 FToolMenuSection 添加菜单项。
-	 * 
+	 *
 	 */
 
-	// 持有LevelEditor.MainMenu
-	//UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu");
-	// 由于调用时机改变了，我们可以使用更为严格的FindMenu()
+	 // 持有LevelEditor.MainMenu
+	 //UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu");
+	 // 由于调用时机改变了，我们可以使用更为严格的FindMenu()
 	UToolMenu* Menu = UToolMenus::Get()->FindMenu("LevelEditor.MainMenu");
 
 	// 定位LevelEditor.MainMenu中的Section
@@ -320,4 +323,24 @@ void FExtendMenuBase::NewMenu2ButtonAction()
 void FExtendMenuBase::OnLevelEditorCreatedEvent(TSharedPtr<class ILevelEditor> Editor)
 {
 	ExtendByUToolMenus();
+}
+
+void FExtendMenuBase::StyleSample()
+{
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.User");
+	FToolMenuSection& Section = Menu->FindOrAddSection(NAME_None);
+	Section.AddEntry(
+		FToolMenuEntry::InitToolBarButton(
+			"StyBtn",
+			FToolUIActionChoice(FExecuteAction::CreateRaw(this, &FExtendMenuBase::StyleButtonAction)),
+			FText::FromString("Lable: Style Buttom"),
+			FText::FromString("This is a style button by Style Sample"),
+			FSlateIcon(/*使用自己注册的FSlateStyleSet设置Icon样式*/FExtendEditorStyle::GetStyleSetName(), "AliceTool")
+		)
+	);
+}
+
+void FExtendMenuBase::StyleButtonAction()
+{
+	UE_LOG(LogTemp, Warning, TEXT("StyleButtonAction is called."));
 }

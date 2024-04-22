@@ -13,6 +13,11 @@
 			"Name": "ExtendMenuBase",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "ExtendEditorStyle",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

@@ -76,4 +76,10 @@ private:
 
 	/** 由FLevelEditorModule管理的拓展入口 */
 	void OnLevelEditorCreatedEvent(TSharedPtr<class ILevelEditor> Editor);
+
+
+
+	/** Style示例入口 */
+	void StyleSample();
+	void StyleButtonAction();
 };
