@@ -275,9 +275,11 @@ void FExtendMenuBase::ExtendByUToolMenus()
 
 	// 持有LevelEditor.MainMenu
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu");
+
 	// 定位LevelEditor.MainMenu中的Section
 	// LevelEditor.MainMenu没有Section因此传入NAME_None
 	FToolMenuSection& Section = Menu->FindOrAddSection(NAME_None);
+
 	// 开始制作子菜单Entry
 	FToolMenuEntry& MakeEntry = Section.AddSubMenu(
 		"NewMenuByUToolMenus",// 新子菜单 Name
@@ -287,9 +289,24 @@ void FExtendMenuBase::ExtendByUToolMenus()
 	);
 	// 设置Entry出现的位置
 	MakeEntry.InsertPosition = FToolMenuInsert("Help", EToolMenuInsertType::After);
+
+	// LevelEditor.MainMenu.NewMenuByUToolMenus注册为新菜单
+	static const FName BaseMenuName = "LevelEditor.MainMenu.NewMenuByUToolMenus";
+	Menu = UToolMenus::Get()->RegisterMenu(BaseMenuName);
+
+	// 在新菜单下添加section和entry
+	FToolMenuSection& NewSection = Menu->AddSection("New Section", FText::FromString("New Section"));
+	NewSection.AddMenuEntry(
+		"New Menu 2 Btn",
+		FText::FromString("Lable: New Menu 2 Btn"),
+		FText::FromString("This is a new menu 2 button by UToolMenus"),
+		FSlateIcon(),
+		FToolUIActionChoice(FExecuteAction::CreateRaw(this, &FExtendMenuBase::NewMenu2ButtonAction))
+	);
 }
 #undef LOCTEXT_NAMESPACE
 
 void FExtendMenuBase::NewMenu2ButtonAction()
 {
+	UE_LOG(LogTemp, Warning, TEXT("NewMenu2ButtonAction is called."));
 }

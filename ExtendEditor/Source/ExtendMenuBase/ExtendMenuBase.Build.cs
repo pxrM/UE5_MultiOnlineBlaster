@@ -15,7 +15,8 @@ public class ExtendMenuBase : ModuleRules
 			"Engine", 
 			"InputCore",
             "SlateCore",
-            "Slate"
+            "Slate",
+			"ToolMenus"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
