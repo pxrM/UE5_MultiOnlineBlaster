@@ -16,7 +16,11 @@ void FExtendMenuBase::StartupModule()
 	ExtendMenuByFExtend();
 	ExtendContentBrowserByFExtend();
 	ExtendViewportByFExtend();
-	ExtendByUToolMenus();
+
+	//ExtendByUToolMenus();
+	// 由FLevelEditorModule管理的拓展入口
+	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	LevelEditorModule.OnLevelEditorCreated().AddRaw(this, &FExtendMenuBase::OnLevelEditorCreatedEvent);
 }
 
 void FExtendMenuBase::ShutdownModule()
@@ -274,7 +278,9 @@ void FExtendMenuBase::ExtendByUToolMenus()
 	 */
 
 	// 持有LevelEditor.MainMenu
-	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu");
+	//UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu");
+	// 由于调用时机改变了，我们可以使用更为严格的FindMenu()
+	UToolMenu* Menu = UToolMenus::Get()->FindMenu("LevelEditor.MainMenu");
 
 	// 定位LevelEditor.MainMenu中的Section
 	// LevelEditor.MainMenu没有Section因此传入NAME_None
@@ -309,4 +315,9 @@ void FExtendMenuBase::ExtendByUToolMenus()
 void FExtendMenuBase::NewMenu2ButtonAction()
 {
 	UE_LOG(LogTemp, Warning, TEXT("NewMenu2ButtonAction is called."));
+}
+
+void FExtendMenuBase::OnLevelEditorCreatedEvent(TSharedPtr<class ILevelEditor> Editor)
+{
+	ExtendByUToolMenus();
 }

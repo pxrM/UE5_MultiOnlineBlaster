@@ -74,5 +74,6 @@ private:
 	/** NewMenu2Button触发事件 */
 	void NewMenu2ButtonAction();
 
-
+	/** 由FLevelEditorModule管理的拓展入口 */
+	void OnLevelEditorCreatedEvent(TSharedPtr<class ILevelEditor> Editor);
 };
