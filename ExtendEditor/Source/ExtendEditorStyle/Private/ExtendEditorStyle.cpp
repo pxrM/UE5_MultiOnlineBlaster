@@ -40,6 +40,14 @@ TSharedRef<class FSlateStyleSet> FExtendEditorStyle::CreateSlateStyleSet()
 		FSlateImageBrush* SlateImageBrush = new FSlateImageBrush(RootPath + TEXT("AliceIcon.png"), IconeSize);
 		SlateStyleSet->Set("AliceTool", SlateImageBrush);
 	}
+
+	// 添加的新样式
+	{
+		const FVector2D IconeSize(16.f, 16.f);
+		FSlateImageBrush* SlateImageBrush = new FSlateImageBrush(RootPath + TEXT("AliceIcon.png"), IconeSize);
+		SlateStyleSet->Set("ExtendEditorCommands.PrintLog", SlateImageBrush);
+	}
+
 	return SlateStyleSet;
 }
 

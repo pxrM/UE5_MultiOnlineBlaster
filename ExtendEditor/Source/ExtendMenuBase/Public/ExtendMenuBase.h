@@ -82,4 +82,9 @@ private:
 	/** Style示例入口 */
 	void StyleSample();
 	void StyleButtonAction();
+
+
+
+	/** Command示例入口 */
+	void CommandSample();
 };

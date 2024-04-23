@@ -1,10 +1,10 @@
-// ExtendMenuBase.Build.cs
+// ExtendEditorCommand.Build.cs
 
 using UnrealBuildTool;
 
-public class ExtendMenuBase : ModuleRules
+public class ExtendEditorCommand : ModuleRules
 {
-	public ExtendMenuBase(ReadOnlyTargetRules Target) : base(Target)
+	public ExtendEditorCommand(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
@@ -14,11 +14,8 @@ public class ExtendMenuBase : ModuleRules
 			"CoreUObject", 
 			"Engine", 
 			"InputCore",
-            "SlateCore",
-            "Slate",
-			"ToolMenus",
+			"Slate",
             "ExtendEditorStyle",
-            "ExtendEditorCommand"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

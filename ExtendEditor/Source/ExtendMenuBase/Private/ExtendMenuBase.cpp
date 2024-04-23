@@ -7,6 +7,8 @@
 #include "ContentBrowserModule.h"
 #include "ToolMenus.h"
 #include "ExtendEditorStyle.h"
+#include "ExtendEditorAction.h"
+#include "ExtendEditorCommand.h"
 
 IMPLEMENT_GAME_MODULE(FExtendMenuBase, ExtendMenuBase)
 
@@ -24,6 +26,10 @@ void FExtendMenuBase::StartupModule()
 	LevelEditorModule.OnLevelEditorCreated().AddRaw(this, &FExtendMenuBase::OnLevelEditorCreatedEvent);
 
 	StyleSample();
+
+	// 确保FExtendEditorCommandModule已加载
+	FModuleManager::LoadModuleChecked<FExtendEditorCommandModule>("ExtendEditorCommand");
+	CommandSample();
 }
 
 void FExtendMenuBase::ShutdownModule()
@@ -343,4 +349,17 @@ void FExtendMenuBase::StyleSample()
 void FExtendMenuBase::StyleButtonAction()
 {
 	UE_LOG(LogTemp, Warning, TEXT("StyleButtonAction is called."));
+}
+
+void FExtendMenuBase::CommandSample()
+{
+	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.User");
+	FToolMenuSection& Section = Menu->FindOrAddSection(NAME_None);
+
+	// 使用 Command 方式生成 ToolBarEntry
+	FToolMenuEntry ToolMenuEntry = FToolMenuEntry::InitToolBarButton(FExtendEditorCommands::Get().PrintLog);
+	// 为 ToolBarEntry 配置CommandList
+	ToolMenuEntry.SetCommandList(FExtendEditorCommands::Get().CommandList);
+	// 将配置好的 ToolBarEntry 添加到指定位置
+	Section.AddEntry(ToolMenuEntry);
 }
