@@ -425,13 +425,13 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 	if (CombatCmp && CombatCmp->bHoldingTheFlag)
 	{
 		bUseControllerRotationYaw = false;
-		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning; 
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		return;
 	}
 	if (CombatCmp && CombatCmp->EquippedWeapon)
 	{
-		bUseControllerRotationYaw = true;
+		bUseControllerRotationYaw = true; 
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
 	if (bDisableGameplay)
@@ -464,7 +464,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 	float Speed = CalculateSpeed();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
-	if (Speed == 0.f && !bIsInAir)
+	if (Speed <= 0.f && !bIsInAir)
 	{
 		bRotateRootBone = true;
 		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
@@ -476,7 +476,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
 		}
 		//UE_LOG(LogTemp, Warning, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
-		bUseControllerRotationYaw = false;
+		bUseControllerRotationYaw = true; //将控制器的旋转添加到角色的身上
 		TurnInPlace(DeltaTime);
 	}
 	if (Speed > 0.f || bIsInAir)
@@ -485,7 +485,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		InterpAO_Yaw = AO_Yaw;
-		bUseControllerRotationYaw = true;
+		bUseControllerRotationYaw = true; //将控制器的旋转添加到角色的身上
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 

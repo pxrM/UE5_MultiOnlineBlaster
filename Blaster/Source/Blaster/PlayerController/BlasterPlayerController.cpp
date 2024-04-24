@@ -589,12 +589,12 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 	HighPingRunningTime += DeltaTime;
 	if (HighPingRunningTime > CheckPingFrequency)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetPing() * 4: %d"), PlayerState->GetPing() * 4);
 		PlayerState = PlayerState == nullptr ? GetPlayerState<APlayerState>() : PlayerState;
 		if (PlayerState)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerState->GetPing() * 4: %d"), PlayerState->GetPingInMilliseconds());
 			//GetPing()服务器在同步给客户端时会将该值除以4进行压缩，为了得到真正的需要*4
-			if (PlayerState->GetPing() * 4 > HighPingThreshold)
+			if (PlayerState->GetPingInMilliseconds()> HighPingThreshold)
 			{
 				HighPingWarning();
 				PingAnimRunningTime = 0.f;
