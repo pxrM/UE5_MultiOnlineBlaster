@@ -425,13 +425,13 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 	if (CombatCmp && CombatCmp->bHoldingTheFlag)
 	{
 		bUseControllerRotationYaw = false;
-		TurningInPlace = ETurningInPlace::ETIP_NotTurning; 
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		return;
 	}
 	if (CombatCmp && CombatCmp->EquippedWeapon)
 	{
-		bUseControllerRotationYaw = true; 
+		bUseControllerRotationYaw = true;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
 	if (bDisableGameplay)
@@ -475,7 +475,6 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			InterpAO_Yaw = AO_Yaw;
 			//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
 		}
-		//UE_LOG(LogTemp, Warning, TEXT("GetAO_Yaw(): %i"), AO_Yaw);
 		bUseControllerRotationYaw = true; //将控制器的旋转添加到角色的身上
 		TurnInPlace(DeltaTime);
 	}
