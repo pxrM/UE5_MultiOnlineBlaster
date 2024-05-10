@@ -5,6 +5,7 @@ Saved
 Build
 
 StarterContent
+RiderLink
 
 .vscode
 .vs
@@ -16,3 +17,4 @@ StarterContent
 *.suo
 *.xcodeproj
 *.xcworkspace
+*.idea
