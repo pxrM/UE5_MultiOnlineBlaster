@@ -3,6 +3,7 @@
 
 #include "Player/AuraPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -40,4 +41,34 @@ void AAuraPlayerController::BeginPlay()
 	InputModeData.SetHideCursorDuringCapture(false);
 	// 应用到当前的输入模式中。
 	SetInputMode(InputModeData);
+}
+
+void AAuraPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+ 
+	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
+	// 将 MoveAction 的输入动作绑定到当前玩家控制器对象的 Move 方法上，当该输入动作被触发时，将会执行 Move 方法中的代码逻辑
+	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+}
+
+void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
+{
+	// 获取输入动作的值，将其转换为二维向量
+	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
+	// 获取当前玩家控制器的旋转值 
+	const FRotator Rotator = GetControlRotation();
+	// 创建一个只包含 Yaw 轴旋转值的旋转对象
+	const FRotator YawRotator(0.f, Rotator.Yaw, 0.f);
+
+	// 获取角色在世界空间中的前进方向的单位向量-1~1
+	const FVector ForwardDirection = FRotationMatrix(YawRotator).GetUnitAxis(EAxis::X);
+	// 获取角色在世界空间中的右侧方向的单位向量-1~1
+	const FVector RightDirection = FRotationMatrix(YawRotator).GetUnitAxis(EAxis::Y);
+
+	if(APawn* ControlledPawn = GetPawn<APawn>())
+	{
+		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
+		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+	}
 }
