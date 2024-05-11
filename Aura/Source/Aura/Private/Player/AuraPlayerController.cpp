@@ -4,10 +4,56 @@
 #include "Player/AuraPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Interaction/EnemyInterface.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates = true;
+}
+
+void AAuraPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	CursorTrace();
+}
+
+void AAuraPlayerController::CursorTrace()
+{
+	FHitResult CursorHit;
+	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+	if(!CursorHit.bBlockingHit) return;
+
+	LastActor = CurrActor;
+	CurrActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	
+	/*
+	 * 从游标开始行跟踪。有几种情况:
+	 *	A: LastActor为null && CurrActor为null	-不做任何事情
+	 *	B: LastActor是空的&& CurrActor是有效的		-突出显示CurrActor
+	 *	C: LastActor是有效的&& CurrActor是空的		-取消突出LastActor
+	 *	D: 两个都有效，但是LastActor!=CurrActor	-取消突出LastActor，并突出CurrActor
+	 *	E: 两个都有效，而且是同一个Actor			-不做任何事情
+	 */
+	if(LastActor == nullptr)
+	{
+		if(CurrActor != nullptr)
+		{
+			CurrActor->HighlightActor();
+		}
+	}
+	else
+	{
+		if(CurrActor == nullptr)
+		{
+			LastActor->UnHighlightActor();
+		}
+		else if(LastActor != CurrActor)
+		{
+			LastActor->UnHighlightActor();
+			CurrActor->HighlightActor();
+		}
+	}
 }
 
 void AAuraPlayerController::BeginPlay()

@@ -10,6 +10,7 @@
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class IEnemyInterface;
 
 /**
  * 
@@ -21,7 +22,8 @@ class AURA_API AAuraPlayerController : public APlayerController
 
 public:
 	AAuraPlayerController();
-
+	virtual void PlayerTick(float DeltaTime) override;
+	
 	
 protected:
 	virtual void BeginPlay() override;
@@ -30,6 +32,7 @@ protected:
 	
 private:
 	void Move(const FInputActionValue& InputActionValue);
+	void CursorTrace();
 
 	
 private:
@@ -40,4 +43,7 @@ private:
 	// 移动输入动作：输入动作用于绑定玩家输入（例如键盘按键、鼠标点击、手柄按钮等）到游戏中的特定行为或事件
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
+
+	IEnemyInterface* LastActor;
+	IEnemyInterface* CurrActor;
 };
