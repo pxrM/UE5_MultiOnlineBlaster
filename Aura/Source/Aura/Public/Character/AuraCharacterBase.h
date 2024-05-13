@@ -36,9 +36,31 @@ protected:
 
 	/*
 	 * GAS：
-	 * 小怪的直接放在pawn上（怪物死亡后pawn消失，gas组件也会跟随pawn消失）
-	 * 玩家的放在playerstate（不会跟随pawn消失而消失，可以复用）
-	 */ 
+	 * 挂载位置：
+	 *	小怪的直接放在pawn上（怪物死亡后pawn消失，gas组件也会跟随pawn消失）。此时gas的OwnerActor和AvatarActor都是这个pawn
+	 *	玩家的放在playerstate（不会跟随pawn消失而消失，可以复用）。此时gas的OwnerActor是这个playerstate，而AvatarActor才是这个pawn
+	 *
+	 * 网络复制模式（SetReplicationMode）：
+	 *	Minimal 	Multiplayer,AI-Controlled 		Effect不复制，Cues和Tags会被复制到所有client
+	 *	Mixed		Multiplayer,Player-Controlled	Effect只复制到自己的client，Cues和Tags会被复制到所有client
+	 *	Full		SinglePlayer(单人游戏)			GAS数据都会被复制到所有client
+	 *	对于Mixed（混合复制）模式:OwnerActor的Owner必须是Controller。
+	 *	依附pawn，这个在possession()中自动设置。依附PlayerState的Owner被自动设置为Controller。
+	 *	因此，如果你的OwnerActor不是PlayerState，并且使用混合复制模式，你必须在OwnerActor上调用SetOwner()来将其owner设置为Controller。
+	 *
+	 * 初始化AbilityActorInfo（UAbilitySystemComponent::InitAbilityActorInfo）时机：
+	 *	Player-Controlled Character
+	 *		依附在Pawn上
+	 *			server：PossessedBy
+	 *			client：AcknowledgePossession
+	 *		依附在PlayerState
+	 *			server：PossessedBy
+	 *			client：OnRep_PlayerState
+	 *	AI-Controlled Character
+	 *		依附在Pawn上
+	 *			server & client：BeginPlay
+	 *
+	 */
 
 	// 负责处理技能系统中涉及到的所有交互。任意Actor，只要它想要使用技能GameplayAbilities，拥有着属性Attributes，或者接收效果GameplayEffects，都必须附着一个ASC组件。
 	UPROPERTY()

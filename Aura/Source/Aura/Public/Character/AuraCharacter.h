@@ -16,4 +16,13 @@ class AURA_API AAuraCharacter : public AAuraCharacterBase
 
 public:
 	AAuraCharacter();
+
+	// 当角色（Pawn）被控制器（Controller）所控制时，此函数将被调用
+	virtual void PossessedBy(AController* NewController) override;
+	// 在玩家状态（PlayerState）在网络中被复制时被调用
+	virtual void OnRep_PlayerState() override;
+
+
+private:
+	void InitAbilityActorInfo();
 };
