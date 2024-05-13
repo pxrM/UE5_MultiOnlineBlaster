@@ -16,3 +16,8 @@ AAuraPlayerState::AAuraPlayerState()
 	// 设置复制更新频率。
 	NetUpdateFrequency = 100.f;
 }
+
+UAbilitySystemComponent* AAuraPlayerState::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
