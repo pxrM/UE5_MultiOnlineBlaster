@@ -1,0 +1,1 @@
+按~进入cmd 输入showdebugabilitysystem 可进入gasdebug模式可查看pawn上的信息，按PgUp和PgDn键可进行pawn对象切换。
