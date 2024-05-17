@@ -67,9 +67,11 @@ void AAuraPlayerController::BeginPlay()
 	 */
 	// 从当前本地玩家对象中获取一个 用于增强输入管理的本地玩家子系统 类型的子系统
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(Subsystem);
-	// 向输入子系统中添加一个输入映射上下文
-	Subsystem->AddMappingContext(AuraContext, 0);
+	if(Subsystem)
+	{
+		// 向输入子系统中添加一个输入映射上下文
+		Subsystem->AddMappingContext(AuraContext, 0);
+	}
 
 	/*
 	 * 设置鼠标显示
