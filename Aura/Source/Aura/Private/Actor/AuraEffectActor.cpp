@@ -7,43 +7,43 @@
 #include "AttributeSet.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "Components/SphereComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 AAuraEffectActor::AAuraEffectActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	SetRootComponent(Mesh);
-	
-	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");
-	Sphere->SetupAttachment(GetRootComponent());
-}
-
-void AAuraEffectActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	// TODO: Test code
-	if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(OtherActor))
-	{
-		const UAuraAttributeSet* AuraAttributeSet = Cast<UAuraAttributeSet>(ASCInterface->GetAbilitySystemComponent()->GetAttributeSet(UAuraAttributeSet::StaticClass()));
-		UAuraAttributeSet* MutableAuraAttributeSet = const_cast<UAuraAttributeSet*>(AuraAttributeSet);
-		MutableAuraAttributeSet->SetHealth(MutableAuraAttributeSet->GetHealth() + 25.f);
-		MutableAuraAttributeSet->SetMana(MutableAuraAttributeSet->GetMana() - 25.f);
-		Destroy();
-	}
-}
-
-void AAuraEffectActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>("SceneRoot"));
 }
 
 void AAuraEffectActor::BeginPlay()
 {
 	Super::BeginPlay();
+	
+}
 
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AAuraEffectActor::OnBeginOverlap);
-	Sphere->OnComponentEndOverlap.AddDynamic(this, &AAuraEffectActor::OnEndOverlap);
+void AAuraEffectActor::ApplyEffectToTarget(AActor* Target, TSubclassOf<UGameplayEffect> GameplayEffectClass)
+{
+	// IAbilitySystemInterface* AscInterface = Cast<IAbilitySystemInterface>(Target);
+	// UAuraAbilitySystemComponent* TargetAsc = AscInterface->GetAbilitySystemComponent();
+
+	check(GameplayEffectClass);
+	UAbilitySystemComponent* TargetAsc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
+	if(TargetAsc == nullptr) return;
+	
+	// 创建EffectContext实例，并返回这个实例的指针，随后使用结构FGameplayEffectContextHandle来包裹它
+	// FGameplayEffectContext是UE中用于表示游戏效果上下文的结构体。它包含了应用游戏效果时所需的关键信息，如来源、目标、施法者等。
+	// GE 就是配置文件，而配置文件携带的信息一般来说是固定的；
+	FGameplayEffectContextHandle EffectContextHandle = TargetAsc->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(this);
+
+	// 创建FGameplayEffectSpec实例，并返回这个实例的指针，随后使用结构FGameplayEffectSpecHandle来包裹它
+	// FGameplayEffectSpec用于辅助UGameplayEffect的结构，用于保存实例化之后的Effect与刚创建出来的Context，同时还会记录对属性的修改、计算Modifier的持续时间、捕获定义等等。
+	// 给目标施加 GE，除了GE本身配置还需要一些其它参数（比如：GE等级、什么时候施加GE、谁施加的GE等、GE的目标是谁等）。因此施加GE需要包装一层
+	FGameplayEffectSpecHandle EffectSpecHandle = TargetAsc->MakeOutgoingSpec(GameplayEffectClass, 1.f, EffectContextHandle);
+
+	// 将游戏效果规范应用到自身
+	TargetAsc->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 }
 
