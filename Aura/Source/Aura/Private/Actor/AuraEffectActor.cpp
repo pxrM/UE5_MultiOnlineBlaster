@@ -3,10 +3,6 @@
 
 #include "Actor/AuraEffectActor.h"
 
-#include "AbilitySystemInterface.h"
-#include "AttributeSet.h"
-#include "AbilitySystem/AuraAttributeSet.h"
-#include "Components/SphereComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
@@ -23,13 +19,14 @@ void AAuraEffectActor::BeginPlay()
 	
 }
 
-void AAuraEffectActor::ApplyEffectToTarget(AActor* Target, TSubclassOf<UGameplayEffect> GameplayEffectClass)
+void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
 {
+	check(GameplayEffectClass);
+	
 	// IAbilitySystemInterface* AscInterface = Cast<IAbilitySystemInterface>(Target);
 	// UAuraAbilitySystemComponent* TargetAsc = AscInterface->GetAbilitySystemComponent();
-
-	check(GameplayEffectClass);
-	UAbilitySystemComponent* TargetAsc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
+	
+	UAbilitySystemComponent* TargetAsc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
 	if(TargetAsc == nullptr) return;
 	
 	// 创建EffectContext实例，并返回这个实例的指针，随后使用结构FGameplayEffectContextHandle来包裹它
@@ -41,7 +38,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* Target, TSubclassOf<UGameplay
 	// 创建FGameplayEffectSpec实例，并返回这个实例的指针，随后使用结构FGameplayEffectSpecHandle来包裹它
 	// FGameplayEffectSpec用于辅助UGameplayEffect的结构，用于保存实例化之后的Effect与刚创建出来的Context，同时还会记录对属性的修改、计算Modifier的持续时间、捕获定义等等。
 	// 给目标施加 GE，除了GE本身配置还需要一些其它参数（比如：GE等级、什么时候施加GE、谁施加的GE等、GE的目标是谁等）。因此施加GE需要包装一层
-	FGameplayEffectSpecHandle EffectSpecHandle = TargetAsc->MakeOutgoingSpec(GameplayEffectClass, 1.f, EffectContextHandle);
+	const FGameplayEffectSpecHandle EffectSpecHandle = TargetAsc->MakeOutgoingSpec(GameplayEffectClass, 1.f, EffectContextHandle);
 
 	// 将游戏效果规范应用到自身
 	TargetAsc->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());

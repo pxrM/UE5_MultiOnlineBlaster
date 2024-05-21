@@ -25,12 +25,12 @@ protected:
 
 	// 向目标角色应用一个游戏效果（Gameplay Effect）
 	UFUNCTION(BlueprintCallable)
-	void ApplyEffectToTarget(AActor* Target, TSubclassOf<UGameplayEffect> GameplayEffectClass);
+	void ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass);
 
 	
 protected:
 	// GameplayEffect简称GE，它是技能Buff、被动技能、技能伤害等各种游戏效果的抽象。
-	UPROPERTY(EditAnywhere, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffectClass;
 
 };
