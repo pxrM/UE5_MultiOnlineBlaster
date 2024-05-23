@@ -23,6 +23,18 @@ class UGameplayEffect;
  *	 Periodic：
  *		Duration和Infinite 有 Periodic（周期效果）配置项，可以通过配置 Period 每隔x秒周期性的执行 Modifiers 和 Executions。
  *		周期性效果可以看作是 Instant Effects，每次修改属性的 BaseValue 并且执行 GameplayCues。这对实现持续伤害效果非常有用。
+ *
+ * Stacking：叠加规则配置，多个技能、Buff、或多重伤害的叠加
+ *		StackingType:
+ *			AggregateBySource：在自身堆栈叠加，根据Source ASC拥有的GE数量判断
+ *			AggregateByTarget：在目标堆栈叠加，根据Target ASC拥有的GE数量判断。
+ *		StackLimitCount：可叠加的最大层数，如果连续Apply该Effect则只有小于StackLimitCount的Effect的Stack是有效的
+ *		StackDurationRefreshPolicy 每次ApplyEffect时是否刷新Effect的持续时间，即使层数不增加也会刷新Duration
+ *		StackPeriodResetPolicy：每次ApplyEffect时是否刷新周期时间（Period），即使层数不增加也会刷新Period
+ *		StackExpirationPolicy：当Effect的Duration结束时，层数的结束方式
+ *			ClearEntireStack：当有效的游戏效果过期时，整个堆栈将被清除
+ *			RemoveSingleStackAndRefreshDuration：结束时减少一层（当前堆栈计数将减少1），然后重新经历一个Duration（持续时间刷新），一直持续到层数减为0
+ *			RefreshDuration：直接刷新时间，相当于无限的效果，需要通过回调（Callback-OnStackCountchange)来手动减少堆栈
  */
 UCLASS()
 class AURA_API AAuraEffectActor : public AActor
