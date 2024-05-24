@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayEffectExtension.h"
 #include "AuraAttributeSet.generated.h"
 
 
@@ -14,8 +15,45 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+
+USTRUCT()
+struct FEffectProperties
+{
+	GENERATED_BODY()
+
+	FEffectProperties(){}
+
+	FGameplayEffectContextHandle EffectContextHandle;
+
+	UPROPERTY()
+	UAbilitySystemComponent* SourceAsc;
+
+	UPROPERTY()
+	AActor* SourceAvatarActor;
+
+	UPROPERTY()
+	AController* SourceController;
+
+	UPROPERTY()
+	ACharacter* SourceCharacter;
+
+	
+	UPROPERTY()
+	UAbilitySystemComponent* TargetAsc;
+
+	UPROPERTY()
+	AActor* TargetAvatarActor;
+
+	UPROPERTY()
+	AController* TargetController;
+
+	UPROPERTY()
+	ACharacter* TargetCharacter;
+};
+
+
 /**
- * 
+ * 属性集
  */
 UCLASS()
 class AURA_API UAuraAttributeSet : public UAttributeSet
@@ -26,6 +64,12 @@ public:
 	UAuraAttributeSet();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	// 修改属性之前执行。例如：修改血量时进行限制，HP=Clamp(0,MaxHP);
+	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
+
+	// 修改属性后执行，注意：在效果应用时不会执行，在效果执行时才会执行。
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 	
 	UFUNCTION()
 	void OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const;
@@ -36,6 +80,10 @@ public:
 	void OnRep_OnMana(const FGameplayAttributeData& OldMana) const;
 	UFUNCTION()
 	void OnRep_OnMaxMana(const FGameplayAttributeData& OldMaxMana) const;
+
+
+private:
+	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
 	
 
 public:

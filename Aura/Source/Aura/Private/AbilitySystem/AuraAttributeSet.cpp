@@ -3,7 +3,10 @@
 
 #include "AbilitySystem/AuraAttributeSet.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+#include "GameplayEffectExtension.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -22,6 +25,69 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Mana, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
+}
+
+void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
+{
+	Super::PreAttributeChange(Attribute, NewValue);
+
+	if(Attribute == GetHealthAttribute())
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("Health: %f"), NewValue);
+		NewValue = FMath::Clamp(NewValue, 0, GetMaxHealth());
+	}
+	
+	if(Attribute == GetManaAttribute())
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("Mana: %f"), NewValue);
+		NewValue = FMath::Clamp(NewValue, 0, GetMana());
+	}
+}
+
+void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+
+	// if(Data.EvaluatedData.Attribute == GetHealthAttribute())
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Mana from GetHealth(): %f"), GetHealth());
+	// 	UE_LOG(LogTemp, Warning, TEXT("Magnitude 差异幅度: %f"), Data.EvaluatedData.Magnitude);
+	// }
+
+	FEffectProperties Preps;
+	SetEffectProperties(Data, Preps);
+}
+
+void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const
+{
+	Props.EffectContextHandle = Data.EffectSpec.GetContext();
+	const UAbilitySystemComponent* SourceAsc = Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
+	if(IsValid(SourceAsc) && SourceAsc->AbilityActorInfo.IsValid() && SourceAsc->AbilityActorInfo->AvatarActor.IsValid())
+	{
+		Props.SourceAvatarActor = SourceAsc->GetAvatarActor();
+		Props.SourceController = SourceAsc->AbilityActorInfo->PlayerController.Get();
+		if(Props.SourceAvatarActor != nullptr && Props.SourceController == nullptr)
+		{
+			// 角色可以是各种类型的，其中包括可以由玩家控制的角色（通常是玩家控制的主要角色）和由游戏系统控制的非玩家角色（NPC）。这些角色可以被实现为不同的类，以便于管理和执行各种游戏逻辑。
+			// 在某些情况下，游戏中的某个效果可能由非玩家角色触发，或者由AI自动执行，而不是由玩家直接操作。在这种情况下，这个角色可能没有直接关联的玩家控制器，因为它不是由玩家控制的。
+			if(const APawn* Pawn = Cast<APawn>(Props.SourceAvatarActor))
+			{
+				Props.SourceController = Pawn->GetController();
+			}
+		}
+		if(Props.SourceController)
+		{
+			Props.SourceCharacter = Cast<ACharacter>(Props.SourceController->GetPawn());
+		}
+	}
+
+	if(Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
+	{
+		Props.TargetAvatarActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
+		Props.TargetController = Data.Target.AbilityActorInfo->PlayerController.Get();
+		Props.TargetCharacter = Cast<ACharacter>(Props.TargetAvatarActor);
+		Props.TargetAsc = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Props.TargetAvatarActor);
+	}
 }
 
 void UAuraAttributeSet::OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const
