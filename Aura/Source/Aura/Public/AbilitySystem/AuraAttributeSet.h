@@ -21,7 +21,14 @@ struct FEffectProperties
 {
 	GENERATED_BODY()
 
-	FEffectProperties(){}
+	FEffectProperties(): SourceAsc(nullptr), SourceAvatarActor(nullptr), SourceController(nullptr),
+	                     SourceCharacter(nullptr),
+	                     TargetAsc(nullptr),
+	                     TargetAvatarActor(nullptr),
+	                     TargetController(nullptr),
+	                     TargetCharacter(nullptr)
+	{
+	}
 
 	FGameplayEffectContextHandle EffectContextHandle;
 

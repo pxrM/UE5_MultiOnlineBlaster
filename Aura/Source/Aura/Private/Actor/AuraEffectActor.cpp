@@ -38,7 +38,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 	// 创建FGameplayEffectSpec实例，并返回这个实例的指针，随后使用结构FGameplayEffectSpecHandle来包裹它
 	// FGameplayEffectSpec用于辅助UGameplayEffect的结构，用于保存实例化之后的Effect与刚创建出来的Context，同时还会记录对属性的修改、计算Modifier的持续时间、捕获定义等等。
 	// 给目标施加 GE，除了GE本身配置还需要一些其它参数（比如：GE等级、什么时候施加GE、谁施加的GE等、GE的目标是谁等）。因此施加GE需要包装一层
-	const FGameplayEffectSpecHandle EffectSpecHandle = TargetAsc->MakeOutgoingSpec(GameplayEffectClass, 1.f, EffectContextHandle);
+	const FGameplayEffectSpecHandle EffectSpecHandle = TargetAsc->MakeOutgoingSpec(GameplayEffectClass, ActorLevel, EffectContextHandle);
 
 	// 将游戏效果规范应用到自身。ActiveGameplayEffectHandle用来存储应用的游戏效果的句柄。这个句柄可以用于后续的操作，比如删除或修改已应用的游戏效果。
 	FActiveGameplayEffectHandle ActiveEffectHandle = TargetAsc->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
