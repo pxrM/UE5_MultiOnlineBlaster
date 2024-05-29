@@ -17,11 +17,14 @@ void UAuraAbilitySystemComponent::EffectApplied(UAbilitySystemComponent* Ability
 	// 获取所有标签并填充到容器中
 	FGameplayTagContainer TagContainer;
 	EffectSpec.GetAllAssetTags(TagContainer);
-
+	
+	EffectAssetTags.Broadcast(TagContainer);
+	
 	for(const FGameplayTag& Tag : TagContainer)
 	{
+		// const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
+		// GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
 		// TODO: Broadcast the tag to the widget controller
-		const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
-		GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
+		
 	}
 }
