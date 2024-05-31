@@ -34,26 +34,19 @@ struct FEffectProperties
 
 	UPROPERTY()
 	UAbilitySystemComponent* SourceAsc;
-
 	UPROPERTY()
 	AActor* SourceAvatarActor;
-
 	UPROPERTY()
 	AController* SourceController;
-
 	UPROPERTY()
 	ACharacter* SourceCharacter;
-
 	
 	UPROPERTY()
 	UAbilitySystemComponent* TargetAsc;
-
 	UPROPERTY()
 	AActor* TargetAvatarActor;
-
 	UPROPERTY()
 	AController* TargetController;
-
 	UPROPERTY()
 	ACharacter* TargetCharacter;
 };
