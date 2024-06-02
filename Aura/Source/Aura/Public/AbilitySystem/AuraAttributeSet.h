@@ -70,23 +70,60 @@ public:
 
 	// 修改属性后执行，注意：在效果应用时不会执行，在效果执行时才会执行。
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+
+private:
+	// 设置ge的相关属性
+	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
+
+
+public:
+	UFUNCTION()
+	void OnRep_OnStrength(const FGameplayAttributeData& OldStrength) const;
+	UFUNCTION()
+	void OnRep_OnResilience(const FGameplayAttributeData& OldResilience) const;
+	UFUNCTION()
+	void OnRep_OnIntelligence(const FGameplayAttributeData& OldIntelligence) const;
+	UFUNCTION()
+	void OnRep_OnVigor(const FGameplayAttributeData& OldVigor) const;
 	
 	UFUNCTION()
 	void OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const;
 	UFUNCTION()
 	void OnRep_OnMaxHealth(const FGameplayAttributeData& OldMaxHealth) const;
-
 	UFUNCTION()
 	void OnRep_OnMana(const FGameplayAttributeData& OldMana) const;
 	UFUNCTION()
 	void OnRep_OnMaxMana(const FGameplayAttributeData& OldMaxMana) const;
-
-
-private:
-	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
 	
 
 public:
+	/*
+	 * Primary
+	 */
+	
+	// 力量
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnStrength, Category = "Primary Attributes")
+	FGameplayAttributeData Strength;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Strength);
+	// 韧性
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnResilience, Category = "Primary Attributes")
+	FGameplayAttributeData Resilience;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Resilience);
+	// 智力
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnIntelligence, Category = "Primary Attributes")
+	FGameplayAttributeData Intelligence;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Intelligence);
+	// 精力
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnVigor, Category = "Primary Attributes")
+	FGameplayAttributeData Vigor;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Vigor);
+	
+
+	/*
+	 * Vital
+	 */
+	
 	// 当前健康属性值
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnHealth, Category="Vital Attributes")
 	FGameplayAttributeData Health;
