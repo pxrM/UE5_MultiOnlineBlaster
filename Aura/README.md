@@ -105,13 +105,14 @@
         3.  Has Duration : 持续时间，单位：秒
             1.  Magnitude Calculation Type : 时长计算种类
                 1.  Scalable Float : 可扩展的浮点数。Raw Value : 基础数值；Curve Table : 读取配置表，最终的结果是根据等级读取并相乘
-                2.  Attribute Based : 基于属性，公式: a*(x+b)+c
+                2.  Attribute Based : 基于属性，公式: a*(x+b)+c  （ Y = Coeffcient * (PreMultiplyAdditiveValue + X) + PostMultiplyAdditiveValue ）
                     1.  Coefficient : a
                     2.  Pre Multiply Additive Value : b
                     3.  Post Multiply Additive Value : c
-                    4.  Backing Attribute : 支持属性
+                    4.  Backing Attribute : 支持属性（它的应用场景，一般游戏里面，都有属性和属性之间的联系的东西，比如体力可以加血量上限，智力可以增加蓝量上限这种，它会根据职业或者角色的不同，
+														按不同的比例增加，如果需要实现这种方式时，我们就可以通过使用Attribute Based Modifiers去实现。）
                         1.  Attribute to Capture : 指定的属性，FGameplayAttributeData类型，公式里的x，未指定将变成无限
-                        2.  Attribute Source : 属性源。Source和Target  
+                        2.  Attribute Source : 属性源。Source（Effect的释放者）和Target（Effect的作用目标）  
                         3.  Snapshot : 是否进行快照。例如火球的伤害是10，当火球发出时就应进行快照，因为释放者的属性可能会在火球飞行的过程中被修改，不能让其影响已经释放了的火球。
                     5.  Attribute Curve : 属性配置。如果制定了配置，就会读取配置里的数值，公式变成 a*(x*y+b)+c，公式里的y
                         1.  Curve Table : 配置表
