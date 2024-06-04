@@ -31,7 +31,11 @@ protected:
 
 	virtual void InitAbilityActorInfo();
 
-	void InitializePrimaryAttributes() const;
+	// 添加ge到自身
+	void ApplyEffectToSelf(const TSubclassOf<UGameplayEffect> GameplayEffectClass, const float Level) const;
+
+	// 初始化属性值
+	void InitializeDefaultAttributes() const;
 
 	
 protected:
@@ -73,7 +77,10 @@ protected:
 	// 用于定义和跟踪角色的各种属性，如生命值、法力值、攻击力、防御力等。
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;
-	// 用来舒适化角色上的Primary相关属性值
+	// 用来初始化角色上的Primary相关属性值
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultPrimaryAttributes;
+	// 次要属性
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
+	TSubclassOf<UGameplayEffect> DefaultSecondaryAttributes;
 };

@@ -145,7 +145,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnArmor, Category = "Secondary Attributes")
 	FGameplayAttributeData Armor;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Armor);
-	// 护甲穿透，依赖 Resilience，忽略一定比例的护甲并增加暴击
+	// 护甲穿透，依赖 Resilience 属性，忽略一定比例的护甲并增加暴击
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnArmorPenetration, Category = "Secondary Attributes")
 	FGameplayAttributeData ArmorPenetration;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ArmorPenetration);

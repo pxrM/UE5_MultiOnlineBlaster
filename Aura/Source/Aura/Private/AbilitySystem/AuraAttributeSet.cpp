@@ -11,9 +11,7 @@
 UAuraAttributeSet::UAuraAttributeSet()
 {
 	InitHealth(10.f);
-	InitMaxHealth(100.f);
 	InitMana(50.f);
-	InitMaxMana(50.f);
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -47,13 +45,13 @@ void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 	if(Attribute == GetHealthAttribute())
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("Health: %f"), NewValue);
-		//NewValue = FMath::Clamp(NewValue, 0, GetMaxHealth());
+		NewValue = FMath::Clamp(NewValue, 0, GetMaxHealth());
 	}
 	
 	if(Attribute == GetManaAttribute())
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("Mana: %f"), NewValue);
-		//NewValue = FMath::Clamp(NewValue, 0, GetMaxMana());
+		NewValue = FMath::Clamp(NewValue, 0, GetMaxMana());
 	}
 }
 
@@ -72,12 +70,12 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	if(Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
-		//SetHealth(FMath::Clamp(GetHealth(), 0, GetMaxHealth()));
+		SetHealth(FMath::Clamp(GetHealth(), 0, GetMaxHealth()));
 	}
 	
 	if(Data.EvaluatedData.Attribute == GetManaAttribute())
 	{
-		//SetMana(FMath::Clamp(GetMana(), 0, GetMaxMana()));
+		SetMana(FMath::Clamp(GetMana(), 0, GetMaxMana()));
 	}
 }
 
