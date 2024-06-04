@@ -86,15 +86,32 @@ public:
 	void OnRep_OnIntelligence(const FGameplayAttributeData& OldIntelligence) const;
 	UFUNCTION()
 	void OnRep_OnVigor(const FGameplayAttributeData& OldVigor) const;
+
+	UFUNCTION()
+	void OnRep_OnArmor(const FGameplayAttributeData& OldArmor) const;
+	UFUNCTION()
+	void OnRep_OnArmorPenetration(const FGameplayAttributeData& OldArmorPenetration) const;
+	UFUNCTION()
+	void OnRep_OnBlockChance(const FGameplayAttributeData& OldBlockChance) const;
+	UFUNCTION()
+	void OnRep_OnCriticalHitChance(const FGameplayAttributeData& OldCriticalHitChance) const;
+	UFUNCTION()
+	void OnRep_OnCriticalHitDamage(const FGameplayAttributeData& OldCriticalHitDamage) const;
+	UFUNCTION()
+	void OnRep_OnCriticalHitResistance(const FGameplayAttributeData& OldCriticalHitResistance) const;
+	UFUNCTION()
+	void OnRep_OnHealthRegeneration(const FGameplayAttributeData& OldHealthRegeneration) const;
+	UFUNCTION()
+	void OnRep_OnManaRegeneration(const FGameplayAttributeData& OldManaRegeneration) const;
+	UFUNCTION()
+	void OnRep_OnMaxHealth(const FGameplayAttributeData& OldMaxHealth) const;
+	UFUNCTION()
+	void OnRep_OnMaxMana(const FGameplayAttributeData& OldMaxMana) const;
 	
 	UFUNCTION()
 	void OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const;
 	UFUNCTION()
-	void OnRep_OnMaxHealth(const FGameplayAttributeData& OldMaxHealth) const;
-	UFUNCTION()
 	void OnRep_OnMana(const FGameplayAttributeData& OldMana) const;
-	UFUNCTION()
-	void OnRep_OnMaxMana(const FGameplayAttributeData& OldMaxMana) const;
 	
 
 public:
@@ -118,6 +135,52 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnVigor, Category = "Primary Attributes")
 	FGameplayAttributeData Vigor;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Vigor);
+
+
+	/*
+	 * Secondary
+	 */
+	
+	// 护甲，依赖 Resilience 属性，作用：减少伤害提高格挡几率
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnArmor, Category = "Secondary Attributes")
+	FGameplayAttributeData Armor;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Armor);
+	// 护甲穿透，依赖 Resilience，忽略一定比例的护甲并增加暴击
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnArmorPenetration, Category = "Secondary Attributes")
+	FGameplayAttributeData ArmorPenetration;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ArmorPenetration);
+	// 格挡几率，依赖 Armor 属性，有几率减少一半的伤害
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnBlockChance, Category = "Secondary Attributes")
+	FGameplayAttributeData BlockChance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, BlockChance);
+	// 暴击几率，依赖 Armor Penetration 属性，伤害有概率双倍暴击
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnCriticalHitChance, Category = "Secondary Attributes")
+	FGameplayAttributeData CriticalHitChance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, CriticalHitChance);
+	// 暴击伤害，依赖 Armor Penetration 属性，暴击时增加额外伤害
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnCriticalHitDamage, Category = "Secondary Attributes")
+	FGameplayAttributeData CriticalHitDamage;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, CriticalHitDamage);
+	// 暴击抵抗，依赖 Armor 属性，降低敌人的暴击几率
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnCriticalHitResistance, Category = "Secondary Attributes")
+	FGameplayAttributeData CriticalHitResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, CriticalHitResistance);
+	// 生命值恢复，依赖 Vigor 属性，每秒恢复的生命值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnHealthRegeneration, Category = "Secondary Attributes")
+	FGameplayAttributeData HealthRegeneration;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, HealthRegeneration);
+	// 法力恢复，依赖 Intelligence 属性，每秒恢复的法力值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnManaRegeneration, Category = "Secondary Attributes")
+	FGameplayAttributeData ManaRegeneration;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ManaRegeneration);
+	// 最大健康，依赖 Vigor 属性，可获得的最大生命值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnMaxHealth, Category = "Secondary Attributes")
+	FGameplayAttributeData MaxHealth;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxHealth);
+	// 最大法力，依赖 Intelligence 属性，可获得的最大法力值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnMaxMana, Category="Secondary Attributes")
+	FGameplayAttributeData MaxMana;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana);
 	
 
 	/*
@@ -128,17 +191,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnHealth, Category="Vital Attributes")
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Health);
-	// 最大健康属性值
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnMaxHealth, Category="Vital Attributes")
-	FGameplayAttributeData MaxHealth;
-	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxHealth);
-	
 	// 当前法力属性值
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnMana, Category="Mana Attributes")
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
-	// 最大法力属性值
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnMaxMana, Category="Mana Attributes")
-	FGameplayAttributeData MaxMana;
-	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana);
+
 };

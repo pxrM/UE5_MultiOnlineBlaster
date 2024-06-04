@@ -24,11 +24,20 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Resilience, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Intelligence, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Vigor, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Armor, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ArmorPenetration, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, BlockChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, CriticalHitChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, CriticalHitDamage, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, CriticalHitResistance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, HealthRegeneration, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ManaRegeneration, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Health, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Mana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
 }
 
 void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -124,10 +133,44 @@ void UAuraAttributeSet::OnRep_OnVigor(const FGameplayAttributeData& OldVigor) co
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Vigor, OldVigor);
 }
 
-void UAuraAttributeSet::OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const
+void UAuraAttributeSet::OnRep_OnArmor(const FGameplayAttributeData& OldArmor) const
 {
-	// 用来告诉ASC记录下服务器正在修改这个参数记录它的旧值和注册它新的值，方便有问题时数据回滚等等行为。
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Health, OldHealth);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Armor, OldArmor);
+}
+
+void UAuraAttributeSet::OnRep_OnArmorPenetration(const FGameplayAttributeData& OldArmorPenetration) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, ArmorPenetration, OldArmorPenetration);
+}
+
+void UAuraAttributeSet::OnRep_OnBlockChance(const FGameplayAttributeData& OldBlockChance) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, BlockChance, OldBlockChance);
+}
+
+void UAuraAttributeSet::OnRep_OnCriticalHitChance(const FGameplayAttributeData& OldCriticalHitChance) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, CriticalHitChance, OldCriticalHitChance);
+}
+
+void UAuraAttributeSet::OnRep_OnCriticalHitDamage(const FGameplayAttributeData& OldCriticalHitDamage) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, CriticalHitDamage, OldCriticalHitDamage);
+}
+
+void UAuraAttributeSet::OnRep_OnCriticalHitResistance(const FGameplayAttributeData& OldCriticalHitResistance) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, CriticalHitResistance, OldCriticalHitResistance);
+}
+
+void UAuraAttributeSet::OnRep_OnHealthRegeneration(const FGameplayAttributeData& OldHealthRegeneration) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, HealthRegeneration, OldHealthRegeneration);
+}
+
+void UAuraAttributeSet::OnRep_OnManaRegeneration(const FGameplayAttributeData& OldManaRegeneration) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, ManaRegeneration, OldManaRegeneration);
 }
 
 void UAuraAttributeSet::OnRep_OnMaxHealth(const FGameplayAttributeData& OldMaxHealth) const
@@ -135,13 +178,19 @@ void UAuraAttributeSet::OnRep_OnMaxHealth(const FGameplayAttributeData& OldMaxHe
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, MaxHealth, OldMaxHealth);
 }
 
-void UAuraAttributeSet::OnRep_OnMana(const FGameplayAttributeData& OldMana) const
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Mana, OldMana);
-}
-
 void UAuraAttributeSet::OnRep_OnMaxMana(const FGameplayAttributeData& OldMaxMana) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, MaxMana, OldMaxMana);
+}
+
+void UAuraAttributeSet::OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const
+{
+	// 用来告诉ASC记录下服务器正在修改这个参数记录它的旧值和注册它新的值，方便有问题时数据回滚等等行为。
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Health, OldHealth);
+}
+
+void UAuraAttributeSet::OnRep_OnMana(const FGameplayAttributeData& OldMana) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Mana, OldMana);
 }
 
