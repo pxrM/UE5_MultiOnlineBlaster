@@ -105,7 +105,7 @@
         3.  Has Duration : 持续时间，单位：秒
             1.  Magnitude Calculation Type : 时长计算种类
                 1.  Scalable Float : 可扩展的浮点数。Raw Value : 基础数值；Curve Table : 读取配置表，最终的结果是根据等级读取并相乘
-                2.  Attribute Based : 基于属性，公式: a*(x+b)+c  （ Y = Coeffcient * (PreMultiplyAdditiveValue + X) + PostMultiplyAdditiveValue ）
+                2.  Attribute Based : 基于属性，公式: a*(x+b)+c  （ Y = Coeffcient * (X+PreMultiplyAdditiveValue) + PostMultiplyAdditiveValue ）
                     1.  Coefficient : a
                     2.  Pre Multiply Additive Value : b
                     3.  Post Multiply Additive Value : c
