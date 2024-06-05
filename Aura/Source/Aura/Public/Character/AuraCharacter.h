@@ -22,6 +22,10 @@ public:
 	// 在玩家状态（PlayerState）在网络中被复制时被调用
 	virtual void OnRep_PlayerState() override;
 
+	/* start ICombatInterface */
+	virtual int32 GetPlayerLevel() override;
+	/*end ICombatInterface*/
+
 
 private:
 	virtual void InitAbilityActorInfo() override;
