@@ -11,6 +11,7 @@ class UAttributeSet;
 class UAbilitySystemComponent;
 
 
+/* 本地玩家相关信息 */
 USTRUCT(BlueprintType)
 struct FWidgetControllerParams
 {
