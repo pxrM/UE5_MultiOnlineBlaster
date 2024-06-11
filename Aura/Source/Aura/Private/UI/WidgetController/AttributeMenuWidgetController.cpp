@@ -10,5 +10,5 @@ void UAttributeMenuWidgetController::BroadcastInitValues()
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
-	
+	Super::BindCallbacksToDependencies();
 }
