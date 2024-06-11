@@ -3,10 +3,15 @@
 
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
+#include "AuraGameplayTags.h"
+
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
 	// 这个委托用于在Effect应用到自身角色时触发相应的逻辑
 	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::EffectApplied);
+
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
+	GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Orange, FString::Printf(TEXT("Tag:%s"),*GameplayTags.Attributes_Secondary_Armor.ToString()));
 }
 
 void UAuraAbilitySystemComponent::EffectApplied(UAbilitySystemComponent* AbilitySystemComponent,

@@ -113,7 +113,7 @@
 														按不同的比例增加，如果需要实现这种方式时，我们就可以通过使用Attribute Based Modifiers去实现。）
                         1.  Attribute to Capture : 指定的属性，FGameplayAttributeData类型，公式里的x，未指定将变成无限
                         2.  Attribute Source : 属性源。Source（Effect的释放者）和Target（Effect的作用目标）  
-                        3.  Snapshot : 是否进行快照。例如火球的伤害是10，当火球发出时就应进行快照，因为释放者的属性可能会在火球飞行的过程中被修改，不能让其影响已经释放了的火球。
+                        3.  Snapshot : 是否进行快照。快照和时间有关，例如火球的伤害是10，当火球发出时就应进行快照，因为释放者的属性可能会在火球飞行的过程中被修改，不能让其影响已经释放了的火球。
                     5.  Attribute Curve : 属性配置。如果制定了配置，就会读取配置里的数值，公式变成 a*(x*y+b)+c，公式里的y
                         1.  Curve Table : 配置表
                         2.  Row Name : 行的名字

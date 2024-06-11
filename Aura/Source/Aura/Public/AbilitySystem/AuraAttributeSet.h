@@ -53,7 +53,9 @@ struct FEffectProperties
 
 
 /**
- * 属性集
+ * 属性集。
+ * UAttributeSet是用于管理角色属性的类之一。
+ * 它通常用于实现角色的各种属性，例如健康值、魔法值、力量、敏捷度等。UAttributeSet可以帮助开发者管理和追踪角色的属性变化，并且可以与游戏中的其他系统（如伤害计算、效果处理等）进行交互。
  */
 UCLASS()
 class AURA_API UAuraAttributeSet : public UAttributeSet
