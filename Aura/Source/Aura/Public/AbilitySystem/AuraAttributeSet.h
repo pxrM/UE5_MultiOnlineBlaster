@@ -16,6 +16,7 @@
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
 
+/*存储一个ge的相关属性*/
 USTRUCT()
 struct FEffectProperties
 {
