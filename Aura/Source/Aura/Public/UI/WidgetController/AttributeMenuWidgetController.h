@@ -24,11 +24,13 @@ public:
 
 	
 public:
+	// 属性信息变化委托
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
 	FAttributeInfoSignature AttributeInfoDelegate;
 
 	
 protected:
+	// 数据基础信息数据表
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAttributeInfoData> AttributeInfoData; 
 };
