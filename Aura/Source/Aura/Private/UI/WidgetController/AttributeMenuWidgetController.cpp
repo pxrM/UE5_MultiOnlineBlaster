@@ -19,13 +19,29 @@ void UAttributeMenuWidgetController::BroadcastInitValues()
 	
 	for(auto& Pair : AS->TagsToAttributes)
 	{
-		FAuraAttributeInfo Info = AttributeInfoData->FindAttributeInfoForTag(Pair.Key);
-		Info.AttributeValue = Pair.Value().GetNumericValue(AS);
-		AttributeInfoDelegate.Broadcast(Info);
+		BroadcastAttributeInfo(Pair.Key, Pair.Value());
 	}
 }
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
+	const UAuraAttributeSet* AS = Cast<UAuraAttributeSet>(AttributeSet);
 
+	 for(auto& Pair : AS->TagsToAttributes)
+	 {
+	 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Pair.Value()).AddLambda(
+	 		[this, Pair, AS](const FOnAttributeChangeData& Data)
+	 		{
+	 			BroadcastAttributeInfo(Pair.Key, Pair.Value());
+	 		}
+	 	);
+	 }
+}
+
+void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag,
+	const FGameplayAttribute& Attribute) const
+{
+	FAuraAttributeInfo Info = AttributeInfoData->FindAttributeInfoForTag(AttributeTag);
+	Info.AttributeValue = Attribute.GetNumericValue(AttributeSet);
+	AttributeInfoDelegate.Broadcast(Info);
 }

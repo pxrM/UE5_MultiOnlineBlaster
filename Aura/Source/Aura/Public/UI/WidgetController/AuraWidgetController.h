@@ -49,7 +49,7 @@ public:
 	// 绑定后广播一次属性值
 	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitValues();
-	// 注册属性值改变委托事件
+	// 注册属性值改变通知委托事件
 	virtual void BindCallbacksToDependencies();
 	
 

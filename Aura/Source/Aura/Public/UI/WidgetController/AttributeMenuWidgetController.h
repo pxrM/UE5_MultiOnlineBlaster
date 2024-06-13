@@ -22,12 +22,16 @@ public:
 	virtual void BroadcastInitValues() override;
 	virtual void BindCallbacksToDependencies() override;
 
+
+private:
+	// 广播属性变化
+	void BroadcastAttributeInfo(const FGameplayTag& AttributeTag, const FGameplayAttribute& Attribute) const;
+	
 	
 public:
 	// 属性信息变化委托
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
 	FAttributeInfoSignature AttributeInfoDelegate;
-
 	
 protected:
 	// 数据基础信息数据表
