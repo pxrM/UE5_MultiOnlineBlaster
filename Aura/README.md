@@ -63,30 +63,32 @@
     8.  Source Blocked Tags : 源头拥有这些标签将阻碍激活此技能
     9.  Target Required Tags : 目标拥有这些标签才能激活此技能
     10.  Target Blocked Tags : 目标拥有这些标签将阻碍激活此技能
-7.  Advanced
+7.	Input
+	1.Replicate Input Directly : true,每一帧的输入都会被同步到server
+8.  Advanced
     1.  Replication Policy : 是否使用网络同步
     2.  Instancing Policy : 实例化策略
-        1.  Non Instanced : 不实例化技能，特点：高效，通过Class Default Object创建。带来的限制： 限制某些功能，没有变量，没有状态，没有Task，不能绑定代理，不能进行网络复制，没有RPC。用于多人频发的技能。测试会Crash。
-        2.  Instanced Per Actor : 每个Actor实例化一个技能，只创建一次
-        3.  Instanced Per Executation : 每次释放实都实例化技能，每次都创建，最消耗。
+        1.  Non Instanced : 不实例化技能，特点：高效，通过Class Default Object创建。带来的限制： 限制某些功能，没有变量，没有状态，没有Task，不能绑定代理，不能进行网络复制，没有RPC。用于多人频发的技能。
+        2.  Instanced Per Actor : 每个Actor实例化一个技能，只创建一次，每次激活时被重用，可以存储持久数据，每次都必须手动重置数据。
+        3.  Instanced Per Executation : 每次释放都会实例化技能，每次都创建，最消耗。
     3.  Server Respects Remote Ability Cancellation : 如果为True，服务端会接受客户端的取消操作，客户端总是接受服务端的取消操作。
     4.  Retrigger Instanced Ability : 当Instancing Policy为Instanced Per Actor时才有效，如果为True,激活已经激活的技能，将会结束此技能然后重新激活，如果为False,激活已经激活的技能，将会失败。
     5.  Net Execution Policy : 网络执行策略
-        1.  Local Predicted : 客户端执行，拥有较好的响应速度和准确性，释放技能时本地立即执行，但是服务端有最终的决定权，可以覆盖客户端的结果。只要客户端不出错就会非常的流畅。
+        1.  Local Predicted : 释放技能时本地立即执行，然后在服务器上激活，但是服务端有最终的决定权，服务器可以回滚无效更改。只要客户端不出错就会非常的流畅。
         2.  Local Only : 客户端执行，适用于单机游戏。
         3.  Server Initiated : 服务器执行，然后通过网络复制同步到客户端，结果最准确，但是会有延迟。
         4.  Server Only : 服务器执行，不进行网络复制，但是受此技能影响的其他变量将会同步到客户端。
-8. Costs : 消耗，例如：消耗蓝，魔法，体力，血量，怒气等。 通过CommitAbility使用。
+9. Costs : 消耗，例如：消耗蓝，魔法，体力，血量，怒气等。 通过CommitAbility使用。
     1. Cost Gameplay Effect Class : Gameplay Effect对象
-9.  Triggers : 通过某些途径触发标签，
+10.  Triggers : 通过某些途径触发标签，
     1.  Trigger Tag : 触发的标签
     2.  Trigger Source : 触发来源的种类
         1. Gameplay Event : 使用Send Gameplay Event to Actor节点，可以携带参数
         2. Owned Tag Added : 添加标签时触发，先于源标签激活
         3. Owned Tag Present : 添加标签时触发，当标签被移除时，此触发技能也会结束。先于源标签激活。
-10. Cooldowns : CD
+11. Cooldowns : CD
     1. Cooldown Gameplay Effect Class :  Gameplay Effect对象
-11. Blueprint逻辑
+12. Blueprint逻辑
     1.  GiveAbility ：在C++层调用GiveAbility
     2.  Try Activate Ability by Class : 通过类型激活技能
     3.  Try Activate Ability by Tag : 通过标签激活技能
