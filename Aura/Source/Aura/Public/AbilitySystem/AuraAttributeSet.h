@@ -7,8 +7,7 @@
 #include "GameplayEffectExtension.h"
 #include "AuraAttributeSet.generated.h"
 
-
-// 使用该宏为UAuraAttributeSet生成Health的get、set、init等函数
+// 使用该宏为UAuraAttributeSet生成属性的property、get、set、init等函数
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
 	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(ClassName, PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
@@ -41,7 +40,7 @@ struct FEffectProperties
 	AController* SourceController;
 	UPROPERTY()
 	ACharacter* SourceCharacter;
-	
+
 	UPROPERTY()
 	UAbilitySystemComponent* TargetAsc;
 	UPROPERTY()
@@ -51,6 +50,24 @@ struct FEffectProperties
 	UPROPERTY()
 	ACharacter* TargetCharacter;
 };
+
+
+/* 在C++中，typename 关键字有两个主要用途：一是用来声明模板参数，二是用来指示依赖类型（dependent type）。
+ *	依赖类型：在模板编程中，经常会遇到依赖名称（dependent names），也就是在模板参数（如类模板参数）的作用域内依赖于模板参数的名称。
+ *			编译器在解析这些名称时，需要知道它们是否表示类型。如果编译器不能确定一个名称是否表示类型，则需要使用 typename 来明确指出这一点。
+ *	假设我们有一个模板类和一个嵌套类型，如下所示：
+ *		template<typename T>
+ *		class Outer {
+ *			public:
+ *			using InnerType = typename T::SomeType;
+ *		};
+ *		例子中，T::SomeType 是一个依赖名称，因为它依赖于模板参数 T。编译器无法确定 T::SomeType 是否表示类型，除非我们明确指出。因此，我们使用 typename 来告诉编译器 T::SomeType 是一个类型。
+ *		如果不使用 typename，编译器会报错。例如，以下代码会导致编译错误：错误：未使用 typename，编译器不知道 T::SomeType 是否为类型
+ */
+/* 简化对 TBaseStaticDelegateInstance 中 FFuncPtr 类型的引用 */
+// typedef TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr FAttributeFuncPtr;
+template<class T>
+using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T, FDefaultDelegateUserPolicy>::FFuncPtr;
 
 
 /**
@@ -74,11 +91,9 @@ public:
 	// 修改属性后执行，注意：在效果应用时不会执行，在效果执行时才会执行。
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
-
 private:
 	// 设置ge的相关属性
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
-
 
 public:
 	UFUNCTION()
@@ -110,18 +125,17 @@ public:
 	void OnRep_OnMaxHealth(const FGameplayAttributeData& OldMaxHealth) const;
 	UFUNCTION()
 	void OnRep_OnMaxMana(const FGameplayAttributeData& OldMaxMana) const;
-	
+
 	UFUNCTION()
 	void OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const;
 	UFUNCTION()
 	void OnRep_OnMana(const FGameplayAttributeData& OldMana) const;
-	
 
 public:
 	/*
 	 * Primary
 	 */
-	
+
 	// 力量
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnStrength, Category = "Primary Attributes")
 	FGameplayAttributeData Strength;
@@ -143,7 +157,7 @@ public:
 	/*
 	 * Secondary
 	 */
-	
+
 	// 护甲，依赖 Resilience 属性，作用：减少伤害提高格挡几率
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnArmor, Category = "Secondary Attributes")
 	FGameplayAttributeData Armor;
@@ -184,12 +198,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnMaxMana, Category="Secondary Attributes")
 	FGameplayAttributeData MaxMana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana);
-	
+
 
 	/*
 	 * Vital
 	 */
-	
+
 	// 当前健康属性值
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnHealth, Category="Vital Attributes")
 	FGameplayAttributeData Health;
@@ -199,4 +213,19 @@ public:
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
 
+public:
+	/*
+	 * 声明了一个类型为 TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr 的函数指针，名为 FunctionPointer。
+	 *	TBaseStaticDelegateInstance: 是UE用于实现委托的一种基础模板类
+	 *	FGameplayAttribute(): 这是函数签名，表示返回类型为 FGameplayAttribute 且没有参数的函数
+	 *	FDefaultDelegateUserPolicy: 这是一个用户策略类，控制代理实例的行为。
+	 *	FFuncPtr: 是 TBaseStaticDelegateInstance 的内部类型，代表函数指针的类型
+	 */
+	// TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr FunctionPointer;
+	// C++: TMap<FGameplayTag, FGameplayAttribute(*)()> TestTagsToAttributes;
+	// 别名：TMap<FGameplayTag, FAttributeFuncPtr> TagsToAttributes;
+	
+	/* 将tag和attribute进行映射 */
+	TMap<FGameplayTag, TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
+	
 };
