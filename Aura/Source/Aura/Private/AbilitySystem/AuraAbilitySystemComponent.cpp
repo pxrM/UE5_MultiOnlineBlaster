@@ -23,13 +23,20 @@ void UAuraAbilitySystemComponent::EffectApplied(UAbilitySystemComponent* Ability
 	FGameplayTagContainer TagContainer;
 	EffectSpec.GetAllAssetTags(TagContainer);
 	
-	EffectAssetTags.Broadcast(TagContainer);
+	// for(const FGameplayTag& Tag : TagContainer)
+	// {
+	// 	// const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
+	// 	// GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
+	// }
 	
-	for(const FGameplayTag& Tag : TagContainer)
+	EffectAssetTags.Broadcast(TagContainer);
+}
+
+void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities)
+{
+	for(const TSubclassOf<UGameplayAbility> AbilityClass : StartupAbilities)
 	{
-		// const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
-		// GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue, Msg);
-		// TODO: Broadcast the tag to the widget controller
-		
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass);
+		GiveAbilityAndActivateOnce(AbilitySpec);
 	}
 }

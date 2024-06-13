@@ -55,6 +55,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
 		[this](const FGameplayTagContainer& AssetTags)
 		{
+			// 创建一个FGameplayTag 实例，并通过请求名为 "Message" 的 Gameplay Tag 来初始化它。
 			const FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
 			for(const FGameplayTag& Tag : AssetTags)
 			{

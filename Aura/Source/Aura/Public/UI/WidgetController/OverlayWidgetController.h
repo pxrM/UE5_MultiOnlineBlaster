@@ -9,7 +9,7 @@
 
 class UAuraUserWidget;
 
-
+// 拾取ge后弹出的ui信息配置
 USTRUCT(BlueprintType)
 struct FUIWidgetRow : public  FTableRowBase
 {
@@ -52,6 +52,7 @@ protected:
 
 
 protected:
+	// 拾取属性后弹出的信息表
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
 
@@ -67,6 +68,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnMaxManaChanged;
 
+	// 拾取属性后触发的消息委托
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 };

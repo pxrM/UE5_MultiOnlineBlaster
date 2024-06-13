@@ -8,6 +8,7 @@
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
 
+class UGameplayAbility;
 class UGameplayEffect;
 class UAbilitySystemComponent;
 class UAttributeSet;
@@ -30,6 +31,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	// 初始化gas组件上的actor信息
 	virtual void InitAbilityActorInfo();
 
 	// 添加ge到自身
@@ -37,6 +39,9 @@ protected:
 
 	// 初始化属性值
 	void InitializeDefaultAttributes() const;
+
+	// 向角色添加能力
+	void AddCharacterAbilities();
 
 	
 protected:
@@ -87,4 +92,11 @@ protected:
 	// 必要属性
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;
+
+
+private:
+	// 游戏开始赋予角色的能力
+	UPROPERTY(EditAnywhere, Category="Abilities")
+	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
+	
 };
