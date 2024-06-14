@@ -4,6 +4,7 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
@@ -36,7 +37,54 @@ void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 {
 	for(const TSubclassOf<UGameplayAbility> AbilityClass : StartupAbilities)
 	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass);
-		GiveAbilityAndActivateOnce(AbilitySpec);
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+		// 如果转换UAuraGameplayAbility成功，则添加动态标签到该能力的标签集合中
+		if(const UAuraGameplayAbility* Ability = Cast<UAuraGameplayAbility>(AbilitySpec.Ability))
+		{
+			// DynamicAbilityTags允许为特定的能力实例添加动态标签。这些标签可以用于在运行时调整和管理能力的行为，比如条件激活、冷却时间、能力互斥等
+			AbilitySpec.DynamicAbilityTags.AddTag(Ability->StartupInputTag);
+			// 只应用给角色不激活
+			GiveAbility(AbilitySpec);
+		}
+	}
+}
+
+void UAuraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
+{
+	// 输入的标签是否有效
+	if(!InputTag.IsValid()) return;
+
+	// 遍历可激活的能力列表
+	for(FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		// 检查该能力是否具有指定的动态标签
+		if(AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
+		{
+			// 告知GameplayAbility，此技能被触发按下事件
+			// 会触发技能上面的回调
+			// virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+			AbilitySpecInputPressed(AbilitySpec);
+			// 如果能力实例尚未激活，则尝试激活
+			if(!AbilitySpec.IsActive())
+			{
+				TryActivateAbility(AbilitySpec.Handle);
+			}
+		}
+	}
+}
+
+void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InputTag)
+{
+	if(!InputTag.IsValid()) return;
+
+	for(FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))
+		{
+			// 告知技能按键事件被抬起
+			// 会触发技能上面的回调
+			// virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+			AbilitySpecInputReleased(AbilitySpec);
+		}
 	}
 }

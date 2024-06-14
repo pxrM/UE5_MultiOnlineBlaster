@@ -2,7 +2,10 @@
 
 
 #include "Player/AuraPlayerController.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
 #include "EnhancedInputSubsystems.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
 
@@ -90,6 +93,15 @@ void AAuraPlayerController::BeginPlay()
 	SetInputMode(InputModeData);
 }
 
+UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()
+{
+	if(AuraAbilitySystemComponent == nullptr)
+	{
+		AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
+	}
+	return AuraAbilitySystemComponent;
+}
+
 void AAuraPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -124,15 +136,21 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 
 void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 {
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Blue, *InputTag.ToString());
+	// GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Blue, *InputTag.ToString());
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 {
-	GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Red, *InputTag.ToString());
+	// GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Red, *InputTag.ToString());
+	if(GetASC() == nullptr) return;
+	
+	GetASC()->AbilityInputTagReleased(InputTag);
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag)
 {
-	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Orange, *InputTag.ToString());
+	// GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Orange, *InputTag.ToString());
+	if(GetASC() == nullptr) return;
+	
+	GetASC()->AbilityInputTagHeld(InputTag);
 }

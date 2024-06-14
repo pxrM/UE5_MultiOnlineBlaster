@@ -8,6 +8,7 @@
 #include "AuraPlayerController.generated.h"
 
 
+class UAuraAbilitySystemComponent;
 class UAuraInputConfig;
 class UInputMappingContext;
 class UInputAction;
@@ -31,6 +32,10 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
+
+public:
+	UAuraAbilitySystemComponent* GetASC();
+	
 	
 private:
 	void Move(const FInputActionValue& InputActionValue);
@@ -53,6 +58,10 @@ private:
 	// 当前鼠标选中的actor
 	IEnemyInterface* CurrActor = nullptr;
 
+	// 玩家的技能输入配置
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UAuraInputConfig> InputConfig;
+
+	UPROPERTY()
+	TObjectPtr<UAuraAbilitySystemComponent> AuraAbilitySystemComponent;
 };

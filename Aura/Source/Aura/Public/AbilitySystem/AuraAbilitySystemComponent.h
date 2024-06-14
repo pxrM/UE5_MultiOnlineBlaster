@@ -22,6 +22,11 @@ public:
 	
 	// 添加角色能力
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);
+
+	// 触发技能的悬停时触发
+	void AbilityInputTagHeld(const FGameplayTag& InputTag);
+	// 触发技能时按键离开
+	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 	
 	
 protected:
