@@ -66,8 +66,7 @@ void AAuraPlayerController::BeginPlay()
 	 * 绑定增强输入到玩家Controller
 	 */
 	// 从当前本地玩家对象中获取一个 用于增强输入管理的本地玩家子系统 类型的子系统
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	if(Subsystem)
+	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		// 向输入子系统中添加一个输入映射上下文
 		Subsystem->AddMappingContext(AuraContext, 0);

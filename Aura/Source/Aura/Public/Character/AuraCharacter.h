@@ -24,7 +24,7 @@ public:
 
 	/* start ICombatInterface */
 	virtual int32 GetPlayerLevel() override;
-	/*end ICombatInterface*/
+	/* end ICombatInterface */
 
 
 private:
