@@ -55,6 +55,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
 	
+	// 鼠标点击的射线
+	FHitResult CursorHit;
 	// 上一个鼠标选中的actor
 	IEnemyInterface* LastActor = nullptr;
 	// 当前鼠标选中的actor

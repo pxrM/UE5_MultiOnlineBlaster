@@ -31,7 +31,9 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 
 void AAuraPlayerController::CursorTrace()
 {
-	FHitResult CursorHit;
+	// GetHitResultUnderCursor这个函数用于在当前光标（鼠标指针）所在的位置执行一次“射线检测”（Raycast）
+	// ECC_Visibility 是用于检测的碰撞通道（Collision Channel）。ECC_Visibility 通常用于检测可见性相关的碰撞，这意味着它会忽略不可见的对象。
+	// false 表示不忽略复杂碰撞（complex collision）。如果设置为 true，则只检测简单碰撞（simple collision）。
 	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
 	if(!CursorHit.bBlockingHit) return;
 
@@ -46,24 +48,29 @@ void AAuraPlayerController::CursorTrace()
 	 *	D: 两个都有效，但是LastActor!=CurrActor	-取消突出LastActor，并突出CurrActor
 	 *	E: 两个都有效，而且是同一个Actor			-不做任何事情
 	 */
-	if(LastActor == nullptr)
+	// if(LastActor == nullptr)
+	// {
+	// 	if(CurrActor != nullptr)
+	// 	{
+	// 		CurrActor->HighlightActor();
+	// 	}
+	// }
+	// else
+	// {
+	// 	if(CurrActor == nullptr)
+	// 	{
+	// 		LastActor->UnHighlightActor();
+	// 	}
+	// 	else if(LastActor != CurrActor)
+	// 	{
+	// 		LastActor->UnHighlightActor();
+	// 		CurrActor->HighlightActor();
+	// 	}
+	// }
+	if(LastActor != CurrActor)
 	{
-		if(CurrActor != nullptr)
-		{
-			CurrActor->HighlightActor();
-		}
-	}
-	else
-	{
-		if(CurrActor == nullptr)
-		{
-			LastActor->UnHighlightActor();
-		}
-		else if(LastActor != CurrActor)
-		{
-			LastActor->UnHighlightActor();
-			CurrActor->HighlightActor();
-		}
+		if(LastActor) LastActor->UnHighlightActor();
+		if(CurrActor) CurrActor->HighlightActor();
 	}
 }
 
@@ -247,13 +254,10 @@ void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag)
 		// 累计经过的时间 GetDeltaSeconds用于获取自上一帧以来的时间增量（通常以秒为单位）。
 		FollowTime += GetWorld()->GetDeltaSeconds();
 		// 获取目标点
-		// GetHitResultUnderCursor这个函数用于在当前光标（鼠标指针）所在的位置执行一次“射线检测”（Raycast）
-		// ECC_Visibility 是用于检测的碰撞通道（Collision Channel）。ECC_Visibility 通常用于检测可见性相关的碰撞，这意味着它会忽略不可见的对象。
-		// false 表示不忽略复杂碰撞（complex collision）。如果设置为 true，则只检测简单碰撞（simple collision）。
-		if(FHitResult Hit; GetHitResultUnderCursor(ECC_Visibility, false, Hit))
+		if(CursorHit.bBlockingHit)
 		{
 			// ImpactPoint 射线命中物体的世界坐标位置。
-			CachedDestination = Hit.ImpactPoint;
+			CachedDestination = CursorHit.ImpactPoint;
 		}
 		// 向目标移动
 		if(APawn* ControlledPawn = GetPawn())

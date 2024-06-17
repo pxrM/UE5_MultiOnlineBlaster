@@ -8,14 +8,14 @@
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
-	// 这个委托用于在Effect应用到自身角色时触发相应的逻辑
-	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::EffectApplied);
+	// 这个委托用于在Effect应用到自身角色时触发相应的逻辑 (OnGameplayEffectAppliedDelegateToSelf - Server)
+	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::ClientEffectApplied);
 
-	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
-	GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Orange, FString::Printf(TEXT("Tag:%s"),*GameplayTags.Attributes_Secondary_Armor.ToString()));
+	//const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
+	//GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Orange, FString::Printf(TEXT("Tag:%s"),*GameplayTags.Attributes_Secondary_Armor.ToString()));
 }
 
-void UAuraAbilitySystemComponent::EffectApplied(UAbilitySystemComponent* AbilitySystemComponent,
+void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent,
                                                 const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle)
 {
 	// GEngine->AddOnScreenDebugMessage(1, 8.f, FColor::Blue, FString("Effect Applied"));
