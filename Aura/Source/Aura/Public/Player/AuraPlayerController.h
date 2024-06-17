@@ -8,6 +8,7 @@
 #include "AuraPlayerController.generated.h"
 
 
+class USplineComponent;
 class UAuraAbilitySystemComponent;
 class UAuraInputConfig;
 class UInputMappingContext;
@@ -62,6 +63,24 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UAuraInputConfig> InputConfig;
 
+	// gas组件
 	UPROPERTY()
 	TObjectPtr<UAuraAbilitySystemComponent> AuraAbilitySystemComponent;
+
+
+	// 存储目的地
+	FVector CachedDestination = FVector::ZeroVector;
+	// 点击时间 用来判断是否是短按
+	float FollowTime = 0.f;
+	// 短按阈值 过多久后不算是短按
+	float ShortPressThreshold = 0.f;
+	// 是否在自动移动
+	bool bAutoRunning = false;
+	// 是否在准备攻击选中的目标
+	bool bTargeting = false;
+	// 当角色和目标距离在此半径内时，将关闭自动寻路
+	UPROPERTY(EditDefaultsOnly)
+	float AutoRunAcceptanceRadius = 50.f;
+	// 动寻路时生成的样条线。用于创建和管理曲线（Spline）。Spline是一种通过插值点之间的平滑曲线来定义路径或形状的方法。
+	TObjectPtr<USplineComponent> SplineCmp;
 };

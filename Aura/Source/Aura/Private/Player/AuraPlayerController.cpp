@@ -4,14 +4,18 @@
 #include "Player/AuraPlayerController.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AuraGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates = true;
+
+	SplineCmp = CreateDefaultSubobject<USplineComponent>("SplineCmp");
 }
 
 void AAuraPlayerController::PlayerTick(float DeltaTime)
@@ -137,6 +141,11 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Blue, *InputTag.ToString());
+	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
+	{
+		bTargeting = CurrActor ? true : false;
+		bAutoRunning = false;
+	}
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
@@ -150,7 +159,45 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Orange, *InputTag.ToString());
-	if(GetASC() == nullptr) return;
-	
-	GetASC()->AbilityInputTagHeld(InputTag);
+
+	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB) == false)
+	{
+		/* 其它输入 */
+		if(GetASC())
+		{
+			GetASC()->AbilityInputTagHeld(InputTag);
+		}
+		return;
+	}
+
+	if(bTargeting)
+	{
+		/* 选中目标攻击 */
+		if(GetASC())
+		{
+			GetASC()->AbilityInputTagHeld(InputTag);
+		}
+	}
+	else
+	{
+		/* 点击移动 */
+		// 累计经过的时间
+		FollowTime += GetWorld()->GetDeltaSeconds();
+		// 获取目标点
+		// GetHitResultUnderCursor这个函数用于在当前光标（鼠标指针）所在的位置执行一次“射线检测”（Raycast）
+		// ECC_Visibility 是用于检测的碰撞通道（Collision Channel）。ECC_Visibility 通常用于检测可见性相关的碰撞，这意味着它会忽略不可见的对象。
+		// false 表示不忽略复杂碰撞（complex collision）。如果设置为 true，则只检测简单碰撞（simple collision）。
+		if(FHitResult Hit; GetHitResultUnderCursor(ECC_Visibility, false, Hit))
+		{
+			// ImpactPoint 射线命中物体的世界坐标位置。
+			CachedDestination = Hit.ImpactPoint;
+		}
+		// 向目标移动
+		if(APawn* ControlledPawn = GetPawn())
+		{
+			// 获取目标方向并向其移动
+			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
+			ControlledPawn->AddMovementInput(WorldDirection);
+		}
+	}
 }
