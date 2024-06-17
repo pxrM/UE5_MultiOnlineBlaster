@@ -25,6 +25,8 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	Super::PlayerTick(DeltaTime);
 
 	CursorTrace();
+
+	AutoMove();
 }
 
 void AAuraPlayerController::CursorTrace()
@@ -61,6 +63,28 @@ void AAuraPlayerController::CursorTrace()
 		{
 			LastActor->UnHighlightActor();
 			CurrActor->HighlightActor();
+		}
+	}
+}
+
+void AAuraPlayerController::AutoMove()
+{
+	if(!bAutoRunning) return;
+	
+	if(APawn* ControlledPawn = GetPawn())
+	{
+		// 由于无法确保角色位置和样条曲线百分之百重合在一块，所以找到距离Pawn当前位置最近的样条曲线上的位置
+		const FVector LocationOnSpline = SplineCmp->FindLocationClosestToWorldLocation(ControlledPawn->GetActorLocation(), ESplineCoordinateSpace::World);
+		// 找到样条曲线在 LocationOnSpline 处的方向，并将其存储在 Direction 中
+		const FVector Direction = SplineCmp->FindDirectionClosestToWorldLocation(LocationOnSpline, ESplineCoordinateSpace::World);
+		// 让角色通过此方向去移动
+		ControlledPawn->AddMovementInput(Direction);
+
+		// 如果小于设置的AutoRunAcceptanceRadius距离内，停止自动寻路。
+		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
+		if(DistanceToDestination <= AutoRunAcceptanceRadius)
+		{
+			bAutoRunning = false;
 		}
 	}
 }
@@ -184,6 +208,9 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 					SplineCmp->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
 					DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
 				}
+				// 如果点击位置为自动寻路无法到达的位置，导航还是会生成一条路径，但是我们无法达到最终点，这样无法停止自动寻路
+				// 需要在鼠标抬起时，将路径的终点设置给CachedDestination，这也是自动寻路的最终点。获取数组中的最后一个点
+				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
 				bAutoRunning = true;
 			}
 		}
