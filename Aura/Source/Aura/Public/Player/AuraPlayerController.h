@@ -73,7 +73,7 @@ private:
 	// 点击时间 用来判断是否是短按
 	float FollowTime = 0.f;
 	// 短按阈值 过多久后不算是短按
-	float ShortPressThreshold = 0.f;
+	float ShortPressThreshold = 0.5f;
 	// 是否在自动移动
 	bool bAutoRunning = false;
 	// 是否在准备攻击选中的目标

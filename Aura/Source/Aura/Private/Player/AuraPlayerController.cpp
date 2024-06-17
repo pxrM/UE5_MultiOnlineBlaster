@@ -6,6 +6,8 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AuraGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
@@ -151,9 +153,43 @@ void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Red, *InputTag.ToString());
-	if(GetASC() == nullptr) return;
 	
-	GetASC()->AbilityInputTagReleased(InputTag);
+	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB) == false)
+	{
+		if(GetASC())
+		{
+			GetASC()->AbilityInputTagReleased(InputTag);
+		}
+		return;
+	}
+	
+	if(bTargeting)
+	{
+		if(GetASC())
+		{
+			GetASC()->AbilityInputTagReleased(InputTag);
+		}
+	}
+	else
+	{
+		/* 单击自动移动 */
+		APawn* ControlledPawn = GetPawn();
+		if(ControlledPawn && FollowTime <= ShortPressThreshold)
+		{
+			if(UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this, ControlledPawn->GetActorLocation(), CachedDestination))
+			{
+				SplineCmp->ClearSplinePoints();
+				for(const FVector& PointLoc : NavPath->PathPoints)
+				{
+					SplineCmp->AddSplinePoint(PointLoc, ESplineCoordinateSpace::World);
+					DrawDebugSphere(GetWorld(), PointLoc, 8.f, 8, FColor::Green, false, 5.f);
+				}
+				bAutoRunning = true;
+			}
+		}
+		FollowTime = 0.f;
+		bTargeting = false;
+	}
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag)
@@ -180,8 +216,8 @@ void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag)
 	}
 	else
 	{
-		/* 点击移动 */
-		// 累计经过的时间
+		/* 鼠标按住移动 */
+		// 累计经过的时间 GetDeltaSeconds用于获取自上一帧以来的时间增量（通常以秒为单位）。
 		FollowTime += GetWorld()->GetDeltaSeconds();
 		// 获取目标点
 		// GetHitResultUnderCursor这个函数用于在当前光标（鼠标指针）所在的位置执行一次“射线检测”（Raycast）
