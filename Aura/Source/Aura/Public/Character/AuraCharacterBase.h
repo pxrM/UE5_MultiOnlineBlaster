@@ -27,6 +27,8 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	FORCEINLINE UAttributeSet* GetAttributeSet() const {return AttributeSet;}
 
+	virtual FVector GetCombatSocketLocation() override;
+
 	
 protected:
 	virtual void BeginPlay() override;
@@ -48,7 +50,9 @@ protected:
 	// 角色武器mesh
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
-
+	// 武器上的施法插槽名
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FName WeaponTipSocketName;
 	/*
 	 * GAS：
 	 * 挂载位置：
