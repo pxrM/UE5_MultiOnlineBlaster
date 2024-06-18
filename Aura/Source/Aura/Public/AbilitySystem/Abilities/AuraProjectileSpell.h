@@ -26,6 +26,10 @@ protected:
 	 */
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	// 生成子弹
+	UFUNCTION(BlueprintCallable, Category = "Projectile")
+	void SpawnProjecile();
+	
 	
 protected:
 	// 子弹类
