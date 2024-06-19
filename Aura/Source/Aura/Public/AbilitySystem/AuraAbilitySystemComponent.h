@@ -6,10 +6,22 @@
 #include "AbilitySystemComponent.h"
 #include "AuraAbilitySystemComponent.generated.h"
 
+/*
+ * 一个普通的GA的生命周期在Server-Client之间都会产生2-3个RPCs的调用。
+ * 激活ge：CallServerTryActivateAbility()
+ * 向server同步数据：ServerSetReplicatedTargetData() (可选)
+ * 结束ge：ServerEndAbility()
+ */
+
+/*
+ *  获取到一个ge资产后触发的委托
+ *	  FGameplayTagContainer：
+ *		  多个GameplayTags可以使用FGameplayTagContainer来存储，相比于常规的TArray<FGameplayTag>，前者更加有效率(efficiency magic)
+ */
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer& /*AssetTags*/);
 
 /**
- * 
+ * gas组件
  */
 UCLASS()
 class AURA_API UAuraAbilitySystemComponent : public UAbilitySystemComponent

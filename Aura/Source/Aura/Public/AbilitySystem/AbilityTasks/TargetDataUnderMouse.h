@@ -6,8 +6,16 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "TargetDataUnderMouse.generated.h"
 
-// 获取释放能力时鼠标点击的目标位置数据后的多播委托
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMouseTargetDataSignture, const FVector&, Data);
+
+/*
+ * 获取释放能力时鼠标点击的目标位置数据后的多播委托
+ * FGameplayAbilityTargetDataHandle：持有FGameplayAbilityTargetData的句柄
+ *	  FGameplayAbilityTargetData：
+ *		 用于通过网络传输定位数据的通用结构体,一般包括AAcotr/UObject的引用、FHitResult、和其他通用的Location/Direciton/OriginData。
+ *		 本质上可以继承它以增添想要的任何数据, 其可以简单理解为在客户端和服务端的GameplayAbility中传递数据
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMouseTargetDataSignture, const FGameplayAbilityTargetDataHandle&, DataHandle);
+
 
 /**
  * UAbilityTask是用于实现自定义异步任务的基类，通常用于游戏能力系统（Gameplay Ability System，GAS）中。
@@ -46,4 +54,8 @@ public:
 private:
 	// 激活调用这个task
 	virtual void Activate() override;
+	// 在客户端时将数据同步给Server
+	void SendMouseCursorData();
+	// Server收到TargetData后的监听委托
+	void OnTargetDataReplicatedCallback(const FGameplayAbilityTargetDataHandle& DataHandle, FGameplayTag ActivationTag);
 };
