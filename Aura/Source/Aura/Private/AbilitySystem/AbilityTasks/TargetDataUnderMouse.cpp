@@ -41,6 +41,7 @@ void UTargetDataUnderMouse::SendMouseCursorData()
 {
 	// FScopedPredictionWindow作用域锁的对象（在构造时打开，在析构时关闭）
 	// 用于管理预测窗口，该窗口允许客户端在不确定服务器响应的情况下，对游戏状态进行预测性更新。
+	// 该窗口打开时，客户端可以直接改变游戏状态动作，比如消耗属性资源，无需获取server许可
 	FScopedPredictionWindow ScopedPredictionWindow(AbilitySystemComponent.Get());
 
 	// 通过玩家控制器获取鼠标下的命中结果

@@ -28,7 +28,7 @@ protected:
 
 	// 生成子弹
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
-	void SpawnProjecile();
+	void SpawnProjecile(const FVector& ProjectileTargetLocation);
 	
 	
 protected:

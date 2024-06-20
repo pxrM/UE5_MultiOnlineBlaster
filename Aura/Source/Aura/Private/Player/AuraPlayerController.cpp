@@ -147,6 +147,8 @@ void AAuraPlayerController::SetupInputComponent()
 	
 	// 将 MoveAction 的输入动作绑定到当前玩家控制器对象的 Move 方法上，当该输入动作被触发时，将会执行 Move 方法中的代码逻辑
 	AuraEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+	AuraEnhancedInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
+	AuraEnhancedInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
 	AuraEnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
 
@@ -184,24 +186,17 @@ void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Red, *InputTag.ToString());
-	
+	if(GetASC())
+	{
+		GetASC()->AbilityInputTagReleased(InputTag);
+	}
+
 	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB) == false)
 	{
-		if(GetASC())
-		{
-			GetASC()->AbilityInputTagReleased(InputTag);
-		}
 		return;
 	}
 	
-	if(bTargeting)
-	{
-		if(GetASC())
-		{
-			GetASC()->AbilityInputTagReleased(InputTag);
-		}
-	}
-	else
+	if(!bTargeting && !bShiftKeyDown)
 	{
 		/* 单击自动移动 */
 		APawn* ControlledPawn = GetPawn();
@@ -240,7 +235,8 @@ void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag)
 		return;
 	}
 
-	if(bTargeting)
+	// 选中目标或按住shift键都释放技能
+	if(bTargeting || bShiftKeyDown)
 	{
 		/* 选中目标攻击 */
 		if(GetASC())

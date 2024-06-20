@@ -45,15 +45,20 @@ private:
 	void AbilityInputTagPressed(const FGameplayTag InputTag);
 	void AbilityInputTagReleased(const FGameplayTag InputTag);
 	void AbilityInputTagHeld(const FGameplayTag InputTag);
-
+	void ShiftPressed() { bShiftKeyDown = true; }
+	void ShiftReleased() { bShiftKeyDown = false; }
+	
 	
 private:
 	// 输入映射上下文 用于定义一组输入映射规则，将物理输入设备的输入映射到虚拟输入轴或按键
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
+	
 	// 移动输入动作：输入动作用于绑定玩家输入（例如键盘按键、鼠标点击、手柄按钮等）到游戏中的特定行为或事件
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> ShiftAction;
 	
 	// 鼠标点击的射线
 	FHitResult CursorHit;
@@ -86,4 +91,7 @@ private:
 	float AutoRunAcceptanceRadius = 50.f;
 	// 动寻路时生成的样条线。用于创建和管理曲线（Spline）。Spline是一种通过插值点之间的平滑曲线来定义路径或形状的方法。
 	TObjectPtr<USplineComponent> SplineCmp;
+
+	// 按下shift
+	bool bShiftKeyDown = false;
 };
