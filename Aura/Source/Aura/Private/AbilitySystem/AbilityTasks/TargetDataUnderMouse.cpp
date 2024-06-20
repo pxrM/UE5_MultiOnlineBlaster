@@ -23,16 +23,24 @@ void UTargetDataUnderMouse::Activate()
 	else
 	{
 		// Server：监听数据
-		AbilitySystemComponent.Get()->AbilityTargetDataSetDelegate(
-			GetAbilitySpecHandle(),
-			GetActivationPredictionKey()
-		).AddUObject(this, &UTargetDataUnderMouse::OnTargetDataReplicatedCallback);
+		const FGameplayAbilitySpecHandle SpecHandle = GetAbilitySpecHandle();
+		const FPredictionKey PredictionKey = GetActivationPredictionKey();
+		// 接收到目标数据时广播委托
+		AbilitySystemComponent.Get()->AbilityTargetDataSetDelegate(SpecHandle,PredictionKey).AddUObject(this, &UTargetDataUnderMouse::OnTargetDataReplicatedCallback);
+		// 上面的委托是否已经广播过
+		const bool bCalledDelegate = AbilitySystemComponent.Get()->CallReplicatedTargetDataDelegatesIfSet(SpecHandle,PredictionKey);
+		if(!bCalledDelegate)
+		{
+			// 设置服务器端等待PlayerData数据的上传
+			SetWaitingOnRemotePlayerData();
+		}
 	}
 }
 
 void UTargetDataUnderMouse::SendMouseCursorData()
 {
-	// FScopedPredictionWindow作用域锁的对象（在构造时打开，在析构时关闭），用于管理预测窗口
+	// FScopedPredictionWindow作用域锁的对象（在构造时打开，在析构时关闭）
+	// 用于管理预测窗口，该窗口允许客户端在不确定服务器响应的情况下，对游戏状态进行预测性更新。
 	FScopedPredictionWindow ScopedPredictionWindow(AbilitySystemComponent.Get());
 
 	// 通过玩家控制器获取鼠标下的命中结果
@@ -62,8 +70,13 @@ void UTargetDataUnderMouse::SendMouseCursorData()
 	}
 }
 
-void UTargetDataUnderMouse::OnTargetDataReplicatedCallback(const FGameplayAbilityTargetDataHandle& DataHandle,
-	FGameplayTag ActivationTag)
+void UTargetDataUnderMouse::OnTargetDataReplicatedCallback(const FGameplayAbilityTargetDataHandle& DataHandle, FGameplayTag ActivationTag)
 {
+	// 通知客户端，服务器端已经接收并处理了从客户端复制的目标数据（将服务器的TargetData应用到客户端，并清除掉缓存）
+	AbilitySystemComponent->ConsumeClientReplicatedTargetData(GetAbilitySpecHandle(), GetActivationPredictionKey());
 	
+	if(ShouldBroadcastAbilityTaskDelegates())
+	{
+		ValidData.Broadcast(DataHandle);
+	}
 }
