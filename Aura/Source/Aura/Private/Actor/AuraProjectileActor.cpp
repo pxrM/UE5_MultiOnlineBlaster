@@ -7,6 +7,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Aura/Aura.h"
 #include "Components/AudioComponent.h"
 
 AAuraProjectileActor::AAuraProjectileActor()
@@ -16,6 +17,7 @@ AAuraProjectileActor::AAuraProjectileActor()
 
 	SphereCmp = CreateDefaultSubobject<USphereComponent>("SphereCmp");
 	SetRootComponent(SphereCmp);
+	SphereCmp->SetCollisionObjectType(ECC_Projectile);
 	SphereCmp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereCmp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereCmp->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
