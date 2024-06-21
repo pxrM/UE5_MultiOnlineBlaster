@@ -28,11 +28,15 @@ protected:
 
 	// 生成子弹
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
-	void SpawnProjecile(const FVector& ProjectileTargetLocation);
+	void SpawnProjectile(const FVector& ProjectileTargetLocation);
 	
 	
 protected:
 	// 子弹类
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AAuraProjectileActor> ProjectileClass;
+
+	// 该技能的伤害ge类
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
 };

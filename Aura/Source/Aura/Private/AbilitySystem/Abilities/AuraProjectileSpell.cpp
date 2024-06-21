@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/AuraProjectileSpell.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "Actor/AuraProjectileActor.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -18,13 +20,14 @@ void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	
 }
 
-void UAuraProjectileSpell::SpawnProjecile(const FVector& ProjectileTargetLocation)
+void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation)
 {
 	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();
 	if(!bIsServer) return;
 
 	/*
-	 * 使用 SpawnActorDeferred 可以在 actor 创建后立即获得其引用，此时还没有调用 BeginPlay 或完成初始化。因此，可以在生成后对 actor 进行一些额外的设置，再调用 FinishSpawningActor 完成生成过程。
+	 * 使用 SpawnActorDeferred 可以在 actor 创建后立即获得其引用，此时还没有调用 BeginPlay 或完成初始化。
+	 * 因此，可以在生成后对 actor 进行一些额外的设置，再调用 FinishSpawningActor 完成生成过程。
 	 *	ProjectileClass：生成的class类型
 	 *	SpawnTransform：生成位置和旋转信息
 	 *	GetOwningActorFromActorInfo()：拥有此能力的 actor，通常也是这个能力的执行者
@@ -49,8 +52,12 @@ void UAuraProjectileSpell::SpawnProjecile(const FVector& ProjectileTargetLocatio
 			Cast<APawn>(AbilityOwningActor),
 			ESpawnActorCollisionHandlingMethod::AlwaysSpawn
 		);
-		// TODO: 给子弹一个造成伤害的 GameplayEffectSpec
-
+		
+		// 给子弹一个造成伤害的 GameplayEffectSpec
+		const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo());
+		const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, GetAbilityLevel(), SourceASC->MakeEffectContext());
+		ProjectileActor->DamageEffectSpecHandle = SpecHandle;
+		
 		ProjectileActor->FinishSpawning(SpawnTransform);
 	}
 }
