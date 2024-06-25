@@ -123,14 +123,15 @@
                         1.  Attribute Magnitude : 使用计算后的结果
                         2.  Attribute Base Value : 和上面一样 ？
                         3.  Attribute Bonus Magnitude : x不会用Attribute的值
-                    7.  Source Tag Filter : 不知
-                    8.  Target Tag Filter : 不知
+                    7.  Source Tag Filter : 在源标签上使用的过滤器; 如果指定，则只有应用于所有这些标记的修饰符才会考虑到计算
+
+                    8.  Target Tag Filter : 要在目标标签上使用的过滤器; 如果指定，则只有应用于所有这些标记的修饰符才会考虑到计算
                 3.  Custom Calculation Class : 自定计算，能够使用Blueprint或C++里的多个属性
                     1.  Calculation Class : 指定用于计算的类，需要实现CalculateBaseMagnitude方法
                     2.  Final Lookup Curve : 最终校正。如果制定有效，将会进一步通过CurveTable计算
-                4.  Set by Caller : 不知。 通过调用者设置，如果指定了标签，先通过标签查找，再通过名字查找
-                    1.  Data Name : 不知。 通过名字查找 
-                    2.  Data Tag : 不知。 通过标签查找
+                4.  Set by Caller : 把Magnitude的具体数值，交由开发者在代码中决定。
+                    1.  Data Name : 根据名字去匹配对应的Magnitude
+                    2.  Data Tag : 根据标签去匹配对应的Magnitude
     2.  Modifiers : 修改器列表
         1.  Attribute : 修改的属性
         2.  Modifier Op : 操作
@@ -139,8 +140,8 @@
             3.  Divide : /
             4.  Override : 覆写
         3.  Modifier Magnitude : 数据的计算， 同Duration Magnitude
-        4.  Source Tags : 不知。 需要源遵循的标签规则
-        5.  Target Tags : 不知。 需要目标遵循的标签规则
+        4.  Source Tags : 
+        5.  Target Tags : 
     3.  Executions : 自定义的执行代码
         1.  Calculation Class : Gameplay Effect Execution Calculation类，需要实现Execute方法
         2.  Conditional Gameplay Effects : 如果执行计算成功，将应用额外的效果到目标，如果未指定计算类，将总是应用额外的效果到目标。

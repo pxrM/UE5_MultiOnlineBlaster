@@ -133,7 +133,7 @@ public:
 
 public:
 	/*
-	 * Primary
+	 * Primary Attributes
 	 */
 
 	// 力量
@@ -155,7 +155,7 @@ public:
 
 
 	/*
-	 * Secondary
+	 * Secondary Attributes
 	 */
 
 	// 护甲，依赖 Resilience 属性，作用：减少伤害提高格挡几率
@@ -201,7 +201,7 @@ public:
 
 
 	/*
-	 * Vital
+	 * Vital Attributes
 	 */
 
 	// 当前健康属性值
@@ -212,6 +212,17 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnMana, Category="Mana Attributes")
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
+
+	
+	/*
+	 * Meta Attributes
+	 */
+	
+	// 伤害元属性：计算传入进来的伤害值（server）
+	UPROPERTY(BlueprintReadOnly, Category="Meta Attributes")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage);
+	
 
 public:
 	/*
