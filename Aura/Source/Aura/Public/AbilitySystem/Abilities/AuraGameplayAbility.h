@@ -19,4 +19,10 @@ public:
 	// 启动输入能力的tag
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	FGameplayTag StartupInputTag;
+
+	// 在技能上通过技能等级设置伤害
+	// FScalableFloat 是一种用于表示可缩放浮点数的结构体
+	// 虽然不是所有的属性都会用到，但它占用的内存不大，所以直接写到基类，需要就用。
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Damage")
+	FScalableFloat Damage;
 };
