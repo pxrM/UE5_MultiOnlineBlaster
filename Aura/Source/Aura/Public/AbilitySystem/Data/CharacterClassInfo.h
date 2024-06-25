@@ -20,7 +20,7 @@ enum class ECharacterClassType
 };
 
 
-// 角色默认信息结构体
+// 角色默认信息结构体 
 USTRUCT()
 struct FCharacterClassDefaultInfo
 {
