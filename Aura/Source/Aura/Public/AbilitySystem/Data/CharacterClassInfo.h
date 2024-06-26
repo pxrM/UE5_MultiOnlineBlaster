@@ -7,6 +7,7 @@
 #include "CharacterClassInfo.generated.h"
 
 
+class UGameplayAbility;
 class UGameplayEffect;
 
 
@@ -53,4 +54,7 @@ public:
 	// 重要属性
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TSubclassOf<UGameplayEffect> VitalAttributes;
+	// 初始能力
+	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
+	TArray<TSubclassOf<UGameplayAbility>> CommonAbilities;
 };
