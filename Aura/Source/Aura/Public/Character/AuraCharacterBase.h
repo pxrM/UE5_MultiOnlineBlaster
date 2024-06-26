@@ -29,6 +29,11 @@ public:
 
 	virtual FVector GetCombatSocketLocation() override;
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
+	virtual void Die() override;
+
+	// 将死亡同步到server和client
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void MulticastHandleDie();
 
 	
 protected:

@@ -40,6 +40,30 @@ UAnimMontage* AAuraCharacterBase::GetHitReactMontage_Implementation()
 	return HitReactMontage;
 }
 
+void AAuraCharacterBase::Die()
+{
+	// 将武器从其当前父组件中分离
+	//	FDetachmentTransformRules: 定义了如何进行分离的规则。
+	//	 KeepWorld 表示在分离时保持在世界空间中的位置和旋转，而不是相对于其父组件。true 表示除了位置和旋转外，也保留组件的缩放信息
+	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+	// 广播到client
+	MulticastHandleDie();
+}
+
+void AAuraCharacterBase::MulticastHandleDie_Implementation()
+{
+	Weapon->SetSimulatePhysics(true); // 开启武器的物理模拟
+	Weapon->SetEnableGravity(true); // 开启重力，使其可以自由掉落
+	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly); // 设置碰撞为仅物理模拟，不触发碰撞逻辑
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetEnableGravity(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block); // 设置角色网格对于世界静态物理对象碰撞为阻塞(block)，使绝色不会穿过静态物理
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 将角色胶囊体组件的碰撞设置为不发生碰撞，这样角色在死亡后就不会再与其他物体碰撞。
+}
+
 void AAuraCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();

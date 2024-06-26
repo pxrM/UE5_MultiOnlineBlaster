@@ -36,4 +36,7 @@ public:
 	// 受击蒙太奇
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UAnimMontage* GetHitReactMontage();
+
+	// server：角色死亡
+	virtual void Die() = 0;
 };

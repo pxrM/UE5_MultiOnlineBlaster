@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
+#include "Interaction/CombatInterface.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -106,10 +107,17 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 			const float NewHealth = GetHealth() - LocalIncomingDamage;
 			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 
-			const bool bFatal = NewHealth <= 0.f;
-			// 没有死亡，根据标签激活受击能力
-			if(!bFatal)
+			// 是否死亡 
+			if(const bool bFatal = NewHealth <= 0.f)
 			{
+				if(ICombatInterface* CombatInterface = Cast<ICombatInterface>(Preps.TargetAvatarActor))
+				{
+					CombatInterface->Die();
+				}
+			}
+			else
+			{
+				// 根据标签激活受击能力
 				FGameplayTagContainer TagContainer;
 				TagContainer.AddTag(FAuraGameplayTags::Get().Effect_HitReact);
 				Preps.TargetAsc->TryActivateAbilitiesByTag(TagContainer);
