@@ -30,6 +30,9 @@ public:
 	virtual int32 GetPlayerLevel() override;
 	/*end ICombatInterface*/
 
+	// 受击反应标签的监听委托函数
+	void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -56,5 +59,12 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChangedSignature OnMaxHealthChanged;
+
+	// 击中反应
+	UPROPERTY(BlueprintReadOnly, Category="Combat")
+	bool bHitReacting = false;
+	
+	UPROPERTY(BlueprintReadOnly, Category="Combat")
+	float BaseWalkSpeed = 250.f;
 	
 };

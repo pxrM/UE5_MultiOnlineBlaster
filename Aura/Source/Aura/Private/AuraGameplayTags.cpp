@@ -99,10 +99,14 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Input Tag for 4 key")
 	);
 	/*
-	 * Damage
+	 * Damage 伤害
 	 */
 	GameplayTags.Damage = TagsManager.AddNativeGameplayTag(
 		FName("Damage"),
 		FString("伤害")
+	);
+	GameplayTags.Effect_HitReact = TagsManager.AddNativeGameplayTag(
+		FName("Effect.HitReact"),
+		FString("反应效果(比如受到伤害)")
 	);
 }

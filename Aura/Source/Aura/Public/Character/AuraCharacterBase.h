@@ -28,6 +28,7 @@ public:
 	FORCEINLINE UAttributeSet* GetAttributeSet() const {return AttributeSet;}
 
 	virtual FVector GetCombatSocketLocation() override;
+	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 
 	
 protected:
@@ -102,5 +103,9 @@ private:
 	// 游戏开始赋予角色的能力
 	UPROPERTY(EditAnywhere, Category="Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
+
+	// 受击蒙太奇
+	UPROPERTY(EditAnywhere, Category="Combat")
+	TObjectPtr<UAnimMontage> HitReactMontage;
 	
 };

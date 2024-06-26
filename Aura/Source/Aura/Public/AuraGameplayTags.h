@@ -40,6 +40,7 @@ public:
    FGameplayTag InputTag_4;
 
    FGameplayTag Damage;
+   FGameplayTag Effect_HitReact;
 
    
 private:
