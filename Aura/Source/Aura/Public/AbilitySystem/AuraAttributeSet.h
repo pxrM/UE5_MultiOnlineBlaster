@@ -91,10 +91,13 @@ public:
 	// 修改属性后执行，注意：在效果应用时不会执行，在效果执行时才会执行。
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
+	
 private:
 	// 设置ge的相关属性
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
+	void ShowFloatingText(const FEffectProperties& Props, float Damage) const;
 
+	
 public:
 	UFUNCTION()
 	void OnRep_OnStrength(const FGameplayAttributeData& OldStrength) const;
@@ -131,6 +134,7 @@ public:
 	UFUNCTION()
 	void OnRep_OnMana(const FGameplayAttributeData& OldMana) const;
 
+	
 public:
 	/*
 	 * Primary Attributes

@@ -8,6 +8,7 @@
 #include "AuraPlayerController.generated.h"
 
 
+class UDamageTextComponent;
 class USplineComponent;
 class UAuraAbilitySystemComponent;
 class UAuraInputConfig;
@@ -36,6 +37,8 @@ protected:
 
 public:
 	UAuraAbilitySystemComponent* GetASC();
+	UFUNCTION(Client, Reliable)
+	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter);
 	
 	
 private:
@@ -94,4 +97,8 @@ private:
 
 	// 按下shift
 	bool bShiftKeyDown = false;
+
+	// 显示伤害数值的组件类
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 };
