@@ -61,7 +61,9 @@ void AAuraCharacterBase::MulticastHandleDie_Implementation()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block); // 设置角色网格对于世界静态物理对象碰撞为阻塞(block)，使绝色不会穿过静态物理
 
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 将角色胶囊体组件的碰撞设置为不发生碰撞，这样角色在死亡后就不会再与其他物体碰撞。
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 将角色胶囊体组件的碰撞设置为不发生碰撞，这样角色在死亡后就不会再与其他物体碰撞
+
+	DissolveMaterial();
 }
 
 void AAuraCharacterBase::BeginPlay()
@@ -98,6 +100,23 @@ void AAuraCharacterBase::AddCharacterAbilities()
 
 	UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
 	AuraASC->AddCharacterAbilities(StartupAbilities);
+}
+
+void AAuraCharacterBase::DissolveMaterial()
+{
+	// 需要基于实例材质制作一个动态材质实例（这样才能动态修改），然后设置给角色
+	if(IsValid(AvatarDissolveMaterialInstance))
+	{
+		UMaterialInstanceDynamic* DynamicMatInt = UMaterialInstanceDynamic::Create(AvatarDissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicMatInt);
+		StartAvatarDissolveTimeline(DynamicMatInt);
+	}
+	if(IsValid(WeaponDissolveMaterialInstance))
+	{
+		UMaterialInstanceDynamic* DynamicMatInt = UMaterialInstanceDynamic::Create(WeaponDissolveMaterialInstance, this);
+		Weapon->SetMaterial(0, DynamicMatInt);
+		StartWeaponDissolveTimeline(DynamicMatInt);
+	}
 }
 
 

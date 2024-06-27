@@ -51,6 +51,14 @@ protected:
 	// 向角色添加能力
 	void AddCharacterAbilities();
 
+	// 实例溶解材质并替换
+	void DissolveMaterial();
+	// 溶解需要一个时间过程，在蓝图里面实现时间轴，增加一个蓝图实现的函数，因为不确定有几个材质需要修改，所以设置了一个数组，可能角色和武器两个都需要修改
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartAvatarDissolveTimeline(UMaterialInstanceDynamic* DynamicMaterialInstance);
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartWeaponDissolveTimeline(UMaterialInstanceDynamic* DynamicMaterialInstance);
+
 	
 protected:
 	// 角色武器mesh
@@ -59,6 +67,13 @@ protected:
 	// 武器上的施法插槽名
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	FName WeaponTipSocketName;
+	// 角色溶解材质实例
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UMaterialInstance> AvatarDissolveMaterialInstance;
+	// 武器溶解材质实例
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UMaterialInstance> WeaponDissolveMaterialInstance;
+	
 	/*
 	 * GAS：
 	 * 挂载位置：
