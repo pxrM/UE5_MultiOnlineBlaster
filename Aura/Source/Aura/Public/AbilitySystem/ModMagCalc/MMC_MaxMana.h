@@ -7,7 +7,7 @@
 #include "MMC_MaxMana.generated.h"
 
 /**
- * 
+ * MMC 全称 Mod Magnitude Calculation，为自定义计算数值的类
  */
 UCLASS()
 class AURA_API UMMC_MaxMana : public UGameplayModMagnitudeCalculation
