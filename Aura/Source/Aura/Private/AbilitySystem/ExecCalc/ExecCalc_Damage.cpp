@@ -13,6 +13,7 @@ struct AuraDamageStatics
 {
 	/* 声明对目标的属性获取 start */
 	DECLARE_ATTRIBUTE_CAPTUREDEF(Armor);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(ArmorPenetration);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(BlockChance);
 	/* 声明对目标的属性获取 end */
 	
@@ -20,9 +21,11 @@ struct AuraDamageStatics
 	{
 		// 指定的类 S 中执行属性捕获的定义操作，将捕获的属性和相关定义存储起来。
 		// 参数：S.属性集 P.属性名 T.目标还是自身 B.是否设置快照（true为创建时获取属性，false为应用时获取属性）
-		// 这里获取受击目标的属性值
+		// 这里获取 受击者 身上的属性值
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, Armor, Target, false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, BlockChance, Target, false);
+		// 这里获取 攻击者 身上的属性值
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, ArmorPenetration, Source, false);
 	}
 };
 
@@ -37,6 +40,7 @@ UExecCalc_Damage::UExecCalc_Damage()
 	// 添加到捕获列表里
 	RelevantAttributesToCapture.Add(DamageStatics().ArmorDef);
 	RelevantAttributesToCapture.Add(DamageStatics().BlockChanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().ArmorPenetrationDef);
 }
 
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
@@ -58,18 +62,35 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParameters.SourceTags = SourceTags;
 	EvaluateParameters.TargetTags = TargetTags;
 
-	// 获取由 Caller Magnitude 设置的伤害 
+	// 1. 获取由 Caller Magnitude 设置的伤害 
 	float Damage = Spec.GetSetByCallerMagnitude(FAuraGameplayTags::Get().Damage);
-	// 获取目标身上的格挡几率，并确定是否成功格挡，如果格挡成功，伤害会减少
+	
+	// 2. 获取目标身上的格挡几率，并确定是否成功格挡，如果格挡成功，伤害会减少
 	float TargetBlockChance = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef, EvaluateParameters, TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(0.f, TargetBlockChance);
 	const bool bBlocked = FMath::RandRange(1, 100) < TargetBlockChance;
 	Damage = bBlocked ? Damage / 2.f : Damage;
 
+	// 3. 获取目标身上的护甲
+	float TargetArmor = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorDef, EvaluateParameters, TargetArmor);
+	TargetArmor = FMath::Max<float>(0.f, TargetArmor);
+
+	// 4. 获取自身的护甲穿透（忽略目标身上的一定比例的护甲）
+	float SourceArmorPenetration = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorPenetrationDef, EvaluateParameters, SourceArmorPenetration);
+	SourceArmorPenetration = FMath::Max<float>(0.f, SourceArmorPenetration);
+
+	// (100 - SourceArmorPenetration * 0.25f) / 100.f：这部分计算了护甲穿透后的百分比。
+	const float EffectiveArmor = (TargetArmor *= (100 - SourceArmorPenetration * 0.25f) / 100.f);
+	// 这部分计算了伤害减免的百分比。0.333f 是一个调整系数，用来在游戏中平衡伤害与护甲之间的关系。
+	Damage *= ((100 - EffectiveArmor * 0.333f) / 100.f);
+
 	// 将计算结果写入输出
 	const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);
+	
 	/*
 	// 在执行计算中进行实际捕获
 	float Armor = 0.f;
