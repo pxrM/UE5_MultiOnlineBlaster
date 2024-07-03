@@ -44,17 +44,25 @@ class AURA_API UCharacterClassInfo : public UDataAsset
 
 public:
 	FCharacterClassDefaultInfo GetClassDefaultInfo(const ECharacterClassType CharacterClass);
-
-public:
+	
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TMap<ECharacterClassType, FCharacterClassDefaultInfo> CharacterClassInformation;
+	
 	// 次要属性
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TSubclassOf<UGameplayEffect> SecondaryAttributes;
+	
 	// 重要属性
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TSubclassOf<UGameplayEffect> VitalAttributes;
+	
 	// 初始能力
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TArray<TSubclassOf<UGameplayAbility>> CommonAbilities;
+
+	// 伤害计算系数表：
+	// 在使用护甲穿透和护甲时，乘以一个数值来调整它们的影响。这是为了在RPG游戏中，前期游戏数值低，后期数值高，导致值的影响前期太低或者后期太高，
+	// 所以，将其设置为一个可以跟随等级变动的数值，来让前期低数值时获取一个比例，并且在高等级时，不会导致数值溢出的问题。
+	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults|Damage")
+	TObjectPtr<UCurveTable> DamageCalculationCoefficients;
 };
