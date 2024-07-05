@@ -7,6 +7,7 @@
 #include "AuraProjectileSpell.generated.h"
 
 class AAuraProjectileActor;
+
 /**
  * 火球咒语技能
  */
@@ -14,7 +15,6 @@ UCLASS()
 class AURA_API UAuraProjectileSpell : public UAuraGameplayAbility
 {
 	GENERATED_BODY()
-
 
 protected:
 	/*
@@ -24,12 +24,14 @@ protected:
 	 * ActivationInfo：激活信息，提供了有关激活游戏能力的详细信息，比如激活类型、原因等。
 	 * TriggerEventData：激活事件的数据，包括了触发激活的具体事件信息。
 	 */
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	                             const FGameplayAbilityActorInfo* ActorInfo,
+	                             const FGameplayAbilityActivationInfo ActivationInfo,
+	                             const FGameplayEventData* TriggerEventData) override;
 	// 生成子弹
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
 	void SpawnProjectile(const FVector& ProjectileTargetLocation);
-	
+
 	
 protected:
 	// 子弹类
