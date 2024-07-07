@@ -78,7 +78,8 @@ bool FAuraGameplayEffectContent::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			if (!HitResult.IsValid())
 			{
-				HitResult = TSharedPtr<FHitResult>(new FHitResult());
+				// HitResult = TSharedPtr<FHitResult>(new FHitResult());
+				HitResult = MakeShared<FHitResult>();
 			}
 		}
 		HitResult->NetSerialize(Ar, Map, bOutSuccess);
