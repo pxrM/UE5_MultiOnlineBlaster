@@ -7,6 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+struct FGameplayEffectContextHandle;
 class UAttributeMenuWidgetController;
 class UAbilitySystemComponent;
 class UOverlayWidgetController;
@@ -43,4 +44,20 @@ public:
 	// 获取角色类型信息表
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
+
+	// 获取上下文是否阻挡成功
+	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static bool IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle);
+	
+	// 获取上下文是否暴击
+	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static bool IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle);
+
+	// 设置上下文是否阻挡成功。UPARAM(ref) 表示使用引用传入的参数，而不是一个out参数，在蓝图里会出现在左侧。
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static void SetIsBlockedHit(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const bool bInIsBlockedHit);
+	
+	// 设置上下文是否暴击。UPARAM(ref) 表示使用引用传入的参数，而不是一个out参数，在蓝图里会出现在左侧。
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static void SetIsCriticalHit(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const bool bInIsCriticalHit);
 };

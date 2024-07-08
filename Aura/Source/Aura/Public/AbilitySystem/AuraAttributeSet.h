@@ -95,7 +95,7 @@ public:
 private:
 	// 设置ge的相关属性
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
-	void ShowFloatingText(const FEffectProperties& Props, float Damage) const;
+	void ShowFloatingText(const FEffectProperties& Props, const float Damage, const bool bBlockedHit, const bool bCriticalHit) const;
 
 	
 public:

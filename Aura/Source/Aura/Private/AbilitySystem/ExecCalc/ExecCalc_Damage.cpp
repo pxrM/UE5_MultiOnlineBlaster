@@ -4,6 +4,7 @@
 #include "AbilitySystem/ExecCalc/ExecCalc_Damage.h"
 
 #include "AbilitySystemComponent.h"
+#include "AuraAbilityTypes.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
@@ -73,6 +74,8 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 
 	const UCharacterClassInfo* CharacterClassInfo = UAuraAbilitySystemLibrary::GetCharacterClassInfo(SourceAvatar);
 
+	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
+
 	// 用于在 Aggregator（聚合器）中评估属性值时传递参数。聚合器在游戏中用于计算和管理属性（Attributes）的变化和影响，比如生命值、攻击力等
 	FAggregatorEvaluateParameters EvaluateParameters;
 	EvaluateParameters.SourceTags = SourceTags;
@@ -85,6 +88,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef, EvaluateParameters, TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(0.f, TargetBlockChance);
 	const bool bBlocked = FMath::RandRange(1, 100) < TargetBlockChance;
+	UAuraAbilitySystemLibrary::SetIsBlockedHit(EffectContextHandle, bBlocked);
 	Damage = bBlocked ? Damage / 2.f : Damage;
 	// 3. 获取目标身上的护甲
 	float TargetArmor = 0.f;
@@ -120,8 +124,10 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	// 11. 计算暴击概率（暴击抗性降低一定百分比的暴击几率）和是否暴击
 	const float EffectiveCriticalHitChance = SourceCriticalHitChance - TargetCriticalHitResistance * CriticalResistanceCoefficient;
 	const bool bCriticalHit = FMath::RandRange(1, 100) < EffectiveCriticalHitChance;
+	UAuraAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, bCriticalHit);
 	// 12. 计算暴击伤害：双倍伤害加上暴击伤害加成
 	Damage = bCriticalHit ? 2.f * Damage + SourceCriticalHitDamage : Damage;
+	
 	
 	// 将计算结果写入输出
 	const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);

@@ -5,7 +5,7 @@
 
 
 USTRUCT(BlueprintType)
-struct FAuraGameplayEffectContent : public FGameplayEffectContext
+struct FAuraGameplayEffectContext : public FGameplayEffectContext
 {
 	GENERATED_BODY()
 
@@ -85,7 +85,7 @@ protected:
  *	  比如 WithIdenticalViaEquality 就是告诉它自己有 EStructFlags::STRUCT_IdenticalNative 标记，实现了自定义 IsIdentical 的方法，可以直接使用 operator== 来判定。
  */
 template<>
-struct TStructOpsTypeTraits<FAuraGameplayEffectContent> : public TStructOpsTypeTraitsBase2<FAuraGameplayEffectContent>
+struct TStructOpsTypeTraits<FAuraGameplayEffectContext> : public TStructOpsTypeTraitsBase2<FAuraGameplayEffectContext>
 {
 	enum
 	{

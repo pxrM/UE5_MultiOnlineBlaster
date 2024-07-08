@@ -2,7 +2,7 @@
 #include "AuraAbilityTypes.h"
 
 
-bool FAuraGameplayEffectContent::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
 {
 	int32 RepBits = 0;
 
