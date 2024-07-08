@@ -38,10 +38,10 @@ protected:
 public:
 	UAuraAbilitySystemComponent* GetASC();
 	UFUNCTION(Client, Reliable)
-	void ShowDamageNumber(float DamageAmount, ACharacter* TargetCharacter);
+	void ShowDamageNumber(const float DamageAmount, ACharacter* TargetCharacter, const bool bBlockedHit, const bool bCriticalHit);
 	
 	
-private:
+private: 
 	void Move(const FInputActionValue& InputActionValue);
 	void CursorTrace();
 	void AutoMove();
