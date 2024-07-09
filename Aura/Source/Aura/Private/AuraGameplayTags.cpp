@@ -108,12 +108,46 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Damage"),
 		FString("基础伤害")
 	);
-	GameplayTags.DamageTypes.Add(GameplayTags.Damage);
 	GameplayTags.Damage_Fire = TagsManager.AddNativeGameplayTag(
 		FName("Damage.Fire"),
-		FString("火球伤害类型")
+		FString("火属性伤害")
 	);
-	GameplayTags.DamageTypes.Add(GameplayTags.Damage_Fire);
+	GameplayTags.Damage_Lightning = TagsManager.AddNativeGameplayTag(
+		FName("Damage.Lightning"),
+		FString("雷属性伤害")
+	);
+	GameplayTags.Damage_Arcane = TagsManager.AddNativeGameplayTag(
+		FName("Damage.Arcane"),
+		FString("魔法伤害")
+	);
+	GameplayTags.Damage_Physical = TagsManager.AddNativeGameplayTag(
+		FName("Damage.Physical"),
+		FString("物理伤害")
+	);
+	/*
+	 * 抗性
+	 */
+	GameplayTags.Attributes_Resistance_Fire = TagsManager.AddNativeGameplayTag(
+		FName("Attributes.Resistance.Fire"),
+		FString("火属性抗性")
+	);
+	GameplayTags.Attributes_Resistance_Lightning = TagsManager.AddNativeGameplayTag(
+		FName("Attributes.Resistance.Lightning"),
+		FString("雷属性抗性")
+	);
+	GameplayTags.Attributes_Resistance_Arcane = TagsManager.AddNativeGameplayTag(
+		FName("Attributes.Resistance.Arcane"),
+		FString("魔法伤害抗性")
+	);
+	GameplayTags.Attributes_Resistance_Physical = TagsManager.AddNativeGameplayTag(
+		FName("Attributes.Resistance.Physical"),
+		FString("物理伤害抗性")
+	);
+	// 将属性和抗性标签对应
+	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Fire, GameplayTags.Attributes_Resistance_Fire);
+	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Lightning, GameplayTags.Attributes_Resistance_Lightning);
+	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Arcane, GameplayTags.Attributes_Resistance_Arcane);
+	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Physical, GameplayTags.Attributes_Resistance_Physical);
 	/*
 	 * 表现
 	 */
