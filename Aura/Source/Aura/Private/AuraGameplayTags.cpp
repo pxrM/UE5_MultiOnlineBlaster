@@ -100,11 +100,23 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	);
 	/*
 	 * Damage 伤害
+	 * 在正常的RPG游戏中，都存在一个类别就是属性伤害，比如，有一个火属性的技能，
+	 * 它造成的伤害就是火属性类型的，并且它还有可能有附加伤害，比如给予目标一个灼烧效果，每秒造成多少的火属性伤害。
+	 * 目标角色会有一个火属性伤害抵抗，根据百分比减少伤害。技能伤害区分物理伤害和魔法伤害，有些技能能够造成两种伤害。  
 	 */
 	GameplayTags.Damage = TagsManager.AddNativeGameplayTag(
 		FName("Damage"),
-		FString("伤害")
+		FString("基础伤害")
 	);
+	GameplayTags.DamageTypes.Add(GameplayTags.Damage);
+	GameplayTags.Damage_Fire = TagsManager.AddNativeGameplayTag(
+		FName("Damage.Fire"),
+		FString("火球伤害类型")
+	);
+	GameplayTags.DamageTypes.Add(GameplayTags.Damage_Fire);
+	/*
+	 * 表现
+	 */
 	GameplayTags.Effect_HitReact = TagsManager.AddNativeGameplayTag(
 		FName("Effect.HitReact"),
 		FString("反应效果(比如受到伤害)")
