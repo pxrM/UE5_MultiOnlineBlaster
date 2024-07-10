@@ -155,4 +155,6 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.HitReact"),
 		FString("反应效果(比如受到伤害)")
 	);
+
+	GameplayTags.TagsInitCompleteNotify.ExecuteIfBound();
 }

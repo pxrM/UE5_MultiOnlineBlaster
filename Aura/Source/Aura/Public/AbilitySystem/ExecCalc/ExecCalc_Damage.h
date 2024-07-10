@@ -35,4 +35,10 @@ public:
 	 * @return OutExecutionOutput: 执行结果输出
 	 */
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
+
+private:
+	UFUNCTION()
+	void InitTagsToCaptureDefs();
+	/* 存储标签和属性快照对应的Map */
+	TMap<FGameplayTag, FGameplayEffectAttributeCaptureDefinition> TagsToCaptureDefs;
 };

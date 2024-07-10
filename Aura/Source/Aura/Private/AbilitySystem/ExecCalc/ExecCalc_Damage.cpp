@@ -12,17 +12,20 @@
 #include "Interaction/CombatInterface.h"
 
 // 创建一个结构用来保存所有需要捕获的属性
-
 struct AuraDamageStatics
 {
-	/* 声明对目标的属性获取 start */
+	/* 声明对目标或自己的属性获取 start */
 	DECLARE_ATTRIBUTE_CAPTUREDEF(Armor);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ArmorPenetration);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(BlockChance);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitChance);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitDamage);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitResistance);
-	/* 声明对目标的属性获取 end */
+	DECLARE_ATTRIBUTE_CAPTUREDEF(FireResistance);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(LightningResistance);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(ArcaneResistance);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(PhysicalResistance);
+	/* 声明对目标或自己的属性获取 end */
 	
 	AuraDamageStatics()
 	{
@@ -32,6 +35,10 @@ struct AuraDamageStatics
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, Armor, Target, false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, BlockChance, Target, false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, CriticalHitResistance, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, FireResistance, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, LightningResistance, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, ArcaneResistance, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, PhysicalResistance, Target, false);
 		// 这里获取 攻击者 身上的属性值
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, ArmorPenetration, Source, false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet, CriticalHitChance, Source, false);
@@ -54,6 +61,23 @@ UExecCalc_Damage::UExecCalc_Damage()
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitChanceDef);
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitDamageDef);
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().FireResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().LightningResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().ArcaneResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().PhysicalResistanceDef);
+
+	FAuraGameplayTags& AuraTags = const_cast<FAuraGameplayTags&>(FAuraGameplayTags::Get());
+	AuraTags.TagsInitCompleteNotify.BindUObject(this, &UExecCalc_Damage::InitTagsToCaptureDefs);
+}
+
+void UExecCalc_Damage::InitTagsToCaptureDefs()
+{
+	// 添加标签和属性快照对应的数据
+	const FAuraGameplayTags& AuraTags = FAuraGameplayTags::Get();
+	TagsToCaptureDefs.Add(AuraTags.Attributes_Resistance_Fire, DamageStatics().FireResistanceDef);
+	TagsToCaptureDefs.Add(AuraTags.Attributes_Resistance_Lightning, DamageStatics().LightningResistanceDef);
+	TagsToCaptureDefs.Add(AuraTags.Attributes_Resistance_Arcane, DamageStatics().ArcaneResistanceDef);
+	TagsToCaptureDefs.Add(AuraTags.Attributes_Resistance_Physical, DamageStatics().PhysicalResistanceDef);
 }
 
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
@@ -85,7 +109,27 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	float Damage = 0.f;
 	for (auto& Pair : FAuraGameplayTags::Get().DamageTypesToResistance)
 	{
-		const float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key);
+		const FGameplayTag DamageTypeTag = Pair.Key;
+		const FGameplayTag ResistanceTag = Pair.Value;
+		checkf(TagsToCaptureDefs.Contains(ResistanceTag),
+		       TEXT("TagsToCaptureDefs doesn't contain Tag:[%s] in ExecCalc_Damage"), *ResistanceTag.ToString());
+		// 通过tag获取对应伤害值
+		float DamageTypeValue = Spec.GetSetByCallerMagnitude(DamageTypeTag);
+		// 获取抗性值
+		const FGameplayEffectAttributeCaptureDefinition CaptureDef = TagsToCaptureDefs[ResistanceTag];
+		float Resistance = 0.f;
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(CaptureDef, EvaluateParameters, Resistance);
+		Resistance = FMath::Clamp(Resistance, 0, 100.f);
+		/*
+		 * 假设 DamageTypeValue 是 100（即原始伤害值），而 Resistance 是 20（即抵抗 20% 的伤害）：
+		 *	计算步骤：
+		 *		100.f - 20 = 80（即未抵抗的伤害占 80%）。
+		 *		80 / 100.f = 0.8（转换为小数）。
+		 *		DamageTypeValue *= 0.8 = 100 * 0.8 = 80。
+		 *	因此，抵抗 20% 的伤害会使得最终伤害值变为 80。
+		 */
+		DamageTypeValue *= (100.f - Resistance) / 100.f;
+		// 将每种属性伤害值合并进行后续计算
 		Damage += DamageTypeValue;
 	}
 	// 2. 获取目标身上的格挡几率，并确定是否成功格挡，如果格挡成功，伤害会减少

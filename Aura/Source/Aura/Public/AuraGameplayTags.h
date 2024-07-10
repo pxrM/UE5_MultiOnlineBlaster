@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 
+DECLARE_DELEGATE(FTagsInitCompleteNotify)
+
 /**
  * 
  */
-
 struct FAuraGameplayTags
 {
 public:
@@ -54,6 +55,8 @@ public:
    
    FGameplayTag Effect_HitReact;
 
+public:
+   FTagsInitCompleteNotify TagsInitCompleteNotify; 
    
 private:
    static FAuraGameplayTags GameplayTags;
