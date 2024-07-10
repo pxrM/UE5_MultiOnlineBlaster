@@ -130,6 +130,15 @@ public:
 	void OnRep_OnMaxMana(const FGameplayAttributeData& OldMaxMana) const;
 
 	UFUNCTION()
+	void OnRep_OnFireResistance(const FGameplayAttributeData& OldFireResistance) const;
+	UFUNCTION()
+	void OnRep_OnLightningResistance(const FGameplayAttributeData& OldLightningResistance) const;
+	UFUNCTION()
+	void OnRep_OnArcaneResistance(const FGameplayAttributeData& OldArcaneResistance) const;
+	UFUNCTION()
+	void OnRep_OnPhysicalResistance(const FGameplayAttributeData& OldPhysicalResistance) const;
+
+	UFUNCTION()
 	void OnRep_OnHealth(const FGameplayAttributeData& OldHealth) const;
 	UFUNCTION()
 	void OnRep_OnMana(const FGameplayAttributeData& OldMana) const;
@@ -205,6 +214,28 @@ public:
 
 
 	/*
+	 * Resistance Attributes
+	 */
+	
+	// 生命值恢复，依赖 Vigor 属性，每秒恢复的生命值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnFireResistance, Category = "Resistance Attributes")
+	FGameplayAttributeData FireResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, FireResistance);
+	// 法力恢复，依赖 Intelligence 属性，每秒恢复的法力值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnLightningResistance, Category = "Resistance Attributes")
+	FGameplayAttributeData LightningResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, LightningResistance);
+	// 最大健康，依赖 Vigor 属性，可获得的最大生命值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnArcaneResistance, Category = "Resistance Attributes")
+	FGameplayAttributeData ArcaneResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, ArcaneResistance);
+	// 最大法力，依赖 Intelligence 属性，可获得的最大法力值
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_OnPhysicalResistance, Category="Resistance Attributes")
+	FGameplayAttributeData PhysicalResistance;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, PhysicalResistance);
+
+	
+	/*
 	 * Vital Attributes
 	 */
 
@@ -239,7 +270,6 @@ public:
 	// TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr FunctionPointer;
 	// C++: TMap<FGameplayTag, FGameplayAttribute(*)()> TestTagsToAttributes;
 	// 别名：TMap<FGameplayTag, FAttributeFuncPtr> TagsToAttributes;
-	
 	/* 将tag和attribute进行映射 */
 	TMap<FGameplayTag, TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
 	
