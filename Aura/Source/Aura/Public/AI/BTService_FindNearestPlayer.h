@@ -21,7 +21,15 @@ protected:
 	 * NodeMemory：一个指向节点内存的指针，用于存储和访问节点特定的数据
 	 * DeltaSeconds：上次执行 TickNode 到现在的时间间隔。
 	 * 执行时间间隔可以在蓝图的 Interval 中设置， Random Deviation 表示随机偏差，作用在Interval设置的时间上
-	 *	 eg：Interval = 0.5， Random Deviation = 0.1，则结果是0.5正负0.1
+	 *	 eg：Interval = 0.5， Random Deviation = 0.1，则结果是0.5正负0.1，0.4~0.6
 	 */
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+protected:
+	// 需要跟随攻击的目标
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FBlackboardKeySelector TargetToFollowSelector;
+	// 和目标的距离
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FBlackboardKeySelector DistanceToTargetSelector;
 };
