@@ -46,6 +46,10 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	// 运行行为树
 	AuraAIController->RunBehaviorTree(BehaviorTree);
+	// 设置黑板数据，角色是否在受击状态为false
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
+	// 设置黑板数据，角色是否是远程攻击职业
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("RangedAttacker"), CharacterClassType != ECharacterClassType::Warrior);
 }
 
 void AAuraEnemy::HighlightActor()
@@ -114,6 +118,8 @@ void AAuraEnemy::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCou
 {
 	bHitReacting = NewCount > 0;
 	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
+	// 设置黑板数据，角色是否在受击状态为true
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), true);
 }
 
 void AAuraEnemy::Die()
@@ -137,5 +143,5 @@ void AAuraEnemy::InitAbilityActorInfo()
 
 void AAuraEnemy::InitializeDefaultAttributes() const
 {
-	UAuraAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClass, Level, AbilitySystemComponent);
+	UAuraAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClassType, Level, AbilitySystemComponent);
 }

@@ -15,7 +15,7 @@
  *		Root 根节点：无法被附着，可以用来设置黑板数据
  *		Composite 节点：定义一个分支的根起点，及该分支如何被执行的基本规则
  *			Root下只能跟随composite
- *			包含Selector，Sequence，Simple Parallel
+ *			包含 Selector，Sequence，Simple Parallel
  *			节点内容简单，但是附加逻辑项多，逻辑点繁琐
  *			所有逻辑结构设计尽量遵循 Composite 规则
  *			Sequence：从左至右执行，只要有一个子项不成立，则停止执行剩余项（所有子项成立，则sequence成立）
