@@ -17,7 +17,7 @@ enum class ECharacterClassType
 {
 	Elementalist, // 元素师
 	Warrior,	  // 战士
-	Ranger,		  // 游侠（漫游枪手）
+	Ranger,		  // 游侠(漫游枪手)
 };
 
 
