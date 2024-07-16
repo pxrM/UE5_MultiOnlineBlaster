@@ -26,4 +26,14 @@ public:
 	virtual void HighlightActor() = 0;
 	// 取消高亮显示敌人
 	virtual void UnHighlightActor() = 0;
+
+	/*
+	 * 蓝图可覆盖函数
+	 */
+	// 设置攻击目标
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void SetCombatTarget(AActor* InCombatTarget);
+	// 获取攻击目标
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	AActor* GetCombatTarget();
 };

@@ -29,16 +29,17 @@ public:
 	/* start IEnemyInterface */
 	virtual void HighlightActor() override;
 	virtual void UnHighlightActor() override;
+	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
+	virtual AActor* GetCombatTarget_Implementation() override;
 	/* end IEnemyInterface */
 
 	/* start ICombatInterface */
 	virtual int32 GetPlayerLevel() override;
+	virtual void Die() override;
 	/*end ICombatInterface*/
 
 	// 受击反应标签的监听委托函数
 	void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
-
-	virtual void Die() override;
 
 
 protected:
@@ -84,5 +85,8 @@ public:
 	// 死亡后的存在时间
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	float LifeSpan = 5.f;
-	
+
+	// 攻击目标
+	UPROPERTY(BlueprintReadWrite, Category="Combat")
+	TObjectPtr<AActor> CombatTarget;
 };
