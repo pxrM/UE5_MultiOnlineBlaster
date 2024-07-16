@@ -82,7 +82,7 @@ void AAuraEnemy::BeginPlay()
 	if(HasAuthority())
 	{
 		// 如果是在server则直接初始化角色技能
-		UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
+		UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent, CharacterClassType);
 	}
 
 	if(UAuraUserWidget* AuraUserWidget = Cast<UAuraUserWidget>(HealthBar->GetUserWidgetObject()))

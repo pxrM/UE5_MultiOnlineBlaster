@@ -149,6 +149,13 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Arcane, GameplayTags.Attributes_Resistance_Arcane);
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Physical, GameplayTags.Attributes_Resistance_Physical);
 	/*
+	 * 技能
+	 */
+	GameplayTags.Abilities_Attack = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Attack"),
+		FString("攻击技能标签")
+	);
+	/*
 	 * 表现
 	 */
 	GameplayTags.Effect_HitReact = TagsManager.AddNativeGameplayTag(

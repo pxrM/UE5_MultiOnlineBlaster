@@ -228,7 +228,7 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 				}
 				// 如果点击位置为自动寻路无法到达的位置，导航还是会生成一条路径，但是我们无法达到最终点，这样无法停止自动寻路
 				// 需要在鼠标抬起时，将路径的终点设置给CachedDestination，这也是自动寻路的最终点。获取数组中的最后一个点
-				if(NavPath->PathPoints.Num() - 1)
+				if(NavPath->PathPoints.Num() > 0)
 				{
 					CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
 					bAutoRunning = true;

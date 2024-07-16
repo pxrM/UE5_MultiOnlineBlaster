@@ -21,21 +21,24 @@ enum class ECharacterClassType
 };
 
 
-// 角色默认信息结构体 
+// 单个角色职业默认信息结构体 
 USTRUCT()
 struct FCharacterClassDefaultInfo
 {
 	GENERATED_BODY()
 
-	// 主要游戏技能
+	// 主要游戏属性
 	UPROPERTY(EditDefaultsOnly, Category="Class Default")
 	TSubclassOf<UGameplayEffect> PrimaryAttributes;
+	// 职业的初始技能
+	UPROPERTY(EditDefaultsOnly, Category="Class Default")
+	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
 };
 
 
 
 /**
- * 角色类型信息表
+ * 游戏角色类型信息表
  */
 UCLASS()
 class AURA_API UCharacterClassInfo : public UDataAsset
@@ -44,7 +47,8 @@ class AURA_API UCharacterClassInfo : public UDataAsset
 
 public:
 	FCharacterClassDefaultInfo GetClassDefaultInfo(const ECharacterClassType CharacterClass);
-	
+
+	// 角色类型和角色信息对应的map
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TMap<ECharacterClassType, FCharacterClassDefaultInfo> CharacterClassInformation;
 	
