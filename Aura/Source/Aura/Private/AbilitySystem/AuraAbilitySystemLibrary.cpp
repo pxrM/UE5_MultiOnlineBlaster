@@ -140,3 +140,37 @@ void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& E
 		AuraEffectContext->SetIsCriticalHit(bInIsCriticalHit);
 	}
 }
+
+void UAuraAbilitySystemLibrary::GetLivePlayerWithinRadius(const UObject* WorldContextObject,
+	TArray<AActor*>& OutOverlappingActors, const TArray<AActor*>& ActorsToIgnore, float Radius,
+	const FVector& SphereOrigin)
+{
+	/*
+	 * 参考ue UGameplayStatics::ApplyRadialDamageWithFalloff 函数
+	 */
+	// 创建用于配置碰撞查询的结构体。通常用于执行射线碰撞、形状查询或其他物理查询操作时，用于指定查询的参数和选项。
+	FCollisionQueryParams SphereParams;
+	// 添加需要忽略的actors
+	SphereParams.AddIgnoredActors(ActorsToIgnore);
+	// 获取当前world
+	if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject,
+	                                                             EGetWorldErrorMode::LogAndReturnNull))
+	{
+		// 创建存储检索到与碰撞体产生碰撞的Actor
+		TArray<FOverlapResult> Overlaps;
+		// 获取所有与此范围碰撞的动态物体
+		World->OverlapMultiByObjectType(Overlaps, SphereOrigin, FQuat::Identity,
+		                                FCollisionObjectQueryParams(
+			                                FCollisionObjectQueryParams::InitType::AllDynamicObjects),
+		                                FCollisionShape::MakeSphere(Radius), SphereParams);
+		// 如果满足条件则添加的输出列表中
+		for (FOverlapResult Overlap : Overlaps)
+		{
+			const bool IsImplementCombatInterface = Overlap.GetActor()->Implements<UCombatInterface>();
+			if (IsImplementCombatInterface && !ICombatInterface::Execute_IsDead(Overlap.GetActor()))
+			{
+				OutOverlappingActors.AddUnique(ICombatInterface::Execute_GetAvatar(Overlap.GetActor()));
+			}
+		}
+	}
+}

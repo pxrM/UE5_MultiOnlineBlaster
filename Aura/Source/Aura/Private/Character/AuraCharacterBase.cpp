@@ -50,6 +50,16 @@ void AAuraCharacterBase::Die()
 	MulticastHandleDie();
 }
 
+bool AAuraCharacterBase::IsDead_Implementation() const
+{
+	return bDead;
+}
+
+AActor* AAuraCharacterBase::GetAvatar_Implementation()
+{
+	return this;
+}
+
 void AAuraCharacterBase::MulticastHandleDie_Implementation()
 {
 	Weapon->SetSimulatePhysics(true); // 开启武器的物理模拟
@@ -64,6 +74,8 @@ void AAuraCharacterBase::MulticastHandleDie_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 将角色胶囊体组件的碰撞设置为不发生碰撞，这样角色在死亡后就不会再与其他物体碰撞
 
 	DissolveMaterial();
+
+	bDead = true;
 }
 
 void AAuraCharacterBase::BeginPlay()

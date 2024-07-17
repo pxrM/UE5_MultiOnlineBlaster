@@ -30,6 +30,8 @@ public:
 	virtual FVector GetCombatSocketLocation_Implementation() override;
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die() override;
+	virtual bool IsDead_Implementation() const override;
+	virtual AActor* GetAvatar_Implementation() override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
@@ -73,6 +75,8 @@ protected:
 	// 武器溶解材质实例
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMaterialInstance> WeaponDissolveMaterialInstance;
+	// 是否死亡
+	bool bDead = false;
 	
 	/*
 	 * GAS：

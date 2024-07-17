@@ -56,8 +56,20 @@ public:
 	// 设置上下文是否阻挡成功。UPARAM(ref) 表示使用引用传入的参数，而不是一个out参数，在蓝图里会出现在左侧。
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static void SetIsBlockedHit(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const bool bInIsBlockedHit);
-	
+
 	// 设置上下文是否暴击。UPARAM(ref) 表示使用引用传入的参数，而不是一个out参数，在蓝图里会出现在左侧。
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
-	static void SetIsCriticalHit(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const bool bInIsCriticalHit);
+	static void SetIsCriticalHit(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle,
+	                             const bool bInIsCriticalHit);
+
+	//获取攻击位置指定半径内的所有动态Actor
+	// WorldContextObject: 世界上下文
+	// OutOverlappingActors: 查找结果列表
+	// ActorsToIgnore: 需要忽略的actors
+	// Radius: 查找半径
+	// SphereLocation: 查找位置
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayMechanics")
+	static void GetLivePlayerWithinRadius(const UObject* WorldContextObject, TArray<AActor*>& OutOverlappingActors,
+	                                      const TArray<AActor*>& ActorsToIgnore, float Radius,
+	                                      const FVector& SphereOrigin);
 };

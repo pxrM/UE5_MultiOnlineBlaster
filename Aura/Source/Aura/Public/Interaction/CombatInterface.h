@@ -25,7 +25,7 @@ public:
 	// 获取等级
 	virtual int32 GetPlayerLevel();
 	
-	// 获取武器上的插槽位置
+	// 获取武器上的插槽位置 (BlueprintNativeEvent，会通过蓝图初始化虚函数，可以在蓝图中覆写（如果在蓝图中覆写，C++版本的实现将会失效）)
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FVector GetCombatSocketLocation();
 
@@ -40,4 +40,12 @@ public:
 
 	// server：角色死亡
 	virtual void Die() = 0;
+
+	// 获取角色是否死亡
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool IsDead() const;
+	
+	// 获取角色的Avatar
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	AActor* GetAvatar();
 };
