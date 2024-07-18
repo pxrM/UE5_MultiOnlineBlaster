@@ -156,6 +156,21 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("攻击技能标签")
 	);
 	/*
+	 * 蒙太奇
+	 */
+	GameplayTags.Montage_Attack_Weapon = TagsManager.AddNativeGameplayTag(
+		FName("Montage.Attack.Weapon"),
+		FString("使用武器攻击的蒙太奇标签")
+	);
+	GameplayTags.Montage_Attack_RightHand = TagsManager.AddNativeGameplayTag(
+		FName("Montage.Attack.RightHand"),
+		FString("使用右手攻击的蒙太奇标签")
+	);
+	GameplayTags.Montage_Attack_LeftHand = TagsManager.AddNativeGameplayTag(
+		FName("Montage.Attack.LeftHand"),
+		FString("使用左手攻击的蒙太奇标签")
+	);
+	/*
 	 * 表现
 	 */
 	GameplayTags.Effect_HitReact = TagsManager.AddNativeGameplayTag(
