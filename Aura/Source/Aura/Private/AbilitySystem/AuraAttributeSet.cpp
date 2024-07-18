@@ -149,7 +149,13 @@ void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, const f
 {
 	if(Props.SourceCharacter != Props.TargetCharacter)
 	{
+		// 从技能释放者身上获取PC然后显示HUD
 		if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller))
+		{
+			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
+		}
+		// 从受击目标身上获取PC然后显示HUD
+		if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.TargetCharacter->Controller))
 		{
 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
 		}

@@ -14,6 +14,11 @@ class AURA_API UAuraDamageGameplayAbility : public UAuraGameplayAbility
 {
 	GENERATED_BODY()
 
+public:
+	// 添加伤害
+	UFUNCTION(BlueprintCallable)
+	void CauseDamage(AActor* TargetActor);
+
 protected:
 	// 该技能的伤害ge类
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

@@ -128,8 +128,11 @@ void AAuraEnemy::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCou
 {
 	bHitReacting = NewCount > 0;
 	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
-	// 设置黑板数据，角色是否在受击状态为true
-	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), true);
+	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	{
+		// 设置黑板数据，角色是否在受击状态为true
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), true);
+	}
 }
 
 void AAuraEnemy::Die()
