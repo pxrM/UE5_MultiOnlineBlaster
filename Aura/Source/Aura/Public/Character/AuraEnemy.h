@@ -79,7 +79,7 @@ public:
 	bool bHitReacting = false;
 
 	// 行走速度
-	UPROPERTY(BlueprintReadOnly, Category="Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	float BaseWalkSpeed = 250.f;
 
 	// 死亡后的存在时间
