@@ -6,6 +6,8 @@
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "AuraDamageGameplayAbility.generated.h"
 
+struct FTaggedMontage;
+
 /**
  * 游戏伤害能力基类
  */
@@ -18,6 +20,9 @@ public:
 	// 添加伤害
 	UFUNCTION(BlueprintCallable)
 	void CauseDamage(AActor* TargetActor);
+
+	UFUNCTION(BlueprintPure)
+	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;
 
 protected:
 	// 该技能的伤害ge类

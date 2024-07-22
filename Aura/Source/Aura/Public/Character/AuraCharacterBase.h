@@ -70,6 +70,10 @@ protected:
 	// 武器上的施法插槽名
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	FName WeaponTipSocketName;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FName LeftHandTipSocketName;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FName RightHandTipSocketName;
 	// 角色溶解材质实例
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMaterialInstance> AvatarDissolveMaterialInstance;

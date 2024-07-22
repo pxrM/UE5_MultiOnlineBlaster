@@ -5,6 +5,7 @@
 
 #include "GameplayEffectTypes.h"
 #include "AbilitySystemComponent.h"
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
@@ -31,6 +32,14 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
 
 FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag)
 {
+	if(MontageTag.MatchesTagExact(FAuraGameplayTags::Get().Montage_Attack_LeftHand))
+	{
+		return GetMesh()->GetSocketLocation(LeftHandTipSocketName);
+	}
+	if(MontageTag.MatchesTagExact(FAuraGameplayTags::Get().Montage_Attack_RightHand))
+	{
+		return GetMesh()->GetSocketLocation(RightHandTipSocketName);
+	}
 	return Weapon->GetSocketLocation(WeaponTipSocketName);
 }
 
