@@ -65,7 +65,7 @@ protected:
 	
 protected:
 	// 角色武器mesh
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
 	// 武器上的施法插槽名
 	UPROPERTY(EditAnywhere, Category = "Combat")
