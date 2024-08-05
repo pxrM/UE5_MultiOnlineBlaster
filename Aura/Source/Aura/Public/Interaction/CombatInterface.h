@@ -8,6 +8,7 @@
 #include "CombatInterface.generated.h"
 
 
+class UNiagaraSystem;
 // 标签对应蒙太奇动画的接口体，为了在普攻GA里兼容多种攻击方式
 USTRUCT(BlueprintType)
 struct FTaggedMontage
@@ -25,6 +26,10 @@ struct FTaggedMontage
 	// 攻击时触发伤害的骨骼插槽名
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FName CombatTipSocketName;
+
+	// 攻击音效
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USoundBase* ImpactSound = nullptr;
 };
 
 
@@ -74,4 +79,8 @@ public:
 	// 获取角色身上设置的多个普攻动画
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	TArray<FTaggedMontage> GetAttackMontages() const;
+
+	// 获取角色流血效果
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UNiagaraSystem* GetBloodEffect();
 };

@@ -8,6 +8,7 @@
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
 
+class UNiagaraSystem;
 class UGameplayAbility;
 class UGameplayEffect;
 class UAbilitySystemComponent;
@@ -33,6 +34,7 @@ public:
 	virtual bool IsDead_Implementation() const override;
 	virtual AActor* GetAvatar_Implementation() override;
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() const override;
+	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
@@ -80,6 +82,9 @@ protected:
 	// 武器溶解材质实例
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMaterialInstance> WeaponDissolveMaterialInstance;
+	// 击中流血效果
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	UNiagaraSystem* BloodEffect;
 	// 是否死亡
 	bool bDead = false;
 	
