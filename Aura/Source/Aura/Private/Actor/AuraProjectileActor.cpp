@@ -63,12 +63,12 @@ void AAuraProjectileActor::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
 	// 发射者和碰撞的对象
 	if (GetInstigator() == OtherActor) return;
 
-	if (!UAuraAbilitySystemLibrary::IsNotFriend(DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser(),
-	                                            OtherActor))
+	if (!DamageEffectSpecHandle.Data.IsValid() || !UAuraAbilitySystemLibrary::IsNotFriend(
+		DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser(), OtherActor))
 	{
 		return;
 	}
-  
+
 	if (!bHit)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
