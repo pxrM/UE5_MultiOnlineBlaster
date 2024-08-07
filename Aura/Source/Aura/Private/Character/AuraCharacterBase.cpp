@@ -9,6 +9,7 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AAuraCharacterBase::AAuraCharacterBase()
 {
@@ -92,6 +93,8 @@ FTaggedMontage AAuraCharacterBase::GetTaggedMontageByTag_Implementation(const FG
 
 void AAuraCharacterBase::MulticastHandleDie_Implementation()
 {
+	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
+	
 	Weapon->SetSimulatePhysics(true); // 开启武器的物理模拟
 	Weapon->SetEnableGravity(true); // 开启重力，使其可以自由掉落
 	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly); // 设置碰撞为仅物理模拟，不触发碰撞逻辑

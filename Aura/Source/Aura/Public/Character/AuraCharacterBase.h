@@ -86,6 +86,9 @@ protected:
 	// 击中流血效果
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	UNiagaraSystem* BloodEffect;
+	// 死亡音效
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	USoundBase* DeathSound;
 	// 是否死亡
 	bool bDead = false;
 	
