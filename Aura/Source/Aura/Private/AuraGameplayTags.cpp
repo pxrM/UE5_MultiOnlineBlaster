@@ -156,19 +156,38 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("攻击技能标签")
 	);
 	/*
-	 * 蒙太奇
+	 * MeshSocket
 	 */
-	GameplayTags.Montage_Attack_Weapon = TagsManager.AddNativeGameplayTag(
-		FName("Montage.Attack.Weapon"),
-		FString("使用武器攻击的蒙太奇标签")
+	GameplayTags.CombatSocket_Weapon = TagsManager.AddNativeGameplayTag(
+		FName("CombatSocket.Weapon"),
+		FString("使用武器攻击部位标签")
 	);
-	GameplayTags.Montage_Attack_RightHand = TagsManager.AddNativeGameplayTag(
-		FName("Montage.Attack.RightHand"),
-		FString("使用右手攻击的蒙太奇标签")
+	GameplayTags.CombatSocket_RightHand = TagsManager.AddNativeGameplayTag(
+		FName("CombatSocket.RightHand"),
+		FString("使用右手攻击部位标签")
 	);
-	GameplayTags.Montage_Attack_LeftHand = TagsManager.AddNativeGameplayTag(
-		FName("Montage.Attack.LeftHand"),
-		FString("使用左手攻击的蒙太奇标签")
+	GameplayTags.CombatSocket_LeftHand = TagsManager.AddNativeGameplayTag(
+		FName("CombatSocket.LeftHand"),
+		FString("使用左手攻击部位标签")
+	);
+	/*
+	 * 用来识别使用攻击动作的蒙太奇索引
+	 */
+	GameplayTags.Montage_Attack1 = TagsManager.AddNativeGameplayTag(
+		FName("Montage.Attack.1"),
+		FString("第1段蒙太奇攻击的标签")
+	);
+	GameplayTags.Montage_Attack2 = TagsManager.AddNativeGameplayTag(
+		FName("Montage.Attack.2"),
+		FString("第2段蒙太奇攻击的标签")
+	);
+	GameplayTags.Montage_Attack3 = TagsManager.AddNativeGameplayTag(
+		FName("Montage.Attack.3"),
+		FString("第3段蒙太奇攻击的标签")
+	);
+	GameplayTags.Montage_Attack4 = TagsManager.AddNativeGameplayTag(
+		FName("Montage.Attack.4"),
+		FString("第4段蒙太奇攻击的标签")
 	);
 	/*
 	 * 表现

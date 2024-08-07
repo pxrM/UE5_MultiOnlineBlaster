@@ -9,19 +9,25 @@
 
 
 class UNiagaraSystem;
+
+
 // 标签对应蒙太奇动画的接口体，为了在普攻GA里兼容多种攻击方式
 USTRUCT(BlueprintType)
 struct FTaggedMontage
 {
 	GENERATED_BODY()
 
-	// 使用的蒙太奇
+	// 使用的蒙太奇 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAnimMontage* Montage;
 
 	// 对应tag
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag MontageTag;
+
+	// 识别socket的tag
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag SocketTag;
 
 	// 攻击时触发伤害的骨骼插槽名
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -40,6 +46,7 @@ class UCombatInterface : public UInterface
 	GENERATED_BODY()
 };
 
+
 /**
  * 
  */
@@ -54,12 +61,12 @@ public:
 	
 	// 获取武器上的插槽位置 (BlueprintNativeEvent，会通过蓝图初始化虚函数，可以在蓝图中覆写（如果在蓝图中覆写，C++版本的实现将会失效）)
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	FVector GetCombatSocketLocation(const FGameplayTag& MontageTag);
+	FVector GetCombatSocketLocation(const FGameplayTag& SocketTag);
 
 	// 更新角色面向攻击目标的方向
 	// BlueprintImplementableEvent：具体实现由蓝图来决定，而不是在C++中直接实现
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void UpdateFaceingTarget(const FVector& Target);
+	void UpdateFacingTarget(const FVector& Target);
 
 	// 受击蒙太奇
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -83,4 +90,7 @@ public:
 	// 获取角色流血效果
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UNiagaraSystem* GetBloodEffect();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FTaggedMontage GetTaggedMontageByTag(const FGameplayTag& MontageTag);
 };

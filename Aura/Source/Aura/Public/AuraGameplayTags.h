@@ -55,9 +55,14 @@ public:
 
    FGameplayTag Abilities_Attack;
 
-   FGameplayTag Montage_Attack_Weapon;
-   FGameplayTag Montage_Attack_RightHand;
-   FGameplayTag Montage_Attack_LeftHand;
+   FGameplayTag CombatSocket_Weapon;
+   FGameplayTag CombatSocket_RightHand;
+   FGameplayTag CombatSocket_LeftHand;
+
+   FGameplayTag Montage_Attack1;
+   FGameplayTag Montage_Attack2;
+   FGameplayTag Montage_Attack3;
+   FGameplayTag Montage_Attack4;
    
    FGameplayTag Effect_HitReact;
 
