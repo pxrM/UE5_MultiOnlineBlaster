@@ -77,6 +77,8 @@ protected:
 	FName LeftHandTipSocketName;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	FName RightHandTipSocketName;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FName TailSocketName;
 	// 角色溶解材质实例
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMaterialInstance> AvatarDissolveMaterialInstance;

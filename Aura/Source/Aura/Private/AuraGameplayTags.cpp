@@ -160,15 +160,19 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	 */
 	GameplayTags.CombatSocket_Weapon = TagsManager.AddNativeGameplayTag(
 		FName("CombatSocket.Weapon"),
-		FString("使用武器攻击部位标签")
+		FString("使用武器部位攻击标签")
 	);
 	GameplayTags.CombatSocket_RightHand = TagsManager.AddNativeGameplayTag(
 		FName("CombatSocket.RightHand"),
-		FString("使用右手攻击部位标签")
+		FString("使用右手部位攻击标签")
 	);
 	GameplayTags.CombatSocket_LeftHand = TagsManager.AddNativeGameplayTag(
 		FName("CombatSocket.LeftHand"),
-		FString("使用左手攻击部位标签")
+		FString("使用左手部位攻击标签")
+	);
+	GameplayTags.CombatSocket_Tail = TagsManager.AddNativeGameplayTag(
+		FName("CombatSocket.Tail"),
+		FString("使用尾巴部位攻击标签")
 	);
 	/*
 	 * 用来识别使用攻击动作的蒙太奇索引
