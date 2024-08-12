@@ -31,17 +31,17 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag)
+FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& SocketTag)
 {
-	if(MontageTag.MatchesTagExact(FAuraGameplayTags::Get().CombatSocket_LeftHand))
+	if(SocketTag.MatchesTagExact(FAuraGameplayTags::Get().CombatSocket_LeftHand))
 	{
 		return GetMesh()->GetSocketLocation(LeftHandTipSocketName);
 	}
-	if(MontageTag.MatchesTagExact(FAuraGameplayTags::Get().CombatSocket_RightHand))
+	if(SocketTag.MatchesTagExact(FAuraGameplayTags::Get().CombatSocket_RightHand))
 	{
 		return GetMesh()->GetSocketLocation(RightHandTipSocketName);
 	}
-	if(MontageTag.MatchesTagExact(FAuraGameplayTags::Get().CombatSocket_Tail))
+	if(SocketTag.MatchesTagExact(FAuraGameplayTags::Get().CombatSocket_Tail))
 	{
 		return GetMesh()->GetSocketLocation(TailSocketName);
 	}

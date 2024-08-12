@@ -30,7 +30,7 @@ protected:
 	                             const FGameplayEventData* TriggerEventData) override;
 	// 生成子弹
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
-	void SpawnProjectile(const FVector& ProjectileTargetLocation);
+	void SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag);
 
 	
 protected:
