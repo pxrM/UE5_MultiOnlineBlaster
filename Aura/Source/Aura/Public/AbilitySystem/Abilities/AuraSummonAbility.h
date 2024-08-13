@@ -36,4 +36,7 @@ public:
 	// 获取生成的位置
 	UFUNCTION(BlueprintCallable)
 	TArray<FVector> GetSpawnLocations();
+	// 随机一个要生成的actor类
+	UFUNCTION(BlueprintPure, Category="Summoning")
+	TSubclassOf<APawn> GetRandomMinionClass();
 };
