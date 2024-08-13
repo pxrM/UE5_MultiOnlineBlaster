@@ -26,15 +26,25 @@ TArray<FVector> UAuraSummonAbility::GetSpawnLocations()
 		// 获取每段的方向
 		const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i, FVector::UpVector);
 		// 根据方向在向量上随机一个位置
-		const FVector ChosenSpawnLocation = Location + Direction *
-			FMath::FRandRange(MinSpawnDistance, MaxSpawnDistance);
-		SpawnLocations.Add(ChosenSpawnLocation);
+		FVector ChosenSpawnLocation = Location + Direction * FMath::FRandRange(MinSpawnDistance, MaxSpawnDistance);
+		// 确保生成位置位于地面。
+		// 进行线性碰撞检测，这条线沿着 Z 轴（上下方向）移动了 400 单位，检查是否与任何物体发生碰撞。
+		FHitResult Hit;
+		GetWorld()->LineTraceSingleByChannel(Hit, ChosenSpawnLocation + FVector(0.f, 0.f, 400.f),
+		                                     ChosenSpawnLocation - FVector(0.f, 0.f, 400.f), ECC_Visibility);
+		if(Hit.bBlockingHit)
+		{
+			ChosenSpawnLocation = Hit.ImpactPoint;
+		}
 
-		DrawDebugSphere(GetWorld(), ChosenSpawnLocation, 3.f, 12, FColor::Cyan, false, 3.f);
-		UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), Location,
-		                                     Location + Direction * MaxSpawnDistance, 4.f, FLinearColor::Green, 3.f);
-		DrawDebugSphere(GetWorld(), Location + Direction * MinSpawnDistance, 3.f, 12, FColor::Red, false, 3.f);
-		DrawDebugSphere(GetWorld(), Location + Direction * MaxSpawnDistance, 3.f, 12, FColor::Red, false, 3.f);
+		SpawnLocations.Add(ChosenSpawnLocation);
+		
+		// debug生成位置
+		// DrawDebugSphere(GetWorld(), ChosenSpawnLocation, 3.f, 12, FColor::Cyan, false, 3.f);
+		// UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), Location,
+		//                                      Location + Direction * MaxSpawnDistance, 4.f, FLinearColor::Green, 3.f);
+		// DrawDebugSphere(GetWorld(), Location + Direction * MinSpawnDistance, 3.f, 12, FColor::Red, false, 3.f);
+		// DrawDebugSphere(GetWorld(), Location + Direction * MaxSpawnDistance, 3.f, 12, FColor::Red, false, 3.f);
 	}
 
 	// debug角度范围
