@@ -36,6 +36,8 @@ public:
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() const override;
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;
 	virtual FTaggedMontage GetTaggedMontageByTag_Implementation(const FGameplayTag& MontageTag) override;
+	virtual int32 GetMinionCount_Implementation() override;
+	virtual void IncrementalMinionCount_Implementation(const int32 Amount) override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
@@ -93,7 +95,8 @@ protected:
 	USoundBase* DeathSound;
 	// 是否死亡
 	bool bDead = false;
-	
+	// 小兵数量（召唤出来的小怪、宠物等）
+	int32 MinionCount = 0;
 	/*
 	 * GAS：
 	 * 挂载位置：

@@ -91,6 +91,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UNiagaraSystem* GetBloodEffect();
 
+	// 根据动画标签获取 FTaggedMontage
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FTaggedMontage GetTaggedMontageByTag(const FGameplayTag& MontageTag);
+
+	// 获取角色的小兵数量
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	int32 GetMinionCount();
+	// 增加小兵数量
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void IncrementalMinionCount(const int32 Amount);
 };

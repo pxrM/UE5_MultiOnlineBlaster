@@ -155,6 +155,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Attack"),
 		FString("攻击技能标签")
 	);
+	GameplayTags.Abilities_Summon = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Summon"),
+		FString("召唤技能标签")
+	);
 	/*
 	 * MeshSocket
 	 */
