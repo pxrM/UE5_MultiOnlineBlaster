@@ -114,7 +114,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		checkf(TagsToCaptureDefs.Contains(ResistanceTag),
 		       TEXT("TagsToCaptureDefs doesn't contain Tag:[%s] in ExecCalc_Damage"), *ResistanceTag.ToString());
 		// 通过tag获取对应伤害值
-		float DamageTypeValue = Spec.GetSetByCallerMagnitude(DamageTypeTag, true, 0.f);
+		float DamageTypeValue = Spec.GetSetByCallerMagnitude(DamageTypeTag, false);
 		// 获取抗性值
 		const FGameplayEffectAttributeCaptureDefinition CaptureDef = TagsToCaptureDefs[ResistanceTag];
 		float Resistance = 0.f;
