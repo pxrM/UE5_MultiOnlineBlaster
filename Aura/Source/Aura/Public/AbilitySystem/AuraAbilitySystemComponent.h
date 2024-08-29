@@ -4,10 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "AuraAbilitySystemComponent.h"
-#include "AuraAbilitySystemComponent.h"
-#include "AuraAbilitySystemComponent.h"
-#include "AuraAbilitySystemComponent.h"
 #include "AuraAbilitySystemComponent.generated.h"
 
 
@@ -25,11 +21,14 @@
  *		  多个GameplayTags可以使用FGameplayTagContainer来存储，相比于常规的TArray<FGameplayTag>，前者更加有效率(efficiency magic)
  */
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer& /*AssetTags*/);
-
 /*
  * 技能初始化应用后的回调委托
  */
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitiesGiven, UAuraAbilitySystemComponent*)
+/*
+ * 传递给asc，然后遍历所有的激活能力
+ */
+DECLARE_DELEGATE_OneParam(FForEachAbility, const FGameplayAbilitySpec&)
 
 
 /**
@@ -51,7 +50,11 @@ public:
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);
 	// 触发技能时按键离开
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
-	
+	// 遍历技能，并通过委托回调的形式广播出去
+	void ForEachAbility(const FForEachAbility& Delegate);
+	// 通过传入的技能实例，从技能实例里面获取到对应的技能标签和输入标签
+	static FGameplayTag GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+	static FGameplayTag GetAbilityInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 	
 protected:
 	// 用于在Effect应用到自身角色时触发相应的逻辑

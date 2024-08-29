@@ -7,9 +7,11 @@
 #include "OverlayWidgetController.generated.h"
 
 
+struct FAuraAbilityInfo;
 class UAuraAbilitySystemComponent;
 class UAbilityInfoData;
 class UAuraUserWidget;
+
 
 // 拾取ge后弹出的ui信息配置
 USTRUCT(BlueprintType)
@@ -33,6 +35,7 @@ struct FUIWidgetRow : public  FTableRowBase
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature, FUIWidgetRow, Row);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FAuraAbilityInfo&, Info);
 
 
 /**
@@ -65,6 +68,10 @@ protected:
 
 
 public:
+	/*
+	 * 属性改变委托
+	 */
+	
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
@@ -75,9 +82,19 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnMaxManaChanged;
 
-	// 拾取属性后触发的消息委托
+	/*
+	 * 拾取属性后触发的消息委托
+	 */
+	
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
+
+	/*
+	 * 技能配置广播
+	 */
+
+	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
+	FAbilityInfoSignature AbilityInfoSignature;
 };
 
 

@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/AbilityInfoData.h"
 
 void UOverlayWidgetController::BroadcastInitValues()
 {
@@ -88,4 +89,16 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 void UOverlayWidgetController::OnInitializeStartupAbilities(UAuraAbilitySystemComponent* AuraAbilitySystemComponent)
 {
 	if (!AuraAbilitySystemComponent->bStartupAbilitiesGiven) return;
+
+	// 创建回调
+	FForEachAbility BroadcastDelegate;
+	BroadcastDelegate.BindLambda([this, AuraAbilitySystemComponent](const FGameplayAbilitySpec& AbilitySpec)
+	{
+		FAuraAbilityInfo Info = AbilityDataTable->FindAbilityInfoForTag(AuraAbilitySystemComponent->GetAbilityTagFromSpec(AbilitySpec));
+		Info.InputTag = AuraAbilitySystemComponent->GetAbilityInputTagFromSpec(AbilitySpec);
+		AbilityInfoSignature.Broadcast(Info);
+	});
+
+	// 遍历技能并触发委托回调
+	AuraAbilitySystemComponent->ForEachAbility(BroadcastDelegate);
 }
