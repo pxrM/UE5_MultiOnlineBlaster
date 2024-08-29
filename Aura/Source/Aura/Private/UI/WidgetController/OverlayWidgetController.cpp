@@ -96,7 +96,7 @@ void UOverlayWidgetController::OnInitializeStartupAbilities(UAuraAbilitySystemCo
 	{
 		FAuraAbilityInfo Info = AbilityDataTable->FindAbilityInfoForTag(AuraAbilitySystemComponent->GetAbilityTagFromSpec(AbilitySpec));
 		Info.InputTag = AuraAbilitySystemComponent->GetAbilityInputTagFromSpec(AbilitySpec);
-		AbilityInfoSignature.Broadcast(Info);
+		AbilityInfoDelegate.Broadcast(Info);
 	});
 
 	// 遍历技能并触发委托回调

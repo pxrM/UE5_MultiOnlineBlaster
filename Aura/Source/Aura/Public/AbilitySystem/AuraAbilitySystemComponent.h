@@ -57,10 +57,11 @@ public:
 	static FGameplayTag GetAbilityInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 	
 protected:
+	virtual void OnRep_ActivateAbilities() override;
+	
 	// 用于在Effect应用到自身角色时触发相应的逻辑
 	UFUNCTION(Client, Reliable)
 	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle);
-
 	
 public:
 	// 获取到一个ge资产后触发的委托

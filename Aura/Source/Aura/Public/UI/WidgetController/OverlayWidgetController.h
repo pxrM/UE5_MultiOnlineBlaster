@@ -68,9 +68,7 @@ protected:
 
 
 public:
-	/*
-	 * 属性改变委托
-	 */
+	/* 属性改变委托 */
 	
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
@@ -82,19 +80,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnMaxManaChanged;
 
-	/*
-	 * 拾取属性后触发的消息委托
-	 */
+	/* 拾取属性后触发的消息委托 */
 	
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
-	/*
-	 * 技能配置广播
-	 */
+	/* 技能配置广播 */
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
-	FAbilityInfoSignature AbilityInfoSignature;
+	FAbilityInfoSignature AbilityInfoDelegate;
 };
 
 
