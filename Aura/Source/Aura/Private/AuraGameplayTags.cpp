@@ -159,6 +159,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Summon"),
 		FString("召唤技能标签")
 	);
+	GameplayTags.Abilities_Fire_FireBolt = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Fire.FireBolt"),
+		FString("火球术技能标签")
+	);
 	/*
 	 * MeshSocket
 	 */

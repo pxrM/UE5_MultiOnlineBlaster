@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "AuraAbilitySystemComponent.h"
+#include "AuraAbilitySystemComponent.h"
+#include "AuraAbilitySystemComponent.h"
+#include "AuraAbilitySystemComponent.h"
 #include "AuraAbilitySystemComponent.generated.h"
+
 
 /*
  * 一个普通的GA的生命周期在Server-Client之间都会产生2-3个RPCs的调用。
@@ -13,12 +18,19 @@
  * 结束ge：ServerEndAbility()
  */
 
+
 /*
  *  获取到一个ge资产后触发的委托
  *	  FGameplayTagContainer：
  *		  多个GameplayTags可以使用FGameplayTagContainer来存储，相比于常规的TArray<FGameplayTag>，前者更加有效率(efficiency magic)
  */
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer& /*AssetTags*/);
+
+/*
+ * 技能初始化应用后的回调委托
+ */
+DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitiesGiven, UAuraAbilitySystemComponent*)
+
 
 /**
  * gas组件
@@ -50,5 +62,8 @@ protected:
 public:
 	// 获取到一个ge资产后触发的委托
 	FEffectAssetTags EffectAssetTags;
-	
+	// 技能初始化后的广播委托
+	FAbilitiesGiven AbilitiesGivenDelegate;
+	// 初始化应用技能后设置为true，记录当前是否初始化完成
+	bool bStartupAbilitiesGiven = false;
 };

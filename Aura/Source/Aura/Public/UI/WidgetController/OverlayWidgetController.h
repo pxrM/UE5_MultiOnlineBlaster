@@ -7,6 +7,8 @@
 #include "OverlayWidgetController.generated.h"
 
 
+class UAuraAbilitySystemComponent;
+class UAbilityInfoData;
 class UAuraUserWidget;
 
 // 拾取ge后弹出的ui信息配置
@@ -55,6 +57,11 @@ protected:
 	// 拾取属性后弹出的信息表
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
+	// 技能配置表
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Widget Data")
+	TObjectPtr<UAbilityInfoData> AbilityDataTable;
+
+	void OnInitializeStartupAbilities(UAuraAbilitySystemComponent* AuraAbilitySystemComponent);
 
 
 public:
