@@ -76,8 +76,8 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	 */
 	GameplayTags.InputTag_LMB = TagsManager.AddNativeGameplayTag(
 		FName("InputTag.LMB"),
-			FString("Input Tag for Left Mouse Button")
-		);
+		FString("Input Tag for Left Mouse Button")
+	);
 	GameplayTags.InputTag_RMB = TagsManager.AddNativeGameplayTag(
 		FName("InputTag.RMB"),
 		FString("Input Tag for Right Mouse Button")
@@ -145,7 +145,8 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	);
 	// 将属性和抗性标签对应
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Fire, GameplayTags.Attributes_Resistance_Fire);
-	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Lightning, GameplayTags.Attributes_Resistance_Lightning);
+	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Lightning,
+	                                         GameplayTags.Attributes_Resistance_Lightning);
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Arcane, GameplayTags.Attributes_Resistance_Arcane);
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Physical, GameplayTags.Attributes_Resistance_Physical);
 	/*
@@ -162,6 +163,13 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Abilities_Fire_FireBolt = TagsManager.AddNativeGameplayTag(
 		FName("Abilities.Fire.FireBolt"),
 		FString("火球术技能标签")
+	);
+	/*
+	 * 技能冷却
+	 */
+	GameplayTags.Cooldown_Fire_FireBolt = TagsManager.AddNativeGameplayTag(
+		FName("Cooldown.Fire.FireBolt"),
+		FString("火球术技能冷却标签")
 	);
 	/*
 	 * MeshSocket
