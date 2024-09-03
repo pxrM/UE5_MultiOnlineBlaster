@@ -16,8 +16,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCooldownChangeSignature, float, Tim
 /**
  * 监听技能冷却
  * UBlueprintAsyncActionBase 提供了一种机制，允许创建能够在后台线程中异步执行的操作，并在操作完成后通知主线程。
+ * meta=(ExposedAsyncProxy = "AsyncTask")
+ *		元数据告诉引擎，将该类作为异步任务的代理进行处理。AsyncTask 是自定义的名称，代表这个类在蓝图中的异步操作代理。
+ *		当在蓝图中调用这个类的异步方法时，UE会自动创建一个代理实例，并管理它的生命周期。
+ *		允许将实例作为 AsyncTask 获取
  */
-UCLASS()
+UCLASS(BlueprintType, meta=(ExposedAsyncProxy = "AsyncTask"))
 class AURA_API UWaitCooldownChange : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
