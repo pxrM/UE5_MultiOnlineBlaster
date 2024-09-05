@@ -15,16 +15,16 @@ class UAuraUserWidget;
 
 // 拾取ge后弹出的ui信息配置
 USTRUCT(BlueprintType)
-struct FUIWidgetRow : public  FTableRowBase
+struct FUIWidgetRow : public FTableRowBase
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag MessageTag = FGameplayTag();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText Message = FText();
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UAuraUserWidget> MessageWidget;
 
@@ -34,7 +34,9 @@ struct FUIWidgetRow : public  FTableRowBase
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature, FUIWidgetRow, Row);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FAuraAbilityInfo&, Info);
 
 
@@ -50,11 +52,9 @@ public:
 	virtual void BroadcastInitValues() override;
 	virtual void BindCallbacksToDependencies() override;
 
-
 protected:
-	template<typename T>
+	template <typename T>
 	T* GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag);
-
 
 protected:
 	// 拾取属性后弹出的信息表
@@ -65,11 +65,11 @@ protected:
 	TObjectPtr<UAbilityInfoData> AbilityDataTable;
 
 	void OnInitializeStartupAbilities(UAuraAbilitySystemComponent* AuraAbilitySystemComponent);
-
+	void OnXPChanged(int32 NewXP) const;
 
 public:
 	/* 属性改变委托 */
-	
+
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
@@ -80,8 +80,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnMaxManaChanged;
 
-	/* 拾取属性后触发的消息委托 */
+	/* 经验改变委托 */
 	
+	UPROPERTY(BlueprintAssignable, Category = "GAS|XP")
+	FOnAttributeChangedSignature OnXPPercentChangedDelegate;
+
+	/* 拾取属性后触发的消息委托 */
+
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
@@ -90,6 +95,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FAbilityInfoSignature AbilityInfoDelegate;
 };
+
+
+
 
 
 template <typename T>

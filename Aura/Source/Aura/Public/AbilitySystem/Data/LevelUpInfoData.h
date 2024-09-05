@@ -36,7 +36,7 @@ class AURA_API ULevelUpInfoData : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	int32 FindLevelForXP(int32 XP);
+	int32 FindLevelForXP(const int32 XP) const;
 
 public:
 	UPROPERTY(EditDefaultsOnly)
