@@ -14,11 +14,11 @@
 UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
 {
 	// widget仅适用于本地玩家，第0个玩家控制器被视为本地玩家控制器
-	if(APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
 	{
-		if(AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
+		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
 		{
-			if(AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>())
+			if (AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>())
 			{
 				UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
 				UAttributeSet* AS = PS->GetAttributeSet();
@@ -30,13 +30,14 @@ UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(
 	return nullptr;
 }
 
-UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidgetController(const UObject* WorldContextObject)
+UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidgetController(
+	const UObject* WorldContextObject)
 {
-	if(APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
 	{
-		if(AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
+		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
 		{
-			if(AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>())
+			if (AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>())
 			{
 				UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
 				UAttributeSet* AS = PS->GetAttributeSet();
@@ -51,7 +52,7 @@ UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidge
 void UAuraAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* WorldContextObject,
                                                             const ECharacterClassType CharacterClass,
                                                             const float Level, UAbilitySystemComponent* ASC)
-{  
+{
 	const AActor* AvatarActor = ASC->GetAvatarActor();
 
 	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
@@ -59,27 +60,31 @@ void UAuraAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* World
 
 	FGameplayEffectContextHandle PrimaryAttributeContextHandle = ASC->MakeEffectContext();
 	PrimaryAttributeContextHandle.AddSourceObject(AvatarActor);
-	const FGameplayEffectSpecHandle PrimaryAttributeSpecHandle = ASC->MakeOutgoingSpec(ClassDefaultInfo.PrimaryAttributes, Level, PrimaryAttributeContextHandle);
+	const FGameplayEffectSpecHandle PrimaryAttributeSpecHandle = ASC->MakeOutgoingSpec(
+		ClassDefaultInfo.PrimaryAttributes, Level, PrimaryAttributeContextHandle);
 	ASC->ApplyGameplayEffectSpecToSelf(*PrimaryAttributeSpecHandle.Data.Get());
 
 	FGameplayEffectContextHandle SecondaryAttributeContextHandle = ASC->MakeEffectContext();
 	SecondaryAttributeContextHandle.AddSourceObject(AvatarActor);
-	const FGameplayEffectSpecHandle SecondaryAttributeSpecHandle = ASC->MakeOutgoingSpec(CharacterClassInfo->SecondaryAttributes, Level, SecondaryAttributeContextHandle);
+	const FGameplayEffectSpecHandle SecondaryAttributeSpecHandle = ASC->MakeOutgoingSpec(
+		CharacterClassInfo->SecondaryAttributes, Level, SecondaryAttributeContextHandle);
 	ASC->ApplyGameplayEffectSpecToSelf(*SecondaryAttributeSpecHandle.Data.Get());
 
 	FGameplayEffectContextHandle VitalAttributeContextHandle = ASC->MakeEffectContext();
 	VitalAttributeContextHandle.AddSourceObject(AvatarActor);
-	const FGameplayEffectSpecHandle VitalAttributeSpecHandle = ASC->MakeOutgoingSpec(CharacterClassInfo->VitalAttributes, Level, VitalAttributeContextHandle);
+	const FGameplayEffectSpecHandle VitalAttributeSpecHandle = ASC->MakeOutgoingSpec(
+		CharacterClassInfo->VitalAttributes, Level, VitalAttributeContextHandle);
 	ASC->ApplyGameplayEffectSpecToSelf(*VitalAttributeSpecHandle.Data.Get());
 }
 
-void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContextObject, UAbilitySystemComponent* ASC, const ECharacterClassType CharacterClass)
+void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContextObject, UAbilitySystemComponent* ASC,
+                                                     const ECharacterClassType CharacterClass)
 {
 	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
-	if(CharacterClassInfo == nullptr) return;
-	
+	if (CharacterClassInfo == nullptr) return;
+
 	// 应用游戏角色通用的技能数据
-	for(const TSubclassOf<UGameplayAbility> AbilityClass : CharacterClassInfo->CommonAbilities)
+	for (const TSubclassOf<UGameplayAbility> AbilityClass : CharacterClassInfo->CommonAbilities)
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
 		ASC->GiveAbility(AbilitySpec);
@@ -90,25 +95,38 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	ICombatInterface* CombatInterface = Cast<ICombatInterface>(ASC->GetAvatarActor());
 	const int32 ActorLevel = CombatInterface ? CombatInterface->GetPlayerLevel() : 0;
 	// 应用对应的职业技能数据
-	for(const TSubclassOf<UGameplayAbility> AbilityClass : DefaultInfo.StartupAbilities)
+	for (const TSubclassOf<UGameplayAbility> AbilityClass : DefaultInfo.StartupAbilities)
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, ActorLevel);
 		ASC->GiveAbility(AbilitySpec);
 	}
 }
 
+int32 UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(const UObject* WorldContextObject,
+                                                             ECharacterClassType CharacterClass, int32 CharacterLevel)
+{
+	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
+	if (CharacterClassInfo == nullptr) return 0;
+
+	const FCharacterClassDefaultInfo& Info = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
+	const float XPReward = Info.XPReward.GetValueAtLevel(CharacterLevel);
+
+	return static_cast<int32>(XPReward);
+}
+
 UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)
 {
 	// GameMode只运行在服务端
 	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if(AuraGameMode == nullptr) return nullptr;
+	if (AuraGameMode == nullptr) return nullptr;
 
 	return AuraGameMode->CharacterClassInfo;
 }
 
 bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if(const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetIsBlockedHit();
 	}
@@ -117,33 +135,38 @@ bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle&
 
 bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if(const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetIsCriticalHit();
 	}
 	return false;
 }
 
-void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, const bool bInIsBlockedHit)
+void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle,
+                                                const bool bInIsBlockedHit)
 {
-	if(FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+		Get()))
 	{
 		AuraEffectContext->SetIsBlockedHit(bInIsBlockedHit);
 	}
 }
 
 void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& EffectContextHandle,
-	const bool bInIsCriticalHit)
+                                                 const bool bInIsCriticalHit)
 {
-	if(FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+		Get()))
 	{
 		AuraEffectContext->SetIsCriticalHit(bInIsCriticalHit);
 	}
 }
 
 void UAuraAbilitySystemLibrary::GetLivePlayerWithinRadius(const UObject* WorldContextObject,
-	TArray<AActor*>& OutOverlappingActors, const TArray<AActor*>& ActorsToIgnore, float Radius,
-	const FVector& SphereOrigin)
+                                                          TArray<AActor*>& OutOverlappingActors,
+                                                          const TArray<AActor*>& ActorsToIgnore, float Radius,
+                                                          const FVector& SphereOrigin)
 {
 	/*
 	 * 参考ue UGameplayStatics::ApplyRadialDamageWithFalloff 函数

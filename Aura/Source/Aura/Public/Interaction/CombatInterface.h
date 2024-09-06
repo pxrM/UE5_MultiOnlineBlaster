@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
@@ -101,4 +102,8 @@ public:
 	// 增加小兵数量
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void IncrementalMinionCount(const int32 Amount);
+
+	// 获取角色类型
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	ECharacterClassType GetCharacterType();
 };

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ScalableFloat.h"
 #include "Engine/DataAsset.h"
 #include "CharacterClassInfo.generated.h"
 
@@ -33,6 +34,9 @@ struct FCharacterClassDefaultInfo
 	// 职业的初始技能
 	UPROPERTY(EditDefaultsOnly, Category="Class Default")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
+	// 经验奖励
+	UPROPERTY(EditDefaultsOnly)
+	FScalableFloat XPReward = FScalableFloat();
 };
 
 
@@ -48,6 +52,7 @@ class AURA_API UCharacterClassInfo : public UDataAsset
 public:
 	FCharacterClassDefaultInfo GetClassDefaultInfo(const ECharacterClassType CharacterClass);
 
+public:
 	// 角色类型和角色信息对应的map
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TMap<ECharacterClassType, FCharacterClassDefaultInfo> CharacterClassInformation;

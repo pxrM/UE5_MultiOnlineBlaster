@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
 
@@ -38,6 +39,7 @@ public:
 	virtual FTaggedMontage GetTaggedMontageByTag_Implementation(const FGameplayTag& MontageTag) override;
 	virtual int32 GetMinionCount_Implementation() override;
 	virtual void IncrementalMinionCount_Implementation(const int32 Amount) override;
+	virtual ECharacterClassType GetCharacterType_Implementation() override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
@@ -97,6 +99,10 @@ protected:
 	bool bDead = false;
 	// 小兵数量（召唤出来的小怪、宠物等）
 	int32 MinionCount = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character Class Default")
+	ECharacterClassType CharacterClassType = ECharacterClassType::Warrior;
+	
 	/*
 	 * GAS：
 	 * 挂载位置：
