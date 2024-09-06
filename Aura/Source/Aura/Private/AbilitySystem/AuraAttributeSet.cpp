@@ -9,6 +9,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
+#include "Aura/AuraLogChannels.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerController.h"
@@ -66,7 +67,7 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, LightningResistance, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ArcaneResistance, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, PhysicalResistance, COND_None, REPNOTIFY_Always);
-	
+
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, Mana, COND_None, REPNOTIFY_Always);
 }
@@ -75,13 +76,13 @@ void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 {
 	Super::PreAttributeChange(Attribute, NewValue);
 
-	if(Attribute == GetHealthAttribute())
+	if (Attribute == GetHealthAttribute())
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("Health: %f"), NewValue);
 		NewValue = FMath::Clamp(NewValue, 0, GetMaxHealth());
 	}
-	
-	if(Attribute == GetManaAttribute())
+
+	if (Attribute == GetManaAttribute())
 	{
 		// UE_LOG(LogTemp, Warning, TEXT("Mana: %f"), NewValue);
 		NewValue = FMath::Clamp(NewValue, 0, GetMaxMana());
@@ -89,7 +90,7 @@ void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 }
 
 void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
-{ 
+{
 	Super::PostGameplayEffectExecute(Data);
 
 	// if(Data.EvaluatedData.Attribute == GetHealthAttribute())
@@ -101,30 +102,30 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	FEffectProperties Props;
 	SetEffectProperties(Data, Props);
 
-	if(Data.EvaluatedData.Attribute == GetHealthAttribute())
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0, GetMaxHealth()));
-		UE_LOG(LogTemp, Warning, TEXT("Changed Health on %s, Health: %f"), *Props.TargetAvatarActor->GetName(), GetHealth());
+		// UE_LOG(LogTemp, Warning, TEXT("Changed Health on %s, Health: %f"), *Props.TargetAvatarActor->GetName(),GetHealth());
 	}
-	
-	if(Data.EvaluatedData.Attribute == GetManaAttribute())
+
+	if (Data.EvaluatedData.Attribute == GetManaAttribute())
 	{
 		SetMana(FMath::Clamp(GetMana(), 0, GetMaxMana()));
 	}
 
-	if(Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
+	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
 	{
 		const float LocalIncomingDamage = GetIncomingDamage();
 		SetIncomingDamage((0.f));
-		if(LocalIncomingDamage > 0.f)
+		if (LocalIncomingDamage > 0.f)
 		{
 			const float NewHealth = GetHealth() - LocalIncomingDamage;
 			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 
 			// 是否死亡 
-			if(const bool bFatal = NewHealth <= 0.f)
+			if (const bool bFatal = NewHealth <= 0.f)
 			{
-				if(ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
+				if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
 				{
 					CombatInterface->Die();
 				}
@@ -139,23 +140,32 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 			const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
 			const bool bCritical = UAuraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("LocalIncomingDamage: %f"), LocalIncomingDamage));
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red,
+			                                 FString::Printf(TEXT("LocalIncomingDamage: %f"), LocalIncomingDamage));
 			ShowFloatingText(Props, LocalIncomingDamage, bBlock, bCritical);
 		}
 	}
+
+	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute())
+	{
+		const float LocalIncomingXP = GetIncomingXP();
+		SetIncomingXP(0);
+		UE_LOG(LogAura, Log, TEXT("Incoming XP: %f"), LocalIncomingXP);
+	}
 }
 
-void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, const float Damage, const bool bBlockedHit, const bool bCriticalHit) const
+void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, const float Damage, const bool bBlockedHit,
+                                         const bool bCriticalHit) const
 {
-	if(Props.SourceCharacter != Props.TargetCharacter)
+	if (Props.SourceCharacter != Props.TargetCharacter)
 	{
 		// 从技能释放者身上获取PC然后显示HUD
-		if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller))
+		if (AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller))
 		{
 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
 		}
 		// 从受击目标身上获取PC然后显示HUD
-		if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.TargetCharacter->Controller))
+		if (AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.TargetCharacter->Controller))
 		{
 			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
 		}
@@ -166,26 +176,27 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 {
 	Props.EffectContextHandle = Data.EffectSpec.GetContext();
 	const UAbilitySystemComponent* SourceAsc = Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
-	if(IsValid(SourceAsc) && SourceAsc->AbilityActorInfo.IsValid() && SourceAsc->AbilityActorInfo->AvatarActor.IsValid())
+	if (IsValid(SourceAsc) && SourceAsc->AbilityActorInfo.IsValid() && SourceAsc->AbilityActorInfo->AvatarActor.
+		IsValid())
 	{
 		Props.SourceAvatarActor = SourceAsc->GetAvatarActor();
 		Props.SourceController = SourceAsc->AbilityActorInfo->PlayerController.Get();
-		if(Props.SourceAvatarActor != nullptr && Props.SourceController == nullptr)
+		if (Props.SourceAvatarActor != nullptr && Props.SourceController == nullptr)
 		{
 			// 角色可以是各种类型的，其中包括可以由玩家控制的角色（通常是玩家控制的主要角色）和由游戏系统控制的非玩家角色（NPC）。这些角色可以被实现为不同的类，以便于管理和执行各种游戏逻辑。
 			// 在某些情况下，游戏中的某个效果可能由非玩家角色触发，或者由AI自动执行，而不是由玩家直接操作。在这种情况下，这个角色可能没有直接关联的玩家控制器，因为它不是由玩家控制的。
-			if(const APawn* Pawn = Cast<APawn>(Props.SourceAvatarActor))
+			if (const APawn* Pawn = Cast<APawn>(Props.SourceAvatarActor))
 			{
 				Props.SourceController = Pawn->GetController();
 			}
 		}
-		if(Props.SourceController)
+		if (Props.SourceController)
 		{
 			Props.SourceCharacter = Cast<ACharacter>(Props.SourceController->GetPawn());
 		}
 	}
 
-	if(Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
+	if (Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
 	{
 		Props.TargetAvatarActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
 		Props.TargetController = Data.Target.AbilityActorInfo->PlayerController.Get();
@@ -290,4 +301,3 @@ void UAuraAttributeSet::OnRep_OnMana(const FGameplayAttributeData& OldMana) cons
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, Mana, OldMana);
 }
-

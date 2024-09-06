@@ -257,6 +257,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="Meta Attributes")
 	FGameplayAttributeData IncomingDamage;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage);
+	// 伤害元属性：传入进来的经验值（server）
+	UPROPERTY(BlueprintReadOnly, Category="Meta Attributes")
+	FGameplayAttributeData IncomingXP;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingXP);
 	
 
 public:
