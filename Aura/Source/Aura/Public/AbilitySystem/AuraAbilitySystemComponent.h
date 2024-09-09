@@ -45,6 +45,8 @@ public:
 	
 	// 添加角色能力
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);
+	// 添加角色被动能力
+	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);
 
 	// 触发技能的悬停时触发
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);

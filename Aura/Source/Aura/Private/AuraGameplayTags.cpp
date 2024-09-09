@@ -72,6 +72,13 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Maximum amount of Mana obtainable")
 	);
 	/*
+	 * 元属性
+	 */
+	GameplayTags.Attributes_Meta_IncomingXP = TagsManager.AddNativeGameplayTag(
+		FName("Attributes.Meta.IncomingXP"),
+		FString("经验元属性标签")
+	);
+	/*
 	 * Input Tag
 	 */
 	GameplayTags.InputTag_LMB = TagsManager.AddNativeGameplayTag(
