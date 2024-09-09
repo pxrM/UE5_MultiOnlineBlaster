@@ -95,7 +95,10 @@ public:
 private:
 	// 设置ge的相关属性
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
+	// 显示伤害hud
 	void ShowFloatingText(const FEffectProperties& Props, const float Damage, const bool bBlockedHit, const bool bCriticalHit) const;
+	// 发送获得经验事件
+	void SendXPEvent(const FEffectProperties& Props);
 
 	
 public:
