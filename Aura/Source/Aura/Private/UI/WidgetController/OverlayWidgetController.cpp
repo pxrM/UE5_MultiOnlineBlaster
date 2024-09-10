@@ -129,7 +129,7 @@ void UOverlayWidgetController::OnXPChanged(int32 NewXP) const
 		// 当前获得的经验值减去前一级的经验值，表示当前等级的实际经验进度
 		const int32 XPForThisLevel = NewXP - PreviousLevelUpRequirement;
 		// 当前经验值占据本等级所需经验的比例
-		const float XPBarPercent = static_cast<float>(XPForThisLevel / DeltaLevelUpRequirement);
+		const float XPBarPercent = static_cast<float>(XPForThisLevel) / static_cast<float>(DeltaLevelUpRequirement);
 		// 广播到ui层
 		OnXPPercentChangedDelegate.Broadcast(XPBarPercent);
 	}
