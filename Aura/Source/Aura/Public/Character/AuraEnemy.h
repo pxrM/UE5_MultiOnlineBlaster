@@ -33,7 +33,7 @@ public:
 	/* end IEnemyInterface */
 
 	/* start ICombatInterface */
-	virtual int32 GetPlayerLevel() override;
+	virtual int32 GetPlayerLevel_Implementation() override;
 	virtual void Die() override;
 	/*end ICombatInterface*/
 

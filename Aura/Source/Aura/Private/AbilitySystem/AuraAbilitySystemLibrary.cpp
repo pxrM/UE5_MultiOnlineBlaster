@@ -92,8 +92,11 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	// 通过类型去获取默认的基础角色数据
 	const FCharacterClassDefaultInfo& DefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
 	// 获取当前角色的等级
-	ICombatInterface* CombatInterface = Cast<ICombatInterface>(ASC->GetAvatarActor());
-	const int32 ActorLevel = CombatInterface ? CombatInterface->GetPlayerLevel() : 0;
+	int32 ActorLevel = 1;
+	if(ASC->GetAvatarActor()->Implements<UCombatInterface>())
+	{
+		ActorLevel = ICombatInterface::Execute_GetPlayerLevel(ASC->GetAvatarActor());
+	}
 	// 应用对应的职业技能数据
 	for (const TSubclassOf<UGameplayAbility> AbilityClass : DefaultInfo.StartupAbilities)
 	{
