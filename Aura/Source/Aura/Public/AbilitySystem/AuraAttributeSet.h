@@ -73,7 +73,8 @@ using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T, FDefaultDelegateU
 /**
  * 属性集。
  * UAttributeSet是用于管理角色属性的类之一。
- * 它通常用于实现角色的各种属性，例如健康值、魔法值、力量、敏捷度等。UAttributeSet可以帮助开发者管理和追踪角色的属性变化，并且可以与游戏中的其他系统（如伤害计算、效果处理等）进行交互。
+ * 它通常用于实现角色的各种属性，例如健康值、魔法值、力量、敏捷度等。
+ * UAttributeSet可以帮助开发者管理和追踪角色的属性变化，并且可以与游戏中的其他系统（如伤害计算、效果处理等）进行交互。
  */
 UCLASS()
 class AURA_API UAuraAttributeSet : public UAttributeSet
@@ -97,7 +98,7 @@ private:
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
 	// 显示伤害hud
 	void ShowFloatingText(const FEffectProperties& Props, const float Damage, const bool bBlockedHit, const bool bCriticalHit) const;
-	// 发送获得经验事件
+	// 发送获得经验事件，在玩家角色被动技能GA_ListenForEvents里接收
 	void SendXPEvent(const FEffectProperties& Props);
 
 	

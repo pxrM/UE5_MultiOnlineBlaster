@@ -155,8 +155,28 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 		SetIncomingXP(0);
 		// UE_LOG(LogAura, Log, TEXT("Incoming XP: %f"), LocalIncomingXP);
 		
-		if(Props.SourceCharacter->Implements<UPlayerInterface>())
+		if(Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())
 		{
+			// 1. 检查是否可以升级
+			const int32 CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);
+			const int32 CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);
+			const int32 NewLevel = IPlayerInterface::Execute_FindLevelForXP(Props.SourceCharacter, CurrentXP + LocalIncomingXP);
+			const int32 NumLevelUps = NewLevel - CurrentLevel;
+			if(NumLevelUps > 0)
+			{
+				const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointReward(Props.SourceCharacter, CurrentLevel);
+				const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointReward(Props.SourceCharacter, CurrentLevel);
+
+				IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter, NumLevelUps);
+				IPlayerInterface::Execute_AddToAttributePoint(Props.SourceCharacter, AttributePointsReward);
+				IPlayerInterface::Execute_AddToSpellPoint(Props.SourceCharacter, SpellPointsReward);
+				
+				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
+				
+				SetHealth(GetMaxHealth());
+				SetMana(GetMaxMana());
+			}
+			// 2. 将经验应用给自身，通过事件传递，在玩家角色被动技能GA_ListenForEvents里接收
 			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
 		}
 	}

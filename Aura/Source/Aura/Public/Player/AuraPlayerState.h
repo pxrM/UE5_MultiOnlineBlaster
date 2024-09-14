@@ -33,7 +33,7 @@ public:
 
 	FORCEINLINE UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 	FORCEINLINE int32 GetPlayerLevel() const { return Level; }
-	FORCEINLINE int32 GetPlayerXP() const { return XP; }
+	FORCEINLINE int32 GetXP() const { return XP; }
 
 	void AddToLevel(const int32 InLevel);
 	void SetLevel(const int32 InLevel);

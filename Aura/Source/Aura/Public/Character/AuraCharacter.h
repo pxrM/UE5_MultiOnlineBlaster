@@ -28,8 +28,15 @@ public:
 	/* end ICombatInterface */
 
 	/* start IPlayerInterface */
-	virtual void AddToXP_Implementation(int32 InXP) override;
+	virtual void AddToXP_Implementation(const int32 InXP) override;
+	virtual int32 GetXP_Implementation() const override;
+	virtual int32 FindLevelForXP_Implementation(const int32 InXP) const override;
 	virtual void LevelUp_Implementation() override;
+	virtual int32 GetAttributePointReward_Implementation(const int32 Level) const override;
+	virtual int32 GetSpellPointReward_Implementation(const int32 Level) const override;
+	virtual void AddToAttributePoint_Implementation(const int32 InAttributePoint) override;
+	virtual void AddToSpellPoint_Implementation(const int32 InSpellPoint) override;
+	virtual void AddToPlayerLevel_Implementation(const int32 InPlayerLevel) override;
 	/* end IPlayerInterface */
 
 
