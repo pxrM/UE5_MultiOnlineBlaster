@@ -10,9 +10,25 @@
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
+#include "NiagaraComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 AAuraCharacter::AAuraCharacter()
 {
+	CameraBoomComp = CreateDefaultSubobject<USpringArmComponent>("CameraBoomComponent");
+	CameraBoomComp->SetupAttachment(GetRootComponent());
+	CameraBoomComp->SetUsingAbsoluteRotation(true);
+	CameraBoomComp->bDoCollisionTest = false;
+
+	TopDownCameraComp = CreateDefaultSubobject<UCameraComponent>("TopDownCameraComponent");
+	TopDownCameraComp->SetupAttachment(CameraBoomComp, USpringArmComponent::SocketName);
+	TopDownCameraComp->bUsePawnControlRotation = false;
+	
+	LevelUpNiagaraComp = CreateDefaultSubobject<UNiagaraComponent>("LevelUpNiagaraComponent");
+	LevelUpNiagaraComp->SetupAttachment(GetRootComponent());
+	LevelUpNiagaraComp->bAutoActivate = false;
+	
 	// 设置角色的移动是否与其朝向相关联。true，角色将会朝着它的移动方向旋转，这意味着当角色移动时，它会自动朝向移动的方向。
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	// 设置角色的旋转速率。它定义了角色在每个轴上旋转的速度。这里角色在 Yaw 轴上的旋转速度被设置为 400 度/秒，而在其他轴上的旋转速度被设置为零，意味着在 Pitch 和 Roll 轴上角色不会自动旋转。
@@ -80,7 +96,22 @@ int32 AAuraCharacter::FindLevelForXP_Implementation(const int32 InXP) const
 
 void AAuraCharacter::LevelUp_Implementation()
 {
-	
+	MulticastLevelUpParticles();
+}
+
+void AAuraCharacter::MulticastLevelUpParticles_Implementation() const
+{
+	if(IsValid(LevelUpNiagaraComp))
+	{
+		// 使粒子特效面向相机
+		const FVector CameraLocation = TopDownCameraComp->GetComponentLocation();
+		const FVector NiagaraSystemLocation = LevelUpNiagaraComp->GetComponentLocation();
+		// 从 Niagara 系统位置指向摄像机位置的方向
+		const FRotator ToCameraRotation = (CameraLocation - NiagaraSystemLocation).Rotation();
+		LevelUpNiagaraComp->SetWorldRotation(ToCameraRotation);
+		
+		LevelUpNiagaraComp->Activate(true);
+	}
 }
 
 int32 AAuraCharacter::GetAttributePointReward_Implementation(const int32 Level) const
