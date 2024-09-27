@@ -7,8 +7,12 @@
 #include "UObject/NoExportTypes.h"
 #include "AuraWidgetController.generated.h"
 
+
 class UAttributeSet;
 class UAbilitySystemComponent;
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
 
 
 /* 本地玩家相关信息 */
