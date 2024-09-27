@@ -88,7 +88,7 @@ public:
 	FOnAttributeChangedSignature OnXPPercentChangedDelegate;
 	
 	UPROPERTY(BlueprintAssignable, Category = "GAS|XP")
-	FOnPlayerStatChangedSignature OnPlayerLevelChangedSignature;
+	FOnPlayerStatChangedSignature OnPlayerLevelChangedDelegate;
 
 	/* 拾取属性后触发的消息委托 */
 
