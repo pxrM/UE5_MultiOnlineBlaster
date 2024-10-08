@@ -43,6 +43,8 @@ public:
 	virtual void AddToAttributePoint_Implementation(const int32 InAttributePoint) override;
 	virtual void AddToSpellPoint_Implementation(const int32 InSpellPoint) override;
 	virtual void AddToPlayerLevel_Implementation(const int32 InPlayerLevel) override;
+	virtual int32 GetAttributePoints_Implementation() const override;
+	virtual int32 GetSpellPoint_Implementation() const override;
 	/* end IPlayerInterface */
 
 private:

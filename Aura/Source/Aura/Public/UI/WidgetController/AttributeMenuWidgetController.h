@@ -25,6 +25,10 @@ class AURA_API UAttributeMenuWidgetController : public UAuraWidgetController
 public:
 	virtual void BroadcastInitValues() override;
 	virtual void BindCallbacksToDependencies() override;
+	
+	// 升级对应的属性
+	UFUNCTION(BlueprintCallable)
+	void UpgradeAttribute(const FGameplayTag& AttributeTag);
 
 private:
 	// 广播属性变化

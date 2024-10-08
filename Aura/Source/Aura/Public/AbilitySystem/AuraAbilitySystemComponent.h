@@ -54,16 +54,25 @@ public:
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 	// 遍历技能，并通过委托回调的形式广播出去
 	void ForEachAbility(const FForEachAbility& Delegate);
+	
 	// 通过传入的技能实例，从技能实例里面获取到对应的技能标签和输入标签
 	static FGameplayTag GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 	static FGameplayTag GetAbilityInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+
+	// 升级对应的属性(本地)
+	void UpgradeAttribute(const FGameplayTag& AttributeTag);
+	// 升级对应的属性(server)
+	UFUNCTION(Server, Reliable)
+	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
 	
+
 protected:
 	virtual void OnRep_ActivateAbilities() override;
 	
 	// 用于在Effect应用到自身角色时触发相应的逻辑
 	UFUNCTION(Client, Reliable)
 	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle);
+
 	
 public:
 	// 获取到一个ge资产后触发的委托

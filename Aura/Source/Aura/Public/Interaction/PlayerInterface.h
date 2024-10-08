@@ -33,15 +33,23 @@ public:
 	// 获取奖励的技能点
 	UFUNCTION(BlueprintNativeEvent)
 	int32 GetSpellPointReward(const int32 Level) const;
-	
+
 	// 向playerstate添加经验
 	UFUNCTION(BlueprintNativeEvent)
 	void AddToXP(const int32 InXP);
+
+	// 获取属性点
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetAttributePoints() const;
 
 	// 添加属性点
 	UFUNCTION(BlueprintNativeEvent)
 	void AddToAttributePoint(const int32 InAttributePoint);
 
+	// 获取技能点
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetSpellPoint() const;
+	
 	// 添加技能点
 	UFUNCTION(BlueprintNativeEvent)
 	void AddToSpellPoint(const int32 InSpellPoint);
