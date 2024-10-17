@@ -1,7 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-/*
-	火箭，对一定范围内的角色造成伤害，并对该伤害进行衰减
-*/
 
 #pragma once
 
@@ -10,7 +7,7 @@
 #include "ProjectileRocket.generated.h"
 
 /**
- *
+ * 火箭，对一定范围内的角色造成伤害，并对该伤害进行衰减
  */
 UCLASS()
 class BLASTER_API AProjectileRocket : public AProjectile

@@ -7,7 +7,7 @@
 #include "ShieldPickup.generated.h"
 
 /**
- * 
+ * 护盾buff
  */
 UCLASS()
 class BLASTER_API AShieldPickup : public APickup

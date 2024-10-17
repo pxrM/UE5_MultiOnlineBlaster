@@ -17,20 +17,20 @@ void APickupSpawnPoint::BeginPlay()
 {
 	Super::BeginPlay();
 	/*
-		ÔÚC++ÖÐ£¬nullptrÊÇÒ»¸öÖ¸Õë×ÖÃæÁ¿£¬Ëü±»×ª»»ÎªÈÎºÎÖ¸ÕëÀàÐÍ£¬»òÕß¿ÉÒÔÊÇbool£¬nullptr_t¡£
-		Èç¹û²»½øÐÐÀàÐÍ×ª»»£¬´ó¶àÊýÇé¿öÏÂ²»»á³öÏÖÎÊÌâ£¬ÒòÎª±àÒëÆ÷»á×Ô¶¯½øÐÐÒþÊ½ÀàÐÍ×ª»»¡£
-		È»¶ø£¬ÕâÖÖÇé¿ö²¢²»×ÜÊÇÈç´Ë¡£ÔÚÄ³Ð©Çé¿öÏÂ£¬²»½øÐÐÏÔÊ½ÀàÐÍ×ª»»¿ÉÄÜ»áµ¼ÖÂÎÊÌâ¡£
-		ÀýÈç£¬ÔÚº¯ÊýÖØÔØÊ±£¬Èç¹ûº¯ÊýµÄ²ÎÊýÀàÐÍÓÐ¶àÖÖ¿ÉÄÜ£¬²»½øÐÐÏÔÊ½ÀàÐÍ×ª»»¿ÉÄÜ»áµ¼ÖÂ±àÒë´íÎó£¬ÒòÎª±àÒëÆ÷ÎÞ·¨È·¶¨Ó¦¸Ãµ÷ÓÃÄÄ¸öº¯Êý¡£
+		åœ¨C++ä¸­ï¼Œnullptræ˜¯ä¸€ä¸ªæŒ‡é’ˆå­—é¢é‡ï¼Œå®ƒè¢«è½¬æ¢ä¸ºä»»ä½•æŒ‡é’ˆç±»åž‹ï¼Œæˆ–è€…å¯ä»¥æ˜¯boolï¼Œnullptr_tã€‚
+		å¦‚æžœä¸è¿›è¡Œç±»åž‹è½¬æ¢ï¼Œå¤§å¤šæ•°æƒ…å†µä¸‹ä¸ä¼šå‡ºçŽ°é—®é¢˜ï¼Œå› ä¸ºç¼–è¯‘å™¨ä¼šè‡ªåŠ¨è¿›è¡Œéšå¼ç±»åž‹è½¬æ¢ã€‚
+		ç„¶è€Œï¼Œè¿™ç§æƒ…å†µå¹¶ä¸æ€»æ˜¯å¦‚æ­¤ã€‚åœ¨æŸäº›æƒ…å†µä¸‹ï¼Œä¸è¿›è¡Œæ˜¾å¼ç±»åž‹è½¬æ¢å¯èƒ½ä¼šå¯¼è‡´é—®é¢˜ã€‚
+		ä¾‹å¦‚ï¼Œåœ¨å‡½æ•°é‡è½½æ—¶ï¼Œå¦‚æžœå‡½æ•°çš„å‚æ•°ç±»åž‹æœ‰å¤šç§å¯èƒ½ï¼Œä¸è¿›è¡Œæ˜¾å¼ç±»åž‹è½¬æ¢å¯èƒ½ä¼šå¯¼è‡´ç¼–è¯‘é”™è¯¯ï¼Œå› ä¸ºç¼–è¯‘å™¨æ— æ³•ç¡®å®šåº”è¯¥è°ƒç”¨å“ªä¸ªå‡½æ•°ã€‚
 		void foo(int* ptr) { std::cout << "Pointer overload" << std::endl; }
 		void foo(int val) { std::cout << "Integer overload" << std::endl; }
 		int main() {
-			foo(nullptr); // ±àÒë´íÎó£ºcall to 'foo' is ambiguous
+			foo(nullptr); // ç¼–è¯‘é”™è¯¯ï¼šcall to 'foo' is ambiguous
 			return 0;
 		}
-		ÔÚÕâ¸öÀý×ÓÖÐ£¬nullptr¿ÉÒÔ±»ÒþÊ½×ª»»Îªint*»òint£¬µ¼ÖÂ±àÒëÆ÷ÎÞ·¨È·¶¨Ó¦¸Ãµ÷ÓÃÄÄ¸öfooº¯Êý¡£
-		Èç¹ûÎÒÃÇÏÔÊ½µØ½«nullptr×ª»»Îªint*£¬±àÒëÆ÷¾ÍÄÜÃ÷È·µØÖªµÀÓ¦¸Ãµ÷ÓÃÄÄ¸öº¯Êý¡£
+		åœ¨è¿™ä¸ªä¾‹å­ä¸­ï¼Œnullptrå¯ä»¥è¢«éšå¼è½¬æ¢ä¸ºint*æˆ–intï¼Œå¯¼è‡´ç¼–è¯‘å™¨æ— æ³•ç¡®å®šåº”è¯¥è°ƒç”¨å“ªä¸ªfooå‡½æ•°ã€‚
+		å¦‚æžœæˆ‘ä»¬æ˜¾å¼åœ°å°†nullptrè½¬æ¢ä¸ºint*ï¼Œç¼–è¯‘å™¨å°±èƒ½æ˜Žç¡®åœ°çŸ¥é“åº”è¯¥è°ƒç”¨å“ªä¸ªå‡½æ•°ã€‚
 		int main() {
-			foo(static_cast<int*>(nullptr)); // µ÷ÓÃÖ¸ÕëÖØÔØ
+			foo(static_cast<int*>(nullptr)); // è°ƒç”¨æŒ‡é’ˆé‡è½½
 			return 0;
 		}
 	*/

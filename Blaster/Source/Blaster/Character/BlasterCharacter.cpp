@@ -36,26 +36,26 @@ ABlasterCharacter::ABlasterCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	//-----------------------------------------------------------------------------------------------------------
-	//SpawnCollisionHandlingMethodÓÃÓÚ¿ØÖÆĞÂÉú³ÉµÄActorÔÚ²úÉúÅö×²Ê±µÄ´¦Àí·½Ê½¡£
-	//ESpawnActorCollisionHandlingMethodÃ¶¾ÙÀàĞÍ¶¨ÒåÁËActorÉú³ÉÊ±¿ÉÄÜÓöµ½µÄ¼¸ÖÖ²»Í¬µÄÅö×²´¦Àí·½Ê½£¬°üÀ¨£º
-	//	Undefined£ºÎ´¶¨ÒåµÄÅö×²´¦Àí·½Ê½£¬²»½øĞĞÈÎºÎ´¦Àí¡£
-	//	AlwaysSpawn£ºÊ¼ÖÕÉú³ÉĞÂµÄActor£¬ºöÂÔÈÎºÎÅö×²¼ì²â¡£
-	//	AdjustIfPossibleButAlwaysSpawn£ºÈç¹ûĞÂÉú³ÉµÄActorÓëÏÖÓĞµÄActor·¢ÉúÅö×²£¬Ôò³¢ÊÔ¶ÔĞÂÉú³ÉµÄActorÎ»ÖÃ½øĞĞµ÷ÕûÒÔ±ÜÃâÅö×²¡£Èç¹ûÎŞ·¨±ÜÃâÅö×²£¬ÔòÈÔÈ»Éú³ÉĞÂµÄActor¡£
-	//	AdjustIfPossibleButDontSpawnIfColliding£ºÈç¹ûĞÂÉú³ÉµÄActorÓëÏÖÓĞµÄActor·¢ÉúÅö×²£¬Ôò³¢ÊÔ¶ÔĞÂÉú³ÉµÄActorÎ»ÖÃ½øĞĞµ÷ÕûÒÔ±ÜÃâÅö×²¡£Èç¹ûÎŞ·¨±ÜÃâÅö×²£¬Ôò²»»áÉú³ÉĞÂµÄActor¡£
+	//SpawnCollisionHandlingMethodç”¨äºæ§åˆ¶æ–°ç”Ÿæˆçš„Actoråœ¨äº§ç”Ÿç¢°æ’æ—¶çš„å¤„ç†æ–¹å¼ã€‚
+	//ESpawnActorCollisionHandlingMethodæšä¸¾ç±»å‹å®šä¹‰äº†Actorç”Ÿæˆæ—¶å¯èƒ½é‡åˆ°çš„å‡ ç§ä¸åŒçš„ç¢°æ’å¤„ç†æ–¹å¼ï¼ŒåŒ…æ‹¬ï¼š
+	//	Undefinedï¼šæœªå®šä¹‰çš„ç¢°æ’å¤„ç†æ–¹å¼ï¼Œä¸è¿›è¡Œä»»ä½•å¤„ç†ã€‚
+	//	AlwaysSpawnï¼šå§‹ç»ˆç”Ÿæˆæ–°çš„Actorï¼Œå¿½ç•¥ä»»ä½•ç¢°æ’æ£€æµ‹ã€‚
+	//	AdjustIfPossibleButAlwaysSpawnï¼šå¦‚æœæ–°ç”Ÿæˆçš„Actorä¸ç°æœ‰çš„Actorå‘ç”Ÿç¢°æ’ï¼Œåˆ™å°è¯•å¯¹æ–°ç”Ÿæˆçš„Actorä½ç½®è¿›è¡Œè°ƒæ•´ä»¥é¿å…ç¢°æ’ã€‚å¦‚æœæ— æ³•é¿å…ç¢°æ’ï¼Œåˆ™ä»ç„¶ç”Ÿæˆæ–°çš„Actorã€‚
+	//	AdjustIfPossibleButDontSpawnIfCollidingï¼šå¦‚æœæ–°ç”Ÿæˆçš„Actorä¸ç°æœ‰çš„Actorå‘ç”Ÿç¢°æ’ï¼Œåˆ™å°è¯•å¯¹æ–°ç”Ÿæˆçš„Actorä½ç½®è¿›è¡Œè°ƒæ•´ä»¥é¿å…ç¢°æ’ã€‚å¦‚æœæ— æ³•é¿å…ç¢°æ’ï¼Œåˆ™ä¸ä¼šç”Ÿæˆæ–°çš„Actorã€‚
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom")); //´´½¨µ¯»É±Û
-	CameraBoom->SetupAttachment(GetMesh());	//½«µ¯»É±ÛÁ¬½Óµ½½ÇÉ«meshÉÏ£¬½ÇÉ«ÒÆ¶¯Ê±½«´ø¶¯µ¯»É±Û
-	CameraBoom->TargetArmLength = 600.f;	//ÉèÖÃµ¯»É±ÛµÄ³¤¶È
-	CameraBoom->bUsePawnControlRotation = true;	//ÉèÖÃÊÇ·ñ¸úËæcontrolÒ»ÆğĞı×ª
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom")); //åˆ›å»ºå¼¹ç°§è‡‚
+	CameraBoom->SetupAttachment(GetMesh());	//å°†å¼¹ç°§è‡‚è¿æ¥åˆ°è§’è‰²meshä¸Šï¼Œè§’è‰²ç§»åŠ¨æ—¶å°†å¸¦åŠ¨å¼¹ç°§è‡‚
+	CameraBoom->TargetArmLength = 600.f;	//è®¾ç½®å¼¹ç°§è‡‚çš„é•¿åº¦
+	CameraBoom->bUsePawnControlRotation = true;	//è®¾ç½®æ˜¯å¦è·Ÿéšcontrolä¸€èµ·æ—‹è½¬
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); //½«Ïà»úÁ¬½Óµ½µ¯»É±ÛÉÏ
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); //å°†ç›¸æœºè¿æ¥åˆ°å¼¹ç°§è‡‚ä¸Š
 	FollowCamera->bUsePawnControlRotation = false;
 
-	//ÕâÀïÒ²ÒªÔÚÀ¶Í¼±à¼­Æ÷ÉèÖÃÒ»ÏÂ£¬²»È»À¶Í¼ÉèÖÃ»á¸²¸Çµ÷c++ÉèÖÃ£¬ÔÚBP_BlasterCharacter(self)À¶Í¼DetailsÃæ°åËÑË÷UseController
-	bUseControllerRotationYaw = false;	//²»ÈÃ½ÇÉ«¸úËæ¿ØÖÆÆ÷Ò»ÆğĞı×ª
-	//Í¬ÉÏÔÚBP_BlasterCharacter(CharacterMovement×é¼ş)À¶Í¼DetailsÃæ°åËÑË÷Orient Rotation
-	GetCharacterMovement()->bOrientRotationToMovement = true;	//Ê¹½ÇÉ«³¯ÏòÆäÔË¶¯·½Ïò½øĞĞĞı×ª
+	//è¿™é‡Œä¹Ÿè¦åœ¨è“å›¾ç¼–è¾‘å™¨è®¾ç½®ä¸€ä¸‹ï¼Œä¸ç„¶è“å›¾è®¾ç½®ä¼šè¦†ç›–è°ƒc++è®¾ç½®ï¼Œåœ¨BP_BlasterCharacter(self)è“å›¾Detailsé¢æ¿æœç´¢UseController
+	bUseControllerRotationYaw = false;	//ä¸è®©è§’è‰²è·Ÿéšæ§åˆ¶å™¨ä¸€èµ·æ—‹è½¬
+	//åŒä¸Šåœ¨BP_BlasterCharacter(CharacterMovementç»„ä»¶)è“å›¾Detailsé¢æ¿æœç´¢Orient Rotation
+	GetCharacterMovement()->bOrientRotationToMovement = true;	//ä½¿è§’è‰²æœå‘å…¶è¿åŠ¨æ–¹å‘è¿›è¡Œæ—‹è½¬
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
@@ -74,16 +74,16 @@ ABlasterCharacter::ABlasterCharacter()
 	AttachedGrenade->SetupAttachment(GetMesh(), FName("GrenadeSocket"));
 	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;	//À¶Í¼Ò²¿ÉÉèÖÃ
-	//ÔÚÆäËû½ÇÉ«ºÍ±¾½ÇÉ«µÄÏà»úÅö×²Ê±»á³öÏÖÏà»ú·Å´óĞ§¹û£¬Ê¹ÓÃºöÂÔÏà»úµÄÅö×²µÄ°ì·¨½â¾ö£¬Í¬Ê±Ò²ÒªÔÚ½ÇÉ«À¶Í¼¶ÔÓ¦×é¼şµÄCollision ResponseÀïÉèÖÃ
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;	//è“å›¾ä¹Ÿå¯è®¾ç½®
+	//åœ¨å…¶ä»–è§’è‰²å’Œæœ¬è§’è‰²çš„ç›¸æœºç¢°æ’æ—¶ä¼šå‡ºç°ç›¸æœºæ”¾å¤§æ•ˆæœï¼Œä½¿ç”¨å¿½ç•¥ç›¸æœºçš„ç¢°æ’çš„åŠæ³•è§£å†³ï¼ŒåŒæ—¶ä¹Ÿè¦åœ¨è§’è‰²è“å›¾å¯¹åº”ç»„ä»¶çš„Collision Responseé‡Œè®¾ç½®
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	/*
-	* SetCollisionResponseToChannel()ÊÇÉèÖÃActorµÄÅö×²ÏìÓ¦º¯Êı£¬ÓÃÓÚ¿ØÖÆÅö×²¼ì²âÊ±ActorÓëÆäËûÖ¸¶¨Í¨µÀµÄÎïÌåÖ®¼äµÄ½»»¥·½Ê½¡£
-	*	 ¾ßÌåÀ´Ëµ£¬Õâ¸öº¯ÊıµÄ×÷ÓÃÊÇ½«¸ÃActorÓëÖ¸¶¨ÀàĞÍµÄ¶ÔÏóÉèÎª¿ÉÅö×²£¬²¢Ö¸¶¨ÆäÅö×²ÏìÓ¦·½Ê½¡£
-	*		²ÎÊı1±íÊ¾ÒªÉèÖÃµÄÅö×²Í¨µÀ£¬²ÎÊı2ÔòÊÇÖ¸¶¨¸ÃÍ¨µÀÓëÆäËû¶ÔÏóµÄÅö×²ÏìÓ¦·½Ê½¡£
-	* ×¢Òâ£ºÀ¶Í¼ÖĞÒ²Òª¼ì²éÉèÖÃ
+	* SetCollisionResponseToChannel()æ˜¯è®¾ç½®Actorçš„ç¢°æ’å“åº”å‡½æ•°ï¼Œç”¨äºæ§åˆ¶ç¢°æ’æ£€æµ‹æ—¶Actorä¸å…¶ä»–æŒ‡å®šé€šé“çš„ç‰©ä½“ä¹‹é—´çš„äº¤äº’æ–¹å¼ã€‚
+	*	 å…·ä½“æ¥è¯´ï¼Œè¿™ä¸ªå‡½æ•°çš„ä½œç”¨æ˜¯å°†è¯¥Actorä¸æŒ‡å®šç±»å‹çš„å¯¹è±¡è®¾ä¸ºå¯ç¢°æ’ï¼Œå¹¶æŒ‡å®šå…¶ç¢°æ’å“åº”æ–¹å¼ã€‚
+	*		å‚æ•°1è¡¨ç¤ºè¦è®¾ç½®çš„ç¢°æ’é€šé“ï¼Œå‚æ•°2åˆ™æ˜¯æŒ‡å®šè¯¥é€šé“ä¸å…¶ä»–å¯¹è±¡çš„ç¢°æ’å“åº”æ–¹å¼ã€‚
+	* æ³¨æ„ï¼šè“å›¾ä¸­ä¹Ÿè¦æ£€æŸ¥è®¾ç½®
 	*/
-	//Åö×²Í¨µÀ±»ÉèÖÃÎªECC_Visibility£¬ÓÃÓÚ´¦Àí¸÷ÖÖÀàĞÍµÄ¿É¼ûĞÔºÍÍ¶Ó°ÎÊÌâ¡£ECR_BlockÉèÖÃÎªÅö×²ÏìÓ¦·½Ê½£¬±íÊ¾¸ÃÍ¨µÀÉÏµÄÅö×²Ìå»á×è°­ÈÎºÎ¶Ô¿çÔ½Í¨µÀµÄÔË¶¯½øĞĞµÄÅö×²¡£
+	//ç¢°æ’é€šé“è¢«è®¾ç½®ä¸ºECC_Visibilityï¼Œç”¨äºå¤„ç†å„ç§ç±»å‹çš„å¯è§æ€§å’ŒæŠ•å½±é—®é¢˜ã€‚ECR_Blockè®¾ç½®ä¸ºç¢°æ’å“åº”æ–¹å¼ï¼Œè¡¨ç¤ºè¯¥é€šé“ä¸Šçš„ç¢°æ’ä½“ä¼šé˜»ç¢ä»»ä½•å¯¹è·¨è¶Šé€šé“çš„è¿åŠ¨è¿›è¡Œçš„ç¢°æ’ã€‚
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
@@ -91,85 +91,85 @@ ABlasterCharacter::ABlasterCharacter()
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
-	NetUpdateFrequency = 66.f;	//Actor ÍøÂçÍ¬²½µÄ×î´óÆµÂÊ
-	MinNetUpdateFrequency = 33.f;	//ÍøÂçÍ¬²½µÄ×îĞ¡ÆµÂÊ
+	NetUpdateFrequency = 66.f;	//Actor ç½‘ç»œåŒæ­¥çš„æœ€å¤§é¢‘ç‡
+	MinNetUpdateFrequency = 33.f;	//ç½‘ç»œåŒæ­¥çš„æœ€å°é¢‘ç‡
 
 	/*
-		·şÎñÆ÷¶Ëµ¹´øµÄ·½¿ò
+		æœåŠ¡å™¨ç«¯å€’å¸¦çš„æ–¹æ¡†
 	*/
 	head = CreateDefaultSubobject<UBoxComponent>(TEXT("head"));
-	head->SetupAttachment(GetMesh(), FName("head")); //ÕâÀïµÚ¶ş¸ö²ÎÊıÊÇ¹Ç÷ÀÃû
-	HitConllisionBoxs.Add(FName("head"), head);
+	head->SetupAttachment(GetMesh(), FName("head")); //è¿™é‡Œç¬¬äºŒä¸ªå‚æ•°æ˜¯éª¨éª¼å
+	HitCollisionBoxs.Add(FName("head"), head);
 
 	pelvis = CreateDefaultSubobject<UBoxComponent>(TEXT("pelvis"));
 	pelvis->SetupAttachment(GetMesh(), FName("pelvis"));
-	HitConllisionBoxs.Add(FName("pelvis"), pelvis);
+	HitCollisionBoxs.Add(FName("pelvis"), pelvis);
 
 	spine_02 = CreateDefaultSubobject<UBoxComponent>(TEXT("spine_02"));
 	spine_02->SetupAttachment(GetMesh(), FName("spine_02"));
-	HitConllisionBoxs.Add(FName("spine_02"), spine_02);
+	HitCollisionBoxs.Add(FName("spine_02"), spine_02);
 
 	spine_03 = CreateDefaultSubobject<UBoxComponent>(TEXT("spine_03"));
 	spine_03->SetupAttachment(GetMesh(), FName("spine_03"));
-	HitConllisionBoxs.Add(FName("spine_03"), spine_03);
+	HitCollisionBoxs.Add(FName("spine_03"), spine_03);
 
 	upperarm_l = CreateDefaultSubobject<UBoxComponent>(TEXT("upperarm_l"));
 	upperarm_l->SetupAttachment(GetMesh(), FName("upperarm_l"));
-	HitConllisionBoxs.Add(FName("upperarm_l"), upperarm_l);
+	HitCollisionBoxs.Add(FName("upperarm_l"), upperarm_l);
 
 	upperarm_r = CreateDefaultSubobject<UBoxComponent>(TEXT("upperarm_r"));
 	upperarm_r->SetupAttachment(GetMesh(), FName("upperarm_r"));
-	HitConllisionBoxs.Add(FName("upperarm_r"), upperarm_r);
+	HitCollisionBoxs.Add(FName("upperarm_r"), upperarm_r);
 
 	lowerarm_l = CreateDefaultSubobject<UBoxComponent>(TEXT("lowerarm_l"));
 	lowerarm_l->SetupAttachment(GetMesh(), FName("lowerarm_l"));
-	HitConllisionBoxs.Add(FName("lowerarm_l"), lowerarm_l);
+	HitCollisionBoxs.Add(FName("lowerarm_l"), lowerarm_l);
 
 	lowerarm_r = CreateDefaultSubobject<UBoxComponent>(TEXT("lowerarm_r"));
 	lowerarm_r->SetupAttachment(GetMesh(), FName("lowerarm_r"));
-	HitConllisionBoxs.Add(FName("lowerarm_r"), lowerarm_r);
+	HitCollisionBoxs.Add(FName("lowerarm_r"), lowerarm_r);
 
 	hand_l = CreateDefaultSubobject<UBoxComponent>(TEXT("hand_l"));
 	hand_l->SetupAttachment(GetMesh(), FName("hand_l"));
-	HitConllisionBoxs.Add(FName("hand_l"), hand_l);
+	HitCollisionBoxs.Add(FName("hand_l"), hand_l);
 
 	hand_r = CreateDefaultSubobject<UBoxComponent>(TEXT("hand_r"));
 	hand_r->SetupAttachment(GetMesh(), FName("hand_r"));
-	HitConllisionBoxs.Add(FName("hand_r"), hand_r);
+	HitCollisionBoxs.Add(FName("hand_r"), hand_r);
 
 	blanket = CreateDefaultSubobject<UBoxComponent>(TEXT("blanket"));
 	blanket->SetupAttachment(GetMesh(), FName("backpack"));
-	HitConllisionBoxs.Add(FName("blanket"), blanket);
+	HitCollisionBoxs.Add(FName("blanket"), blanket);
 
 	backpack = CreateDefaultSubobject<UBoxComponent>(TEXT("backpack"));
 	backpack->SetupAttachment(GetMesh(), FName("backpack"));
-	HitConllisionBoxs.Add(FName("backpack"), backpack);
+	HitCollisionBoxs.Add(FName("backpack"), backpack);
 
 	thigh_l = CreateDefaultSubobject<UBoxComponent>(TEXT("thigh_l"));
 	thigh_l->SetupAttachment(GetMesh(), FName("thigh_l"));
-	HitConllisionBoxs.Add(FName("thigh_l"), thigh_l);
+	HitCollisionBoxs.Add(FName("thigh_l"), thigh_l);
 
 	thigh_r = CreateDefaultSubobject<UBoxComponent>(TEXT("thigh_r"));
 	thigh_r->SetupAttachment(GetMesh(), FName("thigh_r"));
-	HitConllisionBoxs.Add(FName("thigh_r"), thigh_r);
+	HitCollisionBoxs.Add(FName("thigh_r"), thigh_r);
 
 	calf_l = CreateDefaultSubobject<UBoxComponent>(TEXT("calf_l"));
 	calf_l->SetupAttachment(GetMesh(), FName("calf_l"));
-	HitConllisionBoxs.Add(FName("calf_l"), calf_l);
+	HitCollisionBoxs.Add(FName("calf_l"), calf_l);
 
 	calf_r = CreateDefaultSubobject<UBoxComponent>(TEXT("calf_r"));
 	calf_r->SetupAttachment(GetMesh(), FName("calf_r"));
-	HitConllisionBoxs.Add(FName("calf_r"), calf_r);
+	HitCollisionBoxs.Add(FName("calf_r"), calf_r);
 
 	foot_l = CreateDefaultSubobject<UBoxComponent>(TEXT("foot_l"));
 	foot_l->SetupAttachment(GetMesh(), FName("foot_l"));
-	HitConllisionBoxs.Add(FName("foot_l"), foot_l);
+	HitCollisionBoxs.Add(FName("foot_l"), foot_l);
 
 	foot_r = CreateDefaultSubobject<UBoxComponent>(TEXT("foot_r"));
 	foot_r->SetupAttachment(GetMesh(), FName("foot_r"));
-	HitConllisionBoxs.Add(FName("foot_r"), foot_r);
+	HitCollisionBoxs.Add(FName("foot_r"), foot_r);
 
-	for (auto& Box : HitConllisionBoxs)
+	for (auto& Box : HitCollisionBoxs)
 	{
 		if (Box.Value)
 		{
@@ -191,11 +191,11 @@ void ABlasterCharacter::BeginPlay()
 	UpdateHUDHealth();
 	UpdateHUDShield();
 
-	// Õâ¶Î´úÂëÊÇÔÚ·şÎñ¶Ë£¨¼´ÓµÓĞËùÓĞÈ¨µÄ»úÆ÷»òÖ÷»ú£©ÖĞµ÷ÓÃµÄ£¬ÓÃÓÚ×¢²á´¦Àí½ÇÉ«ÊÕµ½ÈÎºÎÉËº¦ÊÂ¼şµÄº¯Êı¡£
-	// Ê×ÏÈ£¬HasAuthority()º¯ÊıÅĞ¶Ïµ±Ç°Ö´ĞĞµÄ´úÂëÊÇ·ñÔÚ·şÎñ¶ËÖĞ¡£
-	// ½Ó×Å£¬OnTakeAnyDamageÊÇÒ»¸ö´ú±í½ÇÉ«ÊÜµ½ÈÎºÎÀàĞÍÉËº¦ÊÂ¼şµÄÎ¯ÍĞ£¨Delegate£©£¬¸ÃÎ¯ÍĞ»áÔÚ½ÇÉ«ÊÜµ½ÈÎºÎÀàĞÍµÄÉËº¦Ê±±»´¥·¢¡£
-	// AddDynamicº¯ÊıÓÃÓÚ¶¯Ì¬µØ½«ÊÜµ½ÈÎºÎÀàĞÍÉËº¦ÊÂ¼şÓëAblasterCharacter::ReceiveDamage·½·¨°ó¶¨£¬ÒÔ±ãÔÚÊÕµ½ÉËº¦ÊÂ¼şÊ±×Ô¶¯µ÷ÓÃReceiveDamage·½·¨À´´¦ÀíÉËº¦Ğ§¹û¡£
-	// ×îºó£¬this±íÊ¾µ±Ç°½Å±¾ËùÔÚµÄ½ÇÉ«¶ÔÏó±¾Éí£¬¼´Ö¸¶¨µ±½ÇÉ«ÊÜµ½ÈÎºÎÀàĞÍµÄÉËº¦Ê±¶¼»áµ÷ÓÃ¸Ã½ÇÉ«¶ÔÏóµÄReceiveDamage·½·¨¡£
+	// è¿™æ®µä»£ç æ˜¯åœ¨æœåŠ¡ç«¯ï¼ˆå³æ‹¥æœ‰æ‰€æœ‰æƒçš„æœºå™¨æˆ–ä¸»æœºï¼‰ä¸­è°ƒç”¨çš„ï¼Œç”¨äºæ³¨å†Œå¤„ç†è§’è‰²æ”¶åˆ°ä»»ä½•ä¼¤å®³äº‹ä»¶çš„å‡½æ•°ã€‚
+	// é¦–å…ˆï¼ŒHasAuthority()å‡½æ•°åˆ¤æ–­å½“å‰æ‰§è¡Œçš„ä»£ç æ˜¯å¦åœ¨æœåŠ¡ç«¯ä¸­ã€‚
+	// æ¥ç€ï¼ŒOnTakeAnyDamageæ˜¯ä¸€ä¸ªä»£è¡¨è§’è‰²å—åˆ°ä»»ä½•ç±»å‹ä¼¤å®³äº‹ä»¶çš„å§”æ‰˜ï¼ˆDelegateï¼‰ï¼Œè¯¥å§”æ‰˜ä¼šåœ¨è§’è‰²å—åˆ°ä»»ä½•ç±»å‹çš„ä¼¤å®³æ—¶è¢«è§¦å‘ã€‚
+	// AddDynamicå‡½æ•°ç”¨äºåŠ¨æ€åœ°å°†å—åˆ°ä»»ä½•ç±»å‹ä¼¤å®³äº‹ä»¶ä¸AblasterCharacter::ReceiveDamageæ–¹æ³•ç»‘å®šï¼Œä»¥ä¾¿åœ¨æ”¶åˆ°ä¼¤å®³äº‹ä»¶æ—¶è‡ªåŠ¨è°ƒç”¨ReceiveDamageæ–¹æ³•æ¥å¤„ç†ä¼¤å®³æ•ˆæœã€‚
+	// æœ€åï¼Œthisè¡¨ç¤ºå½“å‰è„šæœ¬æ‰€åœ¨çš„è§’è‰²å¯¹è±¡æœ¬èº«ï¼Œå³æŒ‡å®šå½“è§’è‰²å—åˆ°ä»»ä½•ç±»å‹çš„ä¼¤å®³æ—¶éƒ½ä¼šè°ƒç”¨è¯¥è§’è‰²å¯¹è±¡çš„ReceiveDamageæ–¹æ³•ã€‚
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
@@ -214,7 +214,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 	RotateInPlace(DeltaTime);
 	HideCameraIfCharacterClose();
-	PollInit(); //³õÊ¼¼¸Ö¡µÄÊ±ºòÍæ¼ÒÊı¾İ¿ÉÄÜ»¹Ã»³õÊ¼»¯£¬ËùÒÔ·Åµ½tickÀï
+	PollInit(); //åˆå§‹å‡ å¸§çš„æ—¶å€™ç©å®¶æ•°æ®å¯èƒ½è¿˜æ²¡åˆå§‹åŒ–ï¼Œæ‰€ä»¥æ”¾åˆ°tické‡Œ
 }
 
 // Called to bind functionality to input
@@ -222,7 +222,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	//½ÇÉ«ÊäÈë°ó¶¨°´¼ü
+	//è§’è‰²è¾“å…¥ç»‘å®šæŒ‰é”®
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABlasterCharacter::Jump);
 
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipBtnPressed);
@@ -268,16 +268,16 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	//Ê¹ÓÃ DOREPLIFETIME ºê½« OverlappingWeapon ±äÁ¿Ìí¼Óµ½ĞèÒª½øĞĞÍøÂçÍ¬²½µÄÊôĞÔÁĞ±íÖĞ¡£
-	//DOREPLIFETIME ºêµÄµÚÒ»¸ö²ÎÊıÊÇÒªÍ¬²½µÄ±äÁ¿Ãû£¬µÚ¶ş¸ö²ÎÊıÊÇÒªÌí¼Óµ½µÄ OutLifetimeProps Êı×é¡£
-	//ÔÚ¶àÈËÓÎÏ·ÖĞ£¬Ã¿µ± OverlappingWeapon µÄÖµ·¢Éú±ä»¯Ê±£¬Ëü½«×Ô¶¯ÓÉÒıÇæds·şÎñÆ÷Í¬²½µ½ÆäËû¿Í»§¶Ë¡£ÔÚÆäËû¿Í»§¶ËÉÏ£¬¸ÃÖµ½«×Ô¶¯¸üĞÂÒÔÆ¥Åä·şÎñÆ÷ÉÏµÄÖµ¡£
-	//ĞèÒª×¢ÒâµÄÊÇ£¬³ıÁËÔÚ GetLifetimeReplicatedProps º¯ÊıÖĞÌí¼ÓÊôĞÔÍâ£¬
-	//»¹ĞèÒªÈ·±£ËùÓĞĞèÒªÍ¬²½µÄÊôĞÔ¶¼Ê¹ÓÃÁË UPROPERTY(Replicated) ±êÊ¶·û½øĞĞÁË±ê¼Ç¡£·ñÔò£¬ÕâĞ©ÊôĞÔ¿ÉÄÜÎŞ·¨±»ÕıÈ·Í¬²½¡£
+	//ä½¿ç”¨ DOREPLIFETIME å®å°† OverlappingWeapon å˜é‡æ·»åŠ åˆ°éœ€è¦è¿›è¡Œç½‘ç»œåŒæ­¥çš„å±æ€§åˆ—è¡¨ä¸­ã€‚
+	//DOREPLIFETIME å®çš„ç¬¬ä¸€ä¸ªå‚æ•°æ˜¯è¦åŒæ­¥çš„å˜é‡åï¼Œç¬¬äºŒä¸ªå‚æ•°æ˜¯è¦æ·»åŠ åˆ°çš„ OutLifetimeProps æ•°ç»„ã€‚
+	//åœ¨å¤šäººæ¸¸æˆä¸­ï¼Œæ¯å½“ OverlappingWeapon çš„å€¼å‘ç”Ÿå˜åŒ–æ—¶ï¼Œå®ƒå°†è‡ªåŠ¨ç”±å¼•æ“dsæœåŠ¡å™¨åŒæ­¥åˆ°å…¶ä»–å®¢æˆ·ç«¯ã€‚åœ¨å…¶ä»–å®¢æˆ·ç«¯ä¸Šï¼Œè¯¥å€¼å°†è‡ªåŠ¨æ›´æ–°ä»¥åŒ¹é…æœåŠ¡å™¨ä¸Šçš„å€¼ã€‚
+	//éœ€è¦æ³¨æ„çš„æ˜¯ï¼Œé™¤äº†åœ¨ GetLifetimeReplicatedProps å‡½æ•°ä¸­æ·»åŠ å±æ€§å¤–ï¼Œ
+	//è¿˜éœ€è¦ç¡®ä¿æ‰€æœ‰éœ€è¦åŒæ­¥çš„å±æ€§éƒ½ä½¿ç”¨äº† UPROPERTY(Replicated) æ ‡è¯†ç¬¦è¿›è¡Œäº†æ ‡è®°ã€‚å¦åˆ™ï¼Œè¿™äº›å±æ€§å¯èƒ½æ— æ³•è¢«æ­£ç¡®åŒæ­¥ã€‚
 	//DOREPLIFETIME(ABlasterCharacter, OverlappingWeapon);
 	// 
-	//DOREPLIFETIME_CONDITION ÊÇ Unreal Engine ÖĞÓÃÓÚÍøÂçÍ¬²½µÄºêÖ®Ò»£¬ÓÃÓÚ±ê¼ÇĞèÒª½øĞĞÍøÂçÍ¬²½µÄÊôĞÔ£¬²¢Ö¸¶¨Í¬²½µÄÌõ¼ş¡£
-	//µÚÈı¸ö²ÎÊıÊÇÍ¬²½µÄÌõ¼ş£¬¼´ COND_OwnerOnly,±íÊ¾½öÔÚ¾ßÓĞËùÓĞÈ¨µÄ¿Í»§¶ËºÍ·şÎñÆ÷Ö®¼äÍ¬²½±äÁ¿¡£
-	//±íÊ¾Ö»ÓĞ¾ßÓĞËùÓĞÈ¨µÄ¿Í»§¶ËºÍ·şÎñÆ÷Ö®¼ä»áÍ¬²½±äÁ¿¡£Õâ»á½µµÍÍøÂçÁ÷Á¿£¬²¢Î¬»¤Êı¾İÒ»ÖÂĞÔ£¬ÒòÎªÍ¨³£Çé¿öÏÂÖ»ÓĞ¾ßÓĞËùÓĞÈ¨µÄ¿Í»§¶Ë¿ÉÒÔ¸ü¸ÄÄ³¸ö¶ÔÏóµÄÊôĞÔ¡£
+	//DOREPLIFETIME_CONDITION æ˜¯ Unreal Engine ä¸­ç”¨äºç½‘ç»œåŒæ­¥çš„å®ä¹‹ä¸€ï¼Œç”¨äºæ ‡è®°éœ€è¦è¿›è¡Œç½‘ç»œåŒæ­¥çš„å±æ€§ï¼Œå¹¶æŒ‡å®šåŒæ­¥çš„æ¡ä»¶ã€‚
+	//ç¬¬ä¸‰ä¸ªå‚æ•°æ˜¯åŒæ­¥çš„æ¡ä»¶ï¼Œå³ COND_OwnerOnly,è¡¨ç¤ºä»…åœ¨å…·æœ‰æ‰€æœ‰æƒçš„å®¢æˆ·ç«¯å’ŒæœåŠ¡å™¨ä¹‹é—´åŒæ­¥å˜é‡ã€‚
+	//è¡¨ç¤ºåªæœ‰å…·æœ‰æ‰€æœ‰æƒçš„å®¢æˆ·ç«¯å’ŒæœåŠ¡å™¨ä¹‹é—´ä¼šåŒæ­¥å˜é‡ã€‚è¿™ä¼šé™ä½ç½‘ç»œæµé‡ï¼Œå¹¶ç»´æŠ¤æ•°æ®ä¸€è‡´æ€§ï¼Œå› ä¸ºé€šå¸¸æƒ…å†µä¸‹åªæœ‰å…·æœ‰æ‰€æœ‰æƒçš„å®¢æˆ·ç«¯å¯ä»¥æ›´æ”¹æŸä¸ªå¯¹è±¡çš„å±æ€§ã€‚
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 
 	DOREPLIFETIME(ABlasterCharacter, CurHealth);
@@ -300,8 +300,8 @@ void ABlasterCharacter::MoveForward(float Value)
 	if (bDisableGameplay) return;
 	if (Controller && Value != 0)
 	{
-		const FRotator YawRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);	//Æ«º½½Ç
-		const FVector Direction(FRotationMatrix(YawRotator).GetUnitAxis(EAxis::X)); //»ñÈ¡ÏòÇ°·½Ïò
+		const FRotator YawRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);	//åèˆªè§’
+		const FVector Direction(FRotationMatrix(YawRotator).GetUnitAxis(EAxis::X)); //è·å–å‘å‰æ–¹å‘
 		AddMovementInput(Direction, Value);
 	}
 }
@@ -309,31 +309,31 @@ void ABlasterCharacter::MoveForward(float Value)
 void ABlasterCharacter::MoveRight(float Value)
 {
 	if (bDisableGameplay) return;
-	const FRotator YawRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);	//Æ«º½½Ç
-	const FVector Direction(FRotationMatrix(YawRotator).GetUnitAxis(EAxis::Y)); //´´½¨Ğı×ª¾ØÕóÈ»ºó»ñµÃ¾ØÕóYÖáµÄµ¥Î»ÏòÁ¿£¬Õâ¸öÏòÁ¿¾ÍÊÇµ±Ç°³¯ÏòµÄ·½Ïò
+	const FRotator YawRotator(0.f, Controller->GetControlRotation().Yaw, 0.f);	//åèˆªè§’
+	const FVector Direction(FRotationMatrix(YawRotator).GetUnitAxis(EAxis::Y)); //åˆ›å»ºæ—‹è½¬çŸ©é˜µç„¶åè·å¾—çŸ©é˜µYè½´çš„å•ä½å‘é‡ï¼Œè¿™ä¸ªå‘é‡å°±æ˜¯å½“å‰æœå‘çš„æ–¹å‘
 	AddMovementInput(Direction, Value);
 }
 
 void ABlasterCharacter::Turn(float Value)
 {
-	AddControllerYawInput(Value);	//ÏòÆ«º½½ÇÌí¼Ó×÷ÓÃÖµ
+	AddControllerYawInput(Value);	//å‘åèˆªè§’æ·»åŠ ä½œç”¨å€¼
 }
 
 void ABlasterCharacter::LookUp(float Value)
 {
-	AddControllerPitchInput(Value);	//Ïò¸©Ñö½ÇÌí¼Ó×÷ÓÃÖµ
+	AddControllerPitchInput(Value);	//å‘ä¿¯ä»°è§’æ·»åŠ ä½œç”¨å€¼
 }
 
 void ABlasterCharacter::EquipBtnPressed()
 {
 	if (bDisableGameplay) return;
-	//Ê°È¡ÎäÆ÷ĞèÒª·şÎñÆ÷À´ÑéÖ¤
+	//æ‹¾å–æ­¦å™¨éœ€è¦æœåŠ¡å™¨æ¥éªŒè¯
 	if (CombatCmp && CombatCmp->CombatState == ECombatState::ECS_Unoccupied)
 	{
 		if (CombatCmp->bHoldingTheFlag) return;
-		//µ±×°±¸°´Å¥°´ÏÂÊ±£¬Èç¹û½ÇÉ«µ±Ç°ÊÇ·şÎñ¶Ë£¬ÔòÖ±½Óµ÷ÓÃ CombatCmp ×é¼şµÄ EquipWeapon º¯Êı£»
-		//·ñÔò£¬½«¸Ãº¯Êı´úÀí¸ø ServerEquipBtnPressed_Implementation µÄÔ¶³Ì¹ı³Ìµ÷ÓÃ£¨RPC£©°æ±¾£¬ÒÔ±ãÓÉ·şÎñÆ÷ÑéÖ¤²¢Ö´ĞĞÏàÓ¦µÄ²Ù×÷¡£
-		//Í¨¹ıÕâÖÖ·½Ê½£¬È·±£×°±¸°´Å¥°´ÏÂÊÂ¼şÔÚËùÓĞ¿Í»§¶ËºÍ·şÎñÆ÷Ö®¼äÕıÈ·Í¬²½£¬²¢ÇÒÔÚĞèÒª·ÃÎÊ·şÎñÆ÷×ÊÔ´»òÖ´ĞĞÃô¸Ğ²Ù×÷Ê±£¬ÓÉ·şÎñ¶Ë½øĞĞÑéÖ¤ºÍ¿ØÖÆ£¬´Ó¶øÌá¸ßÓÎÏ·µÄ°²È«ĞÔºÍ¿É¿¿ĞÔ¡£
+		//å½“è£…å¤‡æŒ‰é’®æŒ‰ä¸‹æ—¶ï¼Œå¦‚æœè§’è‰²å½“å‰æ˜¯æœåŠ¡ç«¯ï¼Œåˆ™ç›´æ¥è°ƒç”¨ CombatCmp ç»„ä»¶çš„ EquipWeapon å‡½æ•°ï¼›
+		//å¦åˆ™ï¼Œå°†è¯¥å‡½æ•°ä»£ç†ç»™ ServerEquipBtnPressed_Implementation çš„è¿œç¨‹è¿‡ç¨‹è°ƒç”¨ï¼ˆRPCï¼‰ç‰ˆæœ¬ï¼Œä»¥ä¾¿ç”±æœåŠ¡å™¨éªŒè¯å¹¶æ‰§è¡Œç›¸åº”çš„æ“ä½œã€‚
+		//é€šè¿‡è¿™ç§æ–¹å¼ï¼Œç¡®ä¿è£…å¤‡æŒ‰é’®æŒ‰ä¸‹äº‹ä»¶åœ¨æ‰€æœ‰å®¢æˆ·ç«¯å’ŒæœåŠ¡å™¨ä¹‹é—´æ­£ç¡®åŒæ­¥ï¼Œå¹¶ä¸”åœ¨éœ€è¦è®¿é—®æœåŠ¡å™¨èµ„æºæˆ–æ‰§è¡Œæ•æ„Ÿæ“ä½œæ—¶ï¼Œç”±æœåŠ¡ç«¯è¿›è¡ŒéªŒè¯å’Œæ§åˆ¶ï¼Œä»è€Œæé«˜æ¸¸æˆçš„å®‰å…¨æ€§å’Œå¯é æ€§ã€‚
 		/*if (HasAuthority())
 		{
 			if (OverlappingWeapon)
@@ -361,7 +361,7 @@ void ABlasterCharacter::EquipBtnPressed()
 	}
 }
 
-//Ö»ÔÚ·şÎñ¶Ë±»µ÷ÓÃÒÔÏìÓ¦ RPC ÇëÇó
+//åªåœ¨æœåŠ¡ç«¯è¢«è°ƒç”¨ä»¥å“åº” RPC è¯·æ±‚
 void ABlasterCharacter::ServerEquipBtnPressed_Implementation()
 {
 	if (CombatCmp)
@@ -381,8 +381,8 @@ void ABlasterCharacter::CrouchBtnPressed()
 {
 	if (CombatCmp && CombatCmp->bHoldingTheFlag) return;
 	if (bDisableGameplay) return;
-	//ÕâÀï»áÉèÖÃACharacter->bIsCrouched
-	//ÕâÀï»áÉèÖÃ½ÇÉ«½ºÄÒÌåµÄ´óĞ¡£¬¿ÉÔÚÔËĞĞÆÚ¼ä°´~¼üÊäÈëShowCollision²é¿´
+	//è¿™é‡Œä¼šè®¾ç½®ACharacter->bIsCrouched
+	//è¿™é‡Œä¼šè®¾ç½®è§’è‰²èƒ¶å›Šä½“çš„å¤§å°ï¼Œå¯åœ¨è¿è¡ŒæœŸé—´æŒ‰~é”®è¾“å…¥ShowCollisionæŸ¥çœ‹
 	if (bIsCrouched)
 	{
 		UnCrouch();
@@ -447,7 +447,7 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 	}
 	else
 	{
-		// ±¾µØ»úÆ÷ÉÏµÄÆäËûÍæ¼Ò
+		// æœ¬åœ°æœºå™¨ä¸Šçš„å…¶ä»–ç©å®¶
 		TimeSinceLastMovementReplication += DeltaTime;
 		if (TimeSinceLastMovementReplication > 0.25f)
 		{
@@ -475,7 +475,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 			InterpAO_Yaw = AO_Yaw;
 			//UE_LOG(LogTemp, Log, TEXT("GetAO_Yaw(): %i"), InterpAO_Yaw);
 		}
-		bUseControllerRotationYaw = true; //½«¿ØÖÆÆ÷µÄĞı×ªÌí¼Óµ½½ÇÉ«µÄÉíÉÏ
+		bUseControllerRotationYaw = true; //å°†æ§åˆ¶å™¨çš„æ—‹è½¬æ·»åŠ åˆ°è§’è‰²çš„èº«ä¸Š
 		TurnInPlace(DeltaTime);
 	}
 	if (Speed > 0.f || bIsInAir)
@@ -484,7 +484,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 		AO_Yaw = 0.f;
 		InterpAO_Yaw = AO_Yaw;
-		bUseControllerRotationYaw = true; //½«¿ØÖÆÆ÷µÄĞı×ªÌí¼Óµ½½ÇÉ«µÄÉíÉÏ
+		bUseControllerRotationYaw = true; //å°†æ§åˆ¶å™¨çš„æ—‹è½¬æ·»åŠ åˆ°è§’è‰²çš„èº«ä¸Š
 		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
@@ -504,10 +504,10 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 
 	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
 	{
-		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f); //Ê¹ÓÃ FInterpTo º¯ÊıÊµÏÖÆ½»¬µÄÆ«ÒÆÁ¿²åÖµ
-		AO_Yaw = InterpAO_Yaw; //½« InterpAO_Yaw ¸³Öµ¸ø AO_Yaw£¬Ê¹µÃ½ÇÉ«µÄ AIM Offset Æ«ÒÆÁ¿Ëæ×Å²åÖµ¶ø·¢ÉúÆ½»¬µÄ±ä»¯
-		//ÔÚ AO_Yaw Æ«ÒÆÁ¿Ğ¡ÓÚÒ»¶¨ãĞÖµ£¨15 ¶È£©Ê±£¬±íÊ¾Ô­µØ×ªÏòÍê³É£¬½« TurningInPlace ÉèÖÃÎª ETIP_NotTurning£¬
-		//²¢ÖØĞÂ½« StartingAimRotation ÉèÎªµ±Ç°½ÇÉ«µÄ»ù´¡Ãé×¼Ğı×ª£¬ÒÔ±ãÏÂÒ»´ÎÔ­µØ×ªÏòÊ±µÄ²Î¿¼¡£
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f); //ä½¿ç”¨ FInterpTo å‡½æ•°å®ç°å¹³æ»‘çš„åç§»é‡æ’å€¼
+		AO_Yaw = InterpAO_Yaw; //å°† InterpAO_Yaw èµ‹å€¼ç»™ AO_Yawï¼Œä½¿å¾—è§’è‰²çš„ AIM Offset åç§»é‡éšç€æ’å€¼è€Œå‘ç”Ÿå¹³æ»‘çš„å˜åŒ–
+		//åœ¨ AO_Yaw åç§»é‡å°äºä¸€å®šé˜ˆå€¼ï¼ˆ15 åº¦ï¼‰æ—¶ï¼Œè¡¨ç¤ºåŸåœ°è½¬å‘å®Œæˆï¼Œå°† TurningInPlace è®¾ç½®ä¸º ETIP_NotTurningï¼Œ
+		//å¹¶é‡æ–°å°† StartingAimRotation è®¾ä¸ºå½“å‰è§’è‰²çš„åŸºç¡€ç„å‡†æ—‹è½¬ï¼Œä»¥ä¾¿ä¸‹ä¸€æ¬¡åŸåœ°è½¬å‘æ—¶çš„å‚è€ƒã€‚
 		if (FMath::Abs(AO_Yaw) < 15.f)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
@@ -521,11 +521,11 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 void ABlasterCharacter::CalculateAO_Pitch()
 {
 	AO_Pitch = GetBaseAimRotation().Pitch;
-	if (AO_Pitch > 90.f && !IsLocallyControlled()) //ÓÉ·şÎñÆ÷¿ØÖÆµÄ³¡¾°ÏÂ£¬¼´·Ç±¾µØÍæ¼Ò¿ØÖÆµÄÇé¿öÏÂ²Å»áÉúĞ§
+	if (AO_Pitch > 90.f && !IsLocallyControlled()) //ç”±æœåŠ¡å™¨æ§åˆ¶çš„åœºæ™¯ä¸‹ï¼Œå³éæœ¬åœ°ç©å®¶æ§åˆ¶çš„æƒ…å†µä¸‹æ‰ä¼šç”Ÿæ•ˆ
 	{
-		//ÒòÎª¿Í»§¶ËÍ¬²½¸ø·şÎñÆ÷µÄÊ±ºò»áµ÷ÓÃPackYawAndPitchTo32£¨ÏÈ½«PitchºÍYaw¸¡µãÊıÓ³Éäµ½ 16 Î»ÎŞ·ûºÅÕûÊı·¶Î§£¨0~65535£©£¬È»ºó×éºÏ³ÉÒ»¸ö32Î»ÕûÊı·µ»Ø£©£¬
-		//½«Êı¾İ½øĞĞÑ¹ËõÒÔ¼õÉÙ´«ÊäºÍ´æ´¢µÄ¸ºµ£¡£ËùÒÔÕâÀïĞèÒª½øĞĞ×ª»»PitchÖµ´ÓÔ­Ê¼·¶Î§[270, 360]Ó³Éäµ½ĞÂ·¶Î§[-90, 0]£¬
-		//½«ÊÓ½ÇµÄ¸©Ñö½Ç¶ÈÏŞÖÆÔÚ-90¶Èµ½0¶ÈÖ®¼ä¡£Õâ¸öĞÂ·¶Î§Ïàµ±ÓÚ½«ÊÓ½ÇµÄÉÏÏÂ¿ÉÊÓ·¶Î§ÏŞÖÆÎªÕıÇ°·½µ½Ë®Æ½ÏßÒÔÏÂ£¬Ê¹ÓÎÏ·³¡¾°¸ü·ûºÏÏÖÊµ³¡¾°¡£
+		//å› ä¸ºå®¢æˆ·ç«¯åŒæ­¥ç»™æœåŠ¡å™¨çš„æ—¶å€™ä¼šè°ƒç”¨PackYawAndPitchTo32ï¼ˆå…ˆå°†Pitchå’ŒYawæµ®ç‚¹æ•°æ˜ å°„åˆ° 16 ä½æ— ç¬¦å·æ•´æ•°èŒƒå›´ï¼ˆ0~65535ï¼‰ï¼Œç„¶åç»„åˆæˆä¸€ä¸ª32ä½æ•´æ•°è¿”å›ï¼‰ï¼Œ
+		//å°†æ•°æ®è¿›è¡Œå‹ç¼©ä»¥å‡å°‘ä¼ è¾“å’Œå­˜å‚¨çš„è´Ÿæ‹…ã€‚æ‰€ä»¥è¿™é‡Œéœ€è¦è¿›è¡Œè½¬æ¢Pitchå€¼ä»åŸå§‹èŒƒå›´[270, 360]æ˜ å°„åˆ°æ–°èŒƒå›´[-90, 0]ï¼Œ
+		//å°†è§†è§’çš„ä¿¯ä»°è§’åº¦é™åˆ¶åœ¨-90åº¦åˆ°0åº¦ä¹‹é—´ã€‚è¿™ä¸ªæ–°èŒƒå›´ç›¸å½“äºå°†è§†è§’çš„ä¸Šä¸‹å¯è§†èŒƒå›´é™åˆ¶ä¸ºæ­£å‰æ–¹åˆ°æ°´å¹³çº¿ä»¥ä¸‹ï¼Œä½¿æ¸¸æˆåœºæ™¯æ›´ç¬¦åˆç°å®åœºæ™¯ã€‚
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
@@ -661,7 +661,7 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	{
 		OverlappingWeapon->ShowPickupWidget(false);
 	}
-	OverlappingWeapon = Weapon;	//·¢Éú¸Ä±ä£¬»áÍ¬²½¸øËùÓĞ¿Í»§¶Ë£¬´¥·¢¿Í»§¶Ë OnRep_OverlappingWeapon º¯Êı
+	OverlappingWeapon = Weapon;	//å‘ç”Ÿæ”¹å˜ï¼Œä¼šåŒæ­¥ç»™æ‰€æœ‰å®¢æˆ·ç«¯ï¼Œè§¦å‘å®¢æˆ·ç«¯ OnRep_OverlappingWeapon å‡½æ•°
 	if (IsLocallyControlled())
 	{
 		if (OverlappingWeapon)
@@ -802,7 +802,7 @@ void ABlasterCharacter::OnRep_CurHealth(float LastHealth)
 	UpdateHUDHealth();
 	if (CurHealth < LastHealth)
 	{
-		//ÑªÁ¿¼õÉÙ²¥·ÅÊÜÉËÃÉÌ«Ææ
+		//è¡€é‡å‡å°‘æ’­æ”¾å—ä¼¤è’™å¤ªå¥‡
 		PlayHitReactMontage();
 	}
 }
@@ -818,9 +818,9 @@ void ABlasterCharacter::OnRep_CurShield(float LastShield)
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	//GetAuthGameMode<T>()ÊÇÒ»¸öÓÉUEÒıÇæÌá¹©µÄÄ£°åº¯Êı£¬ÓÃÓÚ»ñÈ¡µ±Ç°³¡¾°ÖĞ´æÔÚµÄ²¢¼Ì³Ğ×ÔT(AGameMode)ÀàĞÍ
+	//GetAuthGameMode<T>()æ˜¯ä¸€ä¸ªç”±UEå¼•æ“æä¾›çš„æ¨¡æ¿å‡½æ•°ï¼Œç”¨äºè·å–å½“å‰åœºæ™¯ä¸­å­˜åœ¨çš„å¹¶ç»§æ‰¿è‡ªT(AGameMode)ç±»å‹
 	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-	// bElimmed ·ÀÖ¹ÖØ¸´ÏòÌÔÌ­ÕßÊ©¼ÓÉËº¦
+	// bElimmed é˜²æ­¢é‡å¤å‘æ·˜æ±°è€…æ–½åŠ ä¼¤å®³
 	if (bElimmed || BlasterGameMode == nullptr) return;
 
 	Damage = BlasterGameMode->CalculateDamage(InstigatorController, Controller, Damage);
@@ -908,7 +908,7 @@ void ABlasterCharacter::OnPlayerStateInitialized()
 
 void ABlasterCharacter::SetSpawnPoint()
 {
-	// ÓĞÍÅ¶Ó£¬Ê¹ÓÃÍÅ¶Ó¶ÔÓ¦µÄ³öÉúÎ»ÖÃ¸²¸ÇÔ­Ê¼ÆğÊ¼Î»ÖÃ
+	// æœ‰å›¢é˜Ÿï¼Œä½¿ç”¨å›¢é˜Ÿå¯¹åº”çš„å‡ºç”Ÿä½ç½®è¦†ç›–åŸå§‹èµ·å§‹ä½ç½®
 	if (HasAuthority() && BlasterPlayerState->GetTeam() != ETeam::ET_NoTeam)
 	{
 		TArray<AActor*>PlayerStarts;
@@ -923,7 +923,7 @@ void ABlasterCharacter::SetSpawnPoint()
 				TeamStarts.Add(TeamStart);
 			}
 		}
-		// Ëæ»úµ½¶ÓÓÑÎ»ÖÃ
+		// éšæœºåˆ°é˜Ÿå‹ä½ç½®
 		if (TeamStarts.Num() > 0)
 		{
 			ATeamPlayerStart* ChosenPlayerStart = TeamStarts[FMath::RandRange(0, TeamStarts.Num() - 1)];
@@ -939,7 +939,7 @@ void ABlasterCharacter::Elim(bool bPlayerLeftGame)
 		DropOrDestroyWeapons();
 	}
 
-	MulticastElim(bPlayerLeftGame); //ÍøÂç¶à²¥
+	MulticastElim(bPlayerLeftGame); //ç½‘ç»œå¤šæ’­
 }
 
 void ABlasterCharacter::SetTeamColor(ETeam Team)
@@ -1023,51 +1023,51 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 
 	bElimmed = true;
 
-	// ²¥·ÅÌÔÌ­ÃÉÌ«Ææ
+	// æ’­æ”¾æ·˜æ±°è’™å¤ªå¥‡
 	PlayElimMontage();
-	// ¿ªÊ¼ÈÜ½âÌØĞ§
+	// å¼€å§‹æº¶è§£ç‰¹æ•ˆ
 	StartDisslove();
-	// ¹Ø±Õ½ÇÉ«ÒÆ¶¯
+	// å…³é—­è§’è‰²ç§»åŠ¨
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
-	// ¹Ø±ÕÊäÈë
+	// å…³é—­è¾“å…¥
 	bDisableGameplay = true;
 	//if (BlasterPlayerController)
 	//{
 	//	DisableInput(BlasterPlayerController);
 	//}
-	// ¹Ø±Õ×Ô¶¯¿ª»ğ
+	// å…³é—­è‡ªåŠ¨å¼€ç«
 	if (CombatCmp)
 	{
 		CombatCmp->FireBtnPressed(false);
 	}
-	// ¹Ø±ÕÅö×²
+	// å…³é—­ç¢°æ’
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//Éú³ÉÌÔÌ­»ØÊÕ»úÆ÷ÈË ÌØĞ§
+	//ç”Ÿæˆæ·˜æ±°å›æ”¶æœºå™¨äºº ç‰¹æ•ˆ
 	if (ElimBotEffect)
 	{
 		FVector ElimBotSpawnPoint(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 200.f);
 		ElimBotComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ElimBotEffect, ElimBotSpawnPoint, GetActorRotation());
 	}
-	// Éú³ÉÌÔÌ­»ØÊÕ»úÆ÷ÈË ÒôĞ§
+	// ç”Ÿæˆæ·˜æ±°å›æ”¶æœºå™¨äºº éŸ³æ•ˆ
 	if (ElimBotSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
 	}
-	// ¹Ø±ÕÃé×¼ui
+	// å…³é—­ç„å‡†ui
 	bool bHideSniperScope = IsLocallyControlled() && CombatCmp && CombatCmp->bAiming &&
 		CombatCmp->EquippedWeapon && CombatCmp->EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle;
 	if (bHideSniperScope)
 	{
 		ShowSniperScopeWidget(false);
 	}
-	// ¹Ø±ÕµÚÒ»µÄ»Ê¹Ú
+	// å…³é—­ç¬¬ä¸€çš„çš‡å† 
 	if (CrownComponent)
 	{
 		CrownComponent->DestroyComponent();
 	}
-	// ¿ªÆô¸´»î¼ÆÊ±Æ÷
+	// å¼€å¯å¤æ´»è®¡æ—¶å™¨
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ABlasterCharacter::ElimTimerFinished, ElimDelay);
 }
 
@@ -1144,7 +1144,7 @@ void ABlasterCharacter::Destroyed()
 
 	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
-	if (CombatCmp && CombatCmp->EquippedWeapon && bMatchNotInProgress)  //Èç¹û²»ÊÇÓÎÏ·½øĞĞÖĞ×´Ì¬É¾³ıÎäÆ÷
+	if (CombatCmp && CombatCmp->EquippedWeapon && bMatchNotInProgress)  //å¦‚æœä¸æ˜¯æ¸¸æˆè¿›è¡Œä¸­çŠ¶æ€åˆ é™¤æ­¦å™¨
 	{
 		CombatCmp->EquippedWeapon->Destroy();
 	}
@@ -1153,7 +1153,7 @@ void ABlasterCharacter::Destroyed()
 
 void ABlasterCharacter::SpawnDefaultWeapon()
 {
-	// ²»ÔÚ·şÎñÆ÷GameMode»á·µ»Ønull
+	// ä¸åœ¨æœåŠ¡å™¨GameModeä¼šè¿”å›null
 	BlasterGameMode = BlasterGameMode ? BlasterGameMode : Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
 	UWorld* World = GetWorld();
 	if (BlasterGameMode && World && !bElimmed && DefaultWeaponClass)

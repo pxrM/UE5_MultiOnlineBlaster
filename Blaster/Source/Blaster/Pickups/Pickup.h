@@ -1,7 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-/*
-	Ê°È¡Æ÷
-*/
 
 #pragma once
 
@@ -9,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "Pickup.generated.h"
 
+
+/*
+ * æ‹¾å–å™¨
+ */
 UCLASS()
 class BLASTER_API APickup : public AActor
 {
@@ -27,14 +28,14 @@ protected:
 
 protected:
 	/// <summary>
-	/// ½øÈëÖØµş£¬ÔÚ Actor£¨»ò Actor ÖĞµÄ×é¼ş£©ÓëÒ»¸öÇòĞÎÅö×²Ìå»ıÖØµşÊ±±»µ÷ÓÃ¡£¿ØÖÆPickupWidgetµÄÏÔÒş
+	/// è¿›å…¥é‡å ï¼Œåœ¨ Actorï¼ˆæˆ– Actor ä¸­çš„ç»„ä»¶ï¼‰ä¸ä¸€ä¸ªçƒå½¢ç¢°æ’ä½“ç§¯é‡å æ—¶è¢«è°ƒç”¨ã€‚æ§åˆ¶PickupWidgetçš„æ˜¾éš
 	/// </summary>
-	/// <param name="OverlappedComponent">Ö¸ÏòÕıÔÚÖØµşµÄ×é¼şµÄÖ¸Õë</param>
-	/// <param name="OtherActor">Ö¸ÏòÓë´Ë Actor ÖØµş¡¢ÔÚÊÀ½çÖĞ´æÔÚµÄ Actor µÄÖ¸Õë</param>
-	/// <param name="OtherComp">Ö¸ÏòÓë´Ë Actor ÖØµşµÄÁíÒ»×é¼şµÄÖ¸Õë</param>
-	/// <param name="OtherBodyIndex">·¢ÉúÖØµşµÄÁíÒ»×é¼şµÄË÷Òı</param>
-	/// <param name="bFromSweep">Èç¹ûÓÉÒÆ¶¯/É¨Ãè²Ù×÷ÒıÆğÖØµş£¬ÔòÎª true£»Èç¹ûÓÉÎïÀíÒıÇæÖ±½Ó¼ÆËãÒıÆğÖØµş£¬ÔòÎª false¡£</param>
-	/// <param name="SweepResult">ÃèÊöÖØµş·¢ÉúµÄÏêÏ¸ĞÅÏ¢£¬°üÀ¨Åö×²µÄÎ»ÖÃ¡¢·¨ÏòÁ¿µÈ¡£</param>
+	/// <param name="OverlappedComponent">æŒ‡å‘æ­£åœ¨é‡å çš„ç»„ä»¶çš„æŒ‡é’ˆ</param>
+	/// <param name="OtherActor">æŒ‡å‘ä¸æ­¤ Actor é‡å ã€åœ¨ä¸–ç•Œä¸­å­˜åœ¨çš„ Actor çš„æŒ‡é’ˆ</param>
+	/// <param name="OtherComp">æŒ‡å‘ä¸æ­¤ Actor é‡å çš„å¦ä¸€ç»„ä»¶çš„æŒ‡é’ˆ</param>
+	/// <param name="OtherBodyIndex">å‘ç”Ÿé‡å çš„å¦ä¸€ç»„ä»¶çš„ç´¢å¼•</param>
+	/// <param name="bFromSweep">å¦‚æœç”±ç§»åŠ¨/æ‰«ææ“ä½œå¼•èµ·é‡å ï¼Œåˆ™ä¸º trueï¼›å¦‚æœç”±ç‰©ç†å¼•æ“ç›´æ¥è®¡ç®—å¼•èµ·é‡å ï¼Œåˆ™ä¸º falseã€‚</param>
+	/// <param name="SweepResult">æè¿°é‡å å‘ç”Ÿçš„è¯¦ç»†ä¿¡æ¯ï¼ŒåŒ…æ‹¬ç¢°æ’çš„ä½ç½®ã€æ³•å‘é‡ç­‰ã€‚</param>
 	UFUNCTION()
 		virtual void OnSphereOverlap(
 			UPrimitiveComponent* OverlappedComponent,
@@ -55,11 +56,11 @@ private:
 		UStaticMeshComponent* PickupMesh;
 
 	UPROPERTY(EditAnywhere)
-		float BaseTurnRate = 45.f; //Ğı×ªËÙ¶È
+		float BaseTurnRate = 45.f; //æ—‹è½¬é€Ÿåº¦
 	UPROPERTY(VisibleAnywhere)
-		class UNiagaraComponent* PickupEffectComponent; //³¡¾°Õ¹Ê¾ÌØĞ§
+		class UNiagaraComponent* PickupEffectComponent; //åœºæ™¯å±•ç¤ºç‰¹æ•ˆ
 	UPROPERTY(EditAnywhere)
-		class UNiagaraSystem* PickupDesEffect; //Ïú»ÙÊ±²úÉúµÄÌØĞ§
+		class UNiagaraSystem* PickupDesEffect; //é”€æ¯æ—¶äº§ç”Ÿçš„ç‰¹æ•ˆ
 
 	FTimerHandle BindOverlapTimer;
 	float BindOverlapTime = 0.25f;

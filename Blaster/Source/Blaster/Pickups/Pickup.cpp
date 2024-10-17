@@ -44,7 +44,7 @@ void APickup::BeginPlay()
 
 	if (HasAuthority())
 	{
-		// 延迟绑定，避免在子类中还没绑定上销毁事件就被销毁了 APickupSpawnPoint::SpawnPickupTimerFinished()
+		// 寤惰繜缁戝畾锛岄伩鍏嶅湪瀛愮被涓繕娌＄粦瀹氫笂閿�姣佷簨浠跺氨琚攢姣佷簡 APickupSpawnPoint::SpawnPickupTimerFinished()
 		GetWorld()->GetTimerManager().SetTimer(BindOverlapTimer, this, &APickup::BindOverlapTimerFinished, BindOverlapTime);
 	}
 }

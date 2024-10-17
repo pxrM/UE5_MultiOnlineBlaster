@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 /*
-	ÍøÂçÑÓ³Ù²¹³¥×é¼ş
+	ç½‘ç»œå»¶è¿Ÿè¡¥å¿ç»„ä»¶
 */
 
 #pragma once
@@ -11,7 +11,7 @@
 
 
 /// <summary>
-/// ÓÉÓÚ²»ÄÜÖ±½Ó´æboxµÄÖ¸Õë£¬ÒòÎªÖ¸ÕëÖ¸ÏòµÄÊÇµØÖ·£¬ËùÒÔĞèÒªµ¥¶ÀµÄÊı¾İ½á¹¹´æ´¢ºĞ×ÓµÄĞÅÏ¢
+/// ç”±äºä¸èƒ½ç›´æ¥å­˜boxçš„æŒ‡é’ˆï¼Œå› ä¸ºæŒ‡é’ˆæŒ‡å‘çš„æ˜¯åœ°å€ï¼Œæ‰€ä»¥éœ€è¦å•ç‹¬çš„æ•°æ®ç»“æ„å­˜å‚¨ç›’å­çš„ä¿¡æ¯
 /// </summary>
 USTRUCT(BlueprintType)
 struct FBoxInformation
@@ -19,24 +19,24 @@ struct FBoxInformation
 	GENERATED_BODY()
 public:
 	/// <summary>
-	/// Î»ÖÃ
+	/// ä½ç½®
 	/// </summary>
 	UPROPERTY()
 		FVector Location;
 	/// <summary>
-	/// Ğı×ª
+	/// æ—‹è½¬
 	/// </summary>
 	UPROPERTY()
 		FRotator Rotation;
 	/// <summary>
-	/// ºĞ×Ó·¶Î§
+	/// ç›’å­èŒƒå›´
 	/// </summary>
 	UPROPERTY()
 		FVector BoxExtent;
 };
 
 /// <summary>
-/// ½ÇÉ«èåÊı¾İ
+/// è§’è‰²æ¡¢æ•°æ®
 /// </summary>
 USTRUCT(BlueprintType)
 struct FFramePackage
@@ -44,24 +44,24 @@ struct FFramePackage
 	GENERATED_BODY()
 public:
 	/// <summary>
-	/// ´æ´¢Ê±¼ä
+	/// å­˜å‚¨æ—¶é—´
 	/// </summary>
 	UPROPERTY()
 		float Time;
 	/// <summary>
-	/// ½ÇÉ«²»Í¬²¿Î»Ëù¶ÔÓ¦µÄboxĞÅÏ¢
+	/// è§’è‰²ä¸åŒéƒ¨ä½æ‰€å¯¹åº”çš„boxä¿¡æ¯
 	/// </summary>
 	UPROPERTY()
 		TMap<FName, FBoxInformation> HitBoxInfo;
 	/// <summary>
-	/// ½ÇÉ«Ö¸Õë
+	/// è§’è‰²æŒ‡é’ˆ
 	/// </summary>
 	UPROPERTY()
 		ABlasterCharacter* Character;
 };
 
 /// <summary>
-/// ·şÎñÆ÷µ¹´øÃüÖĞ½á¹û
+/// æœåŠ¡å™¨å€’å¸¦å‘½ä¸­ç»“æœ
 /// </summary>
 USTRUCT(BlueprintType)
 struct FServerSideRewindResult
@@ -69,19 +69,19 @@ struct FServerSideRewindResult
 	GENERATED_BODY()
 public:
 	/// <summary>
-	/// ÊÇ·ñÃüÖĞ
+	/// æ˜¯å¦å‘½ä¸­
 	/// </summary>
 	UPROPERTY()
 		bool bHitConfirmed;
 	/// <summary>
-	/// ÊÇ·ñ±¬Í·
+	/// æ˜¯å¦çˆ†å¤´
 	/// </summary>
 	UPROPERTY()
 		bool bHeadShot;
 };
 
 /// <summary>
-/// ö±µ¯Ç¹£©·şÎñÆ÷µ¹´øÃüÖĞ½á¹û
+/// éœ°å¼¹æªï¼‰æœåŠ¡å™¨å€’å¸¦å‘½ä¸­ç»“æœ
 /// </summary>
 USTRUCT(BlueprintType)
 struct FShotgunServerSideRewindResult
@@ -89,19 +89,21 @@ struct FShotgunServerSideRewindResult
 	GENERATED_BODY()
 public:
 	/// <summary>
-	/// Ã¿¸ö½ÇÉ«µÄÍ·²¿»÷ÖĞ´ÎÊı
+	/// æ¯ä¸ªè§’è‰²çš„å¤´éƒ¨å‡»ä¸­æ¬¡æ•°
 	/// </summary>
 	UPROPERTY()
 		TMap<ABlasterCharacter*, uint32> HeadShots;
 	/// <summary>
-	/// Ã¿¸ö½ÇÉ«µÄÉíÌå»÷ÖĞ´ÎÊı
+	/// æ¯ä¸ªè§’è‰²çš„èº«ä½“å‡»ä¸­æ¬¡æ•°
 	/// </summary>
 	UPROPERTY()
 		TMap<ABlasterCharacter*, uint32> BodyShots;
 };
 
 
-
+/*
+ * æ»åè¡¥å¿ ï¼ˆå€’å¸¦ï¼‰
+ */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API ULagCompensationComponent : public UActorComponent
 {
@@ -121,23 +123,23 @@ protected:
 
 private:
 	/// <summary>
-	/// »º´æÃ¿Ò»Ö¡µÄboxÊı¾İ°ü
+	/// ç¼“å­˜æ¯ä¸€å¸§çš„boxæ•°æ®åŒ…
 	/// </summary>
 	void SaveFramePackage();
 	/// <summary>
-	/// »º´æÒ»Ö¡µÄÊı¾İ°ü
+	/// ç¼“å­˜ä¸€å¸§çš„æ•°æ®åŒ…
 	/// </summary>
 	/// <param name="Package"></param>
 	void SaveFramePackage(FFramePackage& Package);
 	/// <summary>
-	/// ¸ù¾İÃüÖĞÊ±¼ä»ñÈ¡ĞèÒª¼ì²âµÄÖ¡Êı¾İ°ü
+	/// æ ¹æ®å‘½ä¸­æ—¶é—´è·å–éœ€è¦æ£€æµ‹çš„å¸§æ•°æ®åŒ…
 	/// </summary>
-	/// <param name="HitCharacter">»÷ÖĞµÄ½ÇÉ«</param>
-	/// <param name="HitTime">ÃüÖĞÊ±¼ä</param>
+	/// <param name="HitCharacter">å‡»ä¸­çš„è§’è‰²</param>
+	/// <param name="HitTime">å‘½ä¸­æ—¶é—´</param>
 	/// <returns></returns>
 	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
 	/// <summary>
-	/// ÔÚÃüÖĞÊ±¼äµÄÇ°Ò»Ö¡ºÍºóÒ»Ö¡Ö®¼ä½øĞĞ²åÖµÔËËã
+	/// åœ¨å‘½ä¸­æ—¶é—´çš„å‰ä¸€å¸§å’Œåä¸€å¸§ä¹‹é—´è¿›è¡Œæ’å€¼è¿ç®—
 	/// </summary>
 	/// <param name="OlderFrmae"></param>
 	/// <param name="YoungerFrame"></param>
@@ -145,53 +147,53 @@ private:
 	/// <returns></returns>
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime);
 	/// <summary>
-	/// »º´æ½ÇÉ«µ±Ç°boxµÄÎ»ÖÃ
+	/// ç¼“å­˜è§’è‰²å½“å‰boxçš„ä½ç½®
 	/// </summary>
 	/// <param name="HitCharacter"></param>
 	/// <param name="OutFrameackage"></param>
 	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFrameackage);
 	/// <summary>
-	/// ÒÆ¶¯ÃüÖĞ½ÇÉ«µÄboxµ½Ö¸¶¨Ê±¼äµÄÎ»ÖÃ
+	/// ç§»åŠ¨å‘½ä¸­è§’è‰²çš„boxåˆ°æŒ‡å®šæ—¶é—´çš„ä½ç½®
 	/// </summary>
 	/// <param name="HitCharacter"></param>
 	/// <param name="Package"></param>
 	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
 	/// <summary>
-	/// »Ö¸´ÃüÖĞ½ÇÉ«boxµÄÎ»ÖÃµ½×îĞÂÎ»ÖÃ
+	/// æ¢å¤å‘½ä¸­è§’è‰²boxçš„ä½ç½®åˆ°æœ€æ–°ä½ç½®
 	/// </summary>
 	/// <param name="HitCharacter"></param>
 	/// <param name="Package"></param>
 	void ResetHitBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
 	/// <summary>
-	/// ÉèÖÃ½ÇÉ«Íø¸ñµÄÅö×²ÊÇ·ñ¿ªÆô
+	/// è®¾ç½®è§’è‰²ç½‘æ ¼çš„ç¢°æ’æ˜¯å¦å¼€å¯
 	/// </summary>
 	/// <param name="HitCharacter"></param>
 	/// <param name="CollisionEnabled"></param>
 	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 
 	/*
-		ÉäÏßÀàÎäÆ÷µ¹´ø´¦Àí
+		å°„çº¿ç±»æ­¦å™¨å€’å¸¦å¤„ç†
 	*/
 	/// <summary>
-	/// ·şÎñÆ÷Éä»÷µ¹´ø
+	/// æœåŠ¡å™¨å°„å‡»å€’å¸¦
 	/// </summary>
-	/// <param name="HitCharacter">»÷ÖĞµÄ½ÇÉ«</param>
-	/// <param name="TraceStart">Éä»÷¿ªÊ¼Î»ÖÃ</param>
-	/// <param name="HitLocation">ÃüÖĞÎ»ÖÃ</param>
-	/// <param name="HitTime">ÃüÖĞÊ±¼ä</param>
-	/// <returns>ÃüÖĞ½á¹û</returns>
+	/// <param name="HitCharacter">å‡»ä¸­çš„è§’è‰²</param>
+	/// <param name="TraceStart">å°„å‡»å¼€å§‹ä½ç½®</param>
+	/// <param name="HitLocation">å‘½ä¸­ä½ç½®</param>
+	/// <param name="HitTime">å‘½ä¸­æ—¶é—´</param>
+	/// <returns>å‘½ä¸­ç»“æœ</returns>
 	FServerSideRewindResult ServerSideRewind(
 		ABlasterCharacter* HitCharacter,
 		const FVector_NetQuantize& TraceStart,
 		const FVector_NetQuantize& HitLocation,
 		float HitTime);
 	/// <summary>
-	/// ¼ÆËãÃüÖĞ½á¹û£¨ÉäÏß£©
+	/// è®¡ç®—å‘½ä¸­ç»“æœï¼ˆå°„çº¿ï¼‰
 	/// </summary>
-	/// <param name="Package">µ¹´ø³öÀ´µÄ½á¹û°ü</param>
-	/// <param name="HitCharacter">»÷ÖĞµÄ½ÇÉ«</param>
-	/// <param name="TraceStart">Éä»÷¿ªÊ¼Î»ÖÃ</param>
-	/// <param name="HitLocaton">ÃüÖĞÎ»ÖÃ</param>
+	/// <param name="Package">å€’å¸¦å‡ºæ¥çš„ç»“æœåŒ…</param>
+	/// <param name="HitCharacter">å‡»ä¸­çš„è§’è‰²</param>
+	/// <param name="TraceStart">å°„å‡»å¼€å§‹ä½ç½®</param>
+	/// <param name="HitLocaton">å‘½ä¸­ä½ç½®</param>
 	/// <returns></returns>
 	FServerSideRewindResult ConfirmHit(
 		const FFramePackage& Package,
@@ -200,14 +202,14 @@ private:
 		const FVector_NetQuantize& HitLocation);
 
 	/*
-		µ¯ÉäÀàÎäÆ÷µ¹´ø´¦Àí
+		å¼¹å°„ç±»æ­¦å™¨å€’å¸¦å¤„ç†
 	*/
 	/// <summary>
-	/// µ¯ÉäÀàÎäÆ÷µ¹´ø´¦Àí
+	/// å¼¹å°„ç±»æ­¦å™¨å€’å¸¦å¤„ç†
 	/// </summary>
 	/// <param name="HitCharacter"></param>
-	/// <param name="TraceStart">¿ªÊ¼Éä»÷·½Ïò</param>
-	/// <param name="InitialVelocity">³õÊ¼ËÙ¶È</param>
+	/// <param name="TraceStart">å¼€å§‹å°„å‡»æ–¹å‘</param>
+	/// <param name="InitialVelocity">åˆå§‹é€Ÿåº¦</param>
 	/// <param name="HitTime"></param>
 	/// <returns></returns>
 	FServerSideRewindResult ProjectileServerSideRewind(
@@ -216,7 +218,7 @@ private:
 		const FVector_NetQuantize100& InitialVelocity,
 		float HitTime);
 	/// <summary>
-	/// ¼ÆËãÃüÖĞ½á¹û£¨µ¯ÉäÂ·¾¶£©
+	/// è®¡ç®—å‘½ä¸­ç»“æœï¼ˆå¼¹å°„è·¯å¾„ï¼‰
 	/// </summary>
 	/// <param name="HitCharacter"></param>
 	/// <param name="TraceStart"></param>
@@ -231,15 +233,15 @@ private:
 		float HitTime);
 
 	/*
-		ö±µ¯Ç¹µ¹´ø´¦Àí
+		éœ°å¼¹æªå€’å¸¦å¤„ç†
 	*/
 	/// <summary>
-	/// ·şÎñÆ÷Éä»÷µ¹´ø
+	/// æœåŠ¡å™¨å°„å‡»å€’å¸¦
 	/// </summary>
-	/// <param name="HitCharacters">¶à¸öÃüÖĞ½ÇÉ«</param>
-	/// <param name="TraceStart">Éä»÷¿ªÊ¼Î»ÖÃ</param>
-	/// <param name="HitLocations">¶à¸öÃüÖĞÎ»ÖÃ</param>
-	/// <param name="HitTime">ÃüÖĞÊ±¼ä</param>
+	/// <param name="HitCharacters">å¤šä¸ªå‘½ä¸­è§’è‰²</param>
+	/// <param name="TraceStart">å°„å‡»å¼€å§‹ä½ç½®</param>
+	/// <param name="HitLocations">å¤šä¸ªå‘½ä¸­ä½ç½®</param>
+	/// <param name="HitTime">å‘½ä¸­æ—¶é—´</param>
 	/// <returns></returns>
 	FShotgunServerSideRewindResult ShotgunServerSideRewind(
 		const TArray<ABlasterCharacter*>& HitCharacters,
@@ -247,7 +249,7 @@ private:
 		const TArray<FVector_NetQuantize>& HitLocations,
 		float HitTime);
 	/// <summary>
-	/// ¼ÆËãÃüÖĞ½á¹û£¨¶àÉäÏß£©
+	/// è®¡ç®—å‘½ä¸­ç»“æœï¼ˆå¤šå°„çº¿ï¼‰
 	/// </summary>
 	/// <param name="HitCharacters"></param>
 	/// <param name="TraceStart"></param>
@@ -261,20 +263,20 @@ private:
 
 public:
 	/// <summary>
-	/// debug ÏÔÊ¾Êı¾İµÄbox¿ò
+	/// debug æ˜¾ç¤ºæ•°æ®çš„boxæ¡†
 	/// </summary>
 	/// <param name="Package"></param>
 	/// <param name="Color"></param>
 	void ShowFramePackage(const FFramePackage& Package, const FColor Color);
 
 	/// <summary>
-	/// £¨ÉäÏßÀàÎäÆ÷£©Ïò·şÎñÆ÷ÇëÇó¹¥»÷½á¹û£¬»ñÈ¡·ÖÊı
+	/// ï¼ˆå°„çº¿ç±»æ­¦å™¨ï¼‰å‘æœåŠ¡å™¨è¯·æ±‚æ”»å‡»ç»“æœï¼Œè·å–åˆ†æ•°
 	/// </summary>
-	/// <param name="HitCharacter">»÷ÖĞµÄ½ÇÉ«</param>
-	/// <param name="TraceStart">Éä»÷¿ªÊ¼Î»ÖÃ</param>
-	/// <param name="HitLocation">ÃüÖĞÎ»ÖÃ</param>
-	/// <param name="HitTime">ÃüÖĞÊ±¼ä</param>
-	/// <param name="DamageCauser">ÉËº¦Ô­Òò</param>
+	/// <param name="HitCharacter">å‡»ä¸­çš„è§’è‰²</param>
+	/// <param name="TraceStart">å°„å‡»å¼€å§‹ä½ç½®</param>
+	/// <param name="HitLocation">å‘½ä¸­ä½ç½®</param>
+	/// <param name="HitTime">å‘½ä¸­æ—¶é—´</param>
+	/// <param name="DamageCauser">ä¼¤å®³åŸå› </param>
 	UFUNCTION(Server, Reliable)
 		void ServerScoreRequest(
 			ABlasterCharacter* HitCharacter,
@@ -283,7 +285,7 @@ public:
 			float HitTime
 		);
 	/// <summary>
-	/// £¨Éäµ¯ÀàÎäÆ÷£©Ïò·şÎñÆ÷ÇëÇó¹¥»÷½á¹û£¬»ñÈ¡·ÖÊı
+	/// ï¼ˆå°„å¼¹ç±»æ­¦å™¨ï¼‰å‘æœåŠ¡å™¨è¯·æ±‚æ”»å‡»ç»“æœï¼Œè·å–åˆ†æ•°
 	/// </summary>
 	/// <param name="HitCharacter"></param>
 	/// <param name="TraceStart"></param>
@@ -297,7 +299,7 @@ public:
 			float HitTime
 		);
 	/// <summary>
-	/// £¨ö±µ¯Ç¹ÎäÆ÷£©Ïò·şÎñÆ÷ÇëÇó¹¥»÷½á¹û£¬»ñÈ¡·ÖÊı
+	/// ï¼ˆéœ°å¼¹æªæ­¦å™¨ï¼‰å‘æœåŠ¡å™¨è¯·æ±‚æ”»å‡»ç»“æœï¼Œè·å–åˆ†æ•°
 	/// </summary>
 	/// <param name="HitCharacters"></param>
 	/// <param name="TraceStart"></param>
@@ -318,12 +320,12 @@ private:
 	UPROPERTY()
 		class ABlasterPlayerController* Controller;
 	/// <summary>
-	/// ´æ´¢4ÃëµÄÖ¡Êı¾İ£¬Ê±¼äÌ«³¤ºÍÌ«¶Ì¶¼»áÓ°ÏìÌåÑé
+	/// å­˜å‚¨4ç§’çš„å¸§æ•°æ®ï¼Œæ—¶é—´å¤ªé•¿å’Œå¤ªçŸ­éƒ½ä¼šå½±å“ä½“éªŒ
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		float MaxRecordTime = 4.f;
 	/// <summary>
-	/// ´æ´¢¡¶MaxRecordTime¡·Ê±¼äÄÚ·¢ÉúµÄÖ¡Êı¾İ£¬Ê¹ÓÃË«ÏòÁ´±í·½±ã´ÓÁ´±íÍ·Î²½ÚµãÖ´ĞĞÌí¼ÓºÍÒÆ³ı²Ù×÷
+	/// å­˜å‚¨ã€ŠMaxRecordTimeã€‹æ—¶é—´å†…å‘ç”Ÿçš„å¸§æ•°æ®ï¼Œä½¿ç”¨åŒå‘é“¾è¡¨æ–¹ä¾¿ä»é“¾è¡¨å¤´å°¾èŠ‚ç‚¹æ‰§è¡Œæ·»åŠ å’Œç§»é™¤æ“ä½œ
 	/// </summary>
 	TDoubleLinkedList<FFramePackage> FrameHistory;
 

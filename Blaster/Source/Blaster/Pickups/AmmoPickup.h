@@ -8,7 +8,7 @@
 #include "AmmoPickup.generated.h"
 
 /**
- *
+ * 寮硅嵂
  */
 UCLASS()
 class BLASTER_API AAmmoPickup : public APickup
@@ -29,12 +29,12 @@ protected:
 
 private:
 	/// <summary>
-	/// 拾取的子弹数量
+	/// 拾取锟斤拷锟接碉拷锟斤拷锟斤拷
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		int32 AmmoAmount = 30;
 	/// <summary>
-	/// 拾取类型
+	/// 拾取锟斤拷锟斤拷
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		EWeaponType WeaponType;

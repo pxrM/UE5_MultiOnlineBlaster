@@ -15,7 +15,7 @@ AProjectileGrenade::AProjectileGrenade()
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->SetIsReplicated(true);
-	ProjectileMovementComponent->bShouldBounce = true;	//ÆôÓÃ·´µ¯
+	ProjectileMovementComponent->bShouldBounce = true;	//å¯ç”¨åå¼¹
 }
 
 void AProjectileGrenade::BeginPlay()

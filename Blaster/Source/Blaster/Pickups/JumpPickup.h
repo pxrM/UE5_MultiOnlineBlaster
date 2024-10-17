@@ -7,7 +7,7 @@
 #include "JumpPickup.generated.h"
 
 /**
- * 
+ * 跳跃buff
  */
 UCLASS()
 class BLASTER_API AJumpPickup : public APickup

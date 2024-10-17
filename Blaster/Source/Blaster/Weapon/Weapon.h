@@ -31,7 +31,9 @@ enum class EFireType :uint8
 };
 
 
-
+/*
+ * 武器类
+ */
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {

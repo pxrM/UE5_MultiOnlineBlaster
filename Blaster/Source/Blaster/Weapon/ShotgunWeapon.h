@@ -7,7 +7,7 @@
 #include "ShotgunWeapon.generated.h"
 
 /**
- * 
+ * ö±µ¯Ç¹
  */
 UCLASS()
 class BLASTER_API AShotgunWeapon : public AHitScanWeapon

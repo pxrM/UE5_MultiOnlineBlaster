@@ -1,7 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-/*
-	开火时掉落的子弹外壳
-*/
 
 #pragma once
 
@@ -9,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "Casing.generated.h"
 
+
+/*
+ * 开火时掉落的子弹外壳
+ */
 UCLASS()
 class BLASTER_API ACasing : public AActor
 {

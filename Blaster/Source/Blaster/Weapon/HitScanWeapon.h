@@ -1,7 +1,4 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-/*
-*	…‰œﬂŒ‰∆˜
-*/
 
 #pragma once
 
@@ -10,7 +7,7 @@
 #include "HitScanWeapon.generated.h"
 
 /**
- *
+ * …‰œﬂ¿‡Œ‰∆˜
  */
 UCLASS()
 class BLASTER_API AHitScanWeapon : public AWeapon

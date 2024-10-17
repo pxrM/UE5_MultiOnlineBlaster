@@ -7,7 +7,7 @@
 #include "SpeedPickup.generated.h"
 
 /**
- * 
+ * 閫熷害buff
  */
 UCLASS()
 class BLASTER_API ASpeedPickup : public APickup
@@ -27,9 +27,9 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-		float BaseSpeedBuff = 1600.f; //速度
+		float BaseSpeedBuff = 1600.f; //閫熷害
 	UPROPERTY(EditAnywhere)
-		float CrouchSpeedBuff = 850.f; //蹲伏速度
+		float CrouchSpeedBuff = 850.f; //韫蹭紡閫熷害
 	UPROPERTY(EditAnywhere)
-		float SpeedBuffTime = 30.f; //速度buff增益时间
+		float SpeedBuffTime = 30.f; //閫熷害buff澧炵泭鏃堕棿
 };

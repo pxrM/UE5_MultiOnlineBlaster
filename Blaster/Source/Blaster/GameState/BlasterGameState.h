@@ -6,6 +6,8 @@
 #include "GameFramework/GameState.h"
 #include "BlasterGameState.generated.h"
 
+class ABlasterPlayerState;
+
 /**
  * AGameState用于保存游戏数据，如任务进度、游戏活动等
  */
@@ -17,7 +19,7 @@ class BLASTER_API ABlasterGameState : public AGameState
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void UpdateTopScore(class ABlasterPlayerState* ScoringPlayer);
+	void UpdateTopScore(ABlasterPlayerState* ScoringPlayer);
 
 	void RedTeamScores();
 	void BlueTeamScores();
@@ -31,7 +33,7 @@ public:
 	/// 最高分玩家，可能有玩家并列高分，所以用TArray
 	/// </summary>
 	UPROPERTY(Replicated)
-		TArray<class ABlasterPlayerState*> TopScoringPlayers;
+		TArray<ABlasterPlayerState*> TopScoringPlayers;
 
 	TArray<ABlasterPlayerState*> RedTeam;
 	TArray<ABlasterPlayerState*> BlueTeam;

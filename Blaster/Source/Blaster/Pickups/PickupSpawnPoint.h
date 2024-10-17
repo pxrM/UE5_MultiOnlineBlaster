@@ -6,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "PickupSpawnPoint.generated.h"
 
+
+/*
+ * 拾取物品的生成点
+ */
 UCLASS()
 class BLASTER_API APickupSpawnPoint : public AActor
 {

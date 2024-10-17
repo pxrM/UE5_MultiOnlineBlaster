@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿ // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -243,7 +243,7 @@ private://----------------------------------------------------------------------
 	UPROPERTY(EditAnywhere)
 		UBoxComponent* foot_r;
 	UPROPERTY()
-		TMap<FName, UBoxComponent*> HitConllisionBoxs;
+		TMap<FName, UBoxComponent*> HitCollisionBoxs;
 
 	UPROPERTY()
 		class ABlasterGameMode* BlasterGameMode;
@@ -420,7 +420,7 @@ public:
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMagMontage; }
 	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 	FORCEINLINE UBuffComponent* GetBuffComp() const { return BuffCmp; }
-	FORCEINLINE TMap<FName, UBoxComponent*> GetHitCollisionBoxs() const { return HitConllisionBoxs; }
+	FORCEINLINE TMap<FName, UBoxComponent*> GetHitCollisionBoxs() const { return HitCollisionBoxs; }
 	FORCEINLINE ULagCompensationComponent* GetLagCompensationComp() const { return LagCompensationCmp; }
 	FORCEINLINE bool IsHoldingTheFlag() const;
 

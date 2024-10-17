@@ -7,7 +7,7 @@
 #include "HealthPickup.generated.h"
 
 /**
- * 
+ * æ²»ç–—buff
  */
 UCLASS()
 class BLASTER_API AHealthPickup : public APickup
@@ -30,8 +30,8 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-		float HealAmount = 100.f; //ÖÎÁÆÁ¿
+		float HealAmount = 100.f; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere)
-		float HealingTime = 5.f; //ÖÎÁÆËùÐèÊ±¼ä
+		float HealingTime = 5.f; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
 	
 };

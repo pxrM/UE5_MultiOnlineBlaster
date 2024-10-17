@@ -7,7 +7,7 @@
 #include "ProjectileWeapon.generated.h"
 
 /**
- *
+ * å°„å¼¹æ­¦å™¨
  */
 UCLASS()
 class BLASTER_API AProjectileWeapon : public AWeapon
@@ -19,14 +19,14 @@ public:
 	virtual void Fire(const FVector& HitTarget)override;
 
 private:
-	//ÓÃÓÚ¶¨ÒåÒ»¸öÄ£°åÀàTSubclassOfµÄÊµÀı¡£¸ÃÄ£°åÀàµÄÄ£°å²ÎÊıÎªAProjectile£¬±íÊ¾¸ÃÄ£°åÀàµÄ¾ßÌåÀàĞÍÊÇAProjectile»òÆä×ÓÀà¡£
+	//ç”¨äºå®šä¹‰ä¸€ä¸ªæ¨¡æ¿ç±»TSubclassOfçš„å®ä¾‹ã€‚è¯¥æ¨¡æ¿ç±»çš„æ¨¡æ¿å‚æ•°ä¸ºAProjectileï¼Œè¡¨ç¤ºè¯¥æ¨¡æ¿ç±»çš„å…·ä½“ç±»å‹æ˜¯AProjectileæˆ–å…¶å­ç±»ã€‚
 	/// <summary>
-	/// ¿Í»§¶ËºÍ·şÎñÆ÷ÉÏÊ¹ÓÃ£¬»á½øĞĞÍøÂç¸´ÖÆ
+	/// å®¢æˆ·ç«¯å’ŒæœåŠ¡å™¨ä¸Šä½¿ç”¨ï¼Œä¼šè¿›è¡Œç½‘ç»œå¤åˆ¶
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class AProjectile> ProjectileClass;
 	/// <summary>
-	/// ·şÎñÆ÷µ¹´øÊ¹ÓÃ£¬²»»á½øĞĞÍøÂç¸´ÖÆ
+	/// æœåŠ¡å™¨å€’å¸¦ä½¿ç”¨ï¼Œä¸ä¼šè¿›è¡Œç½‘ç»œå¤åˆ¶
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<AProjectile> ServerSideRewindProjectileClass;

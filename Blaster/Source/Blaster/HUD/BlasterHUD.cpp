@@ -14,7 +14,7 @@ void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//AddCharacterOverlay(); ¸ÄÎªÓÎÏ·½øÐÐÖÐÔÙ¿ªÊ¼Ìí¼Ó
+	//AddCharacterOverlay(); æ”¹ä¸ºæ¸¸æˆè¿›è¡Œä¸­å†å¼€å§‹æ·»åŠ 
 	//AddElimAnnouncement("Player1", "Player2");
 }
 
@@ -49,12 +49,12 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, F
 	);
 
 	DrawTexture(
-		Texture, //Òª»æÖÆµÄÎÆÀí
-		TextureDrawPoint.X, TextureDrawPoint.Y, //ÔÚÆÁÄ»ÉÏ»æÖÆÎÆÀíµÄ×óÉÏ½ÇµÄ x ºÍ y ×ø±ê
-		TextureWidth, TextureHeight, //ÔÚÆÁÄ»ÉÏ»æÖÆµÄÎÆÀíµÄ¿í¶ÈºÍ¸ß¶È
-		0.f, 0.f, //Ö¸¶¨´ÓÎÆÀíÖÐ»æÖÆµÄÇøÓòµÄ×óÉÏ½Ç£¨ÒÔ UV ×ø±êÎªµ¥Î»£©¡£×óÉÏ½Ç£¨0,0£©±íÊ¾ÎÆÀíµÄ×óÉÏ½Ç£¬ÓÒÏÂ½Ç£¨1,1£©±íÊ¾ÎÆÀíµÄÓÒÏÂ½Ç
-		1.f, 1.f, //Ö¸¶¨´ÓÎÆÀíÖÐ»æÖÆµÄÇøÓòµÄ¿í¶ÈºÍ¸ß¶È£¨ÒÔ UV ×ø±êÎªµ¥Î»£©¡£Ä¬ÈÏÖµÊÇ 1¡£½«ÕâÐ©²ÎÊýÉèÖÃÎªÐ¡ÓÚ 1 µÄÊý×Ö¿ÉÒÔÖ»»æÖÆ²¿·ÖÎÆÀí
-		CrosshairColor //Tint ÑÕÉ«£¬¿ÉÒÔÓÃÀ´×ÅÉ«ÎÆÀí
+		Texture, //è¦ç»˜åˆ¶çš„çº¹ç†
+		TextureDrawPoint.X, TextureDrawPoint.Y, //åœ¨å±å¹•ä¸Šç»˜åˆ¶çº¹ç†çš„å·¦ä¸Šè§’çš„ x å’Œ y åæ ‡
+		TextureWidth, TextureHeight, //åœ¨å±å¹•ä¸Šç»˜åˆ¶çš„çº¹ç†çš„å®½åº¦å’Œé«˜åº¦
+		0.f, 0.f, //æŒ‡å®šä»Žçº¹ç†ä¸­ç»˜åˆ¶çš„åŒºåŸŸçš„å·¦ä¸Šè§’ï¼ˆä»¥ UV åæ ‡ä¸ºå•ä½ï¼‰ã€‚å·¦ä¸Šè§’ï¼ˆ0,0ï¼‰è¡¨ç¤ºçº¹ç†çš„å·¦ä¸Šè§’ï¼Œå³ä¸‹è§’ï¼ˆ1,1ï¼‰è¡¨ç¤ºçº¹ç†çš„å³ä¸‹è§’
+		1.f, 1.f, //æŒ‡å®šä»Žçº¹ç†ä¸­ç»˜åˆ¶çš„åŒºåŸŸçš„å®½åº¦å’Œé«˜åº¦ï¼ˆä»¥ UV åæ ‡ä¸ºå•ä½ï¼‰ã€‚é»˜è®¤å€¼æ˜¯ 1ã€‚å°†è¿™äº›å‚æ•°è®¾ç½®ä¸ºå°äºŽ 1 çš„æ•°å­—å¯ä»¥åªç»˜åˆ¶éƒ¨åˆ†çº¹ç†
+		CrosshairColor //Tint é¢œè‰²ï¼Œå¯ä»¥ç”¨æ¥ç€è‰²çº¹ç†
 	);
 }
 
@@ -100,21 +100,21 @@ void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
 			{
 				if (Msg && Msg->AnnouncementBox)
 				{
-					//Canvas Panel Slot ÀàÐÍÊÇUE4ÖÐµÄÒ»ÖÖ²¼¾Ö²ÛÀàÐÍ£¬ÓÃÓÚ¿ØÖÆÔÚ Canvas Panel ÖÐ·ÅÖÃµÄ Widget ÔÚ Canvas ÖÐµÄ²¼¾ÖºÍÎ»ÖÃ¡£
-					//UCanvasPanelSlot ÀàÊÇ UPanelSlot ÀàµÄ×ÓÀà£¬Ëü°üº¬ÁËÓë Canvas ²¼¾ÖÏà¹ØµÄÊôÐÔ£¬
-					//ÀýÈçÎ»ÖÃ¡¢´óÐ¡¡¢¶ÔÆëµÈ¡£Í¨¹ýÐÞ¸Ä UCanvasPanelSlot µÄÊôÐÔ£¬¿ÉÒÔÊµÏÖ¶Ô Canvas Panel ÖÐ¸÷¸ö Widget µÄ²¼¾ÖºÍÎ»ÖÃ½øÐÐ¾«È·¿ØÖÆ¡£
-					//Ê¹ÓÃ UCanvasPanelSlot ÀàÐÍµÄ±äÁ¿£¬ÎÒÃÇ¿ÉÒÔ»ñÈ¡ºÍÉèÖÃÔÚ Canvas Panel ÖÐÌØ¶¨ Widget µÄ²¼¾ÖÐÅÏ¢¡£
-					//		ÀýÈç£¬ÎÒÃÇ¿ÉÒÔÊ¹ÓÃ UCanvasPanelSlot µÄÊôÐÔÀ´ÉèÖÃ Widget µÄÎ»ÖÃ¡¢´óÐ¡¡¢¶ÔÆë·½Ê½ÒÔ¼°ÆäËûÓë²¼¾ÖÏà¹ØµÄÊôÐÔ¡£
-					//Í¨¹ý½« Widget µÄ Slot ×ª»»Îª Canvas Panel Slot ÀàÐÍ£¬ÎÒÃÇ¿ÉÒÔ·ÃÎÊºÍÐÞ¸Ä Canvas Panel Slot ÌØÓÐµÄÊôÐÔ£¬
-					//²¢Í¨¹ýÕâÐ©ÊôÐÔÀ´¿ØÖÆ Widget ÔÚ Canvas Panel ÖÐµÄ²¼¾Ö¡£
+					//Canvas Panel Slot ç±»åž‹æ˜¯UE4ä¸­çš„ä¸€ç§å¸ƒå±€æ§½ç±»åž‹ï¼Œç”¨äºŽæŽ§åˆ¶åœ¨ Canvas Panel ä¸­æ”¾ç½®çš„ Widget åœ¨ Canvas ä¸­çš„å¸ƒå±€å’Œä½ç½®ã€‚
+					//UCanvasPanelSlot ç±»æ˜¯ UPanelSlot ç±»çš„å­ç±»ï¼Œå®ƒåŒ…å«äº†ä¸Ž Canvas å¸ƒå±€ç›¸å…³çš„å±žæ€§ï¼Œ
+					//ä¾‹å¦‚ä½ç½®ã€å¤§å°ã€å¯¹é½ç­‰ã€‚é€šè¿‡ä¿®æ”¹ UCanvasPanelSlot çš„å±žæ€§ï¼Œå¯ä»¥å®žçŽ°å¯¹ Canvas Panel ä¸­å„ä¸ª Widget çš„å¸ƒå±€å’Œä½ç½®è¿›è¡Œç²¾ç¡®æŽ§åˆ¶ã€‚
+					//ä½¿ç”¨ UCanvasPanelSlot ç±»åž‹çš„å˜é‡ï¼Œæˆ‘ä»¬å¯ä»¥èŽ·å–å’Œè®¾ç½®åœ¨ Canvas Panel ä¸­ç‰¹å®š Widget çš„å¸ƒå±€ä¿¡æ¯ã€‚
+					//		ä¾‹å¦‚ï¼Œæˆ‘ä»¬å¯ä»¥ä½¿ç”¨ UCanvasPanelSlot çš„å±žæ€§æ¥è®¾ç½® Widget çš„ä½ç½®ã€å¤§å°ã€å¯¹é½æ–¹å¼ä»¥åŠå…¶ä»–ä¸Žå¸ƒå±€ç›¸å…³çš„å±žæ€§ã€‚
+					//é€šè¿‡å°† Widget çš„ Slot è½¬æ¢ä¸º Canvas Panel Slot ç±»åž‹ï¼Œæˆ‘ä»¬å¯ä»¥è®¿é—®å’Œä¿®æ”¹ Canvas Panel Slot ç‰¹æœ‰çš„å±žæ€§ï¼Œ
+					//å¹¶é€šè¿‡è¿™äº›å±žæ€§æ¥æŽ§åˆ¶ Widget åœ¨ Canvas Panel ä¸­çš„å¸ƒå±€ã€‚
 					// 
-					//ÔÚCanvas PanelÖÐ£¬Widget ÊÇÍ¨¹ý Canvas Panel Slot À´¿ØÖÆÎ»ÖÃºÍ´óÐ¡µÄ¡£Èç¹ûÖ±½ÓÊ¹ÓÃ WidgetµÄSlotÐÞ¸ÄÎ»ÖÃºÍ´óÐ¡£¬½«²»»áÉúÐ§¡£
-					//Òò´Ë£¬ÔÚCanvas PanelÖÐ¿ØÖÆWidgetµÄÎ»ÖÃºÍ´óÐ¡ÐèÒªÏÈ»ñÈ¡¸ÃWidget¶ÔÓ¦µÄCanvas Panel Slot£¬²¢Ê¹ÓÃCanvas Panel SlotµÄÊôÐÔÀ´ÐÞ¸ÄÎ»ÖÃºÍ´óÐ¡µÈ²¼¾ÖÐÅÏ¢¡£
+					//åœ¨Canvas Panelä¸­ï¼ŒWidget æ˜¯é€šè¿‡ Canvas Panel Slot æ¥æŽ§åˆ¶ä½ç½®å’Œå¤§å°çš„ã€‚å¦‚æžœç›´æŽ¥ä½¿ç”¨ Widgetçš„Slotä¿®æ”¹ä½ç½®å’Œå¤§å°ï¼Œå°†ä¸ä¼šç”Ÿæ•ˆã€‚
+					//å› æ­¤ï¼Œåœ¨Canvas Panelä¸­æŽ§åˆ¶Widgetçš„ä½ç½®å’Œå¤§å°éœ€è¦å…ˆèŽ·å–è¯¥Widgetå¯¹åº”çš„Canvas Panel Slotï¼Œå¹¶ä½¿ç”¨Canvas Panel Slotçš„å±žæ€§æ¥ä¿®æ”¹ä½ç½®å’Œå¤§å°ç­‰å¸ƒå±€ä¿¡æ¯ã€‚
 					UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Msg->AnnouncementBox);
 					if (CanvasSlot)
 					{
 						FVector2D Position = CanvasSlot->GetPosition();
-						// ÏòÆÁÄ»ÉÏ·½ÒÆ¶¯
+						// å‘å±å¹•ä¸Šæ–¹ç§»åŠ¨
 						FVector2D NewPosition(CanvasSlot->GetPosition().X, Position.Y - CanvasSlot->GetPosition().Y);
 						CanvasSlot->SetPosition(NewPosition);
 					}

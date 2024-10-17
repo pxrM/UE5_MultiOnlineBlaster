@@ -1,7 +1,4 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-/*
-	射弹物体（子弹）
-*/
 
 #pragma once
 
@@ -9,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+/*
+	射弹物体（子弹）
+*/
 UCLASS()
 class BLASTER_API AProjectile : public AActor
 {
