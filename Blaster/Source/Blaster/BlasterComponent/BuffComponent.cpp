@@ -45,10 +45,10 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 {
 	if (!bHealing || Character == nullptr || Character->IsElimmed()) return;
 
-	const float HealThisFrame = HealingRate * DeltaTime; //Ã¿Ò»Ö¡ÖÎÁÆµÄÊıÁ¿
+	const float HealThisFrame = HealingRate * DeltaTime; //æ¯ä¸€å¸§æ²»ç–—çš„æ•°é‡
 	Character->SetCurHealth(FMath::Clamp(Character->GetCurHealth() + HealThisFrame, 0, Character->GetMaxHealth()));
 	Character->UpdateHUDHealth();
-	AmountToHeal -= HealThisFrame; //×ÜÖÎÁÆÁ¿¼õÈ¥ÒÑ¾­ÖÎÁÆµÄ
+	AmountToHeal -= HealThisFrame; //æ€»æ²»ç–—é‡å‡å»å·²ç»æ²»ç–—çš„
 
 	if (AmountToHeal <= 0.f || Character->GetCurHealth() >= Character->GetMaxHealth())
 	{

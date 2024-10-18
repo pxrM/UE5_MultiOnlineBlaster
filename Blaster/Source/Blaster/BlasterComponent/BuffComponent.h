@@ -37,8 +37,8 @@ public:
 	/// <summary>
 	/// 补充护盾
 	/// </summary>
-	/// <param name="ShieldAmount"></param>
-	/// <param name="ReplenishTime"></param>
+	/// <param name="ShieldAmount">护盾补充量</param>
+	/// <param name="ReplenishTime">每次补充的时间</param>
 	void ReplenishShield(float ShieldAmount, float ReplenishTime);
 
 	/// <summary>
