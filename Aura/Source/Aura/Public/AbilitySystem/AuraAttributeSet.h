@@ -89,8 +89,11 @@ public:
 	// 修改属性之前执行。例如：修改血量时进行限制，HP=Clamp(0,MaxHP);
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
-	// 修改属性后执行，注意：在效果应用时不会执行，在效果执行时才会执行。
+	// 在GameplayEffect执行之前调用，修改属性的基本值。(修改属性后执行，注意：在效果应用时不会执行，在效果执行时才会执行。)
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+	// 在属性发生任何修改之后调用。
+	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
 
 	
 private:
@@ -280,5 +283,10 @@ public:
 	// 别名：TMap<FGameplayTag, FAttributeFuncPtr> TagsToAttributes;
 	/* 将tag和attribute进行映射 */
 	TMap<FGameplayTag, TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
-	
+
+
+private:
+	// 将血量和蓝量填充满
+	bool bTopOffHealth = false;
+	bool bTopOffMana = false;
 };

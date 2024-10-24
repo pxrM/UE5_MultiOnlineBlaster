@@ -164,6 +164,9 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 			const int32 NumLevelUps = NewLevel - CurrentLevel;
 			if(NumLevelUps > 0)
 			{
+				/*
+				 * 升级
+				 */
 				const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointReward(Props.SourceCharacter, CurrentLevel);
 				const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointReward(Props.SourceCharacter, CurrentLevel);
 
@@ -173,12 +176,30 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				
 				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
 				
-				SetHealth(GetMaxHealth());
-				SetMana(GetMaxMana());
+				// SetHealth(GetMaxHealth());
+				// SetMana(GetMaxMana());
+				bTopOffHealth = true;
+				bTopOffMana = true;
 			}
 			// 2. 将经验应用给自身，通过事件传递，在玩家角色被动技能GA_ListenForEvents里接收
 			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
 		}
+	}
+}
+
+void UAuraAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+
+	if(Attribute == GetMaxHealthAttribute() && bTopOffHealth)
+	{
+		SetHealth(GetMaxHealth());
+		bTopOffHealth = false;
+	}
+	if(Attribute == GetMaxManaAttribute() && bTopOffMana)
+	{
+		SetMana(GetMaxMana());
+		bTopOffMana = false;
 	}
 }
 
