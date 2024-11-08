@@ -13,37 +13,32 @@ void UAttributeMenuWidgetController::BroadcastInitValues()
 {
 	check(AttributeInfoData);
 
-	const UAuraAttributeSet* AS = Cast<UAuraAttributeSet>(AttributeSet);
-
+	// const UAuraAttributeSet* AS = Cast<UAuraAttributeSet>(AttributeSet);
 	// FAuraAttributeInfo StrengthInfo = AttributeInfoData->FindAttributeInfoForTag(FAuraGameplayTags::Get().Attributes_Primary_Strength);
 	// StrengthInfo.AttributeValue = AS->GetStrength();
 	// AttributeInfoDelegate.Broadcast(StrengthInfo);
 	
-	for(auto& Pair : AS->TagsToAttributes)
+	for(auto& Pair : GetAuraAS()->TagsToAttributes)
 	{
 		BroadcastAttributeInfo(Pair.Key, Pair.Value());
 	}
 
-	const AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
-	AttributePointChangedDelegate.Broadcast(AuraPlayerState->GetAttributePoints());
+	AttributePointChangedDelegate.Broadcast(GetAuraPS()->GetAttributePoints());
 }
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
-	const UAuraAttributeSet* AS = Cast<UAuraAttributeSet>(AttributeSet);
-	check(AS);
-	for (auto& Pair : AS->TagsToAttributes)
+	for (auto& Pair : GetAuraAS()->TagsToAttributes)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Pair.Value()).AddLambda(
-			[this, Pair, AS](const FOnAttributeChangeData& Data)
+			[this, Pair](const FOnAttributeChangeData& Data)
 			{
 				BroadcastAttributeInfo(Pair.Key, Pair.Value());
 			}
 		);
 	}
-
-	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);
-	AuraPlayerState->OnAttributePointChangedDelegate.AddLambda([this](int32 Points)
+	
+	GetAuraPS()->OnAttributePointChangedDelegate.AddLambda([this](int32 Points)
 	{
 		AttributePointChangedDelegate.Broadcast(Points);
 	});
@@ -59,6 +54,5 @@ void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& 
 
 void UAttributeMenuWidgetController::UpgradeAttribute(const FGameplayTag& AttributeTag)
 {
-	UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
-	AuraASC->UpgradeAttribute(AttributeTag);
+	GetAuraASC()->UpgradeAttribute(AttributeTag);
 }

@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "AttributeMenuWidgetController.generated.h"
 
 
+struct FGameplayAttribute;
 class UAttributeInfoData;
 struct FAuraAttributeInfo;
 
