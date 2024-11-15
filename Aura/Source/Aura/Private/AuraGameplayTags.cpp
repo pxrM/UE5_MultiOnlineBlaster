@@ -105,6 +105,14 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("InputTag.4"),
 		FString("Input Tag for 4 key")
 	);
+	GameplayTags.InputTag_Passive_1 = TagsManager.AddNativeGameplayTag(
+	FName("InputTag.Passive.1"),
+	FString("被动技能1输入tag")
+);
+	GameplayTags.InputTag_Passive_2 = TagsManager.AddNativeGameplayTag(
+		FName("InputTag.Passive.2"),
+		FString("被动技能2输入tag")
+	);
 	/*
 	 * Damage 伤害
 	 * 在正常的RPG游戏中，都存在一个类别就是属性伤害，比如，有一个火属性的技能，
