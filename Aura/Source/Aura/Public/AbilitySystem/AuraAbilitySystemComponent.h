@@ -58,6 +58,7 @@ public:
 	// 通过传入的技能实例，从技能实例里面获取到对应的技能标签和输入标签
 	static FGameplayTag GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 	static FGameplayTag GetAbilityInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
+	static FGameplayTag GetAbilityStatusTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 
 	// 升级对应的属性(本地)
 	void UpgradeAttribute(const FGameplayTag& AttributeTag);

@@ -106,9 +106,9 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Input Tag for 4 key")
 	);
 	GameplayTags.InputTag_Passive_1 = TagsManager.AddNativeGameplayTag(
-	FName("InputTag.Passive.1"),
-	FString("被动技能1输入tag")
-);
+		FName("InputTag.Passive.1"),
+		FString("被动技能1输入tag")
+	);
 	GameplayTags.InputTag_Passive_2 = TagsManager.AddNativeGameplayTag(
 		FName("InputTag.Passive.2"),
 		FString("被动技能2输入tag")
@@ -178,6 +178,40 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Abilities_Fire_FireBolt = TagsManager.AddNativeGameplayTag(
 		FName("Abilities.Fire.FireBolt"),
 		FString("火球术技能标签")
+	);
+
+	GameplayTags.Abilities_HitReact = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.HitReact"),
+		FString("受击技能标签")
+	);
+	GameplayTags.Abilities_Status_Locked = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Status.Locked"),
+		FString("技能锁定状态标签")
+	);
+	GameplayTags.Abilities_Status_Eligible = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Status.Eligible"),
+		FString("技能可解锁状态标签")
+	);
+	GameplayTags.Abilities_Status_Unlocked = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Status.Unlocked"),
+		FString("技能解锁状态标签")
+	);
+	GameplayTags.Abilities_Status_Equipped = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Status.Equipped"),
+		FString("技能装备状态标签")
+	);
+
+	GameplayTags.Abilities_Type_None = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Type.None"),
+		FString("None")
+	);
+	GameplayTags.Abilities_Type_Offensive = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Type.Offensive"),
+		FString("主动技能")
+	);
+	GameplayTags.Abilities_Type_Passive = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Type.Passive"),
+		FString("被动技能")
 	);
 	/*
 	 * 技能冷却

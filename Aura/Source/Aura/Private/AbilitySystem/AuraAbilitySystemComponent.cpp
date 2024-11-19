@@ -46,6 +46,7 @@ void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 		{
 			// DynamicAbilityTags允许为特定的能力实例添加动态标签。这些标签可以用于在运行时调整和管理能力的行为，比如条件激活、冷却时间、能力互斥等
 			AbilitySpec.DynamicAbilityTags.AddTag(Ability->StartupInputTag);
+			AbilitySpec.DynamicAbilityTags.AddTag(FAuraGameplayTags::Get().Abilities_Status_Equipped);
 			// 只应用给角色不激活
 			GiveAbility(AbilitySpec);
 		}
@@ -169,6 +170,18 @@ FGameplayTag UAuraAbilitySystemComponent::GetAbilityInputTagFromSpec(const FGame
 	{
 		// 判断当前标签是否包含 InputTag
 		if(Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("InputTag"))))
+		{
+			return Tag;
+		}
+	}
+	return FGameplayTag();
+}
+
+FGameplayTag UAuraAbilitySystemComponent::GetAbilityStatusTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	for(FGameplayTag Tag: AbilitySpec.DynamicAbilityTags)
+	{
+		if(Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Abilities.Status"))))
 		{
 			return Tag;
 		}
