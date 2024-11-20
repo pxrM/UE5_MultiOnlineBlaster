@@ -7,6 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+class UAbilityInfoData;
 struct FWidgetControllerParams;
 struct FGameplayEffectContextHandle;
 class AAuraHUD;
@@ -56,6 +57,10 @@ public:
 	// 获取角色类型信息表
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
+
+	// 获取角色技能配置
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|CharacterClassDefaults")
+	static UAbilityInfoData* GetAbilityInfo(const UObject* WorldContextObject);
 
 	// 获取上下文是否阻挡成功
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")

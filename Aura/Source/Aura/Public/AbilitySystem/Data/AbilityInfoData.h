@@ -8,6 +8,7 @@
 #include "AbilityInfoData.generated.h"
 
 
+class UGameplayAbility;
 // 技能数据配置
 USTRUCT(BlueprintType)
 struct FAuraAbilityInfo
@@ -37,6 +38,14 @@ struct FAuraAbilityInfo
 	// 技能背景材质
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<const UMaterialInterface> BackgroundMaterial = nullptr;
+
+	// 解锁技能所需角色等级
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 LevelRequirement = 1;
+
+	// 当前技能使用的技能类
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UGameplayAbility> Ability;
 };
 
 
