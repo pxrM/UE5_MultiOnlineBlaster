@@ -29,6 +29,10 @@ DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven)
  * 传递给asc，然后遍历所有的激活能力
  */
 DECLARE_DELEGATE_OneParam(FForEachAbility, const FGameplayAbilitySpec&)
+/*
+ * ga的状态标签发生改变通知
+ */
+DECLARE_MULTICAST_DELEGATE_TwoParams(FAbilityStatusChanged, const FGameplayTag& /*AbilityTag*/, const FGameplayTag& /*StatusTag*/);
 
 
 /**
@@ -65,6 +69,11 @@ public:
 	// 升级对应的属性(server)
 	UFUNCTION(Server, Reliable)
 	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
+
+	// 通过标签获取角色身上的技能实例
+	FGameplayAbilitySpec* GetSpecFromAbilitySpec(const FGameplayTag& AbilityTag);
+	// 根据角色等级更新技能状态
+	void UpdateAbilityStatus(const int32 Level);
 	
 
 protected:
@@ -73,13 +82,18 @@ protected:
 	// 用于在Effect应用到自身角色时触发相应的逻辑
 	UFUNCTION(Client, Reliable)
 	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle);
-
+	// ga状态改变后同步到客户端
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAbilityStatus(const FGameplayTag& AbilityTag, const FGameplayTag& StatusTag);
+	
 	
 public:
 	// 获取到一个ge资产后触发的委托
 	FEffectAssetTags EffectAssetTags;
 	// 技能初始化后的广播委托
 	FAbilitiesGiven AbilitiesGivenDelegate;
+	// 技能状态改变后广播
+	FAbilityStatusChanged AbilityStatusChanged;
 	// 初始化应用技能后设置为true，记录当前是否初始化完成
 	bool bStartupAbilitiesGiven = false;
 };

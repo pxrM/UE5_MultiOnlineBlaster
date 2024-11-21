@@ -16,7 +16,13 @@ class UAbilitySystemComponent;
 class UAbilityInfoData;
 
 
+/*
+ * 玩家状态更新的ui回调
+ */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
+/*
+ * 技能信息更新的ui回调
+ */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FAuraAbilityInfo&, Info);
 
 
