@@ -57,6 +57,8 @@ public:
    // 属性伤害标签对应属性抵抗标签
    TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
 
+   FGameplayTag Abilities_None;
+
    FGameplayTag Abilities_Attack;
    FGameplayTag Abilities_Summon;
 

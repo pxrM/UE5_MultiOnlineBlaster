@@ -167,6 +167,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	/*
 	 * 技能
 	 */
+	GameplayTags.Abilities_None = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.None"),
+		FString("无技能")
+	);
 	GameplayTags.Abilities_Attack = TagsManager.AddNativeGameplayTag(
 		FName("Abilities.Attack"),
 		FString("攻击技能标签")
