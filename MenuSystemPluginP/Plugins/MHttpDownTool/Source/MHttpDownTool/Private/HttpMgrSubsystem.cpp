@@ -46,9 +46,9 @@ bool UHttpMgrSubsystem::IsTickable() const
 
 UAsyncDownloadFile* UHttpMgrSubsystem::CreateDownTask(UObject* WorldContextObject, const FString& Url, const FString& FileName, const FString& Directory, bool bClearCache)
 {
-	//*(Directory / FileName) ÊÇÒ»ÖÖÌØÊâµÄĞ´·¨£¬ÔÚ C++ ÖĞÍ¨³£³ÆÎª¡°½âÒıÓÃ×Ö·û´®¡±¡£ÔÚÕâÀï£¬Directory ºÍ FileName ¶¼ÊÇ×Ö·û´®ÀàĞÍµÄ±äÁ¿£¬/ ±íÊ¾½«ËüÃÇÆ´½ÓÆğÀ´¡£
-	//ÓÉÓÚ / ÔËËã·ûµÄÓÅÏÈ¼¶±È * »¹Òª¸ß£¬ËùÒÔÔÚÕâ¸ö±í´ïÊ½ÖĞ£¬Directory / FileName µÄ½á¹ûÊÇÒ»¸ö const char* ÀàĞÍµÄÖ¸Õë£¬Ö¸ÏòÆ´½ÓÍê³ÉºóµÄ×Ö·û´®¡£
-	//È»ºó£¬Ê¹ÓÃ * ÔËËã·ûÀ´½âÒıÓÃÕâ¸öÖ¸Õë£¬µÃµ½Ò»¸ö const char ÀàĞÍµÄ×Ö·ûÊı×é»ò×Ö·û´®³£Á¿¡£
+	//*(Directory / FileName) æ˜¯ä¸€ç§ç‰¹æ®Šçš„å†™æ³•ï¼Œåœ¨ C++ ä¸­é€šå¸¸ç§°ä¸ºâ€œè§£å¼•ç”¨å­—ç¬¦ä¸²â€ã€‚åœ¨è¿™é‡Œï¼ŒDirectory å’Œ FileName éƒ½æ˜¯å­—ç¬¦ä¸²ç±»å‹çš„å˜é‡ï¼Œ/ è¡¨ç¤ºå°†å®ƒä»¬æ‹¼æ¥èµ·æ¥ã€‚
+	//ç”±äº / è¿ç®—ç¬¦çš„ä¼˜å…ˆçº§æ¯” * è¿˜è¦é«˜ï¼Œæ‰€ä»¥åœ¨è¿™ä¸ªè¡¨è¾¾å¼ä¸­ï¼ŒDirectory / FileName çš„ç»“æœæ˜¯ä¸€ä¸ª const char* ç±»å‹çš„æŒ‡é’ˆï¼ŒæŒ‡å‘æ‹¼æ¥å®Œæˆåçš„å­—ç¬¦ä¸²ã€‚
+	//ç„¶åï¼Œä½¿ç”¨ * è¿ç®—ç¬¦æ¥è§£å¼•ç”¨è¿™ä¸ªæŒ‡é’ˆï¼Œå¾—åˆ°ä¸€ä¸ª const char ç±»å‹çš„å­—ç¬¦æ•°ç»„æˆ–å­—ç¬¦ä¸²å¸¸é‡ã€‚
 	UAsyncDownloadFile* HttpFile = NewObject<UAsyncDownloadFile>(WorldContextObject, *(Directory / FileName));
 	if (HttpFile)
 	{
@@ -66,8 +66,8 @@ UAsyncDownloadFile* UHttpMgrSubsystem::CreateDownTask(UObject* WorldContextObjec
 
 void UHttpMgrSubsystem::Init()
 {
-	//GetDefault ÊÇ Unreal Engine ÖĞµÄÒ»ÖÖÓÃÓÚ»ñÈ¡Ä¬ÈÏ¶ÔÏóµÄ·½·¨¡£
-	//ÔÚ Unreal Engine ÖĞ£¬Ã¿¸ö UObject ÀàµÄÅÉÉúÀà¶¼¿ÉÒÔÓĞÒ»¸öÄ¬ÈÏ¶ÔÏó£¨default object£©£¬ËüÊÇ¸ÃÀàµÄ¾²Ì¬ÊµÀı£¬ÓÃÓÚÌá¹©È±Ê¡ÖµºÍÄ¬ÈÏÉèÖÃ¡£
+	//GetDefault æ˜¯ Unreal Engine ä¸­çš„ä¸€ç§ç”¨äºè·å–é»˜è®¤å¯¹è±¡çš„æ–¹æ³•ã€‚
+	//åœ¨ Unreal Engine ä¸­ï¼Œæ¯ä¸ª UObject ç±»çš„æ´¾ç”Ÿç±»éƒ½å¯ä»¥æœ‰ä¸€ä¸ªé»˜è®¤å¯¹è±¡ï¼ˆdefault objectï¼‰ï¼Œå®ƒæ˜¯è¯¥ç±»çš„é™æ€å®ä¾‹ï¼Œç”¨äºæä¾›ç¼ºçœå€¼å’Œé»˜è®¤è®¾ç½®ã€‚
 	const UHttpManagerSettings* Config = GetDefault<UHttpManagerSettings>();
 	MaxParallel = Config->MaxParallel;
 	MaxTryCount = Config->MaxTryCount;

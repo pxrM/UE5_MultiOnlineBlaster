@@ -17,10 +17,10 @@
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSettings& Settings, const FClassicLayoutSettings& LayoutSettings)
 {
-	// SOverlayÊÇSlate¿âÖĞµÄÒ»¸öÈİÆ÷²¿¼ş£¬ÓÃÓÚ´´½¨Ò»¸ö¿ÉÒÔµş¼Ó×Ó×é¼şµÄÈİÆ÷¡£ËüÔÊĞíÔÚÍ¬Ò»¸öÇøÓòÄÚ·ÅÖÃ¶à¸ö×Ó×é¼ş£¬²¢°´ÕÕÌí¼ÓµÄË³Ğò½øĞĞµş¼ÓÏÔÊ¾¡£
-	// ÔÚSlateUI¿ò¼ÜÖĞ£¬+ ÔËËã·ûÓÃÓÚ½«²¿¼şÌí¼Óµ½ SOverlay ÈİÆ÷ÖĞ¡£ÕâÊÇÍ¨¹ıÊ¹ÓÃSOverlay::AddSlot()º¯ÊıÀ´ÊµÏÖµÄ¡£
-	// µ±Ê¹ÓÃ + ÔËËã·ûÊ±£¬×ó²Ù×÷ÊıÊÇÒ»¸öSOverlay¶ÔÏó£¬ÓÒ²Ù×÷ÊıÊÇÒªÌí¼Óµ½SOverlayÖĞµÄ²¿¼ş¡£
-	// Ê¹ÓÃ + ÔËËã·û¿ÉÒÔ·½±ãµØ½«¶à¸ö×Ó²¿¼şÌí¼Óµ½ SOverlay ÖĞ£¬²¢Ê¹ÓÃÁ´Ê½µ÷ÓÃ½øÒ»²½ÉèÖÃ²¼¾Ö²ÎÊıºÍÑùÊ½¡£
+	// SOverlayæ˜¯Slateåº“ä¸­çš„ä¸€ä¸ªå®¹å™¨éƒ¨ä»¶ï¼Œç”¨äºåˆ›å»ºä¸€ä¸ªå¯ä»¥å åŠ å­ç»„ä»¶çš„å®¹å™¨ã€‚å®ƒå…è®¸åœ¨åŒä¸€ä¸ªåŒºåŸŸå†…æ”¾ç½®å¤šä¸ªå­ç»„ä»¶ï¼Œå¹¶æŒ‰ç…§æ·»åŠ çš„é¡ºåºè¿›è¡Œå åŠ æ˜¾ç¤ºã€‚
+	// åœ¨SlateUIæ¡†æ¶ä¸­ï¼Œ+ è¿ç®—ç¬¦ç”¨äºå°†éƒ¨ä»¶æ·»åŠ åˆ° SOverlay å®¹å™¨ä¸­ã€‚è¿™æ˜¯é€šè¿‡ä½¿ç”¨SOverlay::AddSlot()å‡½æ•°æ¥å®ç°çš„ã€‚
+	// å½“ä½¿ç”¨ + è¿ç®—ç¬¦æ—¶ï¼Œå·¦æ“ä½œæ•°æ˜¯ä¸€ä¸ªSOverlayå¯¹è±¡ï¼Œå³æ“ä½œæ•°æ˜¯è¦æ·»åŠ åˆ°SOverlayä¸­çš„éƒ¨ä»¶ã€‚
+	// ä½¿ç”¨ + è¿ç®—ç¬¦å¯ä»¥æ–¹ä¾¿åœ°å°†å¤šä¸ªå­éƒ¨ä»¶æ·»åŠ åˆ° SOverlay ä¸­ï¼Œå¹¶ä½¿ç”¨é“¾å¼è°ƒç”¨è¿›ä¸€æ­¥è®¾ç½®å¸ƒå±€å‚æ•°å’Œæ ·å¼ã€‚
 	TSharedRef<SOverlay> Root = SNew(SOverlay)
 		+ SOverlay::Slot()
 		.HAlign(HAlign_Fill)
@@ -29,9 +29,9 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 			SNew(SBackgroundWidget, Settings.Background)
 		];
 
-	// Ê¹ÓÃÁËSNullWidget::NullWidget¾²Ì¬º¯Êı´´½¨Ò»¸ö¿ÕµÄSWidget£¬²¢½«Æä×ª»»ÎªTSharedRefµÄĞÎÊ½¡£
-	// ÕâÖÖĞ´·¨³£ÓÃÓÚÔÚ³ÌĞòÖĞÔİÊ±²»ĞèÒªÊ¹ÓÃ¼ÓÔØÆÁÄ»µÈUI×é¼şÊ±µÄÕ¼Î»·û£¬ÒÔ±ãÔÚĞèÒªÊ±·½±ãµØ½øĞĞÌæ»»¡£
-	// ¿ÉÒÔ¸ù¾İÊµ¼ÊĞèÒª£¬½«"SNullWidget::NullWidget"Ìæ»»ÎªÆäËûµÄSWidget¶ÔÏó»ò×Ô¶¨ÒåµÄUI×é¼ş¡£
+	// ä½¿ç”¨äº†SNullWidget::NullWidgeté™æ€å‡½æ•°åˆ›å»ºä¸€ä¸ªç©ºçš„SWidgetï¼Œå¹¶å°†å…¶è½¬æ¢ä¸ºTSharedRefçš„å½¢å¼ã€‚
+	// è¿™ç§å†™æ³•å¸¸ç”¨äºåœ¨ç¨‹åºä¸­æš‚æ—¶ä¸éœ€è¦ä½¿ç”¨åŠ è½½å±å¹•ç­‰UIç»„ä»¶æ—¶çš„å ä½ç¬¦ï¼Œä»¥ä¾¿åœ¨éœ€è¦æ—¶æ–¹ä¾¿åœ°è¿›è¡Œæ›¿æ¢ã€‚
+	// å¯ä»¥æ ¹æ®å®é™…éœ€è¦ï¼Œå°†"SNullWidget::NullWidget"æ›¿æ¢ä¸ºå…¶ä»–çš„SWidgetå¯¹è±¡æˆ–è‡ªå®šä¹‰çš„UIç»„ä»¶ã€‚
 	TSharedRef<SWidget> LoadingWidget = SNullWidget::NullWidget;
 	if (Settings.LoadingWidget.LoadingWidgetType == ELoadingWidgetType::LWT_Horizontal)
 	{
@@ -43,10 +43,10 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 	}
 
 	TSharedRef<SHorizontalBox> HorizontalBox = SNew(SHorizontalBox);
-	// Èç¹ûLoadingWidgetÔÚ×ó±ß Loading -> Space ->  Tip
+	// å¦‚æœLoadingWidgetåœ¨å·¦è¾¹ Loading -> Space ->  Tip
 	if (LayoutSettings.bIsLoadingWidgetAtLeft)
 	{
-		// Ê×ÏÈÔÚ×ó²àÌí¼ÓLoadingWidget
+		// é¦–å…ˆåœ¨å·¦ä¾§æ·»åŠ LoadingWidget
 		HorizontalBox.Get().AddSlot()
 			.VAlign(VAlign_Center)
 			.HAlign(HAlign_Center)
@@ -55,7 +55,7 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 				LoadingWidget
 			];
 
-		// Ìí¼ÓÒ»¶¨¿í¶ÈµÄ¼ä¸ô¿Ø¼ş
+		// æ·»åŠ ä¸€å®šå®½åº¦çš„é—´éš”æ§ä»¶
 		HorizontalBox.Get().AddSlot()
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
@@ -65,8 +65,8 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 					.Size(FVector2D(LayoutSettings.Space, 0.0f))
 			];
 
-		// ÔÚÓÒ±ßÌí¼Ótip
-		// ±íÊ¾Ìí¼ÓµÄ²å²ÛµÄ¿í¶È½«Ìî³äËùÓĞ¿ÉÓÃ¿Õ¼ä£¬Ê¹STipWidget ¿Ø¼ş¿ÉÒÔË®Æ½×ÔÊÊÓ¦µØÀ­Éì»òÊÕËõÒÔÊÊÓ¦Ë®Æ½ºĞ×ÓµÄ´óĞ¡±ä»¯¡£
+		// åœ¨å³è¾¹æ·»åŠ tip
+		// è¡¨ç¤ºæ·»åŠ çš„æ’æ§½çš„å®½åº¦å°†å¡«å……æ‰€æœ‰å¯ç”¨ç©ºé—´ï¼Œä½¿STipWidget æ§ä»¶å¯ä»¥æ°´å¹³è‡ªé€‚åº”åœ°æ‹‰ä¼¸æˆ–æ”¶ç¼©ä»¥é€‚åº”æ°´å¹³ç›’å­çš„å¤§å°å˜åŒ–ã€‚
 		HorizontalBox.Get().AddSlot()
 			.FillWidth(1.0f)
 			.HAlign(LayoutSettings.TipAlignment.HorizontalAlignment)
@@ -103,7 +103,7 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 			];
 	}
 
-	// ÉèÖÃwidgetÎª´¹Ö±¶ÔÆë
+	// è®¾ç½®widgetä¸ºå‚ç›´å¯¹é½
 	EVerticalAlignment VerticalAlignment;
 	if (LayoutSettings.bIsWidgetAtBottom)
 	{
@@ -118,27 +118,27 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 		.HAlign(LayoutSettings.BorderHorizontalAlignment)
 		.VAlign(VerticalAlignment)
 		[
-			// SBorder¿Ø¼ş£¬ÓÃÓÚ´´½¨°üº¬±ß¿òµÄ¾ØĞÎÇøÓò¡£Ëü¿ÉÒÔÓÃÓÚ°ü¹üÆäËû¿Ø¼ş£¬²¢ÎªËüÃÇÌá¹©±ß¿òÑùÊ½ºÍ±³¾°ÑùÊ½¡£
-			// .BorderImage() ½ÓÊÜÒ»¸öÍ¼Æ¬×ÊÔ´»òÎÆÀí×÷Îª²ÎÊı£¬²¢ÔÚ¿Ø¼şÖÜÎ§ÏÔÊ¾¸ÃÍ¼Ïñ×÷Îª±ß¿ò
-			// .BorderBackgroundColor±íÊ¾SBorder¿Ø¼şµÄ±ß¿ò±³¾°ÑÕÉ«ÊÇ°×É«
+			// SBorderæ§ä»¶ï¼Œç”¨äºåˆ›å»ºåŒ…å«è¾¹æ¡†çš„çŸ©å½¢åŒºåŸŸã€‚å®ƒå¯ä»¥ç”¨äºåŒ…è£¹å…¶ä»–æ§ä»¶ï¼Œå¹¶ä¸ºå®ƒä»¬æä¾›è¾¹æ¡†æ ·å¼å’ŒèƒŒæ™¯æ ·å¼ã€‚
+			// .BorderImage() æ¥å—ä¸€ä¸ªå›¾ç‰‡èµ„æºæˆ–çº¹ç†ä½œä¸ºå‚æ•°ï¼Œå¹¶åœ¨æ§ä»¶å‘¨å›´æ˜¾ç¤ºè¯¥å›¾åƒä½œä¸ºè¾¹æ¡†
+			// .BorderBackgroundColorè¡¨ç¤ºSBorderæ§ä»¶çš„è¾¹æ¡†èƒŒæ™¯é¢œè‰²æ˜¯ç™½è‰²
 			SNew(SBorder)
 				.HAlign(HAlign_Fill)
 				.VAlign(VAlign_Fill)
 				.BorderImage(&LayoutSettings.BorderBackground)
 				.BorderBackgroundColor(FLinearColor::White)
 				[
-					// ÓÃÓÚÈ·±£×Ó×é¼şÔÚÆÁÄ»µÄ°²È«ÇøÓòÄÚ½øĞĞ²¼¾Ö¡£ÔÚ²»Í¬µÄÉè±¸ºÍ·Ö±æÂÊÏÂ£¬ÆÁÄ»ÉÏ¿ÉÄÜ´æÔÚÒ»Ğ©³ÆÎª"²»°²È«ÇøÓò"µÄÇøÓò£¬
-					// ÀıÈçÆÁÄ»±ßÔµ¿ÉÄÜ»á±»ÕÚµ²»òÏÔÊ¾²»ÍêÕû¡£SSafeZone¿ÉÒÔ°ïÖú¿ª·¢ÈËÔ±ÔÚÉè¼Æ UI Ê±¿¼ÂÇµ½ÕâĞ©²»°²È«ÇøÓò£¬²¢½«ÄÚÈİÏŞÖÆÔÚ°²È«ÇøÓòÄÚ¡£
-					// .IsTitleSafe(true) ±íÊ¾Ê¹ÓÃ±ê×¼µÄ¡°±êÌâ°²È«ÇøÓò¡±£¬È·±£ÄÚÈİ²»»á±»²Ã¼ô»òÕÚµ²¡£
+					// ç”¨äºç¡®ä¿å­ç»„ä»¶åœ¨å±å¹•çš„å®‰å…¨åŒºåŸŸå†…è¿›è¡Œå¸ƒå±€ã€‚åœ¨ä¸åŒçš„è®¾å¤‡å’Œåˆ†è¾¨ç‡ä¸‹ï¼Œå±å¹•ä¸Šå¯èƒ½å­˜åœ¨ä¸€äº›ç§°ä¸º"ä¸å®‰å…¨åŒºåŸŸ"çš„åŒºåŸŸï¼Œ
+					// ä¾‹å¦‚å±å¹•è¾¹ç¼˜å¯èƒ½ä¼šè¢«é®æŒ¡æˆ–æ˜¾ç¤ºä¸å®Œæ•´ã€‚SSafeZoneå¯ä»¥å¸®åŠ©å¼€å‘äººå‘˜åœ¨è®¾è®¡ UI æ—¶è€ƒè™‘åˆ°è¿™äº›ä¸å®‰å…¨åŒºåŸŸï¼Œå¹¶å°†å†…å®¹é™åˆ¶åœ¨å®‰å…¨åŒºåŸŸå†…ã€‚
+					// .IsTitleSafe(true) è¡¨ç¤ºä½¿ç”¨æ ‡å‡†çš„â€œæ ‡é¢˜å®‰å…¨åŒºåŸŸâ€ï¼Œç¡®ä¿å†…å®¹ä¸ä¼šè¢«è£å‰ªæˆ–é®æŒ¡ã€‚
 					SNew(SSafeZone)
 						.HAlign(HAlign_Fill)
 						.VAlign(VAlign_Fill)
 						.IsTitleSafe(true)
 						.Padding(LayoutSettings.BorderPadding)
 						[
-							// ÓÃÓÚ¸ù¾İÉè±¸µÄ DPI Ëõ·Å±ÈÀıÀ´Ëõ·ÅÆä×Ó×é¼ş¡£
-							// DPI£¨Ã¿Ó¢´çµãÊı£©ÊÇÖ¸ÆÁÄ»ÉÏÃ¿Ó¢´çÏÔÊ¾µÄÏñËØÊıÁ¿£¬²»Í¬µÄÉè±¸¾ßÓĞ²»Í¬µÄ DPI Öµ
-							// SDPIScaler ¿Ø¼ş½ÓÊÜÒ»¸ö×Ó¿Ø¼ş£¬²¢½«¸Ã×Ó¿Ø¼şµÄ´óĞ¡³ËÒÔµ±Ç°Éè±¸µÄÏñËØÃÜ¶ÈÒò×Ó£¬´Ó¶øÊµÏÖ×Ô¶¯Ëõ·Å¡£
+							// ç”¨äºæ ¹æ®è®¾å¤‡çš„ DPI ç¼©æ”¾æ¯”ä¾‹æ¥ç¼©æ”¾å…¶å­ç»„ä»¶ã€‚
+							// DPIï¼ˆæ¯è‹±å¯¸ç‚¹æ•°ï¼‰æ˜¯æŒ‡å±å¹•ä¸Šæ¯è‹±å¯¸æ˜¾ç¤ºçš„åƒç´ æ•°é‡ï¼Œä¸åŒçš„è®¾å¤‡å…·æœ‰ä¸åŒçš„ DPI å€¼
+							// SDPIScaler æ§ä»¶æ¥å—ä¸€ä¸ªå­æ§ä»¶ï¼Œå¹¶å°†è¯¥å­æ§ä»¶çš„å¤§å°ä¹˜ä»¥å½“å‰è®¾å¤‡çš„åƒç´ å¯†åº¦å› å­ï¼Œä»è€Œå®ç°è‡ªåŠ¨ç¼©æ”¾ã€‚
 							SNew(SDPIScaler)
 								.DPIScale(this, &SClassicLayout::GetDPIScale)
 								[
@@ -148,7 +148,7 @@ void SClassicLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 				]
 		];
 
-	// Èç¹ûÆôÓÃ£¬¹¹½¨¼ÓÔØÍêÕûÎÄ±¾
+	// å¦‚æœå¯ç”¨ï¼Œæ„å»ºåŠ è½½å®Œæ•´æ–‡æœ¬
 	if (Settings.bShowLoadingCompleteText)
 	{
 		Root->AddSlot()

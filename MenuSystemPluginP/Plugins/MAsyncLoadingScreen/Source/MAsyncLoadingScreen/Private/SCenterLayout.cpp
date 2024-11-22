@@ -35,7 +35,7 @@ void SCenterLayout::Construct(const FArguments& InArgs, const FALoadingScreenSet
 		LoadingWidget = SNew(SVerticalLoadingWidget, Settings.LoadingWidget);
 	}
 
-	// 在中心添加加载小部件
+	// 鍦ㄤ腑蹇冩坊鍔犲姞杞藉皬閮ㄤ欢
 	Root->AddSlot()
 		.HAlign(HAlign_Center)
 		.VAlign(VAlign_Center)
