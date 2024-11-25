@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AuraGameplayTags.h"
 #include "GameplayTagContainer.h"
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "SpellMenuWidgetController.generated.h"
@@ -11,6 +12,13 @@
 struct FGameplayTag;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSpellGlobeSelectedSignature, bool, bSpellPointBtnEnable, bool, bEquipBtnEnable);
+
+// 本地缓存选中的技能
+struct FSelectedAbility
+{
+	FGameplayTag AbilityTag = FGameplayTag();
+	FGameplayTag StatusTag = FGameplayTag();
+};
 
 /**
  * 
@@ -36,4 +44,8 @@ public:
 	FOnPlayerStatChangedSignature SpellPointChangedSignature;
 	UPROPERTY(BlueprintAssignable)
 	FSpellGlobeSelectedSignature SpellGlobeSelectedSignature;
+
+private:
+	FSelectedAbility SelectedAbility = {FAuraGameplayTags::Get().Abilities_Type_None, FAuraGameplayTags::Get().Abilities_Status_Locked};
+	int32 CurrentSpellPoints = 0;
 };
