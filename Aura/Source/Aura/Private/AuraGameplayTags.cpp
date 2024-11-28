@@ -10,7 +10,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 {
 	UGameplayTagsManager& TagsManager = UGameplayTagsManager::Get();
 	/*
-	 * Primary Tag
+	 * Primary Tag  
 	 */
 	GameplayTags.Attributes_Primary_Strength = TagsManager.AddNativeGameplayTag(
 		FName("Attributes.Primary.Strength"),
@@ -27,6 +27,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Attributes_Primary_Vigor = TagsManager.AddNativeGameplayTag(
 		FName("Attributes.Primary.Vigor"),
 		FString("Increases Health")
+
+
+
+		
 	);
 	/*
 	 * Secondary Tag

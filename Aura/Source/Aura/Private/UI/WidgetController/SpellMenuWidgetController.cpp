@@ -21,10 +21,7 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 		if (SelectedAbility.AbilityTag.MatchesTagExact(AbilityTag))
 		{
 			SelectedAbility.StatusTag = StatusTag;
-			bool bEnableSpendPoint = false;
-			bool bEnableEquip = false;
-			ShouldEnableButtons(StatusTag, CurrentSpellPoints, bEnableSpendPoint, bEnableEquip);
-			SpellGlobeSelectedSignature.Broadcast(bEnableSpendPoint, bEnableEquip);
+			BroadSelectedSpellGlobeData();
 		}
 		FAuraAbilityInfo Info = AbilityDataTable->FindAbilityInfoForTag(AbilityTag);
 		Info.StatusTag = StatusTag;
@@ -36,10 +33,7 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 		SpellPointChangedSignature.Broadcast(SpellPoints);
 		
 		CurrentSpellPoints = SpellPoints;
-		bool bEnableSpendPoint = false;
-		bool bEnableEquip = false;
-		ShouldEnableButtons(SelectedAbility.StatusTag, CurrentSpellPoints, bEnableSpendPoint, bEnableEquip);
-		SpellGlobeSelectedSignature.Broadcast(bEnableSpendPoint, bEnableEquip);
+		BroadSelectedSpellGlobeData();
 	});
 }
 
@@ -47,11 +41,11 @@ void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityT
 {
 	FGameplayTag AbilityStatus;
 	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
-	const int32 SpellPoints = GetAuraPS()->GetSpellPoints();
-
+	CurrentSpellPoints = GetAuraPS()->GetSpellPoints();
+     
 	const bool bTagValid = AbilityTag.IsValid();
 	const bool bTagNone = AbilityTag.MatchesTag(GameplayTags.Abilities_None);
-	const FGameplayAbilitySpec* AbilitySpec = GetAuraASC()->GetSpecFromAbilitySpec(AbilityTag);
+	const FGameplayAbilitySpec* AbilitySpec = GetAuraASC()->GetSpecFromAbilityTag(AbilityTag);
 	const bool bSpecValid = AbilitySpec != nullptr;
 	if(!bTagValid || bTagNone || !bSpecValid)
 	{
@@ -64,10 +58,7 @@ void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityT
 
 	SelectedAbility.AbilityTag = AbilityTag;
 	SelectedAbility.StatusTag = AbilityStatus;
-	bool bEnableSpendPoint = false;
-	bool bEnableEquip = false;
-	ShouldEnableButtons(AbilityStatus, SpellPoints, bEnableSpendPoint, bEnableEquip);
-	SpellGlobeSelectedSignature.Broadcast(bEnableSpendPoint, bEnableEquip);
+	BroadSelectedSpellGlobeData();
 }
 
 void USpellMenuWidgetController::SpendPointBtnPressed()
@@ -104,4 +95,17 @@ void USpellMenuWidgetController::ShouldEnableButtons(const FGameplayTag& Ability
 		bShouldEnableSpellPointsBtn = false;
 		bShouldEnableEquipBtn = false;
 	}
+}
+
+void USpellMenuWidgetController::BroadSelectedSpellGlobeData()
+{
+	bool bEnableSpendPoint = false;
+	bool bEnableEquip = false;
+	ShouldEnableButtons(SelectedAbility.AbilityTag, CurrentSpellPoints, bEnableSpendPoint, bEnableEquip);
+	
+	FString Description;
+	FString NextLevelDescription;
+	GetAuraASC()->GetDescriptionsByAbilityTag(SelectedAbility.AbilityTag, Description, NextLevelDescription);
+	
+	SpellGlobeSelectedSignature.Broadcast(bEnableSpendPoint, bEnableEquip, Description, NextLevelDescription);
 }

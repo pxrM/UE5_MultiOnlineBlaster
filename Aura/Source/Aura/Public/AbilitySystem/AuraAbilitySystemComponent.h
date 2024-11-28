@@ -71,13 +71,16 @@ public:
 	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
 
 	// 通过标签获取角色身上的技能实例
-	FGameplayAbilitySpec* GetSpecFromAbilitySpec(const FGameplayTag& AbilityTag);
+	FGameplayAbilitySpec* GetSpecFromAbilityTag(const FGameplayTag& AbilityTag);
 	// 根据角色等级更新技能状态
 	void UpdateAbilityStatus(const int32 Level);
 
 	// 花费角色技能点（升级技能）
 	UFUNCTION(Server, Reliable)
 	void ServerSpendSpellPoint(const FGameplayTag& AbilityTag);
+
+	// 获取技能当前等级描述和下一等级描述 @return 技能是否解锁
+	bool GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag, FString& OutDescription, FString& OutNextLevelDescription);
 	
 
 protected:

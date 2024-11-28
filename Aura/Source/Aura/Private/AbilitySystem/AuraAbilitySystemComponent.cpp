@@ -156,7 +156,7 @@ void UAuraAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FG
 	}
 }
 
-FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecFromAbilitySpec(const FGameplayTag& AbilityTag)
+FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)
 {
 	// 获取所有激活技能实例，根据标签判断是否包含相同，防止多线程出现问题，使用域锁
 	FScopedAbilityListLock ActiveScopedLock(*this);
@@ -180,7 +180,7 @@ void UAuraAbilitySystemComponent::UpdateAbilityStatus(const int32 Level)
 	{
 		if(!Info.AbilityTag.IsValid()) continue;
 		if(Level < Info.LevelRequirement) continue;
-		if(GetSpecFromAbilitySpec(Info.AbilityTag) == nullptr)
+		if(GetSpecFromAbilityTag(Info.AbilityTag) == nullptr)
 		{
 			// 创建一个ga实例
 			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Info.Ability, 1);
@@ -194,7 +194,7 @@ void UAuraAbilitySystemComponent::UpdateAbilityStatus(const int32 Level)
 
 void UAuraAbilitySystemComponent::ServerSpendSpellPoint_Implementation(const FGameplayTag& AbilityTag)
 {
-	if(FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilitySpec(AbilityTag))
+	if(FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))
 	{
 		if(GetAvatarActor()->Implements<UPlayerInterface>())
 		{
@@ -260,6 +260,24 @@ FGameplayTag UAuraAbilitySystemComponent::GetAbilityStatusTagFromSpec(const FGam
 		}
 	}
 	return FGameplayTag();
+}
+
+bool UAuraAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag, FString& OutDescription,
+	FString& OutNextLevelDescription)
+{
+	if(const FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))
+	{
+		if(UAuraGameplayAbility* AuraAbility = Cast<UAuraGameplayAbility>(AbilitySpec->Ability))
+		{
+			OutDescription = AuraAbility->GetDescription(AbilitySpec->Level);
+			OutNextLevelDescription = AuraAbility->GetNextDescription(AbilitySpec->Level + 1);
+			return true;
+		}
+	}
+	const UAbilityInfoData* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
+	OutDescription = UAuraGameplayAbility::GetLockedDescription(AbilityInfo->FindAbilityInfoForTag(AbilityTag).LevelRequirement);
+	OutNextLevelDescription = FString();
+	return false;
 }
 
 void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()

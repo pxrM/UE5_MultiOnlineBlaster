@@ -11,7 +11,9 @@
 
 struct FGameplayTag;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSpellGlobeSelectedSignature, bool, bSpellPointBtnEnable, bool, bEquipBtnEnable);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FSpellGlobeSelectedSignature,
+                                              bool, bSpellPointBtnEnable, bool, bEquipBtnEnable,
+                                              FString, Description, FString, NextLevelDescription);
 
 // 本地缓存选中的技能
 struct FSelectedAbility
@@ -41,6 +43,7 @@ public:
 private:
 	// 通过技能状态标签和可分配技能点数来判断该技能是否可以装配和是否可以升级
 	static void ShouldEnableButtons(const FGameplayTag& AbilityStatus, int32 SpellPoints, bool& bShouldEnableSpellPointsBtn, bool& bShouldEnableEquipBtn);
+	void BroadSelectedSpellGlobeData();
 
 public:
 	UPROPERTY(BlueprintAssignable)
