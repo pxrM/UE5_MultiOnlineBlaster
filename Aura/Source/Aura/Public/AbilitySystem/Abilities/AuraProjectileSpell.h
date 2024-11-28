@@ -16,6 +16,10 @@ class AURA_API UAuraProjectileSpell : public UAuraDamageGameplayAbility
 {
 	GENERATED_BODY()
 
+public:
+	virtual FString GetDescription(int32 Level) override;
+	virtual FString GetNextDescription(int32 Level) override;
+
 protected:
 	/*
 	 * 激活游戏能力（Gameplay Ability）
@@ -37,4 +41,7 @@ protected:
 	// 子弹类
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AAuraProjectileActor> ProjectileClass;
+	// 子弹数
+	UPROPERTY(EditDefaultsOnly)
+	int32 NumProjectiles = 5;
 };
