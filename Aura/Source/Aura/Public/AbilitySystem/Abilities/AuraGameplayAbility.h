@@ -24,4 +24,10 @@ public:
 	// 启动输入能力的tag
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	FGameplayTag StartupInputTag;
+
+protected:
+	// 获取技能蓝量消耗
+	float GetManaCost(float InLevel = 1.f) const;
+	// 获取技能冷却时间
+	float GetCooldown(float InLevel = 1.f) const;
 };

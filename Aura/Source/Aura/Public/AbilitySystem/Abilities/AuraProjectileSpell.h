@@ -9,16 +9,12 @@
 class AAuraProjectileActor;
 
 /**
- * 火球咒语技能
+ * 射弹技能
  */
 UCLASS()
 class AURA_API UAuraProjectileSpell : public UAuraDamageGameplayAbility
 {
 	GENERATED_BODY()
-
-public:
-	virtual FString GetDescription(int32 Level) override;
-	virtual FString GetNextDescription(int32 Level) override;
 
 protected:
 	/*

@@ -31,3 +31,9 @@ FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const
 	}
 	return FTaggedMontage();
 }
+
+float UAuraDamageGameplayAbility::GetDamageByDamageType(float InLevel, const FGameplayTag& DamageType)
+{
+	checkf(DamageTypes.Contains(DamageType), TEXT("技能 [%s] 没有包含 [%s] 类型的伤害"), *GetNameSafe(this), *DamageType.ToString());
+	return DamageTypes[DamageType].GetValueAtLevel(InLevel);
+}
