@@ -36,6 +36,9 @@ public:
 	// 技能按钮选中调用函数，处理升级按钮和装配
 	UFUNCTION(BlueprintCallable)
 	void SpellGlobeSelected(const FGameplayTag& AbilityTag);
+	// 技能按钮取消选中调用函数
+	UFUNCTION(BlueprintCallable)
+	void GlobeDeselect();
 	// 技能点花费按钮调用（技能升级）
 	UFUNCTION(BlueprintCallable)
 	void SpendPointBtnPressed();

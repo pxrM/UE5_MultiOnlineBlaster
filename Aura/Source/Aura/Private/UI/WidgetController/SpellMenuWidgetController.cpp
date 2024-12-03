@@ -61,6 +61,13 @@ void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityT
 	BroadSelectedSpellGlobeData();
 }
 
+void USpellMenuWidgetController::GlobeDeselect()
+{
+	SelectedAbility.AbilityTag = FAuraGameplayTags::Get().Abilities_None;
+	SelectedAbility.StatusTag = FAuraGameplayTags::Get().Abilities_Status_Locked;
+	SpellGlobeSelectedSignature.Broadcast(false, false, FString(), FString());
+}
+
 void USpellMenuWidgetController::SpendPointBtnPressed()
 {
 	if(GetAuraASC())
