@@ -39,6 +39,13 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 
 void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityTag)
 {
+	if(bWaitingForEquipSelection)
+	{
+		const FGameplayTag AbilityType = AbilityDataTable->FindAbilityInfoForTag(AbilityTag).AbilityTypeTag;
+		StopWaitingForEquipSignature.Broadcast(AbilityType);
+		bWaitingForEquipSelection = false;
+	}
+	
 	FGameplayTag AbilityStatus;
 	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
 	CurrentSpellPoints = GetAuraPS()->GetSpellPoints();
@@ -63,6 +70,13 @@ void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityT
 
 void USpellMenuWidgetController::GlobeDeselect()
 {
+	if(bWaitingForEquipSelection)
+	{
+		const FGameplayTag AbilityType = AbilityDataTable->FindAbilityInfoForTag(SelectedAbility.AbilityTag).AbilityTypeTag;
+		StopWaitingForEquipSignature.Broadcast(AbilityType);
+		bWaitingForEquipSelection = true;
+	}
+	
 	SelectedAbility.AbilityTag = FAuraGameplayTags::Get().Abilities_None;
 	SelectedAbility.StatusTag = FAuraGameplayTags::Get().Abilities_Status_Locked;
 	SpellGlobeSelectedSignature.Broadcast(false, false, FString(), FString());
@@ -74,6 +88,13 @@ void USpellMenuWidgetController::SpendPointBtnPressed()
 	{
 		GetAuraASC()->ServerSpendSpellPoint(SelectedAbility.AbilityTag);
 	}
+}
+
+void USpellMenuWidgetController::EquipBtnPressed()
+{
+	const FGameplayTag AbilityType = AbilityDataTable->FindAbilityInfoForTag(SelectedAbility.AbilityTag).AbilityTypeTag;
+	WaitForEquipSelectionSignature.Broadcast(AbilityType);
+	bWaitingForEquipSelection = true;
 }
 
 void USpellMenuWidgetController::ShouldEnableButtons(const FGameplayTag& AbilityStatus, int32 SpellPoints,
@@ -108,7 +129,7 @@ void USpellMenuWidgetController::BroadSelectedSpellGlobeData()
 {
 	bool bEnableSpendPoint = false;
 	bool bEnableEquip = false;
-	ShouldEnableButtons(SelectedAbility.AbilityTag, CurrentSpellPoints, bEnableSpendPoint, bEnableEquip);
+	ShouldEnableButtons(SelectedAbility.StatusTag, CurrentSpellPoints, bEnableSpendPoint, bEnableEquip);
 	
 	FString Description;
 	FString NextLevelDescription;

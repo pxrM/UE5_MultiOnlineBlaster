@@ -14,6 +14,7 @@ struct FGameplayTag;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FSpellGlobeSelectedSignature,
                                               bool, bSpellPointBtnEnable, bool, bEquipBtnEnable,
                                               FString, Description, FString, NextLevelDescription);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWaitForEquipSelectionSignature, const FGameplayTag&, AbilityType);
 
 // 本地缓存选中的技能
 struct FSelectedAbility
@@ -42,6 +43,9 @@ public:
 	// 技能点花费按钮调用（技能升级）
 	UFUNCTION(BlueprintCallable)
 	void SpendPointBtnPressed();
+	// 技能装备按钮调用
+	UFUNCTION(BlueprintCallable)
+	void EquipBtnPressed();
 
 private:
 	// 通过技能状态标签和可分配技能点数来判断该技能是否可以装配和是否可以升级
@@ -53,8 +57,13 @@ public:
 	FOnPlayerStatChangedSignature SpellPointChangedSignature;
 	UPROPERTY(BlueprintAssignable)
 	FSpellGlobeSelectedSignature SpellGlobeSelectedSignature;
+	UPROPERTY(BlueprintAssignable)
+	FWaitForEquipSelectionSignature WaitForEquipSelectionSignature;
+	UPROPERTY(BlueprintAssignable)
+	FWaitForEquipSelectionSignature StopWaitingForEquipSignature;
 
 private:
 	FSelectedAbility SelectedAbility = {FAuraGameplayTags::Get().Abilities_Type_None, FAuraGameplayTags::Get().Abilities_Status_Locked};
 	int32 CurrentSpellPoints = 0;
+	bool bWaitingForEquipSelection = true;
 };
