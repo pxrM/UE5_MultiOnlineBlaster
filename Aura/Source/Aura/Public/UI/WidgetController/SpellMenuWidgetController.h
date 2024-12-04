@@ -46,6 +46,10 @@ public:
 	// 技能装备按钮调用
 	UFUNCTION(BlueprintCallable)
 	void EquipBtnPressed();
+	// 技能装备槽按钮调用
+	UFUNCTION(BlueprintCallable)
+	void SpellRowGlobePressed(const FGameplayTag& SlotTag, const FGameplayTag& AbilityTypeTag);
+	void OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& Slot, const FGameplayTag& PreviousSlot);
 
 private:
 	// 通过技能状态标签和可分配技能点数来判断该技能是否可以装配和是否可以升级
@@ -66,4 +70,5 @@ private:
 	FSelectedAbility SelectedAbility = {FAuraGameplayTags::Get().Abilities_Type_None, FAuraGameplayTags::Get().Abilities_Status_Locked};
 	int32 CurrentSpellPoints = 0;
 	bool bWaitingForEquipSelection = true;
+	FGameplayTag SelectedSlot;
 };

@@ -221,6 +221,41 @@ void UAuraAbilitySystemComponent::ServerSpendSpellPoint_Implementation(const FGa
 	}
 }
 
+void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGameplayTag& AbilityTag,
+	const FGameplayTag& Slot)
+{
+	if(FGameplayAbilitySpec* Spec = GetSpecFromAbilityTag(AbilityTag))
+	{
+		const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
+		const FGameplayTag& PrevSlot = GetAbilityInputTagFromSpec(*Spec);
+		const FGameplayTag& Status = GetAbilityStatusTagFromSpec(*Spec);
+		
+		if(Status == GameplayTags.Abilities_Status_Equipped || Status == GameplayTags.Abilities_Status_Unlocked)
+		{
+			// 通过技能的输入标签清除掉插槽的技能
+			ClearAbilitiesOfSlot(Slot);
+			// 清除掉当前技能的输入标签
+			ClearSlot(Spec);
+			// 将目标插槽的输入标签添加到技能实例中
+			Spec->DynamicAbilityTags.AddTag(Slot);
+			
+			if(Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
+			{
+				Spec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Unlocked);
+				Spec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped);
+			}
+			MarkAbilitySpecDirty(*Spec);
+		}
+		ClientEquipAbility(AbilityTag, GameplayTags.Abilities_Status_Equipped, Slot, PrevSlot);
+	}
+}
+
+void UAuraAbilitySystemComponent::ClientEquipAbility_Implementation(const FGameplayTag& AbilityTag,
+	const FGameplayTag& Status, const FGameplayTag& Slot, const FGameplayTag& PreviousSlot)
+{
+	AbilityEquippedDelegate.Broadcast(AbilityTag, Status, Slot, PreviousSlot);
+}
+
 FGameplayTag UAuraAbilitySystemComponent::GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
 {
 	if(AbilitySpec.Ability)
@@ -262,8 +297,56 @@ FGameplayTag UAuraAbilitySystemComponent::GetAbilityStatusTagFromSpec(const FGam
 	return FGameplayTag();
 }
 
+FGameplayTag UAuraAbilitySystemComponent::GetAbilityStatusTagFromAbilityTag(const FGameplayTag& AbilityTag)
+{
+	if (const FGameplayAbilitySpec* Spec = GetSpecFromAbilityTag(AbilityTag))
+	{
+		return GetAbilityStatusTagFromSpec(*Spec);
+	}
+	return FGameplayTag();
+}
+
+FGameplayTag UAuraAbilitySystemComponent::GetAbilityInputTagFromAbilityTag(const FGameplayTag& AbilityTag)
+{
+	if (const FGameplayAbilitySpec* Spec = GetSpecFromAbilityTag(AbilityTag))
+	{
+		return GetAbilityInputTagFromSpec(*Spec);
+	}
+	return FGameplayTag();
+}
+
+void UAuraAbilitySystemComponent::ClearSlot(FGameplayAbilitySpec* Spec)
+{
+	const FGameplayTag Slot = GetAbilityInputTagFromSpec(*Spec);
+	Spec->DynamicAbilityTags.RemoveTag(Slot);
+	MarkAbilitySpecDirty(*Spec);
+}
+
+void UAuraAbilitySystemComponent::ClearAbilitiesOfSlot(const FGameplayTag& Slot)
+{
+	for(FGameplayAbilitySpec& Spec:GetActivatableAbilities())
+	{
+		if(AbilityHasSlot(&Spec, Slot))
+		{
+			ClearSlot(&Spec);
+		}
+	}
+}
+
+bool UAuraAbilitySystemComponent::AbilityHasSlot(FGameplayAbilitySpec* Spec, const FGameplayTag& Slot)
+{
+	for(FGameplayTag Tag : Spec->DynamicAbilityTags)
+	{
+		if(Tag.MatchesTagExact(Slot))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool UAuraAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag, FString& OutDescription,
-	FString& OutNextLevelDescription)
+                                                              FString& OutNextLevelDescription)
 {
 	if(const FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))
 	{
