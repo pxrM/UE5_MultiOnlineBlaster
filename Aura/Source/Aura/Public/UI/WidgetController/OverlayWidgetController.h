@@ -57,8 +57,10 @@ protected:
 	// 拾取属性后弹出的信息表
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
-	
+
 	void OnXPChanged(int32 NewXP);
+	void OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& Slot,
+	                       const FGameplayTag& PreviousSlot) const;
 
 public:
 	/* 属性改变委托 */
