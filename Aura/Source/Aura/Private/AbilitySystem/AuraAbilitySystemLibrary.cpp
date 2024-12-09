@@ -3,8 +3,10 @@
 
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AuraAbilityTypes.h"
+#include "AuraGameplayTags.h"
 #include "GameplayAbilitySpec.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
@@ -138,6 +140,36 @@ int32 UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(const UObject* Worl
 	const float XPReward = Info.XPReward.GetValueAtLevel(CharacterLevel);
 
 	return static_cast<int32>(XPReward);
+}
+
+FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams)
+{
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
+	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemCmp->GetAvatarActor();
+
+	// 创建ge上下文
+	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemCmp->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(SourceAvatarActor);
+
+	// 创建ge实例
+	const FGameplayEffectSpecHandle EffectSpecHandle = DamageEffectParams.SourceAbilitySystemCmp->MakeOutgoingSpec(
+		DamageEffectParams.DamageGameplayEffectClass, DamageEffectParams.AbilityLevel, EffectContextHandle);
+
+	// 设置SetbyCaller Magnitude，将float值与Tag一一对应，获取时指定Tag即可获取
+	for(auto& Pair : DamageEffectParams.DamageTypesValues)
+	{
+		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, Pair.Key, Pair.Value);
+	}
+	// 设置对应的debuff配置
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Chance, DamageEffectParams.DeBuffChance);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Damage, DamageEffectParams.DeBuffDamage);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Duration, DamageEffectParams.DeBuffDuration);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Frequency, DamageEffectParams.DeBuffFrequency);
+
+	// 将ge应用给目标
+	DamageEffectParams.TargetAbilitySystemCmp->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data);
+
+	return EffectContextHandle;
 }
 
 UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)

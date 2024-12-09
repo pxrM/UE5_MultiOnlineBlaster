@@ -32,6 +32,26 @@ FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const
 	return FTaggedMontage();
 }
 
+FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassDefault(AActor* TargetActor)
+{
+	FDamageEffectParams Params;
+	Params.WorldContextObject = GetAvatarActorFromActorInfo();
+	Params.DamageGameplayEffectClass = DamageEffectClass;
+	Params.SourceAbilitySystemCmp = GetAbilitySystemComponentFromActorInfo();
+	Params.TargetAbilitySystemCmp = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+	for(auto& Pair : DamageTypes)
+	{
+		const float Damage = Pair.Value.GetValueAtLevel(GetAbilityLevel());
+		Params.DamageTypesValues.Add(Pair.Key, Damage);
+	}
+	Params.AbilityLevel = GetAbilityLevel();
+	Params.DeBuffChance = DeBuffChance;
+	Params.DeBuffDamage = DeBuffDamage;
+	Params.DeBuffDuration = DeBuffDuration;
+	Params.DeBuffFrequency = DeBuffFrequency;
+	return Params;
+}
+
 float UAuraDamageGameplayAbility::GetDamageByDamageType(float InLevel, const FGameplayTag& DamageType)
 {
 	checkf(DamageTypes.Contains(DamageType), TEXT("技能 [%s] 没有包含 [%s] 类型的伤害"), *GetNameSafe(this), *DamageType.ToString());

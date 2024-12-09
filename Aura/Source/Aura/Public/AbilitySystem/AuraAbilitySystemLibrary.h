@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AuraAbilityTypes.h"
 #include "Data/CharacterClassInfo.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
@@ -96,4 +97,8 @@ public:
 
 	// 获取经验奖励配置
 	static int32 GetXPRewardForClassAndLevel(const UObject* WorldContextObject, ECharacterClassType CharacterClass, int32 CharacterLevel);
+	
+	// 应用伤害效果
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static FGameplayEffectContextHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams);
 };

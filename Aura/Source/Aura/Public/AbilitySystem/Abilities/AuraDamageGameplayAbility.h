@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AuraAbilityTypes.h"
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "AuraDamageGameplayAbility.generated.h"
 
@@ -23,6 +24,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;
+
+	FDamageEffectParams MakeDamageEffectParamsFromClassDefault(AActor* TargetActor = nullptr);
 
 protected:
 	float GetDamageByDamageType(float InLevel, const FGameplayTag& DamageType);

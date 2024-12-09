@@ -4,6 +4,53 @@
 #include "AuraAbilityTypes.generated.h"
 
 
+class UGameplayEffect;
+
+/*
+ * 给目标应用负面效果的参数结构
+ */
+USTRUCT(BlueprintType)
+struct FDamageEffectParams
+{
+	GENERATED_BODY()
+
+	FDamageEffectParams(){}
+
+	UPROPERTY()
+	TObjectPtr<UObject> WorldContextObject = nullptr; // 当前场景的上下文对象
+
+	UPROPERTY()
+	TSubclassOf<UGameplayEffect> DamageGameplayEffectClass = nullptr; // 需要应用的ge
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> SourceAbilitySystemCmp; // 源asc
+
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemCmp; // 目标asc
+
+	UPROPERTY()
+	TMap<FGameplayTag, float> DamageTypesValues; //技能造成的多种伤害类型的伤害
+
+	UPROPERTY()
+	float AbilityLevel = 1.f; // 技能等级
+
+	UPROPERTY()
+	float DeBuffChance = 0.f; // 减益效果触发概率
+
+	UPROPERTY()
+	float DeBuffDamage = 0.f; // 减益效果触发伤害
+
+	UPROPERTY()
+	float DeBuffDuration = 0.f; // 减益效果触发间隔时间
+
+	UPROPERTY()
+	float DeBuffFrequency = 0.f; // 减益效果触发持续时间
+};
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 USTRUCT(BlueprintType)
 struct FAuraGameplayEffectContext : public FGameplayEffectContext
 {
@@ -37,14 +84,12 @@ public:
 	// bool& bOutSuccess: 一个输出参数，用于指示序列化是否成功完成。
 	virtual bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess) override;
 
-	
 public:
 	bool GetIsCriticalHit() const { return bIsCriticalHit; }
 	bool GetIsBlockedHit() const { return bIsBlockedHit; }
 
 	void SetIsCriticalHit(const bool bInCriticalHit) { bIsCriticalHit = bInCriticalHit; }
 	void SetIsBlockedHit(const bool bInBlockedHit) { bIsBlockedHit = bInBlockedHit; }
-
 	
 protected:
 	// 是否成功格挡
