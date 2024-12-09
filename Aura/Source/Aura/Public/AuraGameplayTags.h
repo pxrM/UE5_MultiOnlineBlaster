@@ -33,12 +33,32 @@ public:
    FGameplayTag Attributes_Secondary_MaxMana;
    FGameplayTag Attributes_Secondary_MaxHealth;
 
+   FGameplayTag Attributes_Meta_IncomingXP;
+
    FGameplayTag Attributes_Resistance_Fire;
    FGameplayTag Attributes_Resistance_Lightning;
    FGameplayTag Attributes_Resistance_Arcane;
    FGameplayTag Attributes_Resistance_Physical;
 
-   FGameplayTag Attributes_Meta_IncomingXP;
+   FGameplayTag DeBuff_Arcane;
+   FGameplayTag DeBuff_Burn;
+   FGameplayTag DeBuff_Physical;
+   FGameplayTag DeBuff_Stun;
+   // 属性伤害标签对应属性减益标签
+   TMap<FGameplayTag, FGameplayTag> DamageTypesToDeBuff;
+
+   FGameplayTag DeBuff_Chance;
+   FGameplayTag DeBuff_Damage;
+   FGameplayTag DeBuff_Duration;
+   FGameplayTag DeBuff_Frequency;
+
+   FGameplayTag Damage;
+   FGameplayTag Damage_Fire;
+   FGameplayTag Damage_Lightning;
+   FGameplayTag Damage_Arcane;
+   FGameplayTag Damage_Physical;
+   // 属性伤害标签对应属性抵抗标签
+   TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
 
    FGameplayTag InputTag_LMB;
    FGameplayTag InputTag_RMB;
@@ -48,14 +68,6 @@ public:
    FGameplayTag InputTag_4;
    FGameplayTag InputTag_Passive_1;
    FGameplayTag InputTag_Passive_2;
-
-   FGameplayTag Damage;
-   FGameplayTag Damage_Fire;
-   FGameplayTag Damage_Lightning;
-   FGameplayTag Damage_Arcane;
-   FGameplayTag Damage_Physical;
-   // 属性伤害标签对应属性抵抗标签
-   TMap<FGameplayTag, FGameplayTag> DamageTypesToResistance;
 
    FGameplayTag Abilities_None;
 

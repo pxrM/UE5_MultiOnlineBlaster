@@ -35,4 +35,17 @@ protected:
 	// 在Map中设置多种伤害类型，并设置对应需造成的伤害值
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	TMap<FGameplayTag, FScalableFloat> DamageTypes;
+
+	// 触发减益效果概率
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float DeBuffChance = 20.f;
+	// 减益效果伤害
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float DeBuffDamage = 5.f;
+	// 减益伤害的触发时间间隔
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float DeBuffFrequency = 1.f;
+	// 减益效果的持续时间
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float DeBuffDuration = 5.f;
 };
