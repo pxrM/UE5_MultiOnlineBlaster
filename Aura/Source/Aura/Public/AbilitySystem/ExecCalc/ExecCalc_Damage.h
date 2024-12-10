@@ -39,6 +39,12 @@ public:
 private:
 	UFUNCTION()
 	void InitTagsToCaptureDefs();
+	// 判断是否要应用debuff
+	void DetermineDeBuff(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+	                     const FGameplayEffectSpec& Spec,
+	                     FAggregatorEvaluateParameters EvaluateParameters) const;
+
+private:
 	/* 存储标签和属性快照对应的Map */
 	TMap<FGameplayTag, FGameplayEffectAttributeCaptureDefinition> TagsToCaptureDefs;
 };

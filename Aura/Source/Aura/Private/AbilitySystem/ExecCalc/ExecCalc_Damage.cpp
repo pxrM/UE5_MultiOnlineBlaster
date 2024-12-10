@@ -11,7 +11,7 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Interaction/CombatInterface.h"
 
-// 创建一个结构用来保存所有需要捕获的属性
+// 创建一个结构用来保存所有需要捕获的属性(发起对象和目标对象)
 struct AuraDamageStatics
 {
 	/* 声明对目标或自己的属性获取 start */
@@ -80,8 +80,37 @@ void UExecCalc_Damage::InitTagsToCaptureDefs()
 	TagsToCaptureDefs.Add(AuraTags.Attributes_Resistance_Physical, DamageStatics().PhysicalResistanceDef);
 }
 
+void UExecCalc_Damage::DetermineDeBuff(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FGameplayEffectSpec& Spec, FAggregatorEvaluateParameters EvaluateParameters) const
+{
+	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
+	// 根据伤害类型是否赋值来判断是否要应用负面效果
+	for(TTuple<FGameplayTag, FGameplayTag> Pair : GameplayTags.DamageTypesToDeBuff)
+	{
+		const FGameplayTag& DeBuffDamageType = Pair.Key;
+		const FGameplayTag& DeBuffType = Pair.Value;
+		const float TypeDamage = Spec.GetSetByCallerMagnitude(DeBuffDamageType, false, -1);
+		//如果负面效果设置了伤害，即使为0，也需要应用负面效果
+		if(TypeDamage > 0.5f)
+		{
+			// 获取释放着身上的debff命中率
+			const float SourceDeBuffChance = Spec.GetSetByCallerMagnitude(GameplayTags.DeBuff_Chance, false, -1);
+			// 获取受击者身上的伤害抗性值
+			float TargetDeBuffResistance = 0.f;
+			const FGameplayTag& ResistanceTag = GameplayTags.DamageTypesToResistance[DeBuffDamageType];
+			ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(TagsToCaptureDefs[ResistanceTag], EvaluateParameters, TargetDeBuffResistance);
+			TargetDeBuffResistance = FMath::Max<float>(TargetDeBuffResistance, 0.f);
+			// 计算debuff应用概率
+			const float EffectiveDeBuffChance = SourceDeBuffChance * (100 - TargetDeBuffResistance) / 100.f;
+			// 计算是否命中
+			if(const bool bDeBuff = FMath::RandRange(1, 100) < EffectiveDeBuffChance)
+			{
+			}
+		}
+	}
+}
+
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
-	FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
+                                              FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 	const UAbilitySystemComponent* SourceASC = ExecutionParams.GetSourceAbilitySystemComponent();
 	const UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
@@ -114,6 +143,9 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluateParameters.SourceTags = SourceTags;
 	EvaluateParameters.TargetTags = TargetTags;
 
+	// debuff
+	DetermineDeBuff(ExecutionParams, Spec, EvaluateParameters);
+
 	// 1. 根据标签获取由 Caller Magnitude 设置的伤害 
 	float Damage = 0.f;
 	for (auto& Pair : FAuraGameplayTags::Get().DamageTypesToResistance)
@@ -125,8 +157,8 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		// 通过tag获取对应伤害值
 		float DamageTypeValue = Spec.GetSetByCallerMagnitude(DamageTypeTag, false); 
 		// 获取抗性值
-		const FGameplayEffectAttributeCaptureDefinition CaptureDef = TagsToCaptureDefs[ResistanceTag];
 		float Resistance = 0.f;
+		const FGameplayEffectAttributeCaptureDefinition CaptureDef = TagsToCaptureDefs[ResistanceTag];
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(CaptureDef, EvaluateParameters, Resistance);
 		Resistance = FMath::Clamp(Resistance, 0, 100.f);
 		/*
