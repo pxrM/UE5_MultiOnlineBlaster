@@ -49,34 +49,29 @@ void AAuraProjectileActor::Destroyed()
 	// 证明当前没有触发Overlap事件，在销毁前播放击中特效
 	if (!bHit && !HasAuthority())
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-		if (LoopingSoundCmp) LoopingSoundCmp->Stop();
-		bHit = true;
+		OnHit();
 	}
 	Super::Destroyed();
+}
+
+void AAuraProjectileActor::OnHit()
+{
+	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
+	if (LoopingSoundCmp) LoopingSoundCmp->Stop();
+	bHit = true;
 }
 
 void AAuraProjectileActor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                            const FHitResult& SweepResult)
 {
+	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemCmp->GetAvatarActor();
 	// 发射者和碰撞的对象
 	if (GetInstigator() == OtherActor) return;
+	if (!UAuraAbilitySystemLibrary::IsNotFriend(SourceAvatarActor, OtherActor)) return;
 
-	if (!DamageEffectSpecHandle.Data.IsValid() || !UAuraAbilitySystemLibrary::IsNotFriend(
-		DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser(), OtherActor))
-	{
-		return;
-	}
-
-	if (!bHit)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-		if (LoopingSoundCmp) LoopingSoundCmp->Stop();
-		bHit = true;
-	}
+	if (!bHit) OnHit();
 	
 	if (HasAuthority())
 	{
@@ -84,7 +79,8 @@ void AAuraProjectileActor::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
 		// 应用伤害
 		if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
 		{
-			TargetASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
+			DamageEffectParams.TargetAbilitySystemCmp = TargetASC;
+			UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		}
 		Destroy();
 	}

@@ -20,7 +20,7 @@ void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	UKismetSystemLibrary::PrintString(this, FString("ActivateAbility (C++)"), true, true, FLinearColor::Yellow, 3);
 }
 
-
+/*
 void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag,
                                            bool bOverridePitch, float OverridePitch)
 {
@@ -35,7 +35,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	 *	GetOwningActorFromActorInfo()：拥有此能力的 actor，通常也是这个能力的执行者
 	 *	Cast<APawn>(GetOwningActorFromActorInfo())：煽动者
 	 *	ESpawnActorCollisionHandlingMethod::AlwaysSpawn：确定生成 actor 时的碰撞处理方式，这里选择 AlwaysSpawn 表示无论是否碰撞都生成 actor
-	 */
+	 *
 	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetAvatarActorFromActorInfo()))
 	{
 		const FVector SocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(
@@ -82,6 +82,44 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 		}
 		
 		ProjectileActor->DamageEffectSpecHandle = SpecHandle;
+
+		ProjectileActor->FinishSpawning(SpawnTransform);
+	}
+}
+*/
+
+void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag,
+                                           bool bOverridePitch, float OverridePitch)
+{
+	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();
+	if (!bIsServer) return;
+	
+	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetAvatarActorFromActorInfo()))
+	{
+		const FVector SocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(
+			GetAvatarActorFromActorInfo(), SocketTag);
+		FRotator Rotator = (ProjectileTargetLocation - SocketLocation).Rotation();
+		// Rotator.Pitch = 0.f;
+		if (bOverridePitch)
+		{
+			Rotator.Pitch = OverridePitch;
+		}
+
+		FTransform SpawnTransform;
+		SpawnTransform.SetLocation(SocketLocation);
+		SpawnTransform.SetRotation(Rotator.Quaternion());
+
+		AActor* AbilityOwningActor = GetOwningActorFromActorInfo();
+		AAuraProjectileActor* ProjectileActor = GetWorld()->SpawnActorDeferred<AAuraProjectileActor>(
+			ProjectileClass,
+			SpawnTransform,
+			AbilityOwningActor,
+			Cast<APawn>(AbilityOwningActor),
+			ESpawnActorCollisionHandlingMethod::AlwaysSpawn
+		);
+
+		/* 不再创建发射物时创建GE，而是修改为生成一个配置结构体，供后续使用 */
+		ProjectileActor->DamageEffectParams = MakeDamageEffectParamsFromClassDefault();
 
 		ProjectileActor->FinishSpawning(SpawnTransform);
 	}
