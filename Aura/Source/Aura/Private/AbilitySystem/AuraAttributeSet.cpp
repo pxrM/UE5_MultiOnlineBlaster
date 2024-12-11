@@ -117,73 +117,93 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
 	{
-		const float LocalIncomingDamage = GetIncomingDamage();
-		SetIncomingDamage((0.f));
-		if (LocalIncomingDamage > 0.f)
-		{
-			const float NewHealth = GetHealth() - LocalIncomingDamage;
-			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
-
-			// 是否死亡 
-			if (const bool bFatal = NewHealth <= 0.f)
-			{
-				if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
-				{
-					CombatInterface->Die();
-				}
-				SendXPEvent(Props);
-			}
-			else
-			{
-				// 根据标签激活受击能力
-				FGameplayTagContainer TagContainer;
-				TagContainer.AddTag(FAuraGameplayTags::Get().Effect_HitReact);
-				Props.TargetAsc->TryActivateAbilitiesByTag(TagContainer);
-			}
-
-			const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
-			const bool bCritical = UAuraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red,
-			                                 FString::Printf(TEXT("LocalIncomingDamage: %f"), LocalIncomingDamage));
-			ShowFloatingText(Props, LocalIncomingDamage, bBlock, bCritical);
-		}
+		HandleIncomingDamage(Props);
 	}
 
 	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute())
 	{
-		const float LocalIncomingXP = GetIncomingXP();
-		SetIncomingXP(0);
-		// UE_LOG(LogAura, Log, TEXT("Incoming XP: %f"), LocalIncomingXP);
-		
-		if(Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())
-		{
-			// 1. 检查是否可以升级
-			const int32 CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);
-			const int32 CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);
-			const int32 NewLevel = IPlayerInterface::Execute_FindLevelForXP(Props.SourceCharacter, CurrentXP + LocalIncomingXP);
-			const int32 NumLevelUps = NewLevel - CurrentLevel;
-			if(NumLevelUps > 0)
-			{
-				/*
-				 * 升级
-				 */
-				const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointReward(Props.SourceCharacter, CurrentLevel);
-				const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointReward(Props.SourceCharacter, CurrentLevel);
+		HandleIncomingXP(Props);
+	}
+}
 
-				IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter, NumLevelUps);
-				IPlayerInterface::Execute_AddToAttributePoint(Props.SourceCharacter, AttributePointsReward);
-				IPlayerInterface::Execute_AddToSpellPoint(Props.SourceCharacter, SpellPointsReward);
-				
-				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
-				
-				// SetHealth(GetMaxHealth());
-				// SetMana(GetMaxMana());
-				bTopOffHealth = true;
-				bTopOffMana = true;
+void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
+{
+	const float LocalIncomingDamage = GetIncomingDamage();
+	SetIncomingDamage((0.f));
+	if (LocalIncomingDamage > 0.f)
+	{
+		const float NewHealth = GetHealth() - LocalIncomingDamage;
+		SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
+
+		// 是否死亡 
+		if (const bool bFatal = NewHealth <= 0.f)
+		{
+			if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
+			{
+				CombatInterface->Die();
 			}
-			// 2. 将经验应用给自身，通过事件传递，在玩家角色被动技能GA_ListenForEvents里接收
-			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
+			SendXPEvent(Props);
 		}
+		else
+		{
+			// 根据标签激活受击能力
+			FGameplayTagContainer TagContainer;
+			TagContainer.AddTag(FAuraGameplayTags::Get().Effect_HitReact);
+			Props.TargetAsc->TryActivateAbilitiesByTag(TagContainer);
+		}
+
+		const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
+		const bool bCritical = UAuraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red,
+										 FString::Printf(TEXT("LocalIncomingDamage: %f"), LocalIncomingDamage));
+		ShowFloatingText(Props, LocalIncomingDamage, bBlock, bCritical);
+
+		// 处理debuff
+		if(UAuraAbilitySystemLibrary::IsSuccessfulDeBuff(Props.EffectContextHandle))
+		{
+			HandleDeBuff(Props);
+		}
+	}
+}
+
+void UAuraAttributeSet::HandleDeBuff(const FEffectProperties& Props)
+{
+}
+
+void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
+{
+	const float LocalIncomingXP = GetIncomingXP();
+	SetIncomingXP(0);
+	// UE_LOG(LogAura, Log, TEXT("Incoming XP: %f"), LocalIncomingXP);
+		
+	if(Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())
+	{
+		// 1. 检查是否可以升级
+		const int32 CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);
+		const int32 CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);
+		const int32 NewLevel = IPlayerInterface::Execute_FindLevelForXP(Props.SourceCharacter, CurrentXP + LocalIncomingXP);
+		const int32 NumLevelUps = NewLevel - CurrentLevel;
+		if(NumLevelUps > 0)
+		{
+			/*
+			 * 升级
+			 */
+			const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointReward(Props.SourceCharacter, CurrentLevel);
+			const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointReward(Props.SourceCharacter, CurrentLevel);
+
+			IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter, NumLevelUps);
+			IPlayerInterface::Execute_AddToAttributePoint(Props.SourceCharacter, AttributePointsReward);
+			IPlayerInterface::Execute_AddToSpellPoint(Props.SourceCharacter, SpellPointsReward);
+				
+			IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);
+				
+			// SetHealth(GetMaxHealth());
+			// SetMana(GetMaxMana());
+			bTopOffHealth = true;
+			bTopOffMana = true;
+		}
+		// 2. 将经验应用给自身，通过事件传递，在玩家角色被动技能GA_ListenForEvents里接收
+		IPlayerInterface::Execute_AddToXP(Props.SourceCharacter, LocalIncomingXP);
 	}
 }
 

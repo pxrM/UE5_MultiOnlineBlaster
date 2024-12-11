@@ -80,35 +80,6 @@ void UExecCalc_Damage::InitTagsToCaptureDefs()
 	TagsToCaptureDefs.Add(AuraTags.Attributes_Resistance_Physical, DamageStatics().PhysicalResistanceDef);
 }
 
-void UExecCalc_Damage::DetermineDeBuff(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FGameplayEffectSpec& Spec, FAggregatorEvaluateParameters EvaluateParameters) const
-{
-	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
-	// 根据伤害类型是否赋值来判断是否要应用负面效果
-	for(TTuple<FGameplayTag, FGameplayTag> Pair : GameplayTags.DamageTypesToDeBuff)
-	{
-		const FGameplayTag& DeBuffDamageType = Pair.Key;
-		const FGameplayTag& DeBuffType = Pair.Value;
-		const float TypeDamage = Spec.GetSetByCallerMagnitude(DeBuffDamageType, false, -1);
-		//如果负面效果设置了伤害，即使为0，也需要应用负面效果
-		if(TypeDamage > 0.5f)
-		{
-			// 获取释放着身上的debff命中率
-			const float SourceDeBuffChance = Spec.GetSetByCallerMagnitude(GameplayTags.DeBuff_Chance, false, -1);
-			// 获取受击者身上的伤害抗性值
-			float TargetDeBuffResistance = 0.f;
-			const FGameplayTag& ResistanceTag = GameplayTags.DamageTypesToResistance[DeBuffDamageType];
-			ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(TagsToCaptureDefs[ResistanceTag], EvaluateParameters, TargetDeBuffResistance);
-			TargetDeBuffResistance = FMath::Max<float>(TargetDeBuffResistance, 0.f);
-			// 计算debuff应用概率
-			const float EffectiveDeBuffChance = SourceDeBuffChance * (100 - TargetDeBuffResistance) / 100.f;
-			// 计算是否命中
-			if(const bool bDeBuff = FMath::RandRange(1, 100) < EffectiveDeBuffChance)
-			{
-			}
-		}
-	}
-}
-
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
                                               FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
@@ -233,5 +204,45 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	// 将 EvaluatedData 添加到输出执行结果中
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);
 	*/ 
+}
+
+void UExecCalc_Damage::DetermineDeBuff(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FGameplayEffectSpec& Spec, FAggregatorEvaluateParameters EvaluateParameters) const
+{
+	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
+	// 根据伤害类型是否赋值来判断是否要应用负面效果
+	for(TTuple<FGameplayTag, FGameplayTag> Pair : GameplayTags.DamageTypesToDeBuff)
+	{
+		const FGameplayTag& DamageType = Pair.Key;
+		const FGameplayTag& DeBuffType = Pair.Value;
+		const float TypeDamage = Spec.GetSetByCallerMagnitude(DamageType, false, -1);
+		//如果负面效果设置了伤害，即使为0，也需要应用负面效果
+		if(TypeDamage > 0.5f)
+		{
+			// 获取释放着身上的debff命中率
+			const float SourceDeBuffChance = Spec.GetSetByCallerMagnitude(GameplayTags.DeBuff_Chance, false, -1);
+			// 获取受击者身上的伤害抗性值
+			float TargetDeBuffResistance = 0.f;
+			const FGameplayTag& ResistanceTag = GameplayTags.DamageTypesToResistance[DamageType];
+			ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(TagsToCaptureDefs[ResistanceTag], EvaluateParameters, TargetDeBuffResistance);
+			TargetDeBuffResistance = FMath::Max<float>(TargetDeBuffResistance, 0.f);
+			// 计算debuff应用概率
+			const float EffectiveDeBuffChance = SourceDeBuffChance * (100 - TargetDeBuffResistance) / 100.f;
+			// 计算是否命中
+			if(const bool bDeBuff = FMath::RandRange(1, 100) < EffectiveDeBuffChance)
+			{
+				FGameplayEffectContextHandle ContextHandle = Spec.GetContext();
+				
+				const float DeBuffDamage = Spec.GetSetByCallerMagnitude(GameplayTags.DeBuff_Damage, false, -1);
+				const float DeBuffDuration = Spec.GetSetByCallerMagnitude(GameplayTags.DeBuff_Duration, false, -1);
+				const float DeBuffFrequency = Spec.GetSetByCallerMagnitude(GameplayTags.DeBuff_Frequency, false, -1);
+
+				UAuraAbilitySystemLibrary::SetIsSuccessfulDeBuff(ContextHandle, bDeBuff);
+				UAuraAbilitySystemLibrary::SetDeBuffDamage(ContextHandle, DeBuffDamage);
+				UAuraAbilitySystemLibrary::SetDeBuffDuration(ContextHandle, DeBuffDuration);
+				UAuraAbilitySystemLibrary::SetDeBuffFrequency(ContextHandle, DeBuffFrequency);
+				UAuraAbilitySystemLibrary::SetDeBuffDamageType(ContextHandle, DeBuffType);
+			}
+		}
+	}
 }
 	

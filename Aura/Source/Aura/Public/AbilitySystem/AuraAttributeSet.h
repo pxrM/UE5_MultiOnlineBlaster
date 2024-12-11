@@ -103,6 +103,12 @@ private:
 	void ShowFloatingText(const FEffectProperties& Props, const float Damage, const bool bBlockedHit, const bool bCriticalHit) const;
 	// 发送获得经验事件，在玩家角色被动技能GA_ListenForEvents里接收
 	void SendXPEvent(const FEffectProperties& Props);
+	// 处理传入的参数为伤害属性时的逻辑
+	void HandleIncomingDamage(const FEffectProperties& Props);
+	// 处理传入的参数为经验属性的逻辑
+	void HandleIncomingXP(const FEffectProperties& Props);
+	// 处理伤害触发了负面效果的逻辑
+	void HandleDeBuff(const FEffectProperties& Props);
 
 	
 public:

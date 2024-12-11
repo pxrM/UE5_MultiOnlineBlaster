@@ -71,23 +71,23 @@ public:
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static bool IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle);
 
-	//获取当前GE是否成功应用负面效果
+	// 获取当前GE是否成功应用负面效果
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static bool IsSuccessfulDeBuff(const FGameplayEffectContextHandle& EffectContextHandle);
 
-	//获取当前GE负面效果伤害
+	// 获取当前GE负面效果伤害
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static float GetDeBuffDamage(const FGameplayEffectContextHandle& EffectContextHandle);
 
-	//获取当前GE负面效果持续时间
+	// 获取当前GE负面效果持续时间
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static float GetDeBuffDuration(const FGameplayEffectContextHandle& EffectContextHandle);
 
-	//获取当前GE负面效果触发间隔
+	// 获取当前GE负面效果触发间隔
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static float GetDeBuffFrequency(const FGameplayEffectContextHandle& EffectContextHandle);
 
-	//获取当前GE负面效果伤害类型
+	// 获取当前GE负面效果伤害类型
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static FGameplayTag GetDeBuffDamageType(const FGameplayEffectContextHandle& EffectContextHandle);
 
@@ -99,6 +99,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static void SetIsCriticalHit(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle,
 	                             const bool bInIsCriticalHit);
+	
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static void SetIsSuccessfulDeBuff(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const bool bInIsSuccessfulDeBuff);
+
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static void SetDeBuffDamage(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const float InDeBuffDamage);
+	
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static void SetDeBuffDuration(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const float InDeBuffDuration);
+	
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static void SetDeBuffFrequency(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const bool InDeBuffFrequency);
+	
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
+	static void SetDeBuffDamageType(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const FGameplayTag& InDeBuffDamageType);
 
 	//获取攻击位置指定半径内的所有动态Actor
 	// WorldContextObject: 世界上下文

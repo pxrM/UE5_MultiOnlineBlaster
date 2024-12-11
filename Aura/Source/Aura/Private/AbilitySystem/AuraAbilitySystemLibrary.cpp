@@ -258,9 +258,9 @@ FGameplayTag UAuraAbilitySystemLibrary::GetDeBuffDamageType(const FGameplayEffec
 	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
-		if (AuraEffectContext->GetDamageType().IsValid())
+		if (AuraEffectContext->GetDeBuffDamageType().IsValid())
 		{
-			return *AuraEffectContext->GetDamageType();
+			return *AuraEffectContext->GetDeBuffDamageType();
 		}
 	}
 	return FGameplayTag();
@@ -283,6 +283,56 @@ void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& E
 		Get()))
 	{
 		AuraEffectContext->SetIsCriticalHit(bInIsCriticalHit);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetIsSuccessfulDeBuff(FGameplayEffectContextHandle& EffectContextHandle,
+                                                      const bool bInIsSuccessfulDeBuff)
+{
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+		Get()))
+	{
+		AuraEffectContext->SetIsSuccessfulDeBuff(bInIsSuccessfulDeBuff);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDeBuffDamage(FGameplayEffectContextHandle& EffectContextHandle,
+	const float InDeBuffDamage)
+{
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+		Get()))
+	{
+		AuraEffectContext->SetDeBuffDamage(InDeBuffDamage);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDeBuffDuration(FGameplayEffectContextHandle& EffectContextHandle,
+                                                  const float InDeBuffDuration)
+{
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+		Get()))
+	{
+		AuraEffectContext->SetDeBuffDuration(InDeBuffDuration);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDeBuffFrequency(FGameplayEffectContextHandle& EffectContextHandle,
+                                                   const bool InDeBuffFrequency)
+{
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+		Get()))
+	{
+		AuraEffectContext->SetDeBuffFrequency(InDeBuffFrequency);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDeBuffDamageType(FGameplayEffectContextHandle& EffectContextHandle,
+                                                    const FGameplayTag& InDeBuffDamageType)
+{
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+		Get()))
+	{
+		AuraEffectContext->SetDeBuffDamageType(MakeShared<FGameplayTag>(InDeBuffDamageType));
 	}
 }
 

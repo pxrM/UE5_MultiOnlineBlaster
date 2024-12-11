@@ -66,7 +66,7 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			RepBits |= 1 << 12;
 		}
-		if(DamageType.IsValid())
+		if(DeBuffDamageType.IsValid())
 		{
 			RepBits |= 1 << 13;
 		}
@@ -151,12 +151,12 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	{
 		if(Ar.IsLoading())
 		{
-			if(!DamageType.IsValid())
+			if(!DeBuffDamageType.IsValid())
 			{
-				DamageType = TSharedPtr<FGameplayTag>(new FGameplayTag());
+				DeBuffDamageType = TSharedPtr<FGameplayTag>(new FGameplayTag());
 			}
 		}
-		DamageType->NetSerialize(Ar, Map, bOutSuccess);
+		DeBuffDamageType->NetSerialize(Ar, Map, bOutSuccess);
 	}
 	/* Add end */
 
