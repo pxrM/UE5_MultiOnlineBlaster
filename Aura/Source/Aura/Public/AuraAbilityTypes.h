@@ -87,9 +87,19 @@ public:
 public:
 	bool GetIsCriticalHit() const { return bIsCriticalHit; }
 	bool GetIsBlockedHit() const { return bIsBlockedHit; }
+	bool GetIsSuccessfulDeBuff() const { return bIsSuccessfulDeBuff; }
+	float GetDeBuffDamage() const { return DeBuffDamage; }
+	float GetDeBuffDuration() const { return DeBuffDuration; }
+	float GetDeBuffFrequency() const { return DeBuffFrequency; }
+	TSharedPtr<FGameplayTag> GetDamageType() const { return DamageType; }
 
 	void SetIsCriticalHit(const bool bInCriticalHit) { bIsCriticalHit = bInCriticalHit; }
 	void SetIsBlockedHit(const bool bInBlockedHit) { bIsBlockedHit = bInBlockedHit; }
+	void SetIsSuccessfulDeBuff(const bool bInSuccessfulDeBuff) { bIsSuccessfulDeBuff = bInSuccessfulDeBuff; }
+	void SetDeBuffDamage(const float InDeBuffDamage) { DeBuffDamage = InDeBuffDamage; }
+	void SetDeBuffDuration(const float InDeBuffDuration) { DeBuffDuration = InDeBuffDuration; }
+	void SetDeBuffFrequency(const float InDeBuffFrequency) { DeBuffFrequency = InDeBuffFrequency; }
+	void SetDamageType(const TSharedPtr<FGameplayTag>& InDamageType) { DamageType = InDamageType; }
 	
 protected:
 	// 是否成功格挡
@@ -99,6 +109,22 @@ protected:
 	// 是否暴击
 	UPROPERTY()
 	bool bIsCriticalHit = false;
+
+	// debuff是否成功应用
+	UPROPERTY()
+	bool bIsSuccessfulDeBuff = false;
+	// debuff伤害
+	UPROPERTY()
+	float DeBuffDamage = 0.f;
+	// debuff持续时间
+	UPROPERTY()
+	float DeBuffDuration = 0.f;
+	// debuff触发间隔时间
+	UPROPERTY()
+	float DeBuffFrequency = 0.f;
+
+	// 伤害类型
+	TSharedPtr<FGameplayTag> DamageType;
 };
 
 

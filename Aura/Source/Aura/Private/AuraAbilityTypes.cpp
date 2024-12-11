@@ -5,10 +5,12 @@
 bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
 {
 	int32 RepBits = 0;
-
-	// 如果当前是保存操作 
-	if(Ar.IsSaving())
+	
+	if(Ar.IsSaving()) // 判断当前是否在保存数据
 	{
+		/*
+		 * 保存数据时，如果有对应的配置项数据，那么将对应位的值设置为1
+		 */
 		if (bReplicateInstigator && Instigator.IsValid())
 		{
 			RepBits |= 1 << 0;
@@ -47,11 +49,36 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			RepBits |= 1 << 8;
 		}
+
+		if(bIsSuccessfulDeBuff)
+		{
+			RepBits |= 1 << 9;
+		}
+		if(DeBuffDamage > 0.f)
+		{
+			RepBits |= 1 << 10;
+		}
+		if(DeBuffDuration > 0.f)
+		{
+			RepBits |= 1 << 11;
+		}
+		if(DeBuffFrequency > 0.f)
+		{
+			RepBits |= 1 << 12;
+		}
+		if(DamageType.IsValid())
+		{
+			RepBits |= 1 << 13;
+		}
 		/* Add end */
 	}
 
-	Ar.SerializeBits(&RepBits, 9);
+	// 序列化RepBits
+	Ar.SerializeBits(&RepBits, 14);
 
+	/*
+	 * 如果对应位的值为1，则将数据存入Ar
+	 */
 	if (RepBits & (1 << 0))
 	{
 		Ar << Instigator;
@@ -103,9 +130,38 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	{
 		Ar << bIsCriticalHit;
 	}
+
+	if(RepBits & (1 << 9))
+	{
+		Ar << bIsSuccessfulDeBuff;
+	}
+	if(RepBits & (1 << 10))
+	{
+		Ar << DeBuffDamage;
+	}
+	if(RepBits & (1 << 11))
+	{
+		Ar << DeBuffDuration;
+	}
+	if(RepBits & (1 << 12))
+	{
+		Ar << DeBuffFrequency;
+	}
+	if(RepBits & (1 << 13))
+	{
+		if(Ar.IsLoading())
+		{
+			if(!DamageType.IsValid())
+			{
+				DamageType = TSharedPtr<FGameplayTag>(new FGameplayTag());
+			}
+		}
+		DamageType->NetSerialize(Ar, Map, bOutSuccess);
+	}
 	/* Add end */
 
-	// 如果当前是加载操作，表示正在从网络或存储设备中加载数据到内存中
+	
+	// 如果当前是加载操作（表示正在从网络或存储设备中加载数据到内存中）
 	if (Ar.IsLoading())
 	{
 		AddInstigator(Instigator.Get(), EffectCauser.Get()); // Just to initialize InstigatorAbilitySystemComponent

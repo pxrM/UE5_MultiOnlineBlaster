@@ -16,7 +16,7 @@
 #include "UI/WidgetController/OverlayWidgetController.h"
 
 bool UAuraAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldContextObject,
-	FWidgetControllerParams& OutWCParams, AAuraHUD*& OutAuraHUD)
+                                                           FWidgetControllerParams& OutWCParams, AAuraHUD*& OutAuraHUD)
 {
 	// widget仅适用于本地玩家，第0个玩家控制器被视为本地玩家控制器
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
@@ -28,7 +28,7 @@ bool UAuraAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldC
 			{
 				UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
 				UAttributeSet* AS = PS->GetAttributeSet();
-				
+
 				OutWCParams.AttributeSet = AS;
 				OutWCParams.PlayerController = PC;
 				OutWCParams.PlayerState = PS;
@@ -44,7 +44,7 @@ UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(
 {
 	FWidgetControllerParams WCParam;
 	AAuraHUD* AuraHUD = nullptr;
-	if(MakeWidgetControllerParams(WorldContextObject,WCParam, AuraHUD))
+	if (MakeWidgetControllerParams(WorldContextObject, WCParam, AuraHUD))
 	{
 		return AuraHUD->GetOverlayWidgetController(WCParam);
 	}
@@ -56,7 +56,7 @@ UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidge
 {
 	FWidgetControllerParams WCParam;
 	AAuraHUD* AuraHUD = nullptr;
-	if(MakeWidgetControllerParams(WorldContextObject,WCParam, AuraHUD))
+	if (MakeWidgetControllerParams(WorldContextObject, WCParam, AuraHUD))
 	{
 		return AuraHUD->GetAttributeMenuWidgetController(WCParam);
 	}
@@ -67,7 +67,7 @@ USpellMenuWidgetController* UAuraAbilitySystemLibrary::GetSpellMenuWidgetControl
 {
 	FWidgetControllerParams WCParam;
 	AAuraHUD* AuraHUD = nullptr;
-	if(MakeWidgetControllerParams(WorldContextObject,WCParam, AuraHUD))
+	if (MakeWidgetControllerParams(WorldContextObject, WCParam, AuraHUD))
 	{
 		return AuraHUD->GetSpellMenuWidgetController(WCParam);
 	}
@@ -118,7 +118,7 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	const FCharacterClassDefaultInfo& DefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);
 	// 获取当前角色的等级
 	int32 ActorLevel = 1;
-	if(ASC->GetAvatarActor()->Implements<UCombatInterface>())
+	if (ASC->GetAvatarActor()->Implements<UCombatInterface>())
 	{
 		ActorLevel = ICombatInterface::Execute_GetPlayerLevel(ASC->GetAvatarActor());
 	}
@@ -156,15 +156,19 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 		DamageEffectParams.DamageGameplayEffectClass, DamageEffectParams.AbilityLevel, EffectContextHandle);
 
 	// 设置SetbyCaller Magnitude，将float值与Tag一一对应，获取时指定Tag即可获取
-	for(auto& Pair : DamageEffectParams.DamageTypesValues)
+	for (auto& Pair : DamageEffectParams.DamageTypesValues)
 	{
 		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, Pair.Key, Pair.Value);
 	}
 	// 设置对应的debuff配置
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Chance, DamageEffectParams.DeBuffChance);
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Damage, DamageEffectParams.DeBuffDamage);
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Duration, DamageEffectParams.DeBuffDuration);
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Frequency, DamageEffectParams.DeBuffFrequency);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Chance,
+	                                                              DamageEffectParams.DeBuffChance);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Damage,
+	                                                              DamageEffectParams.DeBuffDamage);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Duration,
+	                                                              DamageEffectParams.DeBuffDuration);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(EffectSpecHandle, GameplayTags.DeBuff_Frequency,
+	                                                              DamageEffectParams.DeBuffFrequency);
 
 	// 将ge应用给目标
 	DamageEffectParams.TargetAbilitySystemCmp->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data);
@@ -207,6 +211,59 @@ bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle
 		return AuraEffectContext->GetIsCriticalHit();
 	}
 	return false;
+}
+
+bool UAuraAbilitySystemLibrary::IsSuccessfulDeBuff(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetIsSuccessfulDeBuff();
+	}
+	return false;
+}
+
+float UAuraAbilitySystemLibrary::GetDeBuffDamage(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDeBuffDamage();
+	}
+	return 0.f;
+}
+
+float UAuraAbilitySystemLibrary::GetDeBuffDuration(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDeBuffDuration();
+	}
+	return 0.f;
+}
+
+float UAuraAbilitySystemLibrary::GetDeBuffFrequency(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDeBuffFrequency();
+	}
+	return 0.f;
+}
+
+FGameplayTag UAuraAbilitySystemLibrary::GetDeBuffDamageType(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		if (AuraEffectContext->GetDamageType().IsValid())
+		{
+			return *AuraEffectContext->GetDamageType();
+		}
+	}
+	return FGameplayTag();
 }
 
 void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle,
