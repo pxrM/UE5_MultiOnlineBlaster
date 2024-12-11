@@ -15,6 +15,7 @@
 #include "Interaction/PlayerInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerController.h"
+#include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -104,6 +105,10 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	FEffectProperties Props;
 	SetEffectProperties(Data, Props);
 
+	// 判断当前目标是否已经死亡
+	if(Props.TargetCharacter->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetCharacter))
+		return;
+
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0, GetMaxHealth()));
@@ -168,6 +173,65 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 
 void UAuraAttributeSet::HandleDeBuff(const FEffectProperties& Props)
 {
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
+	const FGameplayTag DamageType = UAuraAbilitySystemLibrary::GetDeBuffDamageType(Props.EffectContextHandle);
+	const float DeBuffDamage = UAuraAbilitySystemLibrary::GetDeBuffDamage(Props.EffectContextHandle);
+	const float DeBuffDuration = UAuraAbilitySystemLibrary::GetDeBuffDuration(Props.EffectContextHandle);
+	const float DeBuffFrequency = UAuraAbilitySystemLibrary::GetDeBuffFrequency(Props.EffectContextHandle);
+
+	// 创建一个新的 UGameplayEffect 对象，该对象不会被序列化并保存在磁盘上，因为它是在暂时性包（transient）中创建的。
+	FString DeBuffName = FString::Printf(TEXT("DynamicDebuff_%s"), *DamageType.ToString());
+	UGameplayEffect* Effect = NewObject<UGameplayEffect>(GetTransientPackage(), FName(DeBuffName));
+
+	/*
+	 * 设置动态创建的ge属性
+	 * */
+	// 设置ge的生命周期为有时间限制的
+	Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
+	// 设置ge的持续时间
+	Effect->DurationMagnitude = FScalableFloat(DeBuffDuration);
+	// 设置ge的触发间隔时间
+	Effect->Period = FScalableFloat(DeBuffFrequency);
+	
+	// 添加向目标Actor增加对应的标签组件
+	UTargetTagsGameplayEffectComponent& TargetTagsGameplayEffectCmp = Effect->AddComponent<UTargetTagsGameplayEffectComponent>();
+	// 获取标签容器
+	FInheritedTagContainer InheritedTagContainer = TargetTagsGameplayEffectCmp.GetConfiguredTargetTagChanges();
+	// 添加debuff标签
+	InheritedTagContainer.AddTag(GameplayTags.DamageTypesToDeBuff[DamageType]);
+	// 应用并更新标签容器
+	TargetTagsGameplayEffectCmp.SetAndApplyTargetTagChanges(InheritedTagContainer);
+	
+	// 应用一个ge时，如果这个ge可以被堆叠，需要指定堆叠的方式。AggregateBySource意味着堆叠是基于应用这个GE的源头（比如攻击者、技能等）进行的。
+	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
+	// 设置堆叠限制层数
+	Effect->StackLimitCount = 1;
+
+	// 获取当前修改属性的Modifiers的长度，也就是下一个添加的modify的下标索引
+	const int32 Index = Effect->Modifiers.Num();
+	// 添加一个新的modify
+	Effect->Modifiers.Add(FGameplayModifierInfo());
+	// 通过索引获取这个modify
+	FGameplayModifierInfo& ModifierInfo = Effect->Modifiers[Index];
+	// 设置要应用的数值
+	ModifierInfo.ModifierMagnitude = FScalableFloat(DeBuffDamage);
+	// 设置应用的的运算符号为+
+	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
+	// 设置要应用修改的属性为造成伤害
+	ModifierInfo.Attribute = GetIncomingDamageAttribute();
+
+	/*
+	 * 创建ge实例
+	 */
+	FGameplayEffectContextHandle EffectContextHandle = Props.SourceAsc->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(Props.SourceCharacter);
+	if(const FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect, EffectContextHandle, 1.f))
+	{
+		FAuraGameplayEffectContext* AuraContext = static_cast<FAuraGameplayEffectContext*>(MutableSpec->GetContext().Get());
+		AuraContext->SetDeBuffDamageType(MakeShareable(new FGameplayTag(DamageType)));
+		// 应用给目标
+		Props.TargetAsc->ApplyGameplayEffectSpecToSelf(*MutableSpec);
+	}
 }
 
 void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
