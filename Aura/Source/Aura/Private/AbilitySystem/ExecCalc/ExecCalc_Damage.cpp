@@ -240,7 +240,7 @@ void UExecCalc_Damage::DetermineDeBuff(const FGameplayEffectCustomExecutionParam
 				UAuraAbilitySystemLibrary::SetDeBuffDamage(ContextHandle, DeBuffDamage);
 				UAuraAbilitySystemLibrary::SetDeBuffDuration(ContextHandle, DeBuffDuration);
 				UAuraAbilitySystemLibrary::SetDeBuffFrequency(ContextHandle, DeBuffFrequency);
-				UAuraAbilitySystemLibrary::SetDeBuffDamageType(ContextHandle, DeBuffType);
+				UAuraAbilitySystemLibrary::SetDeBuffDamageType(ContextHandle, DamageType);
 			}
 		}
 	}

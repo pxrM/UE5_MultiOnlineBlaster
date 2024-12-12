@@ -174,10 +174,12 @@ void AAuraCharacter::InitAbilityActorInfo()
 {
 	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 	check(AuraPlayerState);
-	AuraPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AuraPlayerState, this);
-	Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();
+	AbilitySystemComponent->InitAbilityActorInfo(AuraPlayerState, this);
+	Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
 	AttributeSet = AuraPlayerState->GetAttributeSet();
+
+	OnAscRegisteredDelegate.Broadcast(AbilitySystemComponent);
 
 	// 在多人游戏中这个可能返回为null，只有本地玩家有
 	if(AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))

@@ -156,6 +156,8 @@ void AAuraEnemy::InitAbilityActorInfo()
 		// 如果在server则直接使用ge初始化角色属性
 		InitializeDefaultAttributes();
 	}
+
+	OnAscRegisteredDelegate.Broadcast(AbilitySystemComponent);
 }
 
 void AAuraEnemy::InitializeDefaultAttributes() const

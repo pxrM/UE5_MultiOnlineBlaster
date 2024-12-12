@@ -65,7 +65,12 @@
 #include "CombatInterface.generated.h"
 
 
+class UAbilitySystemComponent;
 class UNiagaraSystem;
+
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnASCRegistered, UAbilitySystemComponent*);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AActor*, DeadActor);
 
 
 // 标签对应蒙太奇动画的接口体，为了在普攻GA里兼容多种攻击方式
@@ -162,4 +167,10 @@ public:
 	// 获取角色类型
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	ECharacterClassType GetCharacterType();
+
+	// 获取角色asc组件准备成功回调
+	virtual FOnASCRegistered& GetOnAscRegisteredDelegate() = 0;
+	
+	// 获取角色死亡回调
+	virtual FOnDeath& GetOnDeathDelegate() = 0;
 };

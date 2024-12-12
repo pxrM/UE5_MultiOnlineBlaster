@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -14,6 +15,10 @@
 AAuraCharacterBase::AAuraCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	DebuffNiagaraComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComp");
+	DebuffNiagaraComponent->SetupAttachment(GetRootComponent());
+	DebuffNiagaraComponent->DebuffTag = FAuraGameplayTags::Get().DeBuff_Burn;
 	
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false); // 设置胶囊体的OverlapEvent为false，防止和mesh上的发生冲突从而触发两次Overlap
@@ -110,6 +115,16 @@ ECharacterClassType AAuraCharacterBase::GetCharacterType_Implementation()
 	return CharacterClassType;
 }
 
+FOnASCRegistered& AAuraCharacterBase::GetOnAscRegisteredDelegate()
+{
+	return OnAscRegisteredDelegate;
+}
+
+FOnDeath& AAuraCharacterBase::GetOnDeathDelegate()
+{
+	return OnDeathDelegate;
+}
+
 void AAuraCharacterBase::MulticastHandleDie_Implementation()
 {
 	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
@@ -128,6 +143,8 @@ void AAuraCharacterBase::MulticastHandleDie_Implementation()
 	DissolveMaterial();
 
 	bDead = true;
+
+	OnDeathDelegate.Broadcast(this);
 }
 
 void AAuraCharacterBase::BeginPlay()

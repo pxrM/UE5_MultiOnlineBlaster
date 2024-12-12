@@ -175,12 +175,13 @@ void UAuraAttributeSet::HandleDeBuff(const FEffectProperties& Props)
 {
 	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
 	const FGameplayTag DamageType = UAuraAbilitySystemLibrary::GetDeBuffDamageType(Props.EffectContextHandle);
+	const FGameplayTag DebuffType = GameplayTags.DamageTypesToDeBuff[DamageType];
 	const float DeBuffDamage = UAuraAbilitySystemLibrary::GetDeBuffDamage(Props.EffectContextHandle);
 	const float DeBuffDuration = UAuraAbilitySystemLibrary::GetDeBuffDuration(Props.EffectContextHandle);
 	const float DeBuffFrequency = UAuraAbilitySystemLibrary::GetDeBuffFrequency(Props.EffectContextHandle);
 
 	// 创建一个新的 UGameplayEffect 对象，该对象不会被序列化并保存在磁盘上，因为它是在暂时性包（transient）中创建的。
-	FString DeBuffName = FString::Printf(TEXT("DynamicDebuff_%s"), *DamageType.ToString());
+	FString DeBuffName = FString::Printf(TEXT("DynamicDebuff_%s"), *DebuffType.ToString());
 	UGameplayEffect* Effect = NewObject<UGameplayEffect>(GetTransientPackage(), FName(DeBuffName));
 
 	/*
@@ -192,15 +193,17 @@ void UAuraAttributeSet::HandleDeBuff(const FEffectProperties& Props)
 	Effect->DurationMagnitude = FScalableFloat(DeBuffDuration);
 	// 设置ge的触发间隔时间
 	Effect->Period = FScalableFloat(DeBuffFrequency);
-	
-	// 添加向目标Actor增加对应的标签组件
-	UTargetTagsGameplayEffectComponent& TargetTagsGameplayEffectCmp = Effect->AddComponent<UTargetTagsGameplayEffectComponent>();
-	// 获取标签容器
-	FInheritedTagContainer InheritedTagContainer = TargetTagsGameplayEffectCmp.GetConfiguredTargetTagChanges();
+
+	/*  ******** In 5.3.2 works only like this */
+	// 添加向目标Actor增加对应的标签组件 
+	FInheritedTagContainer TagContainer = FInheritedTagContainer();
+	UTargetTagsGameplayEffectComponent& TargetTagsGameplayEffectCmp = Effect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
 	// 添加debuff标签
-	InheritedTagContainer.AddTag(GameplayTags.DamageTypesToDeBuff[DamageType]);
+	TagContainer.Added.AddTag(DebuffType);
+	TagContainer.CombinedTags.AddTag(DebuffType);
 	// 应用并更新标签容器
-	TargetTagsGameplayEffectCmp.SetAndApplyTargetTagChanges(InheritedTagContainer);
+	TargetTagsGameplayEffectCmp.SetAndApplyTargetTagChanges(TagContainer);
+	/*  ******** In 5.3.2 works only like this  */
 	
 	// 应用一个ge时，如果这个ge可以被堆叠，需要指定堆叠的方式。AggregateBySource意味着堆叠是基于应用这个GE的源头（比如攻击者、技能等）进行的。
 	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
@@ -228,6 +231,7 @@ void UAuraAttributeSet::HandleDeBuff(const FEffectProperties& Props)
 	if(const FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect, EffectContextHandle, 1.f))
 	{
 		FAuraGameplayEffectContext* AuraContext = static_cast<FAuraGameplayEffectContext*>(MutableSpec->GetContext().Get());
+		const TSharedPtr<FGameplayTag> DeBuffDamageType = MakeShareable(new FGameplayTag(DamageType));
 		AuraContext->SetDeBuffDamageType(MakeShareable(new FGameplayTag(DamageType)));
 		// 应用给目标
 		Props.TargetAsc->ApplyGameplayEffectSpecToSelf(*MutableSpec);
@@ -325,12 +329,13 @@ void UAuraAttributeSet::SendXPEvent(const FEffectProperties& Props)
 void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const
 {
 	Props.EffectContextHandle = Data.EffectSpec.GetContext();
-	const UAbilitySystemComponent* SourceAsc = Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
+	UAbilitySystemComponent* SourceAsc = Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
 	if (IsValid(SourceAsc) && SourceAsc->AbilityActorInfo.IsValid() && SourceAsc->AbilityActorInfo->AvatarActor.
 		IsValid())
 	{
 		Props.SourceAvatarActor = SourceAsc->GetAvatarActor();
 		Props.SourceController = SourceAsc->AbilityActorInfo->PlayerController.Get();
+		Props.SourceAsc = SourceAsc;
 		if (Props.SourceAvatarActor != nullptr && Props.SourceController == nullptr)
 		{
 			// 角色可以是各种类型的，其中包括可以由玩家控制的角色（通常是玩家控制的主要角色）和由游戏系统控制的非玩家角色（NPC）。这些角色可以被实现为不同的类，以便于管理和执行各种游戏逻辑。

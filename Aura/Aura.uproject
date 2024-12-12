@@ -15,7 +15,8 @@
 				"CoreUObject",
 				"EnhancedInput",
 				"AIModule",
-				"Blutility"
+				"Blutility",
+				"Niagara"
 			]
 		}
 	],

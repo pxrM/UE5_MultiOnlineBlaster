@@ -317,7 +317,7 @@ void UAuraAbilitySystemLibrary::SetDeBuffDuration(FGameplayEffectContextHandle& 
 }
 
 void UAuraAbilitySystemLibrary::SetDeBuffFrequency(FGameplayEffectContextHandle& EffectContextHandle,
-                                                   const bool InDeBuffFrequency)
+                                                   const float InDeBuffFrequency)
 {
 	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
 		Get()))

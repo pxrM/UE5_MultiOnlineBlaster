@@ -9,6 +9,7 @@
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
 
+class UDebuffNiagaraComponent;
 class UNiagaraSystem;
 class UGameplayAbility;
 class UGameplayEffect;
@@ -40,6 +41,8 @@ public:
 	virtual int32 GetMinionCount_Implementation() override;
 	virtual void IncrementalMinionCount_Implementation(const int32 Amount) override;
 	virtual ECharacterClassType GetCharacterType_Implementation() override;
+	virtual FOnASCRegistered& GetOnAscRegisteredDelegate() override;
+	virtual FOnDeath& GetOnDeathDelegate() override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
@@ -71,6 +74,8 @@ protected:
 
 	
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debuff")
+	TObjectPtr<UDebuffNiagaraComponent> DebuffNiagaraComponent;
 	// 角色武器mesh
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
@@ -164,4 +169,7 @@ public:
 	// 设置多个基础攻击动画
 	UPROPERTY(EditAnywhere,Category="Combat")
 	TArray<FTaggedMontage> AttackMontages;
+
+	FOnASCRegistered OnAscRegisteredDelegate;
+	FOnDeath OnDeathDelegate;
 };
