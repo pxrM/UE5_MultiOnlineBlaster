@@ -70,11 +70,15 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			RepBits |= 1 << 13;
 		}
+		if(!DeathImpulse.IsZero())
+		{
+			RepBits |= 1 << 14;
+		}
 		/* Add end */
 	}
 
 	// 序列化RepBits
-	Ar.SerializeBits(&RepBits, 14);
+	Ar.SerializeBits(&RepBits, 15);
 
 	/*
 	 * 如果对应位的值为1，则将数据存入Ar
@@ -157,6 +161,10 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 			}
 		}
 		DeBuffDamageType->NetSerialize(Ar, Map, bOutSuccess);
+	}
+	if(RepBits & (1 << 14))
+	{
+		DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
 	}
 	/* Add end */
 

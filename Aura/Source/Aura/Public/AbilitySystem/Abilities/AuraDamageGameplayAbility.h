@@ -51,4 +51,7 @@ protected:
 	// 减益效果的持续时间
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	float DeBuffDuration = 5.f;
+	// 死亡时受到的冲击力
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float DeathImpulseMagnitude = 60.f;
 };

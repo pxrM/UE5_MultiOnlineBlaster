@@ -45,6 +45,12 @@ struct FDamageEffectParams
 
 	UPROPERTY()
 	float DeBuffFrequency = 0.f; // 减益效果触发持续时间
+	
+	UPROPERTY()
+	float DeathImpulseMagnitude = 0.f; 	// 死亡时受到的冲击力
+	
+	UPROPERTY()
+	FVector DeathImpulse = FVector::Zero(); // 死亡时受到的伤害冲击方向
 };
 
 
@@ -92,6 +98,7 @@ public:
 	float GetDeBuffDuration() const { return DeBuffDuration; }
 	float GetDeBuffFrequency() const { return DeBuffFrequency; }
 	TSharedPtr<FGameplayTag> GetDeBuffDamageType() const { return DeBuffDamageType; }
+	FVector GetDeathImpulse() const { return DeathImpulse; }
 
 	void SetIsCriticalHit(const bool bInCriticalHit) { bIsCriticalHit = bInCriticalHit; }
 	void SetIsBlockedHit(const bool bInBlockedHit) { bIsBlockedHit = bInBlockedHit; }
@@ -100,7 +107,8 @@ public:
 	void SetDeBuffDuration(const float InDeBuffDuration) { DeBuffDuration = InDeBuffDuration; }
 	void SetDeBuffFrequency(const float InDeBuffFrequency) { DeBuffFrequency = InDeBuffFrequency; }
 	void SetDeBuffDamageType(const TSharedPtr<FGameplayTag>& InDamageType) { DeBuffDamageType = InDamageType; }
-	
+	void SetDeathImpulse(const FVector& InDeathImpulse) { DeathImpulse = InDeathImpulse; }
+
 protected:
 	// 是否成功格挡
 	UPROPERTY()
@@ -124,6 +132,10 @@ protected:
 	float DeBuffFrequency = 0.f;
 	// 伤害类型
 	TSharedPtr<FGameplayTag> DeBuffDamageType;
+
+	// 死亡时受到的伤害冲击方向
+	UPROPERTY()
+	FVector DeathImpulse = FVector::Zero();
 };
 
 

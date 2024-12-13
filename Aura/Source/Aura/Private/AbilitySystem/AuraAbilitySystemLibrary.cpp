@@ -151,6 +151,8 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemCmp->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(SourceAvatarActor);
 
+	SetDeathImpulse(EffectContextHandle, DamageEffectParams.DeathImpulse);
+
 	// 创建ge实例
 	const FGameplayEffectSpecHandle EffectSpecHandle = DamageEffectParams.SourceAbilitySystemCmp->MakeOutgoingSpec(
 		DamageEffectParams.DamageGameplayEffectClass, DamageEffectParams.AbilityLevel, EffectContextHandle);
@@ -266,6 +268,16 @@ FGameplayTag UAuraAbilitySystemLibrary::GetDeBuffDamageType(const FGameplayEffec
 	return FGameplayTag();
 }
 
+FVector UAuraAbilitySystemLibrary::GetDeathImpulse(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDeathImpulse();
+	}
+	return FVector::Zero();
+}
+
 void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle,
                                                 const bool bInIsBlockedHit)
 {
@@ -333,6 +345,16 @@ void UAuraAbilitySystemLibrary::SetDeBuffDamageType(FGameplayEffectContextHandle
 		Get()))
 	{
 		AuraEffectContext->SetDeBuffDamageType(MakeShared<FGameplayTag>(InDeBuffDamageType));
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDeathImpulse(FGameplayEffectContextHandle& EffectContextHandle,
+	const FVector& InDeathImpulse)
+{
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.
+	Get()))
+	{
+		AuraEffectContext->SetDeathImpulse(InDeathImpulse);
 	}
 }
 
