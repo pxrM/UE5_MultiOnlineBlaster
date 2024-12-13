@@ -135,7 +135,7 @@ void AAuraEnemy::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCou
 	}
 }
 
-void AAuraEnemy::Die()
+void AAuraEnemy::Die(const FVector& InDeathImpulse)
 {
 	SetLifeSpan(LifeSpan); 
 	if (AuraAIController && AuraAIController->GetBlackboardComponent())
@@ -143,7 +143,7 @@ void AAuraEnemy::Die()
 		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
 	}
 	
-	Super::Die();
+	Super::Die(InDeathImpulse);
 }
 
 void AAuraEnemy::InitAbilityActorInfo()

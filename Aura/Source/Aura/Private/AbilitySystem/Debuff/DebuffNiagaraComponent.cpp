@@ -44,7 +44,11 @@ void UDebuffNiagaraComponent::BeginPlay()
 
 void UDebuffNiagaraComponent::DebuffTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
 {
-	if(NewCount > 0)
+	const bool bOwnerAlive = IsValid(GetOwner()) &&
+		GetOwner()->Implements<UCombatInterface>() &&
+		!ICombatInterface::Execute_IsDead(GetOwner());
+	
+	if (NewCount > 0 && bOwnerAlive)
 	{
 		Activate(); // 绑定的debuff标签大于0则激活特效
 	}

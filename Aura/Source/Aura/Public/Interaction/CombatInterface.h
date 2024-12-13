@@ -135,7 +135,7 @@ public:
 	UAnimMontage* GetHitReactMontage();
 
 	// server：角色死亡
-	virtual void Die() = 0;
+	virtual void Die(const FVector& InDeathImpulse) = 0;
 
 	// 获取角色是否死亡
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

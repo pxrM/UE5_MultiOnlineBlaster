@@ -34,7 +34,7 @@ public:
 
 	/* start ICombatInterface */
 	virtual int32 GetPlayerLevel_Implementation() override;
-	virtual void Die() override;
+	virtual void Die(const FVector& InDeathImpulse) override;
 	/*end ICombatInterface*/
 
 	// 受击反应标签的监听委托函数

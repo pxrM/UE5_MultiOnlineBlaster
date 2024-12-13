@@ -32,7 +32,7 @@ public:
 
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& SocketTag) override;
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
-	virtual void Die() override;
+	virtual void Die(const FVector& InDeathImpulse) override;
 	virtual bool IsDead_Implementation() const override;
 	virtual AActor* GetAvatar_Implementation() override;
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() const override;
@@ -46,7 +46,7 @@ public:
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
-	virtual void MulticastHandleDie();
+	virtual void MulticastHandleDie(const FVector& InDeathImpulse);
 
 	
 protected:
