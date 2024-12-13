@@ -51,6 +51,15 @@ struct FDamageEffectParams
 	
 	UPROPERTY()
 	FVector DeathImpulse = FVector::Zero(); // 死亡时受到的伤害冲击方向
+
+	UPROPERTY()
+	float KnockbackForceMagnitude = 0.f; 	// 受击时的击退力度
+
+	UPROPERTY()
+	float KnockbackChance = 0.f; 	// 受击时的击退概率
+	
+	UPROPERTY()
+	FVector KnockbackForce = FVector::Zero(); // 受击时的击退方向
 };
 
 
@@ -99,6 +108,7 @@ public:
 	float GetDeBuffFrequency() const { return DeBuffFrequency; }
 	TSharedPtr<FGameplayTag> GetDeBuffDamageType() const { return DeBuffDamageType; }
 	FVector GetDeathImpulse() const { return DeathImpulse; }
+	FVector GetKnockbackForce() const { return KnockbackForce; }
 
 	void SetIsCriticalHit(const bool bInCriticalHit) { bIsCriticalHit = bInCriticalHit; }
 	void SetIsBlockedHit(const bool bInBlockedHit) { bIsBlockedHit = bInBlockedHit; }
@@ -108,6 +118,7 @@ public:
 	void SetDeBuffFrequency(const float InDeBuffFrequency) { DeBuffFrequency = InDeBuffFrequency; }
 	void SetDeBuffDamageType(const TSharedPtr<FGameplayTag>& InDamageType) { DeBuffDamageType = InDamageType; }
 	void SetDeathImpulse(const FVector& InDeathImpulse) { DeathImpulse = InDeathImpulse; }
+	void SetKnockbackForce(const FVector& InKnockbackForce) { KnockbackForce = InKnockbackForce; }
 
 protected:
 	// 是否成功格挡
@@ -136,6 +147,10 @@ protected:
 	// 死亡时受到的伤害冲击方向
 	UPROPERTY()
 	FVector DeathImpulse = FVector::Zero();
+
+	// 受击时的击退方向
+	UPROPERTY()
+	FVector KnockbackForce = FVector::Zero();
 };
 
 

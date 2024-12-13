@@ -51,7 +51,15 @@ protected:
 	// 减益效果的持续时间
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	float DeBuffDuration = 5.f;
+	
 	// 死亡时受到的冲击力
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
-	float DeathImpulseMagnitude = 60.f;
+	float DeathImpulseMagnitude = 1000.f;
+
+	// 技能命中时，敌人受到的击退力度
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float KnockbackForceMagnitude = 500.f;
+	// 击退概率
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float KnockbackChance = 0.f;
 };

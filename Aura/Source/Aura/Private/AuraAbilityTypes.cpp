@@ -74,11 +74,15 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			RepBits |= 1 << 14;
 		}
+		if(!KnockbackForce.IsZero())
+		{
+			RepBits |= 1 << 15;
+		}
 		/* Add end */
 	}
 
 	// 序列化RepBits
-	Ar.SerializeBits(&RepBits, 15);
+	Ar.SerializeBits(&RepBits, 16);
 
 	/*
 	 * 如果对应位的值为1，则将数据存入Ar
@@ -165,6 +169,10 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	if(RepBits & (1 << 14))
 	{
 		DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
+	}
+	if(RepBits & (1 << 15))
+	{
+		KnockbackForce.NetSerialize(Ar, Map, bOutSuccess);
 	}
 	/* Add end */
 
