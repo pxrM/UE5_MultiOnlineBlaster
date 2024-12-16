@@ -421,3 +421,47 @@ bool UAuraAbilitySystemLibrary::IsNotFriend(const AActor* FirstActor, const AAct
 	const bool bFriends = bBothArePlayers || bBothAreEnemies;
 	return !bFriends;
 }
+
+TArray<FRotator> UAuraAbilitySystemLibrary::EvenlyRotatedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators)
+{
+	TArray<FRotator> Rotators;
+	if(NumRotators > 1)
+	{
+		// 计算到最左侧的角度向量，通过将 Forward 向量绕 FVector::UpVector（即世界的上方向，Z轴）旋转 -SpawnSpread / 2.f 度得到的。
+		const FVector LeftOfSpread = Forward.RotateAngleAxis(-Spread / 2.f, Axis);
+		const float DeltaSpread = Spread / (NumRotators - 1);
+		for(int32 i = 0; i < NumRotators; i++)
+		{
+			// 获取当前分段的旋转角度
+			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i, FVector::UpVector);
+			Rotators.Add(Direction.Rotation());
+		}
+	}
+	else
+	{
+		Rotators.Add(Forward.Rotation());
+	}
+	return Rotators;
+}
+
+TArray<FVector> UAuraAbilitySystemLibrary::EvenlyRotatedVectors(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumVectors)
+{
+	TArray<FVector> Vectors;
+	if(NumVectors > 1)
+	{
+		// 计算到最左侧的角度向量，通过将 Forward 向量绕 FVector::UpVector（即世界的上方向，Z轴）旋转 -SpawnSpread / 2.f 度得到的。
+		const FVector LeftOfSpread = Forward.RotateAngleAxis(-Spread / 2.f, Axis);
+		const float DeltaSpread = Spread / (NumVectors - 1);
+		for(int32 i = 0; i < NumVectors; i++)
+		{
+			// 获取当前分段的旋转方向
+			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i, FVector::UpVector);
+			Vectors.Add(Direction);
+		}
+	}
+	else
+	{
+		Vectors.Add(Forward);
+	}
+	return Vectors;
+}

@@ -150,4 +150,35 @@ public:
 	// 应用伤害效果
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static FGameplayEffectContextHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams);
+
+	/**
+	 * 根据传入的值计算均匀分布的多段角度，
+	 *
+	 * @param Forward 正前方向
+	 * @param Axis 基于旋转的轴
+	 * @param Spread 角度范围
+	 * @param NumRotators 分段数
+	 *
+	 * @return TArray<FRotator&> 返回每段角度的旋转角度
+	 *
+	 * @note 用于在技能生成投掷物的函数逻辑中。
+	 */
+	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayMechanics")
+	static TArray<FRotator> EvenlyRotatedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators);
+
+	/**
+	 * 根据传入的值计算均匀分布的多段朝向
+	 *
+	 * @param Forward 正前方向
+	 * @param Axis 基于旋转的轴
+	 * @param Spread 角度范围
+	 * @param NumVectors 分段数
+	 *
+	 * @return TArray<FVector&> 返回每段角度的中间角度的朝向数组
+	 *
+	 * @note 用于在技能生成投掷物的函数逻辑中。
+	 */
+	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayMechanics")
+	static TArray<FVector> EvenlyRotatedVectors(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumVectors);
+	
 };

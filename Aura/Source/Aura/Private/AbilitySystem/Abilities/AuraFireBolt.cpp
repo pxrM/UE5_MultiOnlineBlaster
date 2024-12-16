@@ -4,6 +4,8 @@
 #include "AbilitySystem/Abilities/AuraFireBolt.h"
 
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
+#include "Actor/AuraProjectileActor.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -80,16 +82,35 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 		{
 			Rotation.Pitch = OverridePitch;
 		}
+		//NumProjectiles = FMath::Min(MaxNumProjectiles, GetAbilityLevel());
 		// 返回的是与 Rotation 旋转角度对应的单位向量，返回一个朝着该旋转角度的方向的单位向量，也就是这个旋转角度的“前进方向”。
 		const FVector Forward = Rotation.Vector();
-		// 计算到最右侧的角度向量，通过将 Forward 向量绕 FVector::UpVector（即世界的上方向，Z轴）旋转 SpawnSpread / 2.f 度得到的。
-		const FVector RightOfSpread = Forward.RotateAngleAxis(ProjectilesSpread / 2.f, FVector::UpVector);
-		// 计算到最左侧的角度向量
-		const FVector LeftOfSpread = Forward.RotateAngleAxis(-ProjectilesSpread / 2.f, FVector::UpVector);
 
-		//NumProjectiles = FMath::Min(MaxNumProjectiles, GetAbilityLevel());
+		TArray<FRotator> Rotators = UAuraAbilitySystemLibrary::EvenlyRotatedRotators(Forward, FVector::UpVector, ProjectilesSpread, NumProjectiles);
+		for(FRotator& Rot : Rotators)
+		{
+			FTransform SpawnTransform;
+			SpawnTransform.SetLocation(SocketLocation);
+			SpawnTransform.SetRotation(Rot.Quaternion());
+
+			AAuraProjectileActor* ProjectileActor = GetWorld()->SpawnActorDeferred<AAuraProjectileActor>(
+				ProjectileClass,
+				SpawnTransform,
+				GetOwningActorFromActorInfo(),
+				Cast<APawn>(GetOwningActorFromActorInfo()),
+				ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+
+			ProjectileActor->DamageEffectParams = MakeDamageEffectParamsFromClassDefault();
+			ProjectileActor->FinishSpawning(SpawnTransform);
+		}
+
+		/*
 		if (NumProjectiles > 1)
 		{
+			// 计算到最右侧的角度向量，通过将 Forward 向量绕 FVector::UpVector（即世界的上方向，Z轴）旋转 SpawnSpread / 2.f 度得到的。
+			const FVector RightOfSpread = Forward.RotateAngleAxis(ProjectilesSpread / 2.f, FVector::UpVector);
+			// 计算到最左侧的角度向量
+			const FVector LeftOfSpread = Forward.RotateAngleAxis(-ProjectilesSpread / 2.f, FVector::UpVector);
 			const float DeltaSpread = ProjectilesSpread / (NumProjectiles - 1);
 			for (int32 i = 0; i < NumProjectiles; i++)
 			{
@@ -99,17 +120,12 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 				                                     SocketLocation + FVector(0, 0, 5) + Direction * 75.f,
 				                                     1, FLinearColor::Red, 60, 1);
 			}
-		}
-		else
-		{
-			
-		}
-
-		UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), SocketLocation,
-		                                     SocketLocation + Forward * 100.f, 1, FLinearColor::White, 60, 1);
-		UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), SocketLocation,
-											 SocketLocation + LeftOfSpread * 100.f, 1, FLinearColor::Gray, 60, 1);
-		UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), SocketLocation,
-										 SocketLocation + RightOfSpread * 100.f, 1, FLinearColor::Gray, 60, 1);
+			UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), SocketLocation,
+									 SocketLocation + Forward * 100.f, 1, FLinearColor::White, 60, 1);
+			UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), SocketLocation,
+												 SocketLocation + LeftOfSpread * 100.f, 1, FLinearColor::Gray, 60, 1);
+			UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(), SocketLocation,
+											 SocketLocation + RightOfSpread * 100.f, 1, FLinearColor::Gray, 60, 1);
+		}*/
 	}
 }
