@@ -8,6 +8,7 @@
 #include "AuraPlayerController.generated.h"
 
 
+class UNiagaraSystem;
 class UDamageTextComponent;
 class USplineComponent;
 class UAuraAbilitySystemComponent;
@@ -93,7 +94,11 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float AutoRunAcceptanceRadius = 50.f;
 	// 动寻路时生成的样条线。用于创建和管理曲线（Spline）。Spline是一种通过插值点之间的平滑曲线来定义路径或形状的方法。
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<USplineComponent> SplineCmp;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UNiagaraSystem> ClickNiagaraSystem;
 
 	// 按下shift
 	bool bShiftKeyDown = false;
