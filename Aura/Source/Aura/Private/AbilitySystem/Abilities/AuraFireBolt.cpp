@@ -8,7 +8,7 @@
 #include "Actor/AuraProjectileActor.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/KismetStringLibrary.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 FString UAuraFireBolt::GetDescription(int32 Level)
 {
@@ -82,11 +82,11 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 		{
 			Rotation.Pitch = OverridePitch;
 		}
-		//NumProjectiles = FMath::Min(MaxNumProjectiles, GetAbilityLevel());
+		const int32 EffectNumProjectiles = FMath::Min(MaxNumProjectiles, GetAbilityLevel());
 		// 返回的是与 Rotation 旋转角度对应的单位向量，返回一个朝着该旋转角度的方向的单位向量，也就是这个旋转角度的“前进方向”。
 		const FVector Forward = Rotation.Vector();
 
-		TArray<FRotator> Rotators = UAuraAbilitySystemLibrary::EvenlyRotatedRotators(Forward, FVector::UpVector, ProjectilesSpread, NumProjectiles);
+		TArray<FRotator> Rotators = UAuraAbilitySystemLibrary::EvenlyRotatedRotators(Forward, FVector::UpVector, ProjectilesSpread, EffectNumProjectiles);
 		for(FRotator& Rot : Rotators)
 		{
 			FTransform SpawnTransform;
@@ -101,6 +101,20 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 				ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
 			ProjectileActor->DamageEffectParams = MakeDamageEffectParamsFromClassDefault();
+
+			if(HomingTarget && HomingTarget->Implements<UCombatInterface>())
+			{
+				ProjectileActor->ProjectileMovementCmp->HomingTargetComponent = HomingTarget->GetRootComponent();
+			}
+			else
+			{
+				ProjectileActor->HomingTargetSceneComponent = NewObject<USceneComponent>(USceneComponent::StaticClass());
+				ProjectileActor->HomingTargetSceneComponent->SetWorldLocation(ProjectileTargetLocation);
+				ProjectileActor->ProjectileMovementCmp->HomingTargetComponent = ProjectileActor->HomingTargetSceneComponent;
+			}
+			ProjectileActor->ProjectileMovementCmp->HomingAccelerationMagnitude = FMath::FRandRange(HomingAccelerationMin, HomingAccelerationMax);
+			ProjectileActor->ProjectileMovementCmp->bIsHomingProjectile = bLaunchHomingProjectiles;
+			
 			ProjectileActor->FinishSpawning(SpawnTransform);
 		}
 

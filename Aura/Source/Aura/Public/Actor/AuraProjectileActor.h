@@ -57,6 +57,9 @@ private:
 public:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovementCmp;
+
+	UPROPERTY()
+	TObjectPtr<USceneComponent> HomingTargetSceneComponent;
 	
 	/*
 	 * FGameplayEffectSpecHandle是一个句柄，它封装了指向FGameplayEffectSpec(描述了一个GameplayEffect将如何应用以及其具体参数)结构的指针。 

@@ -30,4 +30,14 @@ protected:
 	// 生成子弹的最大数量
 	UPROPERTY(EditDefaultsOnly, Category="FireBolt")
 	int32 MaxNumProjectiles;
+
+	// 设置生成的子弹是否要自动飞向目标
+	UPROPERTY(EditDefaultsOnly, Category="FireBolt")
+	bool bLaunchHomingProjectiles = true;
+	// 移动朝向目标的最小加速度
+	UPROPERTY(EditDefaultsOnly, Category="FireBolt")
+	float HomingAccelerationMin = 1600.f;
+	// 移动朝向目标的最大加速度
+	UPROPERTY(EditDefaultsOnly, Category="FireBolt")
+	float HomingAccelerationMax = 3200.f;
 };
