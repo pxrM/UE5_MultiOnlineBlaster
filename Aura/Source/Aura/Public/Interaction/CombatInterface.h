@@ -173,4 +173,9 @@ public:
 	
 	// 获取角色死亡回调
 	virtual FOnDeath& GetOnDeathDelegate() = 0;
+
+	// 设置当前是否处于持续施法状态
+	// BlueprintImplementableEvent：具体实现由蓝图来决定，而不是在C++中直接实现
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SetInShockLoop(const bool bInShockLoop);
 };
