@@ -46,11 +46,18 @@ void AAuraProjectileActor::BeginPlay()
 
 void AAuraProjectileActor::Destroyed()
 {
+	if (LoopingSoundCmp)
+	{
+		LoopingSoundCmp->Stop();
+		LoopingSoundCmp->DestroyComponent();
+	}
+	
 	// 证明当前没有触发Overlap事件，在销毁前播放击中特效
 	if (!bHit && !HasAuthority())
 	{
 		OnHit();
 	}
+	
 	Super::Destroyed();
 }
 
@@ -58,7 +65,11 @@ void AAuraProjectileActor::OnHit()
 {
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-	if (LoopingSoundCmp) LoopingSoundCmp->Stop();
+	if (LoopingSoundCmp)
+	{
+		LoopingSoundCmp->Stop();
+		LoopingSoundCmp->DestroyComponent();
+	}
 	bHit = true;
 }
 

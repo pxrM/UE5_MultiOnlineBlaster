@@ -198,6 +198,11 @@ void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 		bTargeting = CurrActor ? true : false;
 		bAutoRunning = false;
 	}
+	
+	if(GetASC())
+	{
+		GetASC()->AbilityInputTagPressed(InputTag);
+	}
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)

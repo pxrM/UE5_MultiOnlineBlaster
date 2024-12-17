@@ -56,6 +56,8 @@ public:
 	// 添加角色被动能力
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);
 
+	// 触发技能时按键按下
+	void AbilityInputTagPressed(const FGameplayTag& InputTag);
 	// 触发技能的悬停时触发
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);
 	// 触发技能时按键离开
@@ -122,5 +124,6 @@ public:
 	// 技能装备后广播
 	FAbilityEquipped AbilityEquippedDelegate;
 	// 初始化应用技能后设置为true，记录当前是否初始化完成
+	
 	bool bStartupAbilitiesGiven = false;
 };
