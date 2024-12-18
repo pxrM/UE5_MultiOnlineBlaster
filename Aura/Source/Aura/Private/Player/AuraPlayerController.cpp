@@ -23,6 +23,40 @@ AAuraPlayerController::AAuraPlayerController()
 	SplineCmp = CreateDefaultSubobject<USplineComponent>("SplineCmp");
 }
 
+void AAuraPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	check(AuraContext);
+
+	/*
+	 * 绑定增强输入到玩家Controller
+	 */
+	// 从当前本地玩家对象中获取一个 用于增强输入管理的本地玩家子系统 类型的子系统
+	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		// 向输入子系统中添加一个输入映射上下文
+		Subsystem->AddMappingContext(AuraContext, 0);
+	}
+
+	/*
+	 * 设置鼠标显示
+	 */
+	bShowMouseCursor = true;
+	DefaultMouseCursor = EMouseCursor::Default;
+
+	/*
+	 * 设置游戏中的输入模式，使得鼠标不会被锁定到视口内，并且在捕获输入时鼠标指针仍然可见
+	 */
+	FInputModeGameAndUI InputModeData;
+	// 设置鼠标在视口内的锁定行为。EMouseLockMode::DoNotLock 表示不锁定鼠标到视口内，即鼠标可以自由移动，不会被限制在视口内部。
+	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	// 设置了在捕获输入时是否隐藏鼠标指针。false 表示捕获输入时不隐藏鼠标指针，即鼠标指针在捕获输入时仍然可见。
+	InputModeData.SetHideCursorDuringCapture(false);
+	// 应用到当前的输入模式中。
+	SetInputMode(InputModeData);
+}
+
 void AAuraPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
@@ -34,6 +68,15 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 
 void AAuraPlayerController::CursorTrace()
 {
+	if(GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_CursorTrace))
+	{
+		if(LastActor) LastActor->UnHighlightActor();
+		if(CurrActor) CurrActor->UnHighlightActor();
+		LastActor = nullptr;
+		CurrActor = nullptr;
+		return;
+	}
+	
 	// GetHitResultUnderCursor这个函数用于在当前光标（鼠标指针）所在的位置执行一次“射线检测”（Raycast）
 	// ECC_Visibility 是用于检测的碰撞通道（Collision Channel）。ECC_Visibility 通常用于检测可见性相关的碰撞，这意味着它会忽略不可见的对象。
 	// false 表示不忽略复杂碰撞（complex collision）。如果设置为 true，则只检测简单碰撞（simple collision）。
@@ -99,40 +142,6 @@ void AAuraPlayerController::AutoMove()
 	}
 }
 
-void AAuraPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-
-	check(AuraContext);
-
-	/*
-	 * 绑定增强输入到玩家Controller
-	 */
-	// 从当前本地玩家对象中获取一个 用于增强输入管理的本地玩家子系统 类型的子系统
-	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		// 向输入子系统中添加一个输入映射上下文
-		Subsystem->AddMappingContext(AuraContext, 0);
-	}
-
-	/*
-	 * 设置鼠标显示
-	 */
-	bShowMouseCursor = true;
-	DefaultMouseCursor = EMouseCursor::Default;
-
-	/*
-	 * 设置游戏中的输入模式，使得鼠标不会被锁定到视口内，并且在捕获输入时鼠标指针仍然可见
-	 */
-	FInputModeGameAndUI InputModeData;
-	// 设置鼠标在视口内的锁定行为。EMouseLockMode::DoNotLock 表示不锁定鼠标到视口内，即鼠标可以自由移动，不会被限制在视口内部。
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	// 设置了在捕获输入时是否隐藏鼠标指针。false 表示捕获输入时不隐藏鼠标指针，即鼠标指针在捕获输入时仍然可见。
-	InputModeData.SetHideCursorDuringCapture(false);
-	// 应用到当前的输入模式中。
-	SetInputMode(InputModeData);
-}
-
 UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()
 {
 	if(AuraAbilitySystemComponent == nullptr)
@@ -171,6 +180,11 @@ void AAuraPlayerController::SetupInputComponent()
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 {
+	if(GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+	{
+		return;
+	}
+	
 	// 获取输入动作的值，将其转换为二维向量
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 	// 获取当前玩家控制器的旋转值 
@@ -193,6 +207,11 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Blue, *InputTag.ToString());
+	if(GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+	{
+		return;
+	}
+	
 	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
 	{
 		bTargeting = CurrActor ? true : false;
@@ -208,11 +227,17 @@ void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Red, *InputTag.ToString());
+
+	if(GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased))
+	{
+		return;
+	}
+	
 	if(GetASC())
 	{
 		GetASC()->AbilityInputTagReleased(InputTag);
 	}
-
+	
 	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB) == false)
 	{
 		return;
@@ -239,7 +264,11 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 					CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];
 					bAutoRunning = true;
 				}
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
+				
+				if(GetASC() && !GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+				{
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
+				}
 			}
 		}
 		FollowTime = 0.f;
@@ -251,6 +280,11 @@ void AAuraPlayerController::AbilityInputTagHeld(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Orange, *InputTag.ToString());
 
+	if(GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputHeld))
+	{
+		return;
+	}
+	
 	if(InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB) == false)
 	{
 		/* 其它输入 */

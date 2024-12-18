@@ -43,6 +43,7 @@ public:
 	virtual ECharacterClassType GetCharacterType_Implementation() override;
 	virtual FOnASCRegistered& GetOnAscRegisteredDelegate() override;
 	virtual FOnDeath& GetOnDeathDelegate() override;
+	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)

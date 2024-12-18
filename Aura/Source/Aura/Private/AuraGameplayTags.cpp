@@ -314,6 +314,25 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.HitReact"),
 		FString("反应效果(比如受到伤害)")
 	);
+	/*
+	 * player tags
+	 */
+	GameplayTags.Player_Block_CursorTrace = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.CursorTrace"),
+		FString("阻挡鼠标追踪")
+		);
+	GameplayTags.Player_Block_InputPressed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.InputPressed"),
+		FString("阻挡按键按下")
+		);
+	GameplayTags.Player_Block_InputReleased = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.InputReleased"),
+		FString("阻挡按键抬起")
+		);
+	GameplayTags.Player_Block_InputHeld = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Player.Block.InputHeld"),
+		FString("阻挡按键持续按下中")
+		);
 
 	GameplayTags.TagsInitCompleteNotify.ExecuteIfBound();
 }

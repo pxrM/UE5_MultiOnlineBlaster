@@ -178,4 +178,8 @@ public:
 	// BlueprintImplementableEvent：具体实现由蓝图来决定，而不是在C++中直接实现
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void SetInShockLoop(const bool bInShockLoop);
+
+	// 获取武器
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	USkeletalMeshComponent* GetWeapon();
 };
