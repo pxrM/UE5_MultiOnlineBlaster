@@ -27,6 +27,13 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	void StoreOwnerVariables();
+	/**
+	 * 获取闪电命中的第一个目标
+	 * @param BeamTargetLocation 鼠标点击目标位置
+	 * @note 如果鼠标拾取和武器发射位置中间有其它敌人被阻挡，更新目标位置。
+	 */
+	UFUNCTION(BlueprintCallable)
+	void TraceFirstTarget(const FVector& BeamTargetLocation);
 
 protected:
 	// 鼠标选中的位置
