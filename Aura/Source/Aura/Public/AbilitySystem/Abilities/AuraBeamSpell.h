@@ -34,6 +34,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	void TraceFirstTarget(const FVector& BeamTargetLocation);
+	/**
+	 * 通过技能命中目标获取扩散的敌人目标
+	 * @param OutAdditionalTargets 返回获取到的最近的目标数组
+	 */
+	UFUNCTION(BlueprintCallable)
+	void StoreAdditionalTargets(TArray<AActor*>& OutAdditionalTargets);
 
 protected:
 	// 鼠标选中的位置
@@ -50,4 +56,8 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category="Beam")
 	TObjectPtr<ACharacter> OwnerCharacter;
+
+	// 最大电击连接数
+	UPROPERTY(EditDefaultsOnly, Category="Beam")
+	int32 MaxNumShockTarget = 5;
 };

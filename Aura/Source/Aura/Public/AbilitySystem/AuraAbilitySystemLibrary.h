@@ -26,13 +26,13 @@ class AURA_API UAuraAbilitySystemLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	/*
+	/**
 	 * @param: AAuraHUD*& 地址引用，可以修改它的地址
 	 * @return: bool 判断参数是否获取成功
 	 */
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|WidgetController", meta=(DefaultToSelf="WorldContextObject"))
 	static bool MakeWidgetControllerParams(const UObject* WorldContextObject, FWidgetControllerParams& OutWCParams, AAuraHUD*& OutAuraHUD);
-	/*
+	/**
 	 * 获取一个UOverlayWidgetController
 	 * @param:WorldContextObject 因为静态函数本身不属于ue的任何一个world，所以需要指定一个world上下文进行追踪该world中obj
 	 * BlueprintPure 是一个标记，用于标识一个函数或方法是“纯粹”的，即该函数不会修改对象的状态，也不会对外部状态产生影响，它只依赖于输入参数来计算输出结果。
@@ -128,17 +128,30 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static void SetKnockbackForce(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const FVector& InKnockbackForce);
-
-	//获取攻击位置指定半径内的所有动态Actor
-	// WorldContextObject: 世界上下文
-	// OutOverlappingActors: 查找结果列表
-	// ActorsToIgnore: 需要忽略的actors
-	// Radius: 查找半径
-	// SphereLocation: 查找位置
+	
+	/**
+	 * 获取攻击位置指定半径内的所有动态Actor
+	 * 
+	 * @param WorldContextObject 世界上下文
+	 * @param OutOverlappingActors 查找结果列表
+	 * @param ActorsToIgnore 需要忽略的actors
+	 * @param Radius 查找半径
+	 * @param SphereOrigin 查找位置
+	 */
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayMechanics")
 	static void GetLivePlayerWithinRadius(const UObject* WorldContextObject, TArray<AActor*>& OutOverlappingActors,
 	                                      const TArray<AActor*>& ActorsToIgnore, float Radius,
 	                                      const FVector& SphereOrigin);
+
+	/**
+	 * 获取距离目标位置最近的几个目标
+	 * @param MaxTargets 获取最大目标的数量
+	 * @param Actors 需要计算的目标数组
+	 * @param OutClosestTargets 返回获取到的最近的目标
+	 * @param Origin 计算的位置
+	 */
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayMechanics")
+	static void GetClosestTargets(const int32 MaxTargets, const TArray<AActor*>& Actors, TArray<AActor*>& OutClosestTargets, const FVector& Origin);
 
 	// 双方是否是敌对
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayMechanics")
