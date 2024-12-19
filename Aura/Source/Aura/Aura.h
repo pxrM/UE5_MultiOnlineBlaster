@@ -8,3 +8,5 @@
 #define CUSTOM_DEPTH_RED 250
 // 子弹的碰撞通道
 #define ECC_Projectile ECollisionChannel::ECC_GameTraceChannel1
+// 技能目标碰撞通道
+#define ECC_Target ECollisionChannel::ECC_GameTraceChannel2
