@@ -40,6 +40,19 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	void StoreAdditionalTargets(TArray<AActor*>& OutAdditionalTargets);
+	/**
+	 * 鼠标命中的敌人死亡处理
+	 * @param DeadActor 命中敌人
+	 */
+	UFUNCTION(BlueprintImplementableEvent)
+	void PrimaryTargetDied(AActor* DeadActor);
+
+	/**
+	 * 额外的敌人死亡处理
+	 * @param DeadActor 额外敌人 
+	 */
+	UFUNCTION(BlueprintImplementableEvent)
+	void AdditionalTargetDied(AActor* DeadActor);
 
 protected:
 	// 鼠标选中的位置
