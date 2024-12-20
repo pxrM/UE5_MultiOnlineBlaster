@@ -63,6 +63,16 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	return Params;
 }
 
+float UAuraDamageGameplayAbility::GetDamageAtLevel() const
+{
+	float Damage = 0.f;
+	for(auto& Pair : DamageTypes)
+	{
+		Damage += Pair.Value.GetValueAtLevel(GetAbilityLevel());
+	}
+	return Damage;
+}
+
 float UAuraDamageGameplayAbility::GetDamageByDamageType(float InLevel, const FGameplayTag& DamageType)
 {
 	checkf(DamageTypes.Contains(DamageType), TEXT("技能 [%s] 没有包含 [%s] 类型的伤害"), *GetNameSafe(this), *DamageType.ToString());
