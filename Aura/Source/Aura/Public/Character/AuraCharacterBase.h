@@ -27,6 +27,8 @@ class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInte
 public:
 	AAuraCharacterBase();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	FORCEINLINE UAttributeSet* GetAttributeSet() const {return AttributeSet;}
 
@@ -48,6 +50,11 @@ public:
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDie(const FVector& InDeathImpulse);
+
+	// 眩晕标签变动后的回调
+	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
+	UFUNCTION()
+	virtual void OnRep_Stunned();
 
 	
 protected:
@@ -170,7 +177,13 @@ public:
 	// 设置多个基础攻击动画
 	UPROPERTY(EditAnywhere,Category="Combat")
 	TArray<FTaggedMontage> AttackMontages;
-
+	// 死亡回调
 	FOnASCRegistered OnAscRegisteredDelegate;
 	FOnDeath OnDeathDelegate;
+	// 是否在眩晕状态
+	UPROPERTY(ReplicatedUsing=OnRep_Stunned, BlueprintReadOnly)
+	bool bIsStunned = false;
+	// 行走速度
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
+	float BaseWalkSpeed = 600.f;
 };

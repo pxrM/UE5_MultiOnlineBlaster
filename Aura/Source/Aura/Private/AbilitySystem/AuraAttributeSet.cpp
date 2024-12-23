@@ -216,6 +216,14 @@ void UAuraAttributeSet::HandleDeBuff(const FEffectProperties& Props)
 	// 添加debuff标签
 	TagContainer.Added.AddTag(DebuffType);
 	TagContainer.CombinedTags.AddTag(DebuffType);
+	// 如果是眩晕debuff添加禁用输入标签
+	if(DebuffType.MatchesTagExact(GameplayTags.DeBuff_Stun))
+	{
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_CursorTrace);
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputHeld);
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputPressed);
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputReleased);
+	}
 	// 应用并更新标签容器
 	TargetTagsGameplayEffectCmp.SetAndApplyTargetTagChanges(TagContainer);
 	/*  ******** In 5.3.2 works only like this  */

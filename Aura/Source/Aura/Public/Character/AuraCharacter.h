@@ -47,6 +47,8 @@ public:
 	virtual int32 GetSpellPoint_Implementation() const override;
 	/* end IPlayerInterface */
 
+	virtual void OnRep_Stunned() override;
+
 private:
 	virtual void InitAbilityActorInfo() override;
 	

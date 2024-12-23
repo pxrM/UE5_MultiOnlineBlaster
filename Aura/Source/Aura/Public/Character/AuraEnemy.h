@@ -40,6 +40,8 @@ public:
 	// 受击反应标签的监听委托函数
 	void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
 
+	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -73,10 +75,6 @@ public:
 	// 击中反应
 	UPROPERTY(BlueprintReadOnly, Category="Combat")
 	bool bHitReacting = false;
-
-	// 行走速度
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
-	float BaseWalkSpeed = 250.f;
 
 	// 死亡后的存在时间
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
