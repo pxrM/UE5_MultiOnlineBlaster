@@ -46,6 +46,8 @@ public:
 	virtual FOnASCRegistered& GetOnAscRegisteredDelegate() override;
 	virtual FOnDeath& GetOnDeathDelegate() override;
 	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;
+	virtual void SetIsBeingShocked_Implementation(const bool bInShock) override;
+	virtual bool IsBeingShocked_Implementation() const override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
@@ -185,12 +187,15 @@ public:
 	// 死亡回调
 	FOnASCRegistered OnAscRegisteredDelegate;
 	FOnDeath OnDeathDelegate;
-	// 是否在眩晕状态
+	// 是否在眩晕debuff状态
 	UPROPERTY(ReplicatedUsing=OnRep_Stunned, BlueprintReadOnly)
 	bool bIsStunned = false;
-	// 是否在击飞状态
+	// 是否在燃烧debuff状态
 	UPROPERTY(ReplicatedUsing=OnRep_Burned, BlueprintReadOnly)
 	bool bIsBurned = false;
+	// 角色是否处于受到持续攻击中
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	bool IsBeingShocked = false;
 	// 行走速度
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	float BaseWalkSpeed = 600.f;

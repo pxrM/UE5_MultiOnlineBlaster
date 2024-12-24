@@ -174,7 +174,7 @@ public:
 	// 获取角色死亡回调
 	virtual FOnDeath& GetOnDeathDelegate() = 0;
 
-	// 设置当前是否处于持续施法状态
+	// 设置当前角色是否处于持续施法攻击状态中
 	// BlueprintImplementableEvent：具体实现由蓝图来决定，而不是在C++中直接实现
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void SetInShockLoop(const bool bInShockLoop);
@@ -182,4 +182,12 @@ public:
 	// 获取武器
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	USkeletalMeshComponent* GetWeapon();
+
+	// 获取角色是否处于受到持续攻击中
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool IsBeingShocked() const;
+
+	// 设置角色是否处于受到持续攻击中
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetIsBeingShocked(const bool bInShock);
 };

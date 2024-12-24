@@ -151,10 +151,15 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		}
 		else
 		{
-			// 根据标签激活受击能力
-			FGameplayTagContainer TagContainer;
-			TagContainer.AddTag(FAuraGameplayTags::Get().Effect_HitReact);
-			Props.TargetAsc->TryActivateAbilitiesByTag(TagContainer);
+			// 受到雷电持续攻击时不会激活
+			if(Props.TargetCharacter->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsBeingShocked(Props.TargetCharacter))
+			{
+				// 根据标签激活受击能力
+				FGameplayTagContainer TagContainer;
+				TagContainer.AddTag(FAuraGameplayTags::Get().Effect_HitReact);
+				Props.TargetAsc->TryActivateAbilitiesByTag(TagContainer);
+			}
+			
 			// 判断是否击退
 			const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
 			if(!KnockbackForce.IsNearlyZero(1.f))
