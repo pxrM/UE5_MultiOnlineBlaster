@@ -18,9 +18,12 @@ AAuraCharacterBase::AAuraCharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	DebuffNiagaraComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComp");
-	DebuffNiagaraComponent->SetupAttachment(GetRootComponent());
-	DebuffNiagaraComponent->DebuffTag = FAuraGameplayTags::Get().DeBuff_Burn;
+	BurnNiagaraComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComp");
+	BurnNiagaraComponent->SetupAttachment(GetRootComponent());
+	BurnNiagaraComponent->DebuffTag = FAuraGameplayTags::Get().DeBuff_Burn;
+	StunNiagaraComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("StunDebuffComp");
+	StunNiagaraComponent->SetupAttachment(GetRootComponent());
+	StunNiagaraComponent->DebuffTag = FAuraGameplayTags::Get().DeBuff_Stun;
 	
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false); // 设置胶囊体的OverlapEvent为false，防止和mesh上的发生冲突从而触发两次Overlap
@@ -38,6 +41,7 @@ void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AAuraCharacterBase, bIsStunned);
+	DOREPLIFETIME(AAuraCharacterBase, bIsBurned);
 }
 
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
@@ -157,9 +161,9 @@ void AAuraCharacterBase::MulticastHandleDie_Implementation(const FVector& InDeat
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 将角色胶囊体组件的碰撞设置为不发生碰撞，这样角色在死亡后就不会再与其他物体碰撞
 
 	DissolveMaterial();
-
 	bDead = true;
-
+	BurnNiagaraComponent->Deactivate();
+	StunNiagaraComponent->Deactivate();
 	OnDeathDelegate.Broadcast(this);
 }
 
@@ -171,23 +175,11 @@ void AAuraCharacterBase::StunTagChanged(const FGameplayTag CallbackTag, int32 Ne
 
 void AAuraCharacterBase::OnRep_Stunned()
 {
-	if(UAuraAbilitySystemComponent* AuraAsc = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
-	{
-		const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
-		FGameplayTagContainer BlockedTags;
-		BlockedTags.AddTag(GameplayTags.Player_Block_CursorTrace);
-		BlockedTags.AddTag(GameplayTags.Player_Block_InputHeld);
-		BlockedTags.AddTag(GameplayTags.Player_Block_InputPressed);
-		BlockedTags.AddTag(GameplayTags.Player_Block_InputReleased);
-		if(bIsStunned)
-		{
-			AuraAsc->AddLooseGameplayTags(BlockedTags);
-		}
-		else
-		{
-			AuraAsc->RemoveLooseGameplayTags(BlockedTags);
-		}
-	}
+	
+}
+
+void AAuraCharacterBase::OnRep_Burned()
+{
 }
 
 void AAuraCharacterBase::BeginPlay()

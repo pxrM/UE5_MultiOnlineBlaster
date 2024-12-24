@@ -12,6 +12,7 @@
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
 #include "NiagaraComponent.h"
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -173,7 +174,37 @@ int32 AAuraCharacter::GetSpellPoint_Implementation() const
 
 void AAuraCharacter::OnRep_Stunned()
 {
-	
+	if(UAuraAbilitySystemComponent* AuraAsc = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
+	{
+		const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
+		FGameplayTagContainer BlockedTags;
+		BlockedTags.AddTag(GameplayTags.Player_Block_CursorTrace);
+		BlockedTags.AddTag(GameplayTags.Player_Block_InputHeld);
+		BlockedTags.AddTag(GameplayTags.Player_Block_InputPressed);
+		BlockedTags.AddTag(GameplayTags.Player_Block_InputReleased);
+		if(bIsStunned)
+		{
+			AuraAsc->AddLooseGameplayTags(BlockedTags);
+			StunNiagaraComponent->Activate();
+		}
+		else
+		{
+			AuraAsc->RemoveLooseGameplayTags(BlockedTags);
+			StunNiagaraComponent->Deactivate();
+		}
+	}
+}
+
+void AAuraCharacter::OnRep_Burned()
+{
+	if(bIsBurned)
+	{
+		BurnNiagaraComponent->Activate();
+	}
+	else
+	{
+		BurnNiagaraComponent->Deactivate();
+	}
 }
 
 void AAuraCharacter::InitAbilityActorInfo()

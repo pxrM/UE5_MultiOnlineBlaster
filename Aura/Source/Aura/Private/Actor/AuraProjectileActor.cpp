@@ -36,8 +36,10 @@ AAuraProjectileActor::AAuraProjectileActor()
 void AAuraProjectileActor::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	SetLifeSpan(LifeSpan); // 设置该 Actor 的生命周期时间。当生命周期到期时，Actor 会自动销毁。
+
+	SetReplicateMovement(true);
 
 	SphereCmp->OnComponentBeginOverlap.AddDynamic(this, &AAuraProjectileActor::OnSphereOverlap);
 
@@ -77,7 +79,8 @@ void AAuraProjectileActor::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                            const FHitResult& SweepResult)
 {
-	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemCmp->GetAvatarActor();
+	if(DamageEffectParams.SourceAbilitySystemCmp == nullptr) return;
+	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemCmp->GetAvatarActor();
 	// 发射者和碰撞的对象
 	if (GetInstigator() == OtherActor) return;
 	if (!UAuraAbilitySystemLibrary::IsNotFriend(SourceAvatarActor, OtherActor)) return;

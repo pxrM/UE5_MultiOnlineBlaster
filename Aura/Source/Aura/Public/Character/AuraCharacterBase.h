@@ -56,6 +56,9 @@ public:
 	UFUNCTION()
 	virtual void OnRep_Stunned();
 
+	UFUNCTION()
+	virtual void OnRep_Burned();
+
 	
 protected:
 	virtual void BeginPlay() override;
@@ -83,7 +86,9 @@ protected:
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debuff")
-	TObjectPtr<UDebuffNiagaraComponent> DebuffNiagaraComponent;
+	TObjectPtr<UDebuffNiagaraComponent> BurnNiagaraComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debuff")
+	TObjectPtr<UDebuffNiagaraComponent> StunNiagaraComponent;
 	// 角色武器mesh
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
@@ -183,6 +188,9 @@ public:
 	// 是否在眩晕状态
 	UPROPERTY(ReplicatedUsing=OnRep_Stunned, BlueprintReadOnly)
 	bool bIsStunned = false;
+	// 是否在击飞状态
+	UPROPERTY(ReplicatedUsing=OnRep_Burned, BlueprintReadOnly)
+	bool bIsBurned = false;
 	// 行走速度
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	float BaseWalkSpeed = 600.f;
