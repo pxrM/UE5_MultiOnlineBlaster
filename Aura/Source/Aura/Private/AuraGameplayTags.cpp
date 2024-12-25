@@ -263,6 +263,21 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("被动技能")
 	);
 	/*
+	 * 被动技能
+	 */
+	GameplayTags.Abilities_Passive_HaloOfProtection = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Passive.HaloOfProtection"),
+		FString("守护光环")
+	);
+	GameplayTags.Abilities_Passive_LifeSiphon = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Passive.LifeSiphon"),
+		FString("血量自动回复")
+	);
+	GameplayTags.Abilities_Passive_ManaSiphon = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Passive.ManaSiphon"),
+		FString("蓝量自动回复")
+	);
+	/*
 	 * 技能冷却
 	 */
 	GameplayTags.Cooldown_Fire_FireBolt = TagsManager.AddNativeGameplayTag(

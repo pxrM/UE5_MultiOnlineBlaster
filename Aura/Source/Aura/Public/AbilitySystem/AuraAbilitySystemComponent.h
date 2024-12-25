@@ -37,7 +37,10 @@ DECLARE_MULTICAST_DELEGATE_ThreeParams(FAbilityStatusChanged, const FGameplayTag
  * 技能装配后的委托
  */
 DECLARE_MULTICAST_DELEGATE_FourParams(FAbilityEquipped, const FGameplayTag& /*AbilityTag*/, const FGameplayTag& /*StatusTag*/, const FGameplayTag& /*Slot*/, const FGameplayTag& /*PrevSlot*/);
-
+/*
+ * 被动技能结束通知
+ */
+DECLARE_MULTICAST_DELEGATE_OneParam(FDeactivatePassiveAbility, const FGameplayTag& /*AbilityTag*/);
 
 /**
  * gas组件
@@ -123,7 +126,8 @@ public:
 	FAbilityStatusChanged AbilityStatusChanged;
 	// 技能装备后广播
 	FAbilityEquipped AbilityEquippedDelegate;
+	// 被动技能失效广播
+	FDeactivatePassiveAbility DeactivatePassiveAbility;
 	// 初始化应用技能后设置为true，记录当前是否初始化完成
-	
 	bool bStartupAbilitiesGiven = false;
 };
