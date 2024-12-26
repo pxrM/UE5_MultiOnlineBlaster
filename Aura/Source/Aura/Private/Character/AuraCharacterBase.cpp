@@ -8,6 +8,7 @@
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,7 +17,7 @@
 
 AAuraCharacterBase::AAuraCharacterBase()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	BurnNiagaraComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComp");
 	BurnNiagaraComponent->SetupAttachment(GetRootComponent());
@@ -34,6 +35,30 @@ AAuraCharacterBase::AAuraCharacterBase()
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	EffectAttachCmp = CreateDefaultSubobject<USceneComponent>("EffectAttachPoint");
+	EffectAttachCmp->SetupAttachment(GetRootComponent());
+	HaloOfProtectionNiagaraCmp = CreateDefaultSubobject<UPassiveNiagaraComponent>("HaloOfProtectionNiagaraComponent");
+	HaloOfProtectionNiagaraCmp->SetupAttachment(EffectAttachCmp);
+	LifeNiagaraCmp = CreateDefaultSubobject<UPassiveNiagaraComponent>("LifeNiagaraComponent");
+	LifeNiagaraCmp->SetupAttachment(EffectAttachCmp);
+	ManaNiagaraCmp = CreateDefaultSubobject<UPassiveNiagaraComponent>("ManaNiagaraComponent");
+	ManaNiagaraCmp->SetupAttachment(EffectAttachCmp);
+	
+}
+
+void AAuraCharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+}
+
+void AAuraCharacterBase::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	// 防止特效跟随人物旋转，每一帧更新修改旋转为默认
+	EffectAttachCmp->SetWorldRotation(FRotator::ZeroRotator);
 }
 
 void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -191,12 +216,6 @@ void AAuraCharacterBase::OnRep_Stunned()
 
 void AAuraCharacterBase::OnRep_Burned()
 {
-}
-
-void AAuraCharacterBase::BeginPlay()
-{
-	Super::BeginPlay();
-	
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()
