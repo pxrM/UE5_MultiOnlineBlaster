@@ -16,6 +16,7 @@
 #include "GameFramework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "Actor/MagicCircleActor.h"
+#include "Components/DecalComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -154,11 +155,16 @@ UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()
 	return AuraAbilitySystemComponent;
 }
 
-void AAuraPlayerController::ShowMagicCircle()
+
+void AAuraPlayerController::ShowMagicCircle(UMaterialInstance* DecalMaterial)
 {
 	if(!IsValid(MagicCircle))
 	{
 		MagicCircle = GetWorld()->SpawnActor<AMagicCircleActor>(MagicCircleClass);
+		if(DecalMaterial)
+		{
+			MagicCircle->MagicCircleDecalCmp->SetMaterial(0, DecalMaterial);
+		}
 	}
 }
 

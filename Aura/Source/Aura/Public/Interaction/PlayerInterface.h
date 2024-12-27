@@ -65,4 +65,11 @@ public:
 	// 升级
 	UFUNCTION(BlueprintNativeEvent)
 	void LevelUp();
+
+	// 显示贴花材质
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ShowMagicCircle(UMaterialInstance* DecalMaterial = nullptr);
+	// 关闭贴花材质
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void HideMagicCircle();
 };

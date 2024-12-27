@@ -45,6 +45,8 @@ public:
 	virtual void AddToPlayerLevel_Implementation(const int32 InPlayerLevel) override;
 	virtual int32 GetAttributePoints_Implementation() const override;
 	virtual int32 GetSpellPoint_Implementation() const override;
+	virtual void ShowMagicCircle_Implementation(UMaterialInstance* DecalMaterial) override;
+	virtual void HideMagicCircle_Implementation() override;
 	/* end IPlayerInterface */
 
 	virtual void OnRep_Stunned() override;
