@@ -8,6 +8,7 @@
 #include "AuraPlayerController.generated.h"
 
 
+class AMagicCircleActor;
 class UNiagaraSystem;
 class UDamageTextComponent;
 class USplineComponent;
@@ -40,6 +41,11 @@ public:
 	UAuraAbilitySystemComponent* GetASC();
 	UFUNCTION(Client, Reliable)
 	void ShowDamageNumber(const float DamageAmount, ACharacter* TargetCharacter, const bool bBlockedHit, const bool bCriticalHit);
+
+	UFUNCTION(BlueprintCallable)
+	void ShowMagicCircle();
+	UFUNCTION(BlueprintCallable)
+	void HideMagicCircle();
 	
 	
 private: 
@@ -51,6 +57,7 @@ private:
 	void AbilityInputTagHeld(const FGameplayTag InputTag);
 	void ShiftPressed() { bShiftKeyDown = true; }
 	void ShiftReleased() { bShiftKeyDown = false; }
+	void UpdateMagicCircleLocation();
 	
 	
 private:
@@ -106,4 +113,9 @@ private:
 	// 显示伤害数值的组件类
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AMagicCircleActor> MagicCircleClass;
+	UPROPERTY()
+	TObjectPtr<AMagicCircleActor> MagicCircle;
 };
