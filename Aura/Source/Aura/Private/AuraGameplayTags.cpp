@@ -220,14 +220,6 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Summon"),
 		FString("召唤技能标签")
 	);
-	GameplayTags.Abilities_Fire_FireBolt = TagsManager.AddNativeGameplayTag(
-		FName("Abilities.Fire.FireBolt"),
-		FString("火球术技能标签")
-	);
-	GameplayTags.Abilities_Lightning_Electrocute = TagsManager.AddNativeGameplayTag(
-		FName("Abilities.Lightning.Electrocute"),
-		FString("雷击技能标签")
-	);
 
 	GameplayTags.Abilities_HitReact = TagsManager.AddNativeGameplayTag(
 		FName("Abilities.HitReact"),
@@ -261,6 +253,20 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Abilities_Type_Passive = TagsManager.AddNativeGameplayTag(
 		FName("Abilities.Type.Passive"),
 		FString("被动技能")
+	);
+
+	// 攻击技能
+	GameplayTags.Abilities_Fire_FireBolt = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Fire.FireBolt"),
+		FString("火球术技能标签")
+	);
+	GameplayTags.Abilities_Lightning_Electrocute = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Lightning.Electrocute"),
+		FString("雷击技能标签")
+	);
+	GameplayTags.Abilities_Arcane_ArcaneShards = TagsManager.AddNativeGameplayTag(
+		FName("Abilities.Arcane.ArcaneShards"),
+		FString("奥术爆炸技能标签")
 	);
 	/*
 	 * 被动技能
