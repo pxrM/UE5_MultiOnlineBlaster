@@ -78,11 +78,27 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			RepBits |= 1 << 15;
 		}
+		if(bIsRadialDamage)
+		{
+			RepBits |= 1 << 16;
+			if(!RadialDamageOrigin.IsZero())
+			{
+				RepBits |= 1 << 17;
+			}
+			if(RadialDamageInnerRadius > 0.f)
+			{
+				RepBits |= 1 << 18;
+			}
+			if(RadialDamageOuterRadius > 0.f)
+			{
+				RepBits |= 1 << 19;
+			}
+		}
 		/* Add end */
 	}
 
 	// 序列化RepBits
-	Ar.SerializeBits(&RepBits, 16);
+	Ar.SerializeBits(&RepBits, 20);
 
 	/*
 	 * 如果对应位的值为1，则将数据存入Ar
@@ -173,6 +189,22 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	if(RepBits & (1 << 15))
 	{
 		KnockbackForce.NetSerialize(Ar, Map, bOutSuccess);
+	}
+	if(RepBits & (1 << 16))
+	{
+		Ar << bIsRadialDamage;
+		if(RepBits & (1 << 16))
+		{
+			RadialDamageOrigin.NetSerialize(Ar, Map, bOutSuccess);
+		}
+		if(RepBits & (1 << 16))
+		{
+			Ar << RadialDamageInnerRadius;
+		}
+		if(RepBits & (1 << 16))
+		{
+			Ar << RadialDamageOuterRadius;
+		}
 	}
 	/* Add end */
 

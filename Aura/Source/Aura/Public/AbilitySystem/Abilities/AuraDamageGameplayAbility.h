@@ -59,11 +59,23 @@ protected:
 	// 死亡时受到的冲击力
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	float DeathImpulseMagnitude = 1000.f;
-
 	// 技能命中时，敌人受到的击退力度
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	float KnockbackForceMagnitude = 500.f;
 	// 击退概率
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	float KnockbackChance = 0.f;
+
+	// 当前是否是范围伤害
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	bool bIsRadialDamage = false; 
+	// 伤害中心点
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	FVector RadialDamageOrigin = FVector::ZeroVector; 
+	// 伤害内半径：在此半径内的目标会受到完整的伤害
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float RadialDamageInnerRadius = 0.f; 
+	// 伤害外半径：超过这个距离的目标受到最小伤害，最小伤害如果设置为0，则圈外不受到伤害
+	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	float RadialDamageOuterRadius = 0.f;
 };

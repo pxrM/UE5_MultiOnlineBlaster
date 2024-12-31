@@ -14,7 +14,9 @@ struct FDamageEffectParams
 {
 	GENERATED_BODY()
 
-	FDamageEffectParams(){}
+	FDamageEffectParams()
+	{
+	}
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UObject> WorldContextObject = nullptr; // 当前场景的上下文对象
@@ -45,21 +47,35 @@ struct FDamageEffectParams
 
 	UPROPERTY(BlueprintReadWrite)
 	float DeBuffFrequency = 0.f; // 减益效果触发持续时间
-	
+
+
 	UPROPERTY(BlueprintReadWrite)
-	float DeathImpulseMagnitude = 0.f; 	// 死亡时受到的冲击力
-	
+	float DeathImpulseMagnitude = 0.f; // 死亡时受到的冲击力
+
 	UPROPERTY(BlueprintReadWrite)
 	FVector DeathImpulse = FVector::Zero(); // 死亡时受到的伤害冲击方向
 
 	UPROPERTY(BlueprintReadWrite)
-	float KnockbackForceMagnitude = 0.f; 	// 受击时的击退力度
+	float KnockbackForceMagnitude = 0.f; // 受击时的击退力度
 
 	UPROPERTY(BlueprintReadWrite)
-	float KnockbackChance = 0.f; 	// 受击时的击退概率
-	
+	float KnockbackChance = 0.f; // 受击时的击退概率
+
 	UPROPERTY(BlueprintReadWrite)
 	FVector KnockbackForce = FVector::Zero(); // 受击时的击退方向
+
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsRadialDamage = false; // 当前是否是范围伤害
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector RadialDamageOrigin = FVector::ZeroVector; // 伤害中心点
+
+	UPROPERTY(BlueprintReadWrite)
+	float RadialDamageInnerRadius = 0.f; // 伤害内半径：在此半径内的目标会受到完整的伤害
+
+	UPROPERTY(BlueprintReadWrite)
+	float RadialDamageOuterRadius = 0.f; // 伤害外半径：超过这个距离的目标受到最小伤害，最小伤害如果设置为0，则圈外不受到伤害
 };
 
 
@@ -83,7 +99,7 @@ public:
 	virtual FGameplayEffectContext* Duplicate() const override
 	{
 		FGameplayEffectContext* NewContext = new FGameplayEffectContext();
-		*NewContext = *this;	// 浅拷贝
+		*NewContext = *this; // 浅拷贝
 		if (GetHitResult())
 		{
 			// Does a deep copy of the hit result
@@ -109,6 +125,10 @@ public:
 	TSharedPtr<FGameplayTag> GetDeBuffDamageType() const { return DeBuffDamageType; }
 	FVector GetDeathImpulse() const { return DeathImpulse; }
 	FVector GetKnockbackForce() const { return KnockbackForce; }
+	bool GetIsRadialDamage() const { return bIsRadialDamage; }
+	FVector GetRadialDamageOrigin() const { return RadialDamageOrigin; }
+	float GetRadialDamageInnerRadius() const { return RadialDamageInnerRadius; }
+	float GetRadialDamageOuterRadius() const { return RadialDamageOuterRadius; }
 
 	void SetIsCriticalHit(const bool bInCriticalHit) { bIsCriticalHit = bInCriticalHit; }
 	void SetIsBlockedHit(const bool bInBlockedHit) { bIsBlockedHit = bInBlockedHit; }
@@ -119,6 +139,10 @@ public:
 	void SetDeBuffDamageType(const TSharedPtr<FGameplayTag>& InDamageType) { DeBuffDamageType = InDamageType; }
 	void SetDeathImpulse(const FVector& InDeathImpulse) { DeathImpulse = InDeathImpulse; }
 	void SetKnockbackForce(const FVector& InKnockbackForce) { KnockbackForce = InKnockbackForce; }
+	void SetIsRadialDamage(const bool bInRadialDamage) { bIsRadialDamage = bInRadialDamage; }
+	void SetRadialDamageOrigin(const FVector& InRadialDamageOrigin) { RadialDamageOrigin = InRadialDamageOrigin; }
+	void SetRadialDamageInnerRadius(const float InRadialDamageInnerRadius){ RadialDamageInnerRadius = InRadialDamageInnerRadius; }
+	void SetRadialDamageOuterRadius(const float InRadialDamageOuterRadius){ RadialDamageOuterRadius = InRadialDamageOuterRadius; }
 
 protected:
 	// 是否成功格挡
@@ -147,12 +171,23 @@ protected:
 	// 死亡时受到的伤害冲击方向
 	UPROPERTY()
 	FVector DeathImpulse = FVector::Zero();
-
 	// 受击时的击退方向
 	UPROPERTY()
 	FVector KnockbackForce = FVector::Zero();
-};
 
+	// 当前是否是范围伤害
+	UPROPERTY()
+	bool bIsRadialDamage = false;
+	// 伤害中心点
+	UPROPERTY()
+	FVector RadialDamageOrigin = FVector::ZeroVector;
+	// 伤害内半径：在此半径内的目标会受到完整的伤害
+	UPROPERTY()
+	float RadialDamageInnerRadius = 0.f;
+	// 伤害外半径：超过这个距离的目标受到最小伤害，最小伤害如果设置为0，则圈外不受到伤害
+	UPROPERTY()
+	float RadialDamageOuterRadius = 0.f;
+};
 
 
 /*
@@ -181,7 +216,7 @@ protected:
  *		因此类似于 STL 里面的 Traits，通过添加一个中间层，实现具体容器类型的萃取，在编译期就能得到类型信息。
  *	  比如 WithIdenticalViaEquality 就是告诉它自己有 EStructFlags::STRUCT_IdenticalNative 标记，实现了自定义 IsIdentical 的方法，可以直接使用 operator== 来判定。
  */
-template<>
+template <>
 struct TStructOpsTypeTraits<FAuraGameplayEffectContext> : public TStructOpsTypeTraitsBase2<FAuraGameplayEffectContext>
 {
 	enum
