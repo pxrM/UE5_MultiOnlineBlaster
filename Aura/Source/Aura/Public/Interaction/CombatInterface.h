@@ -71,6 +71,7 @@ class UNiagaraSystem;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnASCRegistered, UAbilitySystemComponent*);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AActor*, DeadActor);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageSignature, float /*DamageAmount*/)
 
 
 // 标签对应蒙太奇动画的接口体，为了在普攻GA里兼容多种攻击方式
@@ -173,6 +174,9 @@ public:
 	
 	// 获取角色死亡回调
 	virtual FOnDeath& GetOnDeathDelegate() = 0;
+
+	// 获取角色伤害回调
+	virtual FOnDamageSignature& GetOnDamageSignature() = 0;
 
 	// 设置当前角色是否处于持续施法攻击状态中
 	// BlueprintImplementableEvent：具体实现由蓝图来决定，而不是在C++中直接实现

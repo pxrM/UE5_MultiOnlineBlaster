@@ -10,6 +10,7 @@
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Interaction/CombatInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // 创建一个结构用来保存所有需要捕获的属性(发起对象和目标对象)
 struct AuraDamageStatics
@@ -141,6 +142,41 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		 *	因此，抵抗 20% 的伤害会使得最终伤害值变为 80。
 		 */
 		DamageTypeValue *= (100.f - Resistance) / 100.f;
+
+		// 是否有范围伤害
+		if(UAuraAbilitySystemLibrary::IsRadialDamage(EffectContextHandle))
+		{
+			// 1. 在Character里复写 TakeDamage
+			// 2. 创建委托 OnDamageDelegate，广播在TakeDamage中收到的损害
+			// 3. 绑定 lambda 到受害者的 OnDamageDelegate
+			// 4. 调用 UGameplayStatic::ApplyRadialDamageWithFalloff来造成伤害（这将导致TakeDamage被受害者调用，然后广播OnDamageDelegate）
+			// 5. 在 lambda 中，设置 DamageTypeValue 为接收到的伤害值
+
+			if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(TargetAvatar))
+			{
+				CombatInterface->GetOnDamageSignature().AddLambda([&](float DamageAmount)
+				{
+					DamageTypeValue = DamageAmount;
+				});
+			}
+			/*
+			 * 在指定的范围内施加一个带有衰减效果的辐射伤害。该函数允许你通过辐射区域的中心以及范围来计算伤害的衰减效果，使得距离伤害源越远的目标承受的伤害越小。
+			 * 通常用于类似爆炸、范围伤害、或者其他类型的伤害传播情境。比如当爆炸发生时，伤害通常会在爆炸源附近最大，然后逐渐向外衰减。
+			 */
+			UGameplayStatics::ApplyRadialDamageWithFalloff(
+				TargetAvatar,
+				DamageTypeValue,
+				0.f,
+				UAuraAbilitySystemLibrary::GetRadialDamageOrigin(EffectContextHandle),
+				UAuraAbilitySystemLibrary::GetRadialDamageInnerRadius(EffectContextHandle),
+				UAuraAbilitySystemLibrary::GetRadialDamageOuterRadius(EffectContextHandle),
+				1.f,
+				UDamageType::StaticClass(),
+				TArray<AActor*>(),
+				SourceAvatar,
+				nullptr);
+		}
+		
 		// 将每种属性伤害值合并进行后续计算
 		Damage += DamageTypeValue;
 	}

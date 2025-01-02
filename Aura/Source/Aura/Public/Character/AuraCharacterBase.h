@@ -29,8 +29,17 @@ public:
 	AAuraCharacterBase();
 
 	virtual void Tick(float DeltaSeconds) override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	/**
+	 * 应用多少伤害
+	 * @see https://www.unrealengine.com/blog/damage-in-ue4
+	 * @param DamageAmount		要施加的伤害数值
+	 * @param DamageEvent		描述伤害细节的结构体，支持不同类型的伤害，如普通伤害、点伤害（FPointDamageEvent）、范围伤害（FRadialDamageEvent）等。
+	 * @param EventInstigator	负责造成伤害的 Controller，通常是玩家或 AI 的控制器。
+	 * @param DamageCauser		直接造成伤害的 Actor，例如爆炸物、子弹或掉落的石头。
+	 * @return					返回实际应用的伤害值。这允许目标修改或减少伤害，然后将最终的值返回。
+	 */
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	FORCEINLINE UAttributeSet* GetAttributeSet() const {return AttributeSet;}
@@ -51,6 +60,7 @@ public:
 	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;
 	virtual void SetIsBeingShocked_Implementation(const bool bInShock) override;
 	virtual bool IsBeingShocked_Implementation() const override;
+	virtual FOnDamageSignature& GetOnDamageSignature() override;
 
 	// 将死亡同步到server和client
 	UFUNCTION(NetMulticast, Reliable)
@@ -200,9 +210,12 @@ public:
 	// 设置多个基础攻击动画
 	UPROPERTY(EditAnywhere,Category="Combat")
 	TArray<FTaggedMontage> AttackMontages;
-	// 死亡回调
+	// 角色asc组件注册完成广播
 	FOnASCRegistered OnAscRegisteredDelegate;
+	// 死亡广播
 	FOnDeath OnDeathDelegate;
+	// 伤害广播
+	FOnDamageSignature OnDamageSignature;
 	// 是否在眩晕debuff状态
 	UPROPERTY(ReplicatedUsing=OnRep_Stunned, BlueprintReadOnly)
 	bool bIsStunned = false;
