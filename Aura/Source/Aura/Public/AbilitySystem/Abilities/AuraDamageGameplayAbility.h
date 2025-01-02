@@ -26,7 +26,7 @@ public:
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;
 
 	UFUNCTION(BlueprintPure)
-	FDamageEffectParams MakeDamageEffectParamsFromClassDefault(AActor* TargetActor = nullptr);
+	FDamageEffectParams MakeDamageEffectParamsFromClassDefault(AActor* TargetActor = nullptr, FVector InRadialDamageOrigin = FVector::ZeroVector);
 
 	UFUNCTION(BlueprintPure)
 	float GetDamageAtLevel() const;
@@ -73,9 +73,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Damage")
 	FVector RadialDamageOrigin = FVector::ZeroVector; 
 	// 伤害内半径：在此半径内的目标会受到完整的伤害
-	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Damage")
 	float RadialDamageInnerRadius = 0.f; 
 	// 伤害外半径：超过这个距离的目标受到最小伤害，最小伤害如果设置为0，则圈外不受到伤害
-	UPROPERTY(EditDefaultsOnly, Category="Damage")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Damage")
 	float RadialDamageOuterRadius = 0.f;
 };

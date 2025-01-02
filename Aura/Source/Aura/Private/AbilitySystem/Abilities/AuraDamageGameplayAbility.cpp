@@ -32,7 +32,7 @@ FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const
 	return FTaggedMontage();
 }
 
-FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassDefault(AActor* TargetActor)
+FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassDefault(AActor* TargetActor, FVector InRadialDamageOrigin)
 {
 	FDamageEffectParams Params;
 	Params.WorldContextObject = GetAvatarActorFromActorInfo();
@@ -63,7 +63,7 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	if(bIsRadialDamage)
 	{
 		Params.bIsRadialDamage = bIsRadialDamage;
-		Params.RadialDamageOrigin = RadialDamageOrigin;
+		Params.RadialDamageOrigin = InRadialDamageOrigin;
 		Params.RadialDamageInnerRadius = RadialDamageInnerRadius;
 		Params.RadialDamageOuterRadius = RadialDamageOuterRadius;
 	}
