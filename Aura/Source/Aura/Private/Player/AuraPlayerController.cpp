@@ -16,6 +16,7 @@
 #include "GameFramework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "Actor/MagicCircleActor.h"
+#include "Aura/Aura.h"
 #include "Components/DecalComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
@@ -80,12 +81,13 @@ void AAuraPlayerController::CursorTrace()
 		CurrActor = nullptr;
 		return;
 	}
-	
+
 	// GetHitResultUnderCursor这个函数用于在当前光标（鼠标指针）所在的位置执行一次“射线检测”（Raycast）
 	// ECC_Visibility 是用于检测的碰撞通道（Collision Channel）。ECC_Visibility 通常用于检测可见性相关的碰撞，这意味着它会忽略不可见的对象。
 	// false 表示不忽略复杂碰撞（complex collision）。如果设置为 true，则只检测简单碰撞（simple collision）。
-	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
-	if(!CursorHit.bBlockingHit) return;
+	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;
+	GetHitResultUnderCursor(TraceChannel, false, CursorHit);
+	if (!CursorHit.bBlockingHit) return;
 
 	LastActor = CurrActor;
 	CurrActor = Cast<IEnemyInterface>(CursorHit.GetActor());
