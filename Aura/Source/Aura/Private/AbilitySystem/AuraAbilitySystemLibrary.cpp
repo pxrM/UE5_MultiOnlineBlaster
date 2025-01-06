@@ -539,7 +539,7 @@ bool UAuraAbilitySystemLibrary::IsNotFriend(const AActor* FirstActor, const AAct
 	return !bFriends;
 }
 
-TArray<FRotator> UAuraAbilitySystemLibrary::EvenlyRotatedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators)
+TArray<FRotator> UAuraAbilitySystemLibrary::EvenlySpacedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators)
 {
 	TArray<FRotator> Rotators;
 	if(NumRotators > 1)
@@ -561,7 +561,7 @@ TArray<FRotator> UAuraAbilitySystemLibrary::EvenlyRotatedRotators(const FVector&
 	return Rotators;
 }
 
-TArray<FVector> UAuraAbilitySystemLibrary::EvenlyRotatedVectors(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumVectors)
+TArray<FVector> UAuraAbilitySystemLibrary::EvenlySpacedVectors(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumVectors)
 {
 	TArray<FVector> Vectors;
 	if(NumVectors > 1)

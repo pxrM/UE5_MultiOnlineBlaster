@@ -202,7 +202,7 @@ public:
 	 * @note 用于在技能生成投掷物的函数逻辑中。
 	 */
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayMechanics")
-	static TArray<FRotator> EvenlyRotatedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators);
+	static TArray<FRotator> EvenlySpacedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators);
 
 	/**
 	 * 根据传入的值计算均匀分布的多段朝向
@@ -217,6 +217,6 @@ public:
 	 * @note 用于在技能生成投掷物的函数逻辑中。
 	 */
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayMechanics")
-	static TArray<FVector> EvenlyRotatedVectors(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumVectors);
+	static TArray<FVector> EvenlySpacedVectors(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumVectors);
 	
 };

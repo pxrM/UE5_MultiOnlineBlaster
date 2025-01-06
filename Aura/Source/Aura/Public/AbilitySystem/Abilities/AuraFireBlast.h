@@ -24,8 +24,9 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="FireBlast")
-	int32 NumFireBalls;
+	int32 NumFireBalls = 12;
 
 private:
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AAuraFireBall> FireBallClass;
 };

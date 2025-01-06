@@ -86,7 +86,7 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 		// 返回的是与 Rotation 旋转角度对应的单位向量，返回一个朝着该旋转角度的方向的单位向量，也就是这个旋转角度的“前进方向”。
 		const FVector Forward = Rotation.Vector();
 
-		TArray<FRotator> Rotators = UAuraAbilitySystemLibrary::EvenlyRotatedRotators(Forward, FVector::UpVector, ProjectilesSpread, EffectNumProjectiles);
+		TArray<FRotator> Rotators = UAuraAbilitySystemLibrary::EvenlySpacedRotators(Forward, FVector::UpVector, ProjectilesSpread, EffectNumProjectiles);
 		for(FRotator& Rot : Rotators)
 		{
 			FTransform SpawnTransform;
