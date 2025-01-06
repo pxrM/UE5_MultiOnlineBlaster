@@ -79,11 +79,7 @@ void AAuraProjectileActor::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                            const FHitResult& SweepResult)
 {
-	if(DamageEffectParams.SourceAbilitySystemCmp == nullptr) return;
-	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemCmp->GetAvatarActor();
-	// 发射者和碰撞的对象
-	if (GetInstigator() == OtherActor) return;
-	if (!UAuraAbilitySystemLibrary::IsNotFriend(SourceAvatarActor, OtherActor)) return;
+	if(!IsValidOverlap(OtherActor)) return;
 
 	if (!bHit) OnHit();
 	
@@ -114,4 +110,15 @@ void AAuraProjectileActor::OnSphereOverlap(UPrimitiveComponent* OverlappedCompon
 		// 防止客户端在被销毁之前发生重叠（网络问题）
 		bHit = true;
 	}
+}
+
+bool AAuraProjectileActor::IsValidOverlap(const AActor* OtherActor) const
+{
+	if(DamageEffectParams.SourceAbilitySystemCmp == nullptr) return false;
+	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemCmp->GetAvatarActor();
+	// 发射者和碰撞的对象
+	if (GetInstigator() == OtherActor) return false;
+	if (!UAuraAbilitySystemLibrary::IsNotFriend(SourceAvatarActor, OtherActor)) return false;
+
+	return true;
 }

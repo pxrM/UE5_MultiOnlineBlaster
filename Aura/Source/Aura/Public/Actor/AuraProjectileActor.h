@@ -31,6 +31,8 @@ protected:
 	UFUNCTION()
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	bool IsValidOverlap(const AActor* OtherActor) const;
+	
 	
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -38,8 +40,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float LifeSpan = 15.f;
-	
-	bool bHit = false;
 	
 	// 碰撞后的特效
 	UPROPERTY(EditAnywhere)
@@ -74,5 +74,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, meta=(ExposeOnSpawn = true))
 	FDamageEffectParams DamageEffectParams;
+
+	
+protected:
+	bool bHit = false;
 };
  
