@@ -18,5 +18,12 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
-	
+public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartOutgoingTimeline();
+
+public:
+	// 火球发射出去然后返回的目标
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AActor> ReturnToActor;
 };
