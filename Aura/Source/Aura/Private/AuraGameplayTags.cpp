@@ -260,6 +260,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Fire.FireBolt"),
 		FString("火球术技能标签")
 	);
+	GameplayTags.Abilities_Fire_FireBlast = TagsManager.AddNativeGameplayTag(
+	FName("Abilities.Fire.FireBlast"),
+	FString("火焰爆炸技能标签")
+);
 	GameplayTags.Abilities_Lightning_Electrocute = TagsManager.AddNativeGameplayTag(
 		FName("Abilities.Lightning.Electrocute"),
 		FString("雷击技能标签")
