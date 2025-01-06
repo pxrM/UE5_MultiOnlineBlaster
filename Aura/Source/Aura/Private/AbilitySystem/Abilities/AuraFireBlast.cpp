@@ -38,3 +38,8 @@ FString UAuraFireBlast::GetNextDescription(int32 Level)
 			"<Default>向四面八方发射 %i 颗火球，每颗火球会在返回时发生爆炸，并造成</> <Damage>%i</> <Default>点径向火焰伤害，并有一定几率触发燃烧。</>"),
 		Level, ManaCost, Cooldown, FMath::Min(Level, NumFireBalls), Damage);
 }
+
+TArray<AAuraFireBall*> UAuraFireBlast::SpawnFireBalls()
+{
+	return TArray<AAuraFireBall*>();
+}
