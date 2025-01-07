@@ -77,7 +77,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Attributes_Meta_IncomingXP = TagsManager.AddNativeGameplayTag(
 		FName("Attributes.Meta.IncomingXP"),
 		FString("经验元属性标签")
-	);	
+	);
 	/*
 	 * Input Tag
 	 */
@@ -160,7 +160,8 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	);
 	// 将属性和抗性标签对应
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Fire, GameplayTags.Attributes_Resistance_Fire);
-	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Lightning,GameplayTags.Attributes_Resistance_Lightning);
+	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Lightning,
+	                                         GameplayTags.Attributes_Resistance_Lightning);
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Arcane, GameplayTags.Attributes_Resistance_Arcane);
 	GameplayTags.DamageTypesToResistance.Add(GameplayTags.Damage_Physical, GameplayTags.Attributes_Resistance_Physical);
 	/*
@@ -171,8 +172,8 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("魔法减益标签")
 	);
 	GameplayTags.DeBuff_Burn = TagsManager.AddNativeGameplayTag(
-			FName("DeBuff.Burn"),
-			FString("火属性燃烧减益标签")
+		FName("DeBuff.Burn"),
+		FString("火属性燃烧减益标签")
 	);
 	GameplayTags.DeBuff_Stun = TagsManager.AddNativeGameplayTag(
 		FName("DeBuff.Stun"),
@@ -183,7 +184,7 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("物理属性流血减益标签")
 	);
 	GameplayTags.DamageTypesToDeBuff.Add(GameplayTags.Damage_Fire, GameplayTags.DeBuff_Burn);
-	GameplayTags.DamageTypesToDeBuff.Add(GameplayTags.Damage_Lightning,GameplayTags.DeBuff_Stun);
+	GameplayTags.DamageTypesToDeBuff.Add(GameplayTags.Damage_Lightning, GameplayTags.DeBuff_Stun);
 	GameplayTags.DamageTypesToDeBuff.Add(GameplayTags.Damage_Arcane, GameplayTags.DeBuff_Arcane);
 	GameplayTags.DamageTypesToDeBuff.Add(GameplayTags.Damage_Physical, GameplayTags.DeBuff_Physical);
 	/*
@@ -194,8 +195,8 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("减益效果触发几率配置标签")
 	);
 	GameplayTags.DeBuff_Damage = TagsManager.AddNativeGameplayTag(
-			FName("DeBuff.Damage"),
-			FString("减益效果触发伤害配置标签")
+		FName("DeBuff.Damage"),
+		FString("减益效果触发伤害配置标签")
 	);
 	GameplayTags.DeBuff_Duration = TagsManager.AddNativeGameplayTag(
 		FName("DeBuff.Duration"),
@@ -261,9 +262,9 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("火球术技能标签")
 	);
 	GameplayTags.Abilities_Fire_FireBlast = TagsManager.AddNativeGameplayTag(
-	FName("Abilities.Fire.FireBlast"),
-	FString("火焰爆炸技能标签")
-);
+		FName("Abilities.Fire.FireBlast"),
+		FString("火焰爆炸技能标签")
+	);
 	GameplayTags.Abilities_Lightning_Electrocute = TagsManager.AddNativeGameplayTag(
 		FName("Abilities.Lightning.Electrocute"),
 		FString("雷击技能标签")
@@ -345,19 +346,26 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Player_Block_CursorTrace = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Player.Block.CursorTrace"),
 		FString("阻挡鼠标追踪")
-		);
+	);
 	GameplayTags.Player_Block_InputPressed = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Player.Block.InputPressed"),
 		FString("阻挡按键按下")
-		);
+	);
 	GameplayTags.Player_Block_InputReleased = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Player.Block.InputReleased"),
 		FString("阻挡按键抬起")
-		);
+	);
 	GameplayTags.Player_Block_InputHeld = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Player.Block.InputHeld"),
 		FString("阻挡按键持续按下中")
-		);
+	);
+	/*
+	 * GameplayCue
+	 */
+	GameplayTags.GameplayCue_FireBlast = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("GameplayCue.FireBlast"),
+		FString("火焰爆炸表现效果标签")
+	);
 
 	GameplayTags.TagsInitCompleteNotify.ExecuteIfBound();
 }
