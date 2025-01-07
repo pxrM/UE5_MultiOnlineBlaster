@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
 #include "AuraAbilityTypes.h"
 #include "Data/CharacterClassInfo.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -26,17 +27,9 @@ class AURA_API UAuraAbilitySystemLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	/**
-	 * @param: AAuraHUD*& 地址引用，可以修改它的地址
-	 * @return: bool 判断参数是否获取成功
-	 */
-	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|WidgetController", meta=(DefaultToSelf="WorldContextObject"))
-	static bool MakeWidgetControllerParams(const UObject* WorldContextObject, FWidgetControllerParams& OutWCParams, AAuraHUD*& OutAuraHUD);
-	/**
-	 * 获取一个UOverlayWidgetController
-	 * @param:WorldContextObject 因为静态函数本身不属于ue的任何一个world，所以需要指定一个world上下文进行追踪该world中obj
-	 * BlueprintPure 是一个标记，用于标识一个函数或方法是“纯粹”的，即该函数不会修改对象的状态，也不会对外部状态产生影响，它只依赖于输入参数来计算输出结果。
-	 */
+	// 获取一个UOverlayWidgetController
+	// WorldContextObject 因为静态函数本身不属于ue的任何一个world，所以需要指定一个world上下文进行追踪该world中obj
+	// BlueprintPure 是一个标记，用于标识一个函数或方法是“纯粹”的，即该函数不会修改对象的状态，也不会对外部状态产生影响，它只依赖于输入参数来计算输出结果。
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|WidgetController", meta=(DefaultToSelf="WorldContextObject"))
 	static UOverlayWidgetController* GetOverlayWidgetController(const UObject* WorldContextObject);
 
@@ -151,7 +144,58 @@ public:
 	static void SetRadialDamageInnerRadius(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const float InRadialDamageInnerRadius);
 
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayEffects")
-	static void SetRadialDamageOuterRadius(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle, const float InRadialDamageOuterRadius);
+	static void SetRadialDamageOuterRadius(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle,
+	                                       const float InRadialDamageOuterRadius);
+
+	
+	/**
+	 * @param: AAuraHUD*& 地址引用，可以修改它的地址
+	 * @return: bool 判断参数是否获取成功
+	 */
+	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|WidgetController",
+		meta=(DefaultToSelf="WorldContextObject"))
+	static bool MakeWidgetControllerParams(const UObject* WorldContextObject, FWidgetControllerParams& OutWCParams,
+	                                       AAuraHUD*& OutAuraHUD);
+
+	/**
+	 * 修改伤害配置项，将其设置为具有范围伤害的配置项
+	 * @param DamageEffectParams 需要修改的配置
+	 * @param bIsRadial 设置是否为范围伤害
+	 * @param InnerRadius 内半径
+	 * @param OuterRadius 外半径
+	 * @param Origin 中心点
+	 */
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayMechanics")
+	static void SetIsRadialDamageEffectParam(UPARAM(ref) FDamageEffectParams& DamageEffectParams, const bool bIsRadial,
+	                                         const float InnerRadius, const float OuterRadius, const FVector Origin);
+
+	/**
+	 * 修改伤害时的冲击力的方向
+	 * @param DamageEffectParams 需要修改的配置
+	 * @param KnockbackDirection 攻击时触发击退的方向
+	 * @param Magnitude 幅度
+	 */
+	UFUNCTION(BlueprintCallable, Category="RPGAbilitySystemLibrary|GameplayMechanics")
+	static void SetKnockbackDirection(UPARAM(ref) FDamageEffectParams& DamageEffectParams,
+	                                  FVector KnockbackDirection, const float Magnitude = 0.f);
+
+	/**
+	 * 修改伤害配置的死亡时触发击退的方向
+	 * @param DamageEffectParams 需要修改的配置
+	 * @param ImpulseDirection 死亡时触发击退的方向
+	 * @param Magnitude 幅度
+	 */
+	UFUNCTION(BlueprintCallable, Category="RPGAbilitySystemLibrary|GameplayMechanics")
+	static void SetDeathImpulseDirection(UPARAM(ref) FDamageEffectParams& DamageEffectParams,
+	                                     FVector ImpulseDirection, const float Magnitude = 0.f);
+
+	/**
+	 * 设置伤害配置的应用目标ASC
+	 * @param DamageEffectParams 
+	 * @param InAsc 
+	 */
+	UFUNCTION(BlueprintCallable, Category="RPGAbilitySystemLibrary|GameplayMechanics")
+	static void SetEffectParamTargetAsc(UPARAM(ref) FDamageEffectParams& DamageEffectParams, UAbilitySystemComponent* InAsc);
 
 	
 	/**
@@ -178,14 +222,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayMechanics")
 	static void GetClosestTargets(const int32 MaxTargets, const TArray<AActor*>& Actors, TArray<AActor*>& OutClosestTargets, const FVector& Origin);
 
-	// 双方是否是敌对
+	/**
+	 * @param FirstActor 
+	 * @param SecondActor 
+	 * @return 双方是否敌对
+	 */
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|GameplayMechanics")
 	static bool IsNotFriend(const AActor* FirstActor, const AActor* SecondActor);
 
-	// 获取经验奖励配置
+	/**
+	 * @param WorldContextObject 
+	 * @param CharacterClass 
+	 * @param CharacterLevel 
+	 * @return 获取经验奖励配置
+	 */
 	static int32 GetXPRewardForClassAndLevel(const UObject* WorldContextObject, ECharacterClassType CharacterClass, int32 CharacterLevel);
-	
-	// 应用伤害效果
+
+	/**
+	 * 应用伤害效果
+	 * @param DamageEffectParams 
+	 * @return 
+	 */
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|GameplayEffects")
 	static FGameplayEffectContextHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams);
 

@@ -15,31 +15,6 @@
 #include "UI/HUD/AuraHUD.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 
-bool UAuraAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldContextObject,
-                                                           FWidgetControllerParams& OutWCParams, AAuraHUD*& OutAuraHUD)
-{
-	// widget仅适用于本地玩家，第0个玩家控制器被视为本地玩家控制器
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		OutAuraHUD = Cast<AAuraHUD>(PC->GetHUD());
-		if (OutAuraHUD)
-		{
-			if (AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>())
-			{
-				UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
-				UAttributeSet* AS = PS->GetAttributeSet();
-
-				OutWCParams.AttributeSet = AS;
-				OutWCParams.PlayerController = PC;
-				OutWCParams.PlayerState = PS;
-				OutWCParams.AbilitySystemComponent = ASC;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
 UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
 {
 	FWidgetControllerParams WCParam;
@@ -464,6 +439,74 @@ void UAuraAbilitySystemLibrary::SetRadialDamageOuterRadius(FGameplayEffectContex
 	}
 }
 
+bool UAuraAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldContextObject,
+														   FWidgetControllerParams& OutWCParams, AAuraHUD*& OutAuraHUD)
+{
+	// widget仅适用于本地玩家，第0个玩家控制器被视为本地玩家控制器
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		OutAuraHUD = Cast<AAuraHUD>(PC->GetHUD());
+		if (OutAuraHUD)
+		{
+			if (AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>())
+			{
+				UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+				UAttributeSet* AS = PS->GetAttributeSet();
+
+				OutWCParams.AttributeSet = AS;
+				OutWCParams.PlayerController = PC;
+				OutWCParams.PlayerState = PS;
+				OutWCParams.AbilitySystemComponent = ASC;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void UAuraAbilitySystemLibrary::SetIsRadialDamageEffectParam(FDamageEffectParams& DamageEffectParams, const bool bIsRadial,
+	const float InnerRadius, const float OuterRadius, const FVector Origin)
+{
+	DamageEffectParams.bIsRadialDamage = bIsRadial;
+	DamageEffectParams.RadialDamageInnerRadius = InnerRadius;
+	DamageEffectParams.RadialDamageOuterRadius = OuterRadius;
+	DamageEffectParams.RadialDamageOrigin = Origin;
+}
+
+void UAuraAbilitySystemLibrary::SetKnockbackDirection(FDamageEffectParams& DamageEffectParams,
+	FVector KnockbackDirection, const float Magnitude)
+{
+	KnockbackDirection.Normalize();
+	if(Magnitude <= 0.f)
+	{
+		DamageEffectParams.KnockbackForce = KnockbackDirection * DamageEffectParams.KnockbackForceMagnitude;
+	}
+	else
+	{
+		DamageEffectParams.KnockbackForce = KnockbackDirection * Magnitude;
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDeathImpulseDirection(FDamageEffectParams& DamageEffectParams,
+	FVector ImpulseDirection, const float Magnitude)
+{
+	ImpulseDirection.Normalize();
+	if(Magnitude <= 0.f)
+	{
+		DamageEffectParams.DeathImpulse = ImpulseDirection * DamageEffectParams.DeathImpulseMagnitude;
+	}
+	else
+	{
+		DamageEffectParams.DeathImpulse = ImpulseDirection * Magnitude;
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetEffectParamTargetAsc(FDamageEffectParams& DamageEffectParams,
+	UAbilitySystemComponent* InAsc)
+{
+	DamageEffectParams.TargetAbilitySystemCmp = InAsc;
+}
+
 void UAuraAbilitySystemLibrary::GetLivePlayerWithinRadius(const UObject* WorldContextObject,
                                                           TArray<AActor*>& OutOverlappingActors,
                                                           const TArray<AActor*>& ActorsToIgnore, float Radius,
@@ -500,7 +543,7 @@ void UAuraAbilitySystemLibrary::GetLivePlayerWithinRadius(const UObject* WorldCo
 }
 
 void UAuraAbilitySystemLibrary::GetClosestTargets(const int32 MaxTargets, const TArray<AActor*>& Actors,
-	TArray<AActor*>& OutClosestTargets, const FVector& Origin)
+                                                  TArray<AActor*>& OutClosestTargets, const FVector& Origin)
 {
 	if(Actors.Num() <= MaxTargets)
 	{

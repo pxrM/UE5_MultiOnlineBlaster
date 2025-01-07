@@ -26,4 +26,8 @@ public:
 	// 火球发射出去然后返回的目标
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AActor> ReturnToActor;
+
+	UPROPERTY(BlueprintReadWrite)
+	FDamageEffectParams ExplosionDamageParams;
+
 };

@@ -9,6 +9,8 @@
 class AAuraFireBall;
 /**
  * 火焰爆炸技能
+ *		火球碰撞伤害
+ *		火球范围爆炸伤害
  */
 UCLASS()
 class AURA_API UAuraFireBlast : public UAuraDamageGameplayAbility
