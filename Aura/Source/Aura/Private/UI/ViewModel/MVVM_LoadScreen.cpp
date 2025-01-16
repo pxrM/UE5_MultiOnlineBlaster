@@ -19,6 +19,8 @@ void UMVVM_LoadScreen::InitializeLoadSlots()
 	LoadSlots.Add(0, LoadSlot_0);
 	LoadSlots.Add(1, LoadSlot_1);
 	LoadSlots.Add(2, LoadSlot_2);
+
+	SetNumLoadSlots(LoadSlots.Num());
 }
 
 UMVVM_LoadSlot* UMVVM_LoadScreen::GetLoadSlotViewModelByIndex(const int32 Index) const
@@ -45,6 +47,7 @@ void UMVVM_LoadScreen::NewGameButtonPressed(int32 Slot)
 
 void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
 {
+	SlotSelected.Broadcast();
 	for(const TTuple<int32, UMVVM_LoadSlot*> LoadSlot : LoadSlots)
 	{
 		LoadSlot.Value->EnableSelectSlotButton.Broadcast(LoadSlot.Key != Slot);
@@ -66,5 +69,10 @@ void UMVVM_LoadScreen::LoadData()
 		// 调用模型初始化
 		Slot.Value->InitializeSlot();
 	}
+}
+
+void UMVVM_LoadScreen::SetNumLoadSlots(const int32 InNumLoadSlots)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(NumLoadSlots, InNumLoadSlots);
 }
  

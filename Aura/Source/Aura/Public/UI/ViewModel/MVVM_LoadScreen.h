@@ -6,6 +6,8 @@
 #include "MVVMViewModelBase.h"
 #include "MVVM_LoadScreen.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSlotSelected);
+
 class UMVVM_LoadSlot;
 
 /**
@@ -39,10 +41,17 @@ public:
 	void SelectSlotButtonPressed(int32 Slot);
 
 	void LoadData();
+
+public:
+	void SetNumLoadSlots(const int32 InNumLoadSlots);
+	int32 GetNumLoadSlots() const {return NumLoadSlots;}
 	
 public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMVVM_LoadSlot> LoadSlotViewModelClass;
+
+	UPROPERTY(BlueprintAssignable)
+	FSlotSelected SlotSelected;
 
 private:
 	UPROPERTY()
@@ -56,4 +65,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UMVVM_LoadSlot> LoadSlot_2;
+
+
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess="true"))
+	int32 NumLoadSlots;
 };
