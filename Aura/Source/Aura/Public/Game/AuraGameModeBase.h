@@ -35,6 +35,13 @@ public:
 	 */
 	ULoadScreenSaveGame* GetSaveSlotData(const FString& SlotName, int32 SlotIndex) const;
 
+	/**
+	 * 删除对应的存档
+	 * @param SlotName 
+	 * @param SlotIndex 
+	 */
+	static void DeleteSlotData(const FString& SlotName, const int32 SlotIndex);
+
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Character Class Defaults")
 	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;

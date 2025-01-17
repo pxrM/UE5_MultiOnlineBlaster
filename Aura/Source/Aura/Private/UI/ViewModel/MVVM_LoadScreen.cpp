@@ -11,16 +11,36 @@ void UMVVM_LoadScreen::InitializeLoadSlots()
 {
 	LoadSlot_0 = NewObject<UMVVM_LoadSlot>(this, LoadSlotViewModelClass);
 	LoadSlot_0->SetLoadSlotName( FString("LoadSlot_0"));
+	LoadSlot_0->SlotIndex = 0;
 	LoadSlot_1 = NewObject<UMVVM_LoadSlot>(this, LoadSlotViewModelClass);
 	LoadSlot_1->SetLoadSlotName( FString("LoadSlot_1"));
+	LoadSlot_1->SlotIndex = 1;
 	LoadSlot_2 = NewObject<UMVVM_LoadSlot>(this, LoadSlotViewModelClass);
 	LoadSlot_2->SetLoadSlotName( FString("LoadSlot_2"));
+	LoadSlot_2->SlotIndex = 2;
 	
 	LoadSlots.Add(0, LoadSlot_0);
 	LoadSlots.Add(1, LoadSlot_1);
 	LoadSlots.Add(2, LoadSlot_2);
 
 	SetNumLoadSlots(LoadSlots.Num());
+}
+
+void UMVVM_LoadScreen::LoadData()
+{
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	for(const TTuple<int32, UMVVM_LoadSlot*> Slot : LoadSlots)
+	{
+		ULoadScreenSaveGame* SaveGameObj = AuraGameMode->GetSaveSlotData(Slot.Value->GetLoadSlotName(), Slot.Key);
+		// 获取存档数据
+		const FString PlayerName = SaveGameObj->PlayerName;
+		const TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = SaveGameObj->SaveSlotStatus;
+		// 设置存档视图模型的数据
+		Slot.Value->SetPlayerName(PlayerName);
+		Slot.Value->SlotStatus = SaveSlotStatus;
+		// 调用模型初始化
+		Slot.Value->InitializeSlot();
+	}
 }
 
 UMVVM_LoadSlot* UMVVM_LoadScreen::GetLoadSlotViewModelByIndex(const int32 Index) const
@@ -52,22 +72,17 @@ void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
 	{
 		LoadSlot.Value->EnableSelectSlotButton.Broadcast(LoadSlot.Key != Slot);
 	}
+	SelectedSlot = LoadSlots[Slot];
 }
 
-void UMVVM_LoadScreen::LoadData()
+void UMVVM_LoadScreen::DeleteButtonPressed()
 {
-	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
-	for(const TTuple<int32, UMVVM_LoadSlot*> Slot : LoadSlots)
+	if(IsValid(SelectedSlot))
 	{
-		ULoadScreenSaveGame* SaveGameObj = AuraGameMode->GetSaveSlotData(Slot.Value->GetLoadSlotName(), Slot.Key);
-		// 获取存档数据
-		const FString PlayerName = SaveGameObj->PlayerName;
-		const TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = SaveGameObj->SaveSlotStatus;
-		// 设置存档视图模型的数据
-		Slot.Value->SetPlayerName(PlayerName);
-		Slot.Value->SlotStatus = SaveSlotStatus;
-		// 调用模型初始化
-		Slot.Value->InitializeSlot();
+		AAuraGameModeBase::DeleteSlotData(SelectedSlot->GetLoadSlotName(), SelectedSlot->SlotIndex);
+		SelectedSlot->SlotStatus = Vacant;
+		SelectedSlot->InitializeSlot();
+		SelectedSlot->EnableSelectSlotButton.Broadcast(true);
 	}
 }
 

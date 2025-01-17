@@ -42,3 +42,12 @@ ULoadScreenSaveGame* AAuraGameModeBase::GetSaveSlotData(const FString& SlotName,
 	ULoadScreenSaveGame* LoadScreenSaveGame = Cast<ULoadScreenSaveGame>(SaveGameObject);
 	return LoadScreenSaveGame;
 }
+
+void AAuraGameModeBase::DeleteSlotData(const FString& SlotName, const int32 SlotIndex)
+{
+	// 是否已有对应名称的存档，有则删除之前保存的存档
+	if(UGameplayStatics::DoesSaveGameExist(SlotName, SlotIndex))
+	{
+		UGameplayStatics::DeleteGameInSlot(SlotName, SlotIndex);
+	}
+}

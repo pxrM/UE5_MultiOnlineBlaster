@@ -28,6 +28,8 @@ class AURA_API UMVVM_LoadScreen : public UMVVMViewModelBase
 public:
 	void InitializeLoadSlots();
 	
+	void LoadData();
+	
 	UFUNCTION(BlueprintPure)
 	UMVVM_LoadSlot* GetLoadSlotViewModelByIndex(const int32 Index) const;
 
@@ -40,7 +42,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SelectSlotButtonPressed(int32 Slot);
 
-	void LoadData();
+	UFUNCTION(BlueprintCallable)
+	void DeleteButtonPressed();
 
 public:
 	void SetNumLoadSlots(const int32 InNumLoadSlots);
@@ -65,6 +68,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UMVVM_LoadSlot> LoadSlot_2;
+
+	UPROPERTY()
+	UMVVM_LoadSlot* SelectedSlot;
 
 
 private:
