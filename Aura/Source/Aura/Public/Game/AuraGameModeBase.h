@@ -19,6 +19,9 @@ class AURA_API AAuraGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+
 public:
 	/**
 	 * 保存新的存档
@@ -51,5 +54,15 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<USaveGame> LoadScreenSaveGameClass;
+
+	// 初始地图名称
+	UPROPERTY(EditDefaultsOnly)
+	FString DefaultMapName;
+	// 初始地图
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> DefaultMap;
+	// 地图名和地图的映射。TSoftObjectPtr指针只保存路径，如果不使用，对应的资源不会加载到场景，可以在需要时再加载。
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
 	
 };

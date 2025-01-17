@@ -7,6 +7,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 
+void AAuraGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Maps.Add(DefaultMapName, DefaultMap);
+}
+
 void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 {
 	// 是否已有对应名称的存档，有则删除之前保存的存档
@@ -22,6 +29,7 @@ void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 	// 设置数据
 	LoadScreenSaveGame->PlayerName = LoadSlot->GetPlayerName();
 	LoadScreenSaveGame->SaveSlotStatus = Taken;
+	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();
 
 	// 保存存档
 	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame, LoadSlot->GetLoadSlotName(), SlotIndex);

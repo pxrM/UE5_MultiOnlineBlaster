@@ -27,6 +27,9 @@ public:
 	void SetLoadSlotName(const FString& InLoadSlotName);
 	FString GetLoadSlotName() const {return LoadSlotName;}
 
+	void SetMapName(const FString& InMapName);
+	FString GetMapName() const {return MapName;}
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FSetWidgetSwitcherIndex SetWidgetSwitcherIndex;
@@ -61,4 +64,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess="true"))
 	FString LoadSlotName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta=(AllowPrivateAccess="true"))
+	FString MapName;
 };
