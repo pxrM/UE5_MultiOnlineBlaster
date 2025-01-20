@@ -24,6 +24,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+	
 	/**
 	 * 保存新的存档
 	 * @param LoadSlot 需要保存的视图实例
