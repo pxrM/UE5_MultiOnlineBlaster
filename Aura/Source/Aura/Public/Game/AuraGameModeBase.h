@@ -70,6 +70,9 @@ public:
 	// 初始地图
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> DefaultMap;
+	// 默认玩家关卡出生位置的标签
+	UPROPERTY(EditDefaultsOnly)
+	FName DefaultPlayerStartTag;
 	// 地图名和地图的映射。TSoftObjectPtr指针只保存路径，如果不使用，对应的资源不会加载到场景，可以在需要时再加载。
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
