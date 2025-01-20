@@ -59,3 +59,8 @@ void AAuraGameModeBase::DeleteSlotData(const FString& SlotName, const int32 Slot
 		UGameplayStatics::DeleteGameInSlot(SlotName, SlotIndex);
 	}
 }
+
+void AAuraGameModeBase::TravelToMap(const UMVVM_LoadSlot* Slot)
+{
+	UGameplayStatics::OpenLevelBySoftObjectPtr(this, Maps.FindChecked(Slot->GetMapName()));
+}

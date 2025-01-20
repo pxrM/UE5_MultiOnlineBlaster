@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "UI/ViewModel/MVVM_LoadSlot.h"
 #include "AuraGameModeBase.generated.h"
 
 class ULoadScreenSaveGame;
@@ -44,6 +45,12 @@ public:
 	 * @param SlotIndex 
 	 */
 	static void DeleteSlotData(const FString& SlotName, const int32 SlotIndex);
+
+	/**
+	 * 地图传送
+	 * @param Slot 对应的数据vm
+	 */
+	void TravelToMap(const UMVVM_LoadSlot* Slot);
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Character Class Defaults")
