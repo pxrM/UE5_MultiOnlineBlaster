@@ -42,6 +42,9 @@ public:
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SlotStatus;
 
+	UPROPERTY()
+	FName PlayerStartTag;
+
 private:
 	/*
 	 * 字段通知。视图可以和小部件链接

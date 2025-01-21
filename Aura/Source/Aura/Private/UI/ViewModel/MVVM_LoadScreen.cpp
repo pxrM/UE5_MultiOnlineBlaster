@@ -37,10 +37,12 @@ void UMVVM_LoadScreen::LoadData()
 		const FString PlayerName = SaveGameObj->PlayerName;
 		const TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = SaveGameObj->SaveSlotStatus;
 		const FString MapName = SaveGameObj->MapName;
+		const FName PlayerStartTag = SaveGameObj->PlayerStartTag;
 		// 设置存档视图模型的数据
 		Slot.Value->SetPlayerName(PlayerName);
 		Slot.Value->SlotStatus = SaveSlotStatus;
 		Slot.Value->SetMapName(MapName);
+		Slot.Value->PlayerStartTag = PlayerStartTag;
 		// 调用模型初始化
 		Slot.Value->InitializeSlot();
 	}
@@ -57,11 +59,11 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnterName
 	
 	LoadSlots[Slot]->SetPlayerName(EnterName); 	// 修改mvvm上的角色名称数据
 	LoadSlots[Slot]->SetMapName(AuraGameMode->DefaultMapName);
-	LoadSlots[Slot]->SlotStatus = Taken;		// 修改界面为加载加载状态
+	LoadSlots[Slot]->SlotStatus = Taken;	// 修改界面为加载加载状态
+	LoadSlots[Slot]->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;
+	LoadSlots[Slot]->InitializeSlot();
 	
 	AuraGameMode->SaveSlotData(LoadSlots[Slot], Slot);
-
-	LoadSlots[Slot]->InitializeSlot();
 
 	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(AuraGameMode->GetGameInstance());
 	AuraGameInstance->LoadSlotName = LoadSlots[Slot]->GetLoadSlotName();
@@ -97,9 +99,12 @@ void UMVVM_LoadScreen::DeleteButtonPressed()
 
 void UMVVM_LoadScreen::PlayButtonPressed()
 {
-	if(IsValid(SelectedSlot))
+	if (IsValid(SelectedSlot))
 	{
 		AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+		UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(AuraGameMode->GetGameInstance());
+		
+		AuraGameInstance->PlayerStartTag = SelectedSlot->PlayerStartTag;
 		AuraGameMode->TravelToMap(SelectedSlot);
 	}
 }

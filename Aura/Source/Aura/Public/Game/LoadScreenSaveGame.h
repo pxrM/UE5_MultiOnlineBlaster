@@ -44,6 +44,10 @@ public:
 	UPROPERTY()
 	FString MapName = FString("Default Map Name");
 
+	// 存档的默认玩家关卡出生位置的标签
+	UPROPERTY()
+	FName PlayerStartTag;
+
 	// 进入存档界面时，默认显示的用户界面状态
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = Vacant;
