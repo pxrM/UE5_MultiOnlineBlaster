@@ -42,7 +42,9 @@ public:
 	void AddToXP(const int32 InXP);
 	void SetXP(const int32 InXP);
 	void AddToAttributePoints(const int32 InAttributePoints);
+	void SetAttributePoints(const int32 InAttributePoints);
 	void AddToSpellPoints(const int32 InSpellPoints);
+	void SetSpellPoints(const int32 InSpellPoints);
 
 protected:
 	UFUNCTION()

@@ -51,4 +51,43 @@ public:
 	// 进入存档界面时，默认显示的用户界面状态
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = Vacant;
+	
+	// 是否是第一次加载
+	UPROPERTY()
+	bool bFirstTimeLoadIn = true;
+
+	
+	/* 增加保存玩家相关属性 */
+
+	// 玩家等级
+	UPROPERTY()
+	int32 PlayerLevel = 0;
+	
+	// 经验值
+	UPROPERTY()
+	int32 XP = 0;
+
+	// 可分配技能点
+	UPROPERTY()
+	int32 SpellPoints = 0;
+
+	// 可分配属性点
+	UPROPERTY()
+	int32 AttributePoints = 0;
+	
+	// 力量
+	UPROPERTY()
+	float Strength = 0;
+
+	// 智力
+	UPROPERTY()
+	float Intelligence = 0;
+
+	// 韧性
+	UPROPERTY()
+	float Resilience = 0;
+
+	// 体力
+	UPROPERTY()
+	float Vigor = 0;
 };

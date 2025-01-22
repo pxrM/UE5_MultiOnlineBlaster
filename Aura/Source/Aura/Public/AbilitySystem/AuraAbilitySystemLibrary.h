@@ -40,7 +40,7 @@ public:
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|WidgetController", meta=(DefaultToSelf="WorldContextObject"))
 	static USpellMenuWidgetController* GetSpellMenuWidgetController(const UObject* WorldContextObject);
 
-	// 为角色初始化配置的默认属性
+	// 通过角色的数据资产类配置初始化角色属性
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static void InitializeDefaultAttributes(const UObject* WorldContextObject, const ECharacterClassType CharacterClass, const float Level, UAbilitySystemComponent* ASC);
 

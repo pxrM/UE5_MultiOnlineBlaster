@@ -56,6 +56,10 @@ public:
 	// 角色类型和角色信息对应的map
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
 	TMap<ECharacterClassType, FCharacterClassDefaultInfo> CharacterClassInformation;
+
+	//主要属性，玩家的基础属性，通过SetByCaller设置
+	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")
+	TSubclassOf<UGameplayEffect> PrimaryAttributes_SetByCaller;
 	
 	// 次要属性
 	UPROPERTY(EditDefaultsOnly, Category="Common Class Defaults")

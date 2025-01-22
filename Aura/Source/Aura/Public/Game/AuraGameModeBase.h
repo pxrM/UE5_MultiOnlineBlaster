@@ -12,6 +12,7 @@ class USaveGame;
 class UMVVM_LoadSlot;
 class UAbilityInfoData;
 class UCharacterClassInfo;
+
 /**
  * 
  */
@@ -53,6 +54,18 @@ public:
 	 * @param Slot 对应的数据vm
 	 */
 	void TravelToMap(const UMVVM_LoadSlot* Slot);
+
+	/**
+	 * 获取当前游戏所使用的存档数据
+	 * @return 
+	 */
+	ULoadScreenSaveGame* RetrieveInGameSaveData();
+
+	/**
+	 * 保存当前游戏进度
+	 * @param SaveObject 
+	 */
+	void SaveInGameProgressData(ULoadScreenSaveGame* SaveObject) const;
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Character Class Defaults")

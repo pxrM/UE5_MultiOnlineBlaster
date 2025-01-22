@@ -72,4 +72,8 @@ public:
 	// 关闭贴花材质
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void HideMagicCircle();
+
+	// 保存游戏进度
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SaveProgress(const FName& CheckpointTag);
 };

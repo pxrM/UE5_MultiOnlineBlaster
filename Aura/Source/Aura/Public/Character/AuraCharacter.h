@@ -47,14 +47,21 @@ public:
 	virtual int32 GetSpellPoint_Implementation() const override;
 	virtual void ShowMagicCircle_Implementation(UMaterialInstance* DecalMaterial) override;
 	virtual void HideMagicCircle_Implementation() override;
+	virtual void SaveProgress_Implementation(const FName& CheckpointTag) override;
 	/* end IPlayerInterface */
 
 	virtual void OnRep_Stunned() override;
 	virtual void OnRep_Burned() override;
 
-private:
-	virtual void InitAbilityActorInfo() override;
+	// 加载本地保存的角色数据
+	void LoadProgress();
 	
+
+private:
+	// 初始化角色gas组件的相关信息
+	virtual void InitAbilityActorInfo() override;
+
+	// rpc广播角色升级效果
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLevelUpParticles() const;
 

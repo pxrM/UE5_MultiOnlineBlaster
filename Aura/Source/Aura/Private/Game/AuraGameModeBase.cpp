@@ -92,3 +92,23 @@ void AAuraGameModeBase::TravelToMap(const UMVVM_LoadSlot* Slot)
 {
 	UGameplayStatics::OpenLevelBySoftObjectPtr(this, Maps.FindChecked(Slot->GetMapName()));
 }
+
+ULoadScreenSaveGame* AAuraGameModeBase::RetrieveInGameSaveData()
+{
+	const UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());
+	const FString InGameLoadSlotName = AuraGameInstance->LoadSlotName;
+	const int32 InGameLoadSlotIndex = AuraGameInstance->LoadSlotIndex;
+
+	return GetSaveSlotData(InGameLoadSlotName, InGameLoadSlotIndex);
+}
+
+void AAuraGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject) const
+{
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());
+	AuraGameInstance->PlayerStartTag = SaveObject->PlayerStartTag;
+	
+	const FString InGameLoadSlotName = AuraGameInstance->LoadSlotName;
+	const int32 InGameLoadSlotIndex = AuraGameInstance->LoadSlotIndex;
+
+	UGameplayStatics::SaveGameToSlot(SaveObject, InGameLoadSlotName, InGameLoadSlotIndex);
+}
