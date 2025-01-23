@@ -12,6 +12,7 @@
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
 #include "NiagaraComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -74,14 +75,6 @@ void AAuraCharacter::LoadProgress()
 		const ULoadScreenSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();
 		if(SaveData == nullptr) return;
 
-		if(AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
-		{
-			AuraPlayerState->SetLevel(SaveData->PlayerLevel);
-			AuraPlayerState->SetXP(SaveData->XP);
-			AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);
-			AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);
-		}
-
 		if(SaveData->bFirstTimeLoadIn) // 如果是第一次加载存档，没有属性相关内容，则使用默认ge初始化
 		{
 			InitializeDefaultAttributes();
@@ -89,7 +82,15 @@ void AAuraCharacter::LoadProgress()
 		}
 		else // 如果不是第一次，通过存档数据初始化角色属性
 		{
+			if(AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
+			{
+				AuraPlayerState->SetLevel(SaveData->PlayerLevel, false);
+				AuraPlayerState->SetXP(SaveData->XP);
+				AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);
+				AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);
+			}
 			
+			UAuraAbilitySystemLibrary::InitializeDefaultAttributesFormSaveData(this, AbilitySystemComponent, SaveData);
 		}
 	}
 }

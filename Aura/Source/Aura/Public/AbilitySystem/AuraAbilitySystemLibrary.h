@@ -9,6 +9,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+class ULoadScreenSaveGame;
 class UAbilityInfoData;
 struct FWidgetControllerParams;
 struct FGameplayEffectContextHandle;
@@ -40,9 +41,24 @@ public:
 	UFUNCTION(BlueprintPure, Category="AuraAbilitySystemLibrary|WidgetController", meta=(DefaultToSelf="WorldContextObject"))
 	static USpellMenuWidgetController* GetSpellMenuWidgetController(const UObject* WorldContextObject);
 
-	// 通过角色的数据资产类配置初始化角色属性
+	/**
+	 * 通过角色的数据资产类配置初始化角色属性
+	 * @param WorldContextObject  一个世界场景的对象，用于获取当前所在的世界
+	 * @param CharacterClass 角色类型
+	 * @param Level 角色等级
+	 * @param ASC 角色的技能系统组件
+	 */
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|CharacterClassDefaults")
 	static void InitializeDefaultAttributes(const UObject* WorldContextObject, const ECharacterClassType CharacterClass, const float Level, UAbilitySystemComponent* ASC);
+
+	/**
+	 * 通过存档数据来初始化角色的属性
+	 * @param WorldContextObject  一个世界场景的对象，用于获取当前所在的世界
+	 * @param ASC 角色的技能系统组件
+	 * @param SaveGame 角色使用的存档指针
+	 */
+	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|CharacterClassDefaults")
+	static void InitializeDefaultAttributesFormSaveData(const UObject* WorldContextObject, UAbilitySystemComponent* ASC, const ULoadScreenSaveGame* SaveGame);
 
 	// 应用actor的默认能力
 	UFUNCTION(BlueprintCallable, Category="AuraAbilitySystemLibrary|CharacterClassDefaults")

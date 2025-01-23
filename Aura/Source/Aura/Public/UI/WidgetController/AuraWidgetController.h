@@ -21,6 +21,10 @@ class UAbilityInfoData;
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
 /*
+ * 玩家等级更新的ui回调
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerLevelUpSignature, int32, NewValue, bool, bIsLevelUp);
+/*
  * 技能信息更新的ui回调
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FAuraAbilityInfo&, Info);
