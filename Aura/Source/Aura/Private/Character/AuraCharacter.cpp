@@ -14,6 +14,7 @@
 #include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/AbilityInfoData.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Game/AuraGameInstance.h"
@@ -229,11 +230,12 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 {
 	if(AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
+		UAuraAbilitySystemComponent* AuraAsc = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent);
 		ULoadScreenSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();
 		if(SaveData == nullptr) return;
 
-		SaveData->PlayerStartTag = CheckpointTag;
 		SaveData->bFirstTimeLoadIn = false;
+		SaveData->PlayerStartTag = CheckpointTag;
 
 		if(const AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
 		{
@@ -246,7 +248,28 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 		SaveData->Intelligence = UAuraAttributeSet::GetIntelligenceAttribute().GetNumericValue(GetAttributeSet());
 		SaveData->Resilience = UAuraAttributeSet::GetResilienceAttribute().GetNumericValue(GetAttributeSet());
 		SaveData->Vigor = UAuraAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet());
+		
+		// 使用ASC里创建的ForEach函数循环获取角色的技能，并生成技能结构体保存
+		SaveData->SavedAbilities.Empty();
+		FForEachAbility SaveAbilityDelegate;
+		SaveAbilityDelegate.BindLambda([this, AuraAsc, SaveData](const FGameplayAbilitySpec& AbilitySpec)
+		{
+			const FGameplayTag AbilityTag = AuraAsc->GetAbilityTagFromSpec(AbilitySpec);
+			const UAbilityInfoData* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(this);
+			const FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
 
+			FSavedAbility SavedAbility;
+			SavedAbility.GameplayAbility = Info.Ability;
+			SavedAbility.AbilityLevel = AbilitySpec.Level;
+			SavedAbility.AbilityTag = AbilityTag;
+			SavedAbility.AbilityStatus = AuraAsc->GetAbilityStatusTagFromAbilityTag(AbilityTag);
+			SavedAbility.AbilitySlot = AuraAsc->GetAbilityInputTagFromAbilityTag(AbilityTag);
+			SavedAbility.AbilityType = Info.AbilityTypeTag; 
+
+			SaveData->SavedAbilities.AddUnique(SavedAbility);
+		});
+		AuraAsc->ForEachAbility(SaveAbilityDelegate);
+		
 		AuraGameMode->SaveInGameProgressData(SaveData);
 	}
 }

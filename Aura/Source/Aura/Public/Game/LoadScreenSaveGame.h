@@ -3,8 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/SaveGame.h"
 #include "LoadScreenSaveGame.generated.h"
+
+
+struct FGameplayTag;
+class UGameplayAbility;
 
 
 // 当前存档可以显示umg类型的枚举
@@ -14,6 +19,38 @@ enum ESaveSlotStatus
 	Vacant,
 	EnterName,
 	Taken,
+};
+
+
+// 保存技能相关信息的结构体
+USTRUCT(BlueprintType)
+struct FSavedAbility
+{
+	GENERATED_BODY()
+	
+	// 需要存储的技能
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="ClassDefaults")
+	TSubclassOf<UGameplayAbility> GameplayAbility;
+	
+	// 当前技能的标签
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityTag = FGameplayTag();
+	
+	// 当前技能的状态标签
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityStatus = FGameplayTag();
+	
+	// 当前技能的插槽标签
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilitySlot = FGameplayTag();
+	
+	// 当前技能的类型标签（被动还是主动技能）
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityType = FGameplayTag();
+
+	// 当前技能等级
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 AbilityLevel;
 };
 
 
@@ -57,11 +94,12 @@ public:
 	bool bFirstTimeLoadIn = true;
 
 	
-	/* 增加保存玩家相关属性 */
-
+	/*
+	 * 增加保存玩家相关属性
+	 */
 	// 玩家等级
 	UPROPERTY()
-	int32 PlayerLevel = 0;
+	int32 PlayerLevel = 1;
 	
 	// 经验值
 	UPROPERTY()
@@ -90,4 +128,11 @@ public:
 	// 体力
 	UPROPERTY()
 	float Vigor = 0;
+
+
+	/*
+	 *	技能相关 
+	 */
+	UPROPERTY()
+	TArray<FSavedAbility> SavedAbilities;
 };
