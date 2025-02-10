@@ -22,6 +22,42 @@ enum ESaveSlotStatus
 };
 
 
+// 保存actor相关信息的结构体
+USTRUCT(BlueprintType)
+struct FSavedActor
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FName ActorName = FName();
+
+	UPROPERTY()
+	FTransform Transform = FTransform();
+
+	// Actor身上序列化变量的数据，必须通过UPROPERTY定义过，只在保存存档时使用。
+	UPROPERTY()
+	TArray<uint8> Bytes;
+};
+inline bool operator==(const FSavedActor& Left, const FSavedActor& Right)
+{
+	return Left.ActorName == Right.ActorName;
+}
+
+
+// 地图相关数据存储
+USTRUCT(BlueprintType)
+struct FSavedMap
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString MapAssetName = FString();
+
+	UPROPERTY()
+	TArray<FSavedActor> SavedActors;
+};
+
+
 // 保存技能相关信息的结构体
 USTRUCT(BlueprintType)
 struct FSavedAbility
@@ -69,6 +105,10 @@ UCLASS()
 class AURA_API ULoadScreenSaveGame : public USaveGame
 {
 	GENERATED_BODY()
+
+public:
+	FSavedMap GetSavedMapWithMapName(const FString& InMapName);
+	bool HasMap(const FString& InMapName);
 
 public:
 	// 存档名
@@ -141,4 +181,7 @@ public:
 	 */
 	UPROPERTY()
 	TArray<FSavedAbility> SavedAbilities;
+
+	UPROPERTY()
+	TArray<FSavedMap> SavedMaps;
 };
