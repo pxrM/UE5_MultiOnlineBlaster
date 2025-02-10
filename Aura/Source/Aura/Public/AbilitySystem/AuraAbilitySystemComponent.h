@@ -15,6 +15,7 @@
  */
 
 
+class ULoadScreenSaveGame;
 /*
  *  获取到一个ge资产后触发的委托
  *	  FGameplayTagContainer：
@@ -64,6 +65,8 @@ public:
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);
 	// 添加角色被动能力
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);
+	// 根据本地存档添加角色能力
+	void AddCharacterAbilitiesFromSaveData(const ULoadScreenSaveGame* SaveGame);
 
 	// 触发技能时按键按下
 	void AbilityInputTagPressed(const FGameplayTag& InputTag);

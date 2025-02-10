@@ -83,6 +83,11 @@ void AAuraCharacter::LoadProgress()
 		}
 		else // 如果不是第一次，通过存档数据初始化角色属性
 		{
+			if(UAuraAbilitySystemComponent* AuraAsc = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
+			{
+				AuraAsc->AddCharacterAbilitiesFromSaveData(SaveData);
+			}
+			
 			if(AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
 			{
 				AuraPlayerState->SetLevel(SaveData->PlayerLevel, false);
