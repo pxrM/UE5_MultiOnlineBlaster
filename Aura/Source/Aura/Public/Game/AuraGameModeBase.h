@@ -68,6 +68,18 @@ public:
 	 */
 	void SaveInGameProgressData(ULoadScreenSaveGame* SaveObject) const;
 
+	/**
+	 * 保存关卡中的状态到当前存档中
+	 * @param InWorld 
+	 */
+	void SaveWorldState(const UWorld* InWorld) const;
+
+	/**
+	 * 从存档中加载当前关卡的状态
+	 * @param InWorld 
+	 */
+	void LoadWorldState(const UWorld* InWorld) const;
+
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Character Class Defaults")
 	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;

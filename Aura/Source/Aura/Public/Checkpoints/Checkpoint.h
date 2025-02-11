@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerStart.h"
+#include "Interaction/SaveInterface.h"
 #include "Checkpoint.generated.h"
 
 class USphereComponent;
@@ -12,12 +13,15 @@ class USphereComponent;
  * 检查点，在角色接触后，自动保存当前进度。
  */
 UCLASS()
-class AURA_API ACheckpoint : public APlayerStart
+class AURA_API ACheckpoint : public APlayerStart, public ISaveInterface
 {
 	GENERATED_BODY()
 
 public:
 	ACheckpoint(const FObjectInitializer& ObjectInitializer);
+
+	virtual bool IsShouldLoadTransform_Implementation() override;
+	virtual void LoadActor_Implementation() override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -47,4 +51,10 @@ private:
 	// 检查点模型使用的碰撞体
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;
+
+public:
+	// SaveGame 作用：标记该变量需要被 序列化（Serialize） 到游戏存档中，支持保存和加载游戏状态。
+	// 当前检查点是否已被玩家激活
+	UPROPERTY(BlueprintReadOnly, SaveGame)
+	bool bReached = false;
 };

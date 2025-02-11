@@ -86,7 +86,7 @@ struct FSavedAbility
 
 	// 当前技能等级
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 AbilityLevel;
+	int32 AbilityLevel = 1;
 
 	// Array.h(971): Error C2678 : 二进制“==”: 没有找到接受“const FSavedAbility”类型的左操作数的运算符(或没有可接受的转换)
 	bool operator==(const FSavedAbility& Other) const
