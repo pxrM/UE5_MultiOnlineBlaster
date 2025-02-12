@@ -8,6 +8,7 @@
 #include "AuraPlayerController.generated.h"
 
 
+class IHighlightInterface;
 class AMagicCircleActor;
 class UNiagaraSystem;
 class UDamageTextComponent;
@@ -17,7 +18,6 @@ class UAuraInputConfig;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class IEnemyInterface;
 
 /**
  * 
@@ -74,9 +74,9 @@ private:
 	// 鼠标点击的射线
 	FHitResult CursorHit;
 	// 上一个鼠标选中的actor
-	IEnemyInterface* LastActor = nullptr;
+	IHighlightInterface* LastActor = nullptr;
 	// 当前鼠标选中的actor
-	IEnemyInterface* CurrActor = nullptr;
+	IHighlightInterface* CurrActor = nullptr;
 
 	// 玩家的技能输入配置
 	UPROPERTY(EditDefaultsOnly, Category="Input")

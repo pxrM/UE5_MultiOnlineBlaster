@@ -18,6 +18,7 @@
 #include "Actor/MagicCircleActor.h"
 #include "Aura/Aura.h"
 #include "Components/DecalComponent.h"
+#include "Interaction/HighlightInterface.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -90,7 +91,7 @@ void AAuraPlayerController::CursorTrace()
 	if (!CursorHit.bBlockingHit) return;
 
 	LastActor = CurrActor;
-	CurrActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	CurrActor = Cast<IHighlightInterface>(CursorHit.GetActor());
 	
 	/*
 	 * 从游标开始行跟踪。有几种情况:

@@ -22,11 +22,6 @@ class AURA_API IEnemyInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// 高亮显示敌人
-	virtual void HighlightActor() = 0;
-	// 取消高亮显示敌人
-	virtual void UnHighlightActor() = 0;
-
 	/*
 	 * 蓝图可覆盖函数
 	 */

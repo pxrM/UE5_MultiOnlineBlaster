@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/AuraCharacterBase.h"
 #include "Interaction/EnemyInterface.h"
+#include "Interaction/HighlightInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "AuraEnemy.generated.h"
 
@@ -16,7 +17,7 @@ class AAuraAIController;
  * 
  */
 UCLASS()
-class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface
+class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface, public IHighlightInterface
 {
 	GENERATED_BODY()
 
@@ -24,10 +25,13 @@ public:
 	AAuraEnemy();
 	// 将在Pawn被控制器（PlayerController和AIController）控制时触发回调
 	virtual void PossessedBy(AController* NewController) override;
-	
-	/* start IEnemyInterface */
+
+	/* start IHighlightInterface */
 	virtual void HighlightActor() override;
 	virtual void UnHighlightActor() override;
+	/* end IHighlightInterface */
+	
+	/* start IEnemyInterface */
 	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
 	virtual AActor* GetCombatTarget_Implementation() override;
 	/* end IEnemyInterface */
@@ -40,6 +44,7 @@ public:
 	// 受击反应标签的监听委托函数
 	void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
 
+	// 眩晕标签改变
 	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
 
 
