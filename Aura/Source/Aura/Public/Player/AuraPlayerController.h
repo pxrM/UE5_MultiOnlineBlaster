@@ -19,6 +19,19 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
+
+// 鼠标拾取的目标
+enum class ETargetingStatus : uint8
+{
+	// 敌人
+	TargetingEnemy,
+	// 非敌人
+	TargetingNonEnemy,
+	// 无
+	NoTargeting,
+};
+
+
 /**
  * 
  */
@@ -57,7 +70,10 @@ private:
 	void AbilityInputTagHeld(const FGameplayTag InputTag);
 	void ShiftPressed() { bShiftKeyDown = true; }
 	void ShiftReleased() { bShiftKeyDown = false; }
-	void UpdateMagicCircleLocation();
+	void UpdateMagicCircleLocation() const;
+	
+	static void HighlightActor(AActor* InActor);
+	static void UnHighlightActor(AActor* InActor);
 	
 	
 private:
@@ -74,9 +90,9 @@ private:
 	// 鼠标点击的射线
 	FHitResult CursorHit;
 	// 上一个鼠标选中的actor
-	IHighlightInterface* LastActor = nullptr;
+	TObjectPtr<AActor> LastActor = nullptr;
 	// 当前鼠标选中的actor
-	IHighlightInterface* CurrActor = nullptr;
+	TObjectPtr<AActor> CurrActor = nullptr;
 
 	// 玩家的技能输入配置
 	UPROPERTY(EditDefaultsOnly, Category="Input")
@@ -95,8 +111,8 @@ private:
 	float ShortPressThreshold = 0.5f;
 	// 是否在自动移动
 	bool bAutoRunning = false;
-	// 是否在准备攻击选中的目标
-	bool bTargeting = false;
+	// 鼠标的拾取目标状态
+	ETargetingStatus TargetingStatus = ETargetingStatus::NoTargeting;
 	// 当角色和目标距离在此半径内时，将关闭自动寻路
 	UPROPERTY(EditDefaultsOnly)
 	float AutoRunAcceptanceRadius = 50.f;
