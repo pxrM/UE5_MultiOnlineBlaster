@@ -44,15 +44,15 @@ protected:
 	void HandleGlowEffects();
 
 private:
-	// 检查点显示的模型
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> CheckpointMesh;
-
 	// 检查点模型使用的碰撞体
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;
 
 public:
+	// 检查点显示的模型
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UStaticMeshComponent> CheckpointMesh;
+	
 	// SaveGame 作用：标记该变量需要被 序列化（Serialize） 到游戏存档中，支持保存和加载游戏状态。
 	// 当前检查点是否已被玩家激活
 	UPROPERTY(BlueprintReadOnly, SaveGame)
