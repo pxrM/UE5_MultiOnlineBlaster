@@ -12,7 +12,7 @@
 #define CUSTOM_DEPTH_BLUE 251
 
 // 自定义深度/模板值 棕色
-#define CUSTOM_DEPTH_TAN 250
+#define CUSTOM_DEPTH_TAN 252
 
 
 // 子弹的碰撞通道

@@ -19,6 +19,27 @@ class AURA_API ACheckpoint : public APlayerStart, public ISaveInterface, public 
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+								 UPrimitiveComponent* OtherComp,
+								 int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	/**
+	 * 检查点激活后的处理
+	 * @param DynamicMaterialInstance 检查点模型的材质实例
+	 */
+	UFUNCTION(BlueprintImplementableEvent)
+	void CheckpointReached(UMaterialInstanceDynamic* DynamicMaterialInstance);
+
+	/**
+	 * 玩家和检查点碰撞后调用
+	 */
+	UFUNCTION(BlueprintCallable)
+	void HandleGlowEffects();
+
 public:
 	ACheckpoint(const FObjectInitializer& ObjectInitializer);
 
@@ -32,26 +53,6 @@ public:
 	virtual bool IsShouldLoadTransform_Implementation() override;
 	virtual void LoadActor_Implementation() override;
 	/* end ISaveInterface */
-
-protected:
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	                             UPrimitiveComponent* OtherComp,
-	                             int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	/**
-	 * 检查点激活后的处理
-	 * @param DynamicMaterialInstance 检查点模型的材质实例
-	 */
-	UFUNCTION(BlueprintImplementableEvent)
-	void CheckpointReached(UMaterialInstanceDynamic* DynamicMaterialInstance);
-
-	/**
-	 * 玩家和检查点碰撞后调用
-	 */
-	void HandleGlowEffects();
 
 private:
 	// 检查点显示的模型
@@ -69,10 +70,14 @@ private:
 public:
 	// SaveGame 作用：标记该变量需要被 序列化（Serialize） 到游戏存档中，支持保存和加载游戏状态。
 	// 当前检查点是否已被玩家激活
-	UPROPERTY(BlueprintReadOnly, SaveGame)
+	UPROPERTY(BlueprintReadWrite, SaveGame)
 	bool bReached = false;
 
 	// 修改模型自定义深度的配置
 	UPROPERTY(EditDefaultsOnly)
 	int32 CustomDepthStencilOverride = CUSTOM_DEPTH_TAN;
+
+	// 是否需要绑定从重叠事件
+	UPROPERTY(EditAnywhere)
+	bool bCallOverlapCallback = false;
 };

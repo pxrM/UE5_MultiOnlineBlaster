@@ -30,9 +30,50 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer)
 	MoveToComponent->SetupAttachment(GetRootComponent());
 }
 
+void ACheckpoint::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (bCallOverlapCallback)
+	{
+		Sphere->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnSphereOverlap);
+	}
+}
+
+void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+								  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+								  const FHitResult& SweepResult)
+{
+	if (OtherActor->Implements<UPlayerInterface>())
+	{
+		bReached = true;
+		if(const AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		{
+			AuraGM->SaveWorldState(GetWorld());
+		}
+		IPlayerInterface::Execute_SaveProgress(OtherActor, PlayerStartTag);
+		HandleGlowEffects();
+	}
+}
+
+void ACheckpoint::HandleGlowEffects()
+{
+	// 取消检查点的碰撞检测
+	Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// 创建一个新的材质实例
+	UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(CheckpointMesh->GetMaterial(0), this);
+	CheckpointMesh->SetMaterial(0, DynamicMaterialInstance);
+	// 修改上面的效果
+	CheckpointReached(DynamicMaterialInstance);
+}
+
 void ACheckpoint::HighlightActor_Implementation()
 {
-	CheckpointMesh->SetRenderCustomDepth(true);
+	if(!bReached)
+	{
+		CheckpointMesh->SetRenderCustomDepth(true);
+	}
 }
 
 void ACheckpoint::UnHighlightActor_Implementation()
@@ -56,39 +97,4 @@ void ACheckpoint::LoadActor_Implementation()
 	{
 		HandleGlowEffects();
 	}
-}
-
-void ACheckpoint::BeginPlay()
-{
-	Super::BeginPlay();
-
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnSphereOverlap);
-}
-
-void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                  const FHitResult& SweepResult)
-{
-	if (OtherActor->Implements<UPlayerInterface>())
-	{
-		bReached = true;
-		if(const AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
-		{
-			AuraGM->SaveWorldState(GetWorld());
-		}
-		IPlayerInterface::Execute_SaveProgress(OtherActor, PlayerStartTag);
-		HandleGlowEffects();
-	}
-}
-
-void ACheckpoint::HandleGlowEffects()
-{
-	// 取消检查点的碰撞检测
-	Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	// 创建一个新的材质实例
-	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(CheckpointMesh->GetMaterial(0), this);
-	CheckpointMesh->SetMaterial(0, DynamicMaterial);
-	// 修改上面的效果
-	CheckpointReached(DynamicMaterial);
 }
