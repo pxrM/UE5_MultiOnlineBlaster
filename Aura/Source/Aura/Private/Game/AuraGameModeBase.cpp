@@ -117,7 +117,7 @@ void AAuraGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject) 
 	UGameplayStatics::SaveGameToSlot(SaveObject, InGameLoadSlotName, InGameLoadSlotIndex);
 }
 
-void AAuraGameModeBase::SaveWorldState(const UWorld* InWorld) const
+void AAuraGameModeBase::SaveWorldState(const UWorld* InWorld, const FString& DestinationMapAssetName) const
 {
 	FString WorldName = InWorld->GetMapName();
 	WorldName.RemoveFromStart(InWorld->StreamingLevelsPrefix);
@@ -125,24 +125,36 @@ void AAuraGameModeBase::SaveWorldState(const UWorld* InWorld) const
 	const UAuraGameInstance* AuraGI = Cast<UAuraGameInstance>(GetGameInstance());
 	check(AuraGI);
 
+	// 获取存档
 	if (ULoadScreenSaveGame* SaveGame = GetSaveSlotData(AuraGI->LoadSlotName, AuraGI->LoadSlotIndex))
 	{
+		// 修改地图资源名和地图名
+		if(DestinationMapAssetName != FString(""))
+		{
+			SaveGame->MapAssetName = DestinationMapAssetName;
+			SaveGame->MapName = GetMapNameWithMapAssetName(DestinationMapAssetName);
+		}
+
+		// 没有则创建一个
 		if (!SaveGame->HasMap(WorldName))
 		{
 			FSavedMap NewSavedMap;
-			NewSavedMap.MapAssetName = WorldName;
+			NewSavedMap.MapName = WorldName;
 			SaveGame->SavedMaps.Add(NewSavedMap);
 		}
 
+		// 从存档数据中获取当前地图存档数据，用来后续更新
 		FSavedMap SavedMap = SaveGame->GetSavedMapWithMapName(WorldName);
 		SavedMap.SavedActors.Empty();
 
+		// 更新存档地图actors数据
 		// 使用迭代器，遍历场景里的每一个Actor，将需要保存Actor数据保存到结构体内
 		for (FActorIterator It(InWorld); It; ++It)
 		{
 			AActor* Actor = *It;
 			if (!IsValid(Actor) || !Actor->Implements<USaveInterface>()) continue;
 
+			// 创建一个新的actor信息结构
 			FSavedActor SavedActor;
 			SavedActor.ActorName = Actor->GetFName();
 			SavedActor.Transform = Actor->GetTransform();
@@ -159,14 +171,17 @@ void AAuraGameModeBase::SaveWorldState(const UWorld* InWorld) const
 			SavedMap.SavedActors.AddUnique(SavedActor);
 		}
 
+		// 应用存档当前地图数据更新
 		for (FSavedMap& MapToReplace : SaveGame->SavedMaps)
 		{
-			if (MapToReplace.MapAssetName == WorldName)
+			if (MapToReplace.MapName == WorldName)
 			{
 				MapToReplace = SavedMap;
 				break;
 			}
 		}
+
+		// 保存新存档
 		UGameplayStatics::SaveGameToSlot(SaveGame, AuraGI->LoadSlotName, AuraGI->LoadSlotIndex);
 	}
 }
@@ -213,4 +228,28 @@ void AAuraGameModeBase::LoadWorldState(const UWorld* InWorld) const
 			}
 		}
 	}
+}
+
+FString AAuraGameModeBase::GetMapNameWithMapAssetName(const FString& InMapAssetName) const
+{
+	/*
+     * TMap:
+		+---------------------+-------------------------------+
+		| Key (FString)       | Value (TSoftObjectPtr<UWorld>)|
+		+---------------------+-------------------------------+
+		| "MainMenu"          | SoftRef to "/Game/Maps/MainMenu"|
+		| "Level1"            | SoftRef to "/Game/Maps/Level1"  |
+		| ...                 | ...                             |
+		+---------------------+-------------------------------+
+		输入: InMapAssetName = "MainMenu"
+		输出: "MainMenu"
+	 */
+	for(auto& Map : Maps)
+	{
+		if(Map.Value.ToSoftObjectPath().GetAssetName() == InMapAssetName)
+		{
+			return Map.Key;
+		}
+	}
+	return FString();
 }

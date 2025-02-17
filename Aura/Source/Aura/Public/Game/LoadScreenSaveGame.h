@@ -51,7 +51,7 @@ struct FSavedMap
 	GENERATED_BODY()
 
 	UPROPERTY()
-	FString MapAssetName = FString();
+	FString MapName = FString();
 
 	UPROPERTY()
 	TArray<FSavedActor> SavedActors;
@@ -125,7 +125,11 @@ public:
 
 	// 存档的地图名
 	UPROPERTY()
-	FString MapName = FString("Default Map Name");
+	FString MapName = FString("Map Name");
+
+	// 初始地图资源名称
+	UPROPERTY()
+	FString MapAssetName = FString("地图资源名称");
 
 	// 存档的默认玩家关卡出生位置的标签
 	UPROPERTY()

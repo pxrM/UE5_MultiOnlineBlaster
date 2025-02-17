@@ -7,7 +7,7 @@ FSavedMap ULoadScreenSaveGame::GetSavedMapWithMapName(const FString& InMapName)
 {
 	for (const FSavedMap& Map : SavedMaps)
 	{
-		if(Map.MapAssetName == InMapName)
+		if(Map.MapName == InMapName)
 		{
 			return Map;
 		}
@@ -17,9 +17,9 @@ FSavedMap ULoadScreenSaveGame::GetSavedMapWithMapName(const FString& InMapName)
 
 bool ULoadScreenSaveGame::HasMap(const FString& InMapName)
 {
-	for (const auto& [MapAssetName, _] : SavedMaps)
+	for (const FSavedMap& Map : SavedMaps)
 	{
-		if(MapAssetName == InMapName)
+		if(Map.MapName == InMapName)
 		{
 			return true;
 		}

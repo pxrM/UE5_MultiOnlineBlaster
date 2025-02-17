@@ -71,14 +71,22 @@ public:
 	/**
 	 * 保存关卡中的状态到当前存档中
 	 * @param InWorld 
+	 * @param DestinationMapAssetName 
 	 */
-	void SaveWorldState(const UWorld* InWorld) const;
+	void SaveWorldState(const UWorld* InWorld, const FString& DestinationMapAssetName = FString("")) const;
 
 	/**
 	 * 从存档中加载当前关卡的状态
 	 * @param InWorld 
 	 */
 	void LoadWorldState(const UWorld* InWorld) const;
+
+	/**
+	 * 根据地址资源路径获取地图名
+	 * @param InMapAssetName 地图资源名
+	 * @return 地图名
+	 */
+	FString GetMapNameWithMapAssetName(const FString& InMapAssetName) const;
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Character Class Defaults")
@@ -92,13 +100,16 @@ public:
 
 	// 初始地图名称
 	UPROPERTY(EditDefaultsOnly)
-	FString DefaultMapName;
+	FString DefaultMapName = FString("默认地图名称");
+	
 	// 初始地图
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> DefaultMap;
+	
 	// 默认玩家关卡出生位置的标签
 	UPROPERTY(EditDefaultsOnly)
 	FName DefaultPlayerStartTag;
+	
 	// 地图名和地图的映射。TSoftObjectPtr指针只保存路径，如果不使用，对应的资源不会加载到场景，可以在需要时再加载。
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;

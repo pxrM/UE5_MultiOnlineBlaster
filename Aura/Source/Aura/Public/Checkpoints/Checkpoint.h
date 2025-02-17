@@ -19,6 +19,9 @@ class AURA_API ACheckpoint : public APlayerStart, public ISaveInterface, public 
 {
 	GENERATED_BODY()
 
+public:
+	ACheckpoint(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -41,8 +44,6 @@ protected:
 	void HandleGlowEffects();
 
 public:
-	ACheckpoint(const FObjectInitializer& ObjectInitializer);
-
 	/* start IHighlightInterface */
 	virtual void HighlightActor_Implementation() override;
 	virtual void UnHighlightActor_Implementation() override;
@@ -54,7 +55,7 @@ public:
 	virtual void LoadActor_Implementation() override;
 	/* end ISaveInterface */
 
-private:
+protected:
 	// 检查点显示的模型
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> CheckpointMesh;
