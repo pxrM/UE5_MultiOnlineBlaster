@@ -25,7 +25,7 @@ public:
 	FString GetPlayerName() const {return PlayerName;}
 	
 	void SetLoadSlotName(const FString& InLoadSlotName);
-	FString GetLoadSlotName() const {return LoadSlotName;}
+	FString GetLoadSlotName() const {return LoadSlotName;} 
 
 	void SetMapName(const FString& InMapName);
 	FString GetMapName() const {return MapName;}
@@ -47,6 +47,9 @@ public:
 
 	UPROPERTY()
 	FName PlayerStartTag;
+
+	UPROPERTY()
+	FString MapAssetName;
 
 private:
 	/*

@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
+#include "GameFramework/Character.h"
 
 void AAuraGameModeBase::BeginPlay()
 {
@@ -45,7 +46,7 @@ AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 	return nullptr;
 }
 
-void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
+void AAuraGameModeBase::SaveSlotData(const UMVVM_LoadSlot* LoadSlot, const int32 SlotIndex) const
 {
 	// 是否已有对应名称的存档，有则删除之前保存的存档
 	if (UGameplayStatics::DoesSaveGameExist(LoadSlot->GetLoadSlotName(), SlotIndex))
@@ -62,6 +63,7 @@ void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 	LoadScreenSaveGame->SaveSlotStatus = Taken;
 	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();
 	LoadScreenSaveGame->PlayerStartTag = LoadSlot->PlayerStartTag;
+	LoadScreenSaveGame->MapAssetName = LoadSlot->MapAssetName;
 
 	// 保存存档
 	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame, LoadSlot->GetLoadSlotName(), SlotIndex);
@@ -97,7 +99,7 @@ void AAuraGameModeBase::TravelToMap(const UMVVM_LoadSlot* Slot)
 	UGameplayStatics::OpenLevelBySoftObjectPtr(this, Maps.FindChecked(Slot->GetMapName()));
 }
 
-ULoadScreenSaveGame* AAuraGameModeBase::RetrieveInGameSaveData()
+ULoadScreenSaveGame* AAuraGameModeBase::RetrieveInGameSaveData() const
 {
 	const UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());
 	const FString InGameLoadSlotName = AuraGameInstance->LoadSlotName;
@@ -234,13 +236,13 @@ FString AAuraGameModeBase::GetMapNameWithMapAssetName(const FString& InMapAssetN
 {
 	/*
      * TMap:
-		+---------------------+-------------------------------+
-		| Key (FString)       | Value (TSoftObjectPtr<UWorld>)|
-		+---------------------+-------------------------------+
+		+---------------------+---------------------------------+
+		| Key (FString)       | Value (TSoftObjectPtr<UWorld>)	|
+		+---------------------+---------------------------------+
 		| "MainMenu"          | SoftRef to "/Game/Maps/MainMenu"|
 		| "Level1"            | SoftRef to "/Game/Maps/Level1"  |
 		| ...                 | ...                             |
-		+---------------------+-------------------------------+
+		+---------------------+---------------------------------+
 		输入: InMapAssetName = "MainMenu"
 		输出: "MainMenu"
 	 */
@@ -252,4 +254,12 @@ FString AAuraGameModeBase::GetMapNameWithMapAssetName(const FString& InMapAssetN
 		}
 	}
 	return FString();
+}
+
+void AAuraGameModeBase::PlayerDied(const ACharacter* DeadCharacter) const
+{
+	const ULoadScreenSaveGame* SaveGame = RetrieveInGameSaveData();
+	if (!IsValid(SaveGame)) return;
+
+	UGameplayStatics::OpenLevel(DeadCharacter, FName(SaveGame->MapAssetName));
 }

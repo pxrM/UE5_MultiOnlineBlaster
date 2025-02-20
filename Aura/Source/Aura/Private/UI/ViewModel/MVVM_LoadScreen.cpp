@@ -69,9 +69,10 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnterName
 	LoadSlots[Slot]->SetPlayerLevel(1);
 	LoadSlots[Slot]->SlotStatus = Taken; // 修改界面为加载加载状态
 	LoadSlots[Slot]->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;
-	LoadSlots[Slot]->InitializeSlot();
-
+	LoadSlots[Slot]->MapAssetName = AuraGameMode->DefaultMap.ToSoftObjectPath().GetAssetName();
+	
 	AuraGameMode->SaveSlotData(LoadSlots[Slot], Slot);
+	LoadSlots[Slot]->InitializeSlot();
 
 	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(AuraGameMode->GetGameInstance());
 	AuraGameInstance->LoadSlotName = LoadSlots[Slot]->GetLoadSlotName();

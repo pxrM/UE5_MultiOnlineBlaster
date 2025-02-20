@@ -121,6 +121,24 @@ int32 AAuraCharacter::GetPlayerLevel_Implementation()
 	return AuraPlayerState->GetPlayerLevel();
 }
 
+void AAuraCharacter::Die(const FVector& InDeathImpulse)
+{
+	Super::Die(InDeathImpulse);
+
+	FTimerDelegate DeathTimerDelegate;
+	DeathTimerDelegate.BindLambda([this]()
+	{
+		if (const AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		{
+			AuraGM->PlayerDied(this);
+		}
+	});
+	GetWorldTimerManager().SetTimer(DeathTimer, DeathTimerDelegate, DeathTime, false);
+	
+	// 防止相机在玩家角色死亡后跟随移动，将相机固定在世界坐标位置
+	TopDownCameraComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+}
+
 void AAuraCharacter::AddToXP_Implementation(const int32 InXP)
 {
 	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();

@@ -44,12 +44,19 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 								  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 								  const FHitResult& SweepResult)
 {
+	/*
+	 * 接触保存点，更新保存数据
+	 */
 	if (OtherActor->Implements<UPlayerInterface>())
 	{
 		bReached = true;
 		if(const AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 		{
-			AuraGM->SaveWorldState(GetWorld());
+			const UWorld* World = GetWorld();
+			FString MapName = World->GetMapName();
+			MapName.RemoveFromStart(World->StreamingLevelsPrefix);
+			
+			AuraGM->SaveWorldState(GetWorld(), MapName);
 		}
 		IPlayerInterface::Execute_SaveProgress(OtherActor, PlayerStartTag);
 		HandleGlowEffects();

@@ -143,6 +143,7 @@ protected:
 	USoundBase* DeathSound;
 
 	// 是否死亡
+	UPROPERTY(BlueprintReadOnly)
 	bool bDead = false;
 
 	// 小兵数量（召唤出来的小怪、宠物等）

@@ -26,11 +26,13 @@ public:
 
 	// 当角色（Pawn）被控制器（Controller）所控制时，此函数将被调用
 	virtual void PossessedBy(AController* NewController) override;
+	
 	// 在玩家状态（PlayerState）在网络中被复制时被调用
 	virtual void OnRep_PlayerState() override;
 
 	/* start ICombatInterface */
 	virtual int32 GetPlayerLevel_Implementation() override;
+	virtual void Die(const FVector& InDeathImpulse) override;
 	/* end ICombatInterface */
 
 	/* start IPlayerInterface */
@@ -55,7 +57,6 @@ public:
 
 	// 加载本地保存的角色数据
 	void LoadProgress();
-	
 
 private:
 	// 初始化角色gas组件的相关信息
@@ -68,6 +69,13 @@ private:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComp;
+
+	// 角色死亡后持续时间，该时间内用于表现角色死亡
+	UPROPERTY(EditDefaultsOnly)
+	float DeathTime = 5.f;
+
+	// 声明一个计时器，用于角色死亡后一定时间处理后续逻辑
+	FTimerHandle DeathTimer;
 
 private:
 	UPROPERTY(VisibleAnywhere)

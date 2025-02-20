@@ -33,7 +33,7 @@ public:
 	 * @param LoadSlot 需要保存的视图实例
 	 * @param SlotIndex 存档索引
 	 */
-	void SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex);
+	void SaveSlotData(const UMVVM_LoadSlot* LoadSlot, const int32 SlotIndex) const;
 
 	/**
 	 * 获取存档
@@ -60,7 +60,7 @@ public:
 	 * 获取当前游戏所使用的存档数据
 	 * @return 
 	 */
-	ULoadScreenSaveGame* RetrieveInGameSaveData();
+	ULoadScreenSaveGame* RetrieveInGameSaveData() const;
 
 	/**
 	 * 保存当前游戏进度
@@ -87,6 +87,12 @@ public:
 	 * @return 地图名
 	 */
 	FString GetMapNameWithMapAssetName(const FString& InMapAssetName) const;
+
+	/**
+	 * 玩家角色死亡后
+	 * @param DeadCharacter 玩家角色实例
+	 */
+	void PlayerDied(const ACharacter* DeadCharacter) const;
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Character Class Defaults")
