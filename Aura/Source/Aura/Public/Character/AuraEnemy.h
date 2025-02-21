@@ -59,6 +59,9 @@ protected:
 
 	virtual void InitializeDefaultAttributes() const override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SpawnLoot();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Character Class Default")
 	int32 Level = 1;
