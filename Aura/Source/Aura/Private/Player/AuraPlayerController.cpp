@@ -263,13 +263,12 @@ void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 		if (IsValid(CurrActor))
 		{
 			TargetingStatus = CurrActor->Implements<UEnemyInterface>() ? ETargetingStatus::TargetingEnemy : ETargetingStatus::TargetingNonEnemy;
-			bAutoRunning = false; 
 		}
 		else
 		{
 			TargetingStatus = ETargetingStatus::NoTargeting;
-			bAutoRunning = false;
 		}
+		bAutoRunning = false; 
 	}
 
 	if (GetASC())
