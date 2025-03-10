@@ -26,13 +26,13 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
 
-		// ÏßĞÔÉäÏß¼ì²â
+		// çº¿æ€§å°„çº¿æ£€æµ‹
 		FHitResult FireHit;
 		WeaponTraceHit(Start, HitTarget, FireHit);
 
-		// »÷ÖĞ½ÇÉ«
+		// å‡»ä¸­è§’è‰²
 		ABlasterCharacter* HitBlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-		// ·¢ÆğÉä»÷½ÇÉ«µÄcontroller
+		// å‘èµ·å°„å‡»è§’è‰²çš„controller
 		AController* InstigatorController = OwnerPawn->GetController();
 		if (HitBlasterCharacter && InstigatorController)
 		{
@@ -40,7 +40,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			if (HasAuthority() && bCauseAuthDamage)
 			{
 				const float DamageToCause = FireHit.BoneName.ToString() == FString("head") ? HeadShotDamage : Damage;
-				// server£¬Ã»ÓĞ¿ªÆôµ¹´ø»òÕßÎª±¾µØ¿ØÖÆ½ÇÉ«£¬ÔÚ·şÎñÆ÷Ö±½ÓÊ©¼ÓÉËº¦
+				// serverï¼Œæ²¡æœ‰å¼€å¯å€’å¸¦æˆ–è€…ä¸ºæœ¬åœ°æ§åˆ¶è§’è‰²ï¼Œåœ¨æœåŠ¡å™¨ç›´æ¥æ–½åŠ ä¼¤å®³
 				UGameplayStatics::ApplyDamage(
 					HitBlasterCharacter,
 					DamageToCause,
@@ -51,7 +51,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			}
 			else if (!HasAuthority() && bUseServerSideRewind)
 			{
-				// ÔÚ¿Í»§¶ËÇëÇó·şÎñÆ÷½øĞĞµ¹´øÊ©¼ÓÉËº¦
+				// åœ¨å®¢æˆ·ç«¯è¯·æ±‚æœåŠ¡å™¨è¿›è¡Œå€’å¸¦æ–½åŠ ä¼¤å®³
 				BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ?
 					Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 				BlasterOwnerController = BlasterOwnerController == nullptr ?
@@ -59,13 +59,13 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				if (BlasterOwnerCharacter && BlasterOwnerCharacter->IsLocallyControlled() &&
 					BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensationComp())
 				{
-					// ¹¥»÷Ê±¼äµÈÓÚ·şÎñÆ÷Ê±¼ä¼õÈ¥µ¥´Î·¢ËÍÊ±¼ä
+					// æ”»å‡»æ—¶é—´ç­‰äºæœåŠ¡å™¨æ—¶é—´å‡å»å•æ¬¡å‘é€æ—¶é—´
 					const float HitTime = BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime;
 					BlasterOwnerCharacter->GetLagCompensationComp()->ServerScoreRequest(HitBlasterCharacter, Start, HitTarget, HitTime);
 				}
 			}
 		}
-		// ²¥·ÅÌØĞ§
+		// æ’­æ”¾ç‰¹æ•ˆ
 		if (ImpactParticles)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(
@@ -75,7 +75,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				FireHit.ImpactNormal.Rotation()
 			);
 		}
-		// ²¥·Å»÷ÖĞÒôĞ§
+		// æ’­æ”¾å‡»ä¸­éŸ³æ•ˆ
 		if (HitSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(
@@ -84,7 +84,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				FireHit.ImpactPoint
 			);
 		}
-		// ²¥·ÅÇ¹¿ÚÌØĞ§
+		// æ’­æ”¾æªå£ç‰¹æ•ˆ
 		if (MuzzleFlash)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(
@@ -93,7 +93,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				SocketTransform
 			);
 		}
-		// ²¥·Å¿ª»ğÒôĞ§
+		// æ’­æ”¾å¼€ç«éŸ³æ•ˆ
 		if (FireSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(
@@ -110,9 +110,9 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		// ¶à25%ÕâÑù×îÖÕÎ»ÖÃ¸ÕºÃ³¬¹ıÄ¿±êµãÒÔÈ·±£³É¹¦£¬·ñÔò¿ÉÄÜÕıºÃÃüÖĞÔÚÄ¿±ê±íÃæÕâÑù¿ÉÄÜ»áÊ§È¥×èµ²
+		// å¤š25%è¿™æ ·æœ€ç»ˆä½ç½®åˆšå¥½è¶…è¿‡ç›®æ ‡ç‚¹ä»¥ç¡®ä¿æˆåŠŸï¼Œå¦åˆ™å¯èƒ½æ­£å¥½å‘½ä¸­åœ¨ç›®æ ‡è¡¨é¢è¿™æ ·å¯èƒ½ä¼šå¤±å»é˜»æŒ¡
 		FVector End = TraceStart + (HitTarget - TraceStart) * 1.25f;
-		// ÑØÖ¸¶¨Í¨µÀ½øĞĞµ¥´ÎÏßĞÔÉäÏß¼ì²â
+		// æ²¿æŒ‡å®šé€šé“è¿›è¡Œå•æ¬¡çº¿æ€§å°„çº¿æ£€æµ‹
 		World->LineTraceSingleByChannel(
 			OutFireHit,
 			TraceStart,
@@ -121,7 +121,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		);
 		FVector BeamEnd = OutFireHit.bBlockingHit ? OutFireHit.ImpactPoint : End;
 		DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, FColor::Orange, true);
-		// ²¥·Åµ¯µÀÌØĞ§
+		// æ’­æ”¾å¼¹é“ç‰¹æ•ˆ
 		if (BeamParticles)
 		{
 			UParticleSystemComponent* BeamCmp = UGameplayStatics::SpawnEmitterAtLocation(

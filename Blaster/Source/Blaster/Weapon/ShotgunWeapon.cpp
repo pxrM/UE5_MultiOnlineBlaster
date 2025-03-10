@@ -26,7 +26,7 @@ void AShotgunWeapon::Fire(const FVector& HitTarget)
 	{
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
-		TMap<ABlasterCharacter*, uint32> HitMap; // »÷ÖĞ´ÎÊı
+		TMap<ABlasterCharacter*, uint32> HitMap; // å‡»ä¸­æ¬¡æ•°
 
 		for (uint32 i = 0; i < NumberOfPellets; i++)
 		{
@@ -46,7 +46,7 @@ void AShotgunWeapon::Fire(const FVector& HitTarget)
 				}
 			}
 
-			//²¥·ÅÌØĞ§
+			//æ’­æ”¾ç‰¹æ•ˆ
 			if (ImpactParticles)
 			{
 				UGameplayStatics::SpawnEmitterAtLocation(
@@ -57,7 +57,7 @@ void AShotgunWeapon::Fire(const FVector& HitTarget)
 				);
 			}
 
-			//ÎªÃ¿¸öµ¯Íè¶¼²¥·Å»÷ÖĞÒôĞ§£¬ÒòÎªËü¿ÉÄÜ»á»÷ÖĞÖÜ±ßµÄÎïÌå»òÕß¸üÔ¶µÄµØ·½
+			//ä¸ºæ¯ä¸ªå¼¹ä¸¸éƒ½æ’­æ”¾å‡»ä¸­éŸ³æ•ˆï¼Œå› ä¸ºå®ƒå¯èƒ½ä¼šå‡»ä¸­å‘¨è¾¹çš„ç‰©ä½“æˆ–è€…æ›´è¿œçš„åœ°æ–¹
 			if (HitSound)
 			{
 				UGameplayStatics::PlaySoundAtLocation(
@@ -70,7 +70,7 @@ void AShotgunWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 
-		// ¼ÆËãÉËº¦
+		// è®¡ç®—ä¼¤å®³
 		for (auto HitPair : HitMap)
 		{
 			if (HitPair.Key && InstigatorController && HasAuthority())
@@ -98,8 +98,8 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 	{
 		const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		const FVector Start = SocketTransform.GetLocation();
-		TMap<ABlasterCharacter*, uint32> HitMap; // »÷ÖĞ´ÎÊı
-		TMap<ABlasterCharacter*, uint32> HeadShotHitMap; // ±¬Í·»÷ÖĞ´ÎÊı
+		TMap<ABlasterCharacter*, uint32> HitMap; // å‡»ä¸­æ¬¡æ•°
+		TMap<ABlasterCharacter*, uint32> HeadShotHitMap; // çˆ†å¤´å‡»ä¸­æ¬¡æ•°
 		for (const FVector_NetQuantize& HitTargetItem : HitTargets)
 		{
 			FHitResult FireHit;
@@ -142,9 +142,9 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 				}
 			}
 		}
-		// ±»»÷ÖĞµ½µÄ½ÇÉ«£¬·şÎñÆ÷µ¹´øÊ¹ÓÃ
+		// è¢«å‡»ä¸­åˆ°çš„è§’è‰²ï¼ŒæœåŠ¡å™¨å€’å¸¦ä½¿ç”¨
 		TArray<ABlasterCharacter*> HitCharacters;
-		// ±»»÷ÖĞ½ÇÉ«ËùÊÜµ½µÄ×ÜÉËº¦
+		// è¢«å‡»ä¸­è§’è‰²æ‰€å—åˆ°çš„æ€»ä¼¤å®³
 		TMap<ABlasterCharacter*, float> DamageMap;
 		for (auto& HitPair : HitMap)
 		{
@@ -182,14 +182,14 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		
 		if (!HasAuthority() && bUseServerSideRewind)
 		{
-			// ¿Í»§¶Ë±¾µØ¿ØÖÆ½ÇÉ«ÇëÇó·şÎñÆ÷½øĞĞµ¹´øÊ©¼ÓÉËº¦
+			// å®¢æˆ·ç«¯æœ¬åœ°æ§åˆ¶è§’è‰²è¯·æ±‚æœåŠ¡å™¨è¿›è¡Œå€’å¸¦æ–½åŠ ä¼¤å®³
 			BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(OwnerPawn) : BlasterOwnerCharacter;
 			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
 			if (BlasterOwnerController && BlasterOwnerCharacter &&
 				BlasterOwnerCharacter->IsLocallyControlled() &&
 				BlasterOwnerCharacter->GetLagCompensationComp())
 			{
-				// ¹¥»÷Ê±¼äµÈÓÚ·şÎñÆ÷Ê±¼ä¼õÈ¥µ¥´Î·¢ËÍÊ±¼ä
+				// æ”»å‡»æ—¶é—´ç­‰äºæœåŠ¡å™¨æ—¶é—´å‡å»å•æ¬¡å‘é€æ—¶é—´
 				const float HitTime = BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime;
 				BlasterOwnerCharacter->GetLagCompensationComp()->ShotgunServerScoreRequest(
 					HitCharacters, Start, HitTargets, HitTime
@@ -201,29 +201,29 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 
 void AShotgunWeapon::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets)
 {
-	// »ñÈ¡Ç¹¿ÚÎ»ÖÃ
+	// è·å–æªå£ä½ç½®
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
 	if (MuzzleFlashSocket == nullptr) return;
 
 	const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 	const FVector TraceStart = SocketTransform.GetLocation();
 
-	// ¼ÆËã´Ó TraceStart µ½ HitTarget µÄ·½ÏòÏòÁ¿£¬²¢½øĞĞµ¥Î»»¯´¦Àí
+	// è®¡ç®—ä» TraceStart åˆ° HitTarget çš„æ–¹å‘å‘é‡ï¼Œå¹¶è¿›è¡Œå•ä½åŒ–å¤„ç†
 	const FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
-	// ÒÔ TraceStart ÎªÆğµã£¬ÑØ×ÅÉäÏß·½ÏòÇ°½ø DistanceToSphere µÄ¾àÀë£¬µÃµ½ÇòÌåµÄÖĞĞÄµã
+	// ä»¥ TraceStart ä¸ºèµ·ç‚¹ï¼Œæ²¿ç€å°„çº¿æ–¹å‘å‰è¿› DistanceToSphere çš„è·ç¦»ï¼Œå¾—åˆ°çƒä½“çš„ä¸­å¿ƒç‚¹
 	const FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
 
-	// Ñ­»·»ñÈ¡ö±µ¯Ç¹Ã¿¸ö×Óµ¯µÄÄ¿±êµã
+	// å¾ªç¯è·å–éœ°å¼¹æªæ¯ä¸ªå­å¼¹çš„ç›®æ ‡ç‚¹
 	for (uint32 i = 0; i < NumberOfPellets; i++)
 	{
-		// ÏÈµ÷ÓÃ RandomUnitVector Éú³ÉÒ»¸öËæ»úµ¥Î»ÏòÁ¿£¬È»ºó³ËÔÚ 0 µ½ SphereRadius ·¶Î§ÄÚµÄËæ»ú¸¡µãÊı£¬µÃµ½Ò»¸öËæ»úÏòÁ¿ RandVec
-		// ÕâÑù¾Í¿ÉÒÔ»ñµÃÒ»¸öËæ»úµÄÆ«ÒÆÏòÁ¿£¬ÓÃÓÚÔÚÇòÌåµÄÖĞĞÄµãÖÜÎ§½øĞĞÉ¢ÉäÆ«ÒÆ
+		// å…ˆè°ƒç”¨ RandomUnitVector ç”Ÿæˆä¸€ä¸ªéšæœºå•ä½å‘é‡ï¼Œç„¶åä¹˜åœ¨ 0 åˆ° SphereRadius èŒƒå›´å†…çš„éšæœºæµ®ç‚¹æ•°ï¼Œå¾—åˆ°ä¸€ä¸ªéšæœºå‘é‡ RandVec
+		// è¿™æ ·å°±å¯ä»¥è·å¾—ä¸€ä¸ªéšæœºçš„åç§»å‘é‡ï¼Œç”¨äºåœ¨çƒä½“çš„ä¸­å¿ƒç‚¹å‘¨å›´è¿›è¡Œæ•£å°„åç§»
 		const FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
-		// ½«ÇòÌåµÄÖĞĞÄµã ºÍ Ëæ»úÏòÁ¿ Ïà¼Ó£¬µÃµ½×îÖÕµÄ½áÊøÎ»ÖÃ EndLoc¡£ÕâÑù¾ÍÍê³ÉÁËÉ¢ÉäĞ§¹ûµÄ¼ÆËã£¬×îÖÕµÄ½áÊøÎ»ÖÃ½«»áÉÔÉÔÆ«ÀëÇòÌåµÄÖĞĞÄµã¡£
+		// å°†çƒä½“çš„ä¸­å¿ƒç‚¹ å’Œ éšæœºå‘é‡ ç›¸åŠ ï¼Œå¾—åˆ°æœ€ç»ˆçš„ç»“æŸä½ç½® EndLocã€‚è¿™æ ·å°±å®Œæˆäº†æ•£å°„æ•ˆæœçš„è®¡ç®—ï¼Œæœ€ç»ˆçš„ç»“æŸä½ç½®å°†ä¼šç¨ç¨åç¦»çƒä½“çš„ä¸­å¿ƒç‚¹ã€‚
 		const FVector EndLoc = SphereCenter + RandVec;
-		// ½« É¢ÉäºóµÄ×îÖÕ½áÊøÎ»ÖÃ ¼õÈ¥ ÉäÏßÆğÊ¼Î»ÖÃ£¬¼ÆËã³öÒ»¸ö´ÓÆğÊ¼Î»ÖÃµ½½áÊøÎ»ÖÃµÄÏòÁ¿ ToEndLoc¡£Õâ¸öÏòÁ¿±íÊ¾ÁËÉäÏß×·×ÙµÄ·½ÏòºÍ¾àÀë¡£
+		// å°† æ•£å°„åçš„æœ€ç»ˆç»“æŸä½ç½® å‡å» å°„çº¿èµ·å§‹ä½ç½®ï¼Œè®¡ç®—å‡ºä¸€ä¸ªä»èµ·å§‹ä½ç½®åˆ°ç»“æŸä½ç½®çš„å‘é‡ ToEndLocã€‚è¿™ä¸ªå‘é‡è¡¨ç¤ºäº†å°„çº¿è¿½è¸ªçš„æ–¹å‘å’Œè·ç¦»ã€‚
 		FVector ToEndLoc = EndLoc - TraceStart;
-		// ±ÜÃâÒç³ö
+		// é¿å…æº¢å‡º
 		ToEndLoc = TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size();
 		HitTargets.Add(ToEndLoc);
 	}

@@ -8,7 +8,7 @@
 
 
 /*
- * ¿ª»ðÊ±µôÂäµÄ×Óµ¯Íâ¿Ç
+ * å¼€ç«æ—¶æŽ‰è½çš„å­å¼¹å¤–å£³
  */
 UCLASS()
 class BLASTER_API ACasing : public AActor

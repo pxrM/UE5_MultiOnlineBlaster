@@ -8,7 +8,7 @@
 #include "TeamPlayerStart.generated.h"
 
 /**
- * APlayerStart的作用就是记录APawn在游戏开始时生成的Position与Rotation信息
+ * APlayerStart鐨勪綔鐢ㄥ氨鏄褰旳Pawn鍦ㄦ父鎴忓紑濮嬫椂鐢熸垚鐨凱osition涓嶳otation淇℃伅
  */
 UCLASS()
 class BLASTER_API ATeamPlayerStart : public APlayerStart

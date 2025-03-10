@@ -7,7 +7,7 @@
 #include "ShotgunWeapon.generated.h"
 
 /**
- * ö±µ¯Ç¹
+ * éœ°å¼¹æª
  */
 UCLASS()
 class BLASTER_API AShotgunWeapon : public AHitScanWeapon
@@ -15,12 +15,12 @@ class BLASTER_API AShotgunWeapon : public AHitScanWeapon
 	GENERATED_BODY()
 
 public:
-	virtual void Fire(const FVector& HitTarget) override;//--·ÏÆú
+	virtual void Fire(const FVector& HitTarget) override;//--åºŸå¼ƒ
 	virtual void FireShotgun(const TArray<FVector_NetQuantize>& HitTargets);
 	void ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets);
 
 private:
 	UPROPERTY(EditAnywhere)
-		uint32 NumberOfPellets = 10; //ö±µ¯Ç¹Í¬Ê±³öµÄ×Óµ¯ÊıÁ¿
+		uint32 NumberOfPellets = 10; //éœ°å¼¹æªåŒæ—¶å‡ºçš„å­å¼¹æ•°é‡
 	
 };

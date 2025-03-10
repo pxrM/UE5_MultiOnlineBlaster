@@ -46,15 +46,15 @@ void ULagCompensationComponent::SaveFramePackage()
 	if (FrameHistory.Num() <= 1)
 	{
 		SaveFramePackage(ThisFrame);
-		FrameHistory.AddHead(ThisFrame); // Ìí¼ÓÔÚÍ·²¿
+		FrameHistory.AddHead(ThisFrame); // æ·»åŠ åœ¨å¤´éƒ¨
 	}
 	else
 	{
-		// »ñÈ¡×îĞÂÖ¡°üºÍ×î¾ÉÖ¡°üÖ®¼äµÄÊ±¼ä²î
+		// è·å–æœ€æ–°å¸§åŒ…å’Œæœ€æ—§å¸§åŒ…ä¹‹é—´çš„æ—¶é—´å·®
 		float HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
 		while (HistoryLength > MaxRecordTime)
 		{
-			// É¾³ı¹ıÆÚµÄ¾É°ü
+			// åˆ é™¤è¿‡æœŸçš„æ—§åŒ…
 			FrameHistory.RemoveNode(FrameHistory.GetTail());
 			HistoryLength = FrameHistory.GetHead()->GetValue().Time - FrameHistory.GetTail()->GetValue().Time;
 		}
@@ -180,29 +180,29 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 		HitCharacter->GetLagCompensationComp()->FrameHistory.GetTail() == nullptr;
 	if (bReturn) return FFramePackage();
 
-	// ÊÜ»÷½ÇÉ«µÄÖ¡ÀúÊ·Êı¾İ
+	// å—å‡»è§’è‰²çš„å¸§å†å²æ•°æ®
 	const TDoubleLinkedList<FFramePackage>& History = HitCharacter->GetLagCompensationComp()->FrameHistory;
-	// »ñÈ¡Ö¡Êı¾İ×î¾ÉµÄÀúÊ·Ê±¼ä
+	// è·å–å¸§æ•°æ®æœ€æ—§çš„å†å²æ—¶é—´
 	const float OldestHistoryTime = History.GetTail()->GetValue().Time;
-	// »ñÈ¡Ö¡Êı¾İ×îĞÂµÄÀúÊ·Ê±¼ä
+	// è·å–å¸§æ•°æ®æœ€æ–°çš„å†å²æ—¶é—´
 	const float NewestHistoryTime = History.GetHead()->GetValue().Time;
-	// ×î¾ÉÊ±¼ä´óÓÚÃüÖĞÊ±¼ä£¬Ê±¼äÌ«¾ÃÔ¶ÎŞ·¨µ¹´ø
+	// æœ€æ—§æ—¶é—´å¤§äºå‘½ä¸­æ—¶é—´ï¼Œæ—¶é—´å¤ªä¹…è¿œæ— æ³•å€’å¸¦
 	if (OldestHistoryTime > HitTime)
 	{
 		return FFramePackage();
 	}
 
-	// ÊÇ·ñĞèÒª½øĞĞ²îÖµ
+	// æ˜¯å¦éœ€è¦è¿›è¡Œå·®å€¼
 	bool bShouldInterpolate = true;
 
 	FFramePackage FrameToCheck;
-	// ×î¾ÉµÄÀúÊ·Ê±¼ä¸ÕºÃµÈÓÚÃüÖĞÊ±¼ä
+	// æœ€æ—§çš„å†å²æ—¶é—´åˆšå¥½ç­‰äºå‘½ä¸­æ—¶é—´
 	if (OldestHistoryTime == HitTime)
 	{
 		bShouldInterpolate = false;
 		FrameToCheck = History.GetTail()->GetValue();
 	}
-	// ×îĞÂµÄÀúÊ·Ê±¼äĞ¡ÓÚµÈÓÚÃüÖĞÊ±¼ä
+	// æœ€æ–°çš„å†å²æ—¶é—´å°äºç­‰äºå‘½ä¸­æ—¶é—´
 	if (NewestHistoryTime <= HitTime)
 	{
 		bShouldInterpolate = false;
@@ -211,10 +211,10 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 
 	TDoubleLinkedList<FFramePackage>::TDoubleLinkedListNode* Younger = History.GetHead();
 	auto Older = Younger;
-	// Èç¹ûOlderµÄÊ±¼ä±È»÷ÖĞÊ±¼ä´ó
+	// å¦‚æœOlderçš„æ—¶é—´æ¯”å‡»ä¸­æ—¶é—´å¤§
 	while (Older->GetValue().Time > HitTime)
 	{
-		// ½á¹û£º... < OlderTime < HitTime < YoungerTime < ...
+		// ç»“æœï¼š... < OlderTime < HitTime < YoungerTime < ...
 		if (Older->GetNextNode() == nullptr) break;
 		Older = Older->GetNextNode();
 		if (Older->GetValue().Time > HitTime)
@@ -222,7 +222,7 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 			Younger = Older;
 		}
 	}
-	// ²»Ì«¿ÉÄÜ£¬µ«ĞèÒª¼ì²éÒ»ÏÂ
+	// ä¸å¤ªå¯èƒ½ï¼Œä½†éœ€è¦æ£€æŸ¥ä¸€ä¸‹
 	if (Older->GetValue().Time == HitTime)
 	{
 		bShouldInterpolate = false;
@@ -231,7 +231,7 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 
 	if (bShouldInterpolate)
 	{
-		// ¸ù¾İ OlderTime < HitTime < YoungerTime ½øĞĞ²åÖµ
+		// æ ¹æ® OlderTime < HitTime < YoungerTime è¿›è¡Œæ’å€¼
 		FrameToCheck = InterpBetweenFrames(Older->GetValue(), Younger->GetValue(), HitTime);
 	}
 	FrameToCheck.Character = HitCharacter;
@@ -241,9 +241,9 @@ FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitC
 
 FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage& OlderFrmae, const FFramePackage& YoungerFrame, float HitTime)
 {
-	// Á½¸öÖ¡Ö®¼äµÄÊ±¼ä²î 
+	// ä¸¤ä¸ªå¸§ä¹‹é—´çš„æ—¶é—´å·® 
 	const float Distance = YoungerFrame.Time - OlderFrmae.Time;
-	// µÃµ½²åÖµÏµÊı InterpFraction¡£Õâ¸öÏµÊı´ú±íÁË HitTime ÔÚÁ½¸öÖ¡Ö®¼äËùÕ¼µÄ±ÈÀı£¬¿ÉÒÔÓÃÓÚ¼ÆËãÔÚ²åÖµÊ±£¬Á½¸öÖ¡Ö®¼äµÄÄ³¸öÊôĞÔµÄÖµ¡£
+	// å¾—åˆ°æ’å€¼ç³»æ•° InterpFractionã€‚è¿™ä¸ªç³»æ•°ä»£è¡¨äº† HitTime åœ¨ä¸¤ä¸ªå¸§ä¹‹é—´æ‰€å çš„æ¯”ä¾‹ï¼Œå¯ä»¥ç”¨äºè®¡ç®—åœ¨æ’å€¼æ—¶ï¼Œä¸¤ä¸ªå¸§ä¹‹é—´çš„æŸä¸ªå±æ€§çš„å€¼ã€‚
 	const float InterpFraction = (HitTime - OlderFrmae.Time) / Distance;
 
 	FFramePackage InterpFramePackage;
@@ -259,7 +259,7 @@ FFramePackage ULagCompensationComponent::InterpBetweenFrames(const FFramePackage
 		FBoxInformation InterpBoxInfo;
 		InterpBoxInfo.Location = FMath::VInterpTo(OlderBox.Location, YoungerBox.Location, 1.f, InterpFraction);
 		InterpBoxInfo.Rotation = FMath::RInterpTo(OlderBox.Rotation, YoungerBox.Rotation, 1.f, InterpFraction);
-		InterpBoxInfo.BoxExtent = YoungerBox.BoxExtent; // ÓÉÓÚºĞ×ÓµÄ·¶Î§²»»á±äĞ¡£¬ËùÒÔ¿ÉÒÔÈÎÒâÓÃÒ»¸ö
+		InterpBoxInfo.BoxExtent = YoungerBox.BoxExtent; // ç”±äºç›’å­çš„èŒƒå›´ä¸ä¼šå˜å°ï¼Œæ‰€ä»¥å¯ä»¥ä»»æ„ç”¨ä¸€ä¸ª
 
 		InterpFramePackage.HitBoxInfo.Add(BoxInfoName, InterpBoxInfo);
 	}
@@ -275,23 +275,23 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 	if (World)
 	{
 		FFramePackage CurrentFrame;
-		// ±£´æboxesµÄµ±Ç°Î»ÖÃ
+		// ä¿å­˜boxesçš„å½“å‰ä½ç½®
 		CacheBoxPositions(HitCharacter, CurrentFrame);
-		// ÒÆ¶¯µ½µ¹´øÎ»ÖÃ
+		// ç§»åŠ¨åˆ°å€’å¸¦ä½ç½®
 		MoveBoxes(HitCharacter, Package);
-		// ½ûÓÃ½ÇÉ«±¾ÉíµÄÍø¸ñÅö×²
+		// ç¦ç”¨è§’è‰²æœ¬èº«çš„ç½‘æ ¼ç¢°æ’
 		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::NoCollision);
-		// ÆôÓÃÍ·²¿boxÅö×²
+		// å¯ç”¨å¤´éƒ¨boxç¢°æ’
 		TMap<FName, UBoxComponent*> HitCollisionBoxes = HitCharacter->GetHitCollisionBoxs();
 		UBoxComponent* HeadBox = HitCollisionBoxes[FName("head")];
 		HeadBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		HeadBox->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
-		// »ñÈ¡ÉäÏß½áÊøÎ»ÖÃ
+		// è·å–å°„çº¿ç»“æŸä½ç½®
 		const FVector TraceEnd = TraceStart + (HitLocation - TraceStart) * 1.25f;
-		// ½øĞĞÉäÏß¼ì²â
+		// è¿›è¡Œå°„çº¿æ£€æµ‹
 		FHitResult ConfirmHitResult;
 		World->LineTraceSingleByChannel(ConfirmHitResult, TraceStart, TraceEnd, ECC_HitBox);
-		// ÊÇ·ñ»÷ÖĞÁËÍ·²¿box£¨±¬Í·£©
+		// æ˜¯å¦å‡»ä¸­äº†å¤´éƒ¨boxï¼ˆçˆ†å¤´ï¼‰
 		if (ConfirmHitResult.bBlockingHit)
 		{
 			/*if (ConfirmHitResult.Component.IsValid())
@@ -308,7 +308,7 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 		}
 		else
 		{
-			// Ã»ÓĞ»÷ÖĞÍ·²¿£¬¿ªÊ¼ÆäËû²¿Î»¼ì²â
+			// æ²¡æœ‰å‡»ä¸­å¤´éƒ¨ï¼Œå¼€å§‹å…¶ä»–éƒ¨ä½æ£€æµ‹
 			for (auto& HitBoxPair : HitCollisionBoxes)
 			{
 				if (HitBoxPair.Value != nullptr)
@@ -317,7 +317,7 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 					HitBoxPair.Value->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
 				}
 			}
-			// ÔÙ´ÎÉäÏß
+			// å†æ¬¡å°„çº¿
 			World->LineTraceSingleByChannel(ConfirmHitResult, TraceStart, TraceEnd, ECC_HitBox);
 			if (ConfirmHitResult.bBlockingHit)
 			{
@@ -334,7 +334,7 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(const FFramePackag
 				return FServerSideRewindResult{ true, false };
 			}
 		}
-		// Ä¬ÈÏ»Ö¸´
+		// é»˜è®¤æ¢å¤
 		ResetHitBoxes(HitCharacter, CurrentFrame);
 		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
 	}
@@ -349,19 +349,19 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 	if (World)
 	{
 		FFramePackage CurrentFrame;
-		// ±£´æboxesµÄµ±Ç°Î»ÖÃ
+		// ä¿å­˜boxesçš„å½“å‰ä½ç½®
 		CacheBoxPositions(HitCharacter, CurrentFrame);
-		// ÒÆ¶¯µ½µ¹´øÎ»ÖÃ
+		// ç§»åŠ¨åˆ°å€’å¸¦ä½ç½®
 		MoveBoxes(HitCharacter, Package);
-		// ½ûÓÃ½ÇÉ«±¾ÉíµÄÍø¸ñÅö×²
+		// ç¦ç”¨è§’è‰²æœ¬èº«çš„ç½‘æ ¼ç¢°æ’
 		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::NoCollision);
-		// ÆôÓÃÍ·²¿boxÅö×²
+		// å¯ç”¨å¤´éƒ¨boxç¢°æ’
 		TMap<FName, UBoxComponent*> HitCollisionBoxes = HitCharacter->GetHitCollisionBoxs();
 		UBoxComponent* HeadBox = HitCollisionBoxes[FName("head")];
 		HeadBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		HeadBox->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
 
-		// ´æ´¢Ô¤²âÂ·¾¶µÄ²ÎÊı
+		// å­˜å‚¨é¢„æµ‹è·¯å¾„çš„å‚æ•°
 		FPredictProjectilePathParams PathParams;
 		PathParams.bTraceWithCollision = true;
 		PathParams.MaxSimTime = MaxRecordTime;
@@ -373,10 +373,10 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 		PathParams.ActorsToIgnore.Add(GetOwner());
 		PathParams.DrawDebugTime = 5.f;
 		PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
-		// ´æ´¢Ô¤²âÂ·¾¶µÄ½á¹û
+		// å­˜å‚¨é¢„æµ‹è·¯å¾„çš„ç»“æœ
 		FPredictProjectilePathResult PathResult;
 		UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
-		// ÊÇ·ñ»÷ÖĞÁËÍ·²¿box£¨±¬Í·£©
+		// æ˜¯å¦å‡»ä¸­äº†å¤´éƒ¨boxï¼ˆçˆ†å¤´ï¼‰
 		if (PathResult.HitResult.bBlockingHit)
 		{
 			/*if (PathResult.HitResult.Component.IsValid())
@@ -393,7 +393,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 		}
 		else
 		{
-			// Ã»ÓĞ»÷ÖĞÍ·²¿£¬¿ªÊ¼ÆäËû²¿Î»¼ì²â
+			// æ²¡æœ‰å‡»ä¸­å¤´éƒ¨ï¼Œå¼€å§‹å…¶ä»–éƒ¨ä½æ£€æµ‹
 			for (auto& HitBoxPair : HitCollisionBoxes)
 			{
 				if (HitBoxPair.Value != nullptr)
@@ -402,7 +402,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 					HitBoxPair.Value->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
 				}
 			}
-			// ÔÙ´ÎÔ¤²âÉäµ¯Â·¾¶£¬¼ì²éÅö×²
+			// å†æ¬¡é¢„æµ‹å°„å¼¹è·¯å¾„ï¼Œæ£€æŸ¥ç¢°æ’
 			UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
 			if (PathResult.HitResult.bBlockingHit)
 			{
@@ -419,7 +419,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 				return FServerSideRewindResult{ true, false };
 			}
 		}
-		// Ä¬ÈÏ»Ö¸´
+		// é»˜è®¤æ¢å¤
 		ResetHitBoxes(HitCharacter, CurrentFrame);
 		EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
 	}
@@ -428,7 +428,7 @@ FServerSideRewindResult ULagCompensationComponent::ProjectileConfirmHit(const FF
 
 FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(const TArray<FFramePackage>& FramePackages, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations)
 {
-	// Ã¿¸ö½ÇÉ«µÄÓĞĞ§ĞÔ
+	// æ¯ä¸ªè§’è‰²çš„æœ‰æ•ˆæ€§
 	for (auto& Frame : FramePackages)
 	{
 		if (Frame.Character == nullptr)
@@ -441,7 +441,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		// »º´æÃ¿¸ö½ÇÉ«µÄµ±Ç°èåÊı¾İ
+		// ç¼“å­˜æ¯ä¸ªè§’è‰²çš„å½“å‰æ¡¢æ•°æ®
 		TArray<FFramePackage> CurrentFrames;
 		for (auto& Frame : FramePackages)
 		{
@@ -452,7 +452,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 			EnableCharacterMeshCollision(Frame.Character, ECollisionEnabled::NoCollision);
 			CurrentFrames.Add(CurrentFrame);
 		}
-		// ÆôÓÃÃ¿¸ö½ÇÉ«µÄÍ·²¿boxÅö×²
+		// å¯ç”¨æ¯ä¸ªè§’è‰²çš„å¤´éƒ¨boxç¢°æ’
 		for (auto& Frame : FramePackages)
 		{
 			TMap<FName, UBoxComponent*> HitCollisionBoxes = Frame.Character->GetHitCollisionBoxs();
@@ -460,7 +460,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 			HeadBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			HeadBox->SetCollisionResponseToChannel(ECC_HitBox, ECollisionResponse::ECR_Block);
 		}
-		// ¼ì²âÊÇ·ñ»÷ÖĞÃ¿¸ö½ÇÉ«Í·²¿
+		// æ£€æµ‹æ˜¯å¦å‡»ä¸­æ¯ä¸ªè§’è‰²å¤´éƒ¨
 		for (auto& HitLocation : HitLocations)
 		{
 			const FVector TraceEnd = TraceStart + (HitLocation - TraceStart) * 1.25f;
@@ -487,7 +487,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 				}
 			}
 		}
-		// ÆôÓÃÃ¿¸ö½ÇÉ«µÄÉíÌåboxÅö×²£¬¹Ø±ÕÍ·²¿boxÅö×²
+		// å¯ç”¨æ¯ä¸ªè§’è‰²çš„èº«ä½“boxç¢°æ’ï¼Œå…³é—­å¤´éƒ¨boxç¢°æ’
 		for (auto& Frame : FramePackages)
 		{
 			TMap<FName, UBoxComponent*> HitCollisionBoxes = Frame.Character->GetHitCollisionBoxs();
@@ -502,7 +502,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 			UBoxComponent* HeadBox = HitCollisionBoxes[FName("head")];
 			HeadBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
-		// ¼ì²âÊÇ·ñ»÷ÖĞÃ¿¸öÉíÌå
+		// æ£€æµ‹æ˜¯å¦å‡»ä¸­æ¯ä¸ªèº«ä½“
 		for (auto& HitLocation : HitLocations)
 		{
 			const FVector TraceEnd = TraceStart + (HitLocation - TraceStart) * 1.25f;
@@ -529,7 +529,7 @@ FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(cons
 				}
 			}
 		}
-		// »Ö¸´Ã¿¸ö½ÇÉ«µ½³õÊ¼èå
+		// æ¢å¤æ¯ä¸ªè§’è‰²åˆ°åˆå§‹æ¡¢
 		for (auto& CurrentFrame : CurrentFrames)
 		{
 			ResetHitBoxes(CurrentFrame.Character, CurrentFrame);

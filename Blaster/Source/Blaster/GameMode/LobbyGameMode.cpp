@@ -14,7 +14,7 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	if (GameInstance)
 	{
 		UMultiPlayerSessionSubsystem* SubSystem = GameInstance->GetSubsystem<UMultiPlayerSessionSubsystem>();
-		check(SubSystem); // ¼ì²é£ºÈç¹ûSubSystemÎªnull£¬³ÌÐòÍ£Ö¹Ö´ÐÐ
+		check(SubSystem); // æ£€æŸ¥ï¼šå¦‚æžœSubSystemä¸ºnullï¼Œç¨‹åºåœæ­¢æ‰§è¡Œ
 
 		int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 		if (NumberOfPlayers == SubSystem->DesiredNumPublicConnections)
@@ -22,7 +22,7 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 			UWorld* World = GetWorld();
 			if (World)
 			{
-				bUseSeamlessTravel = true;	// Ê¹ÓÃÎÞ·ìtravel£¬À¶Í¼ÀïÒ²ÒªÉèÖÃ
+				bUseSeamlessTravel = true;	// ä½¿ç”¨æ— ç¼travelï¼Œè“å›¾é‡Œä¹Ÿè¦è®¾ç½®
 				FString MatchType = SubSystem->DesiredMatchType;
 				if (MatchType == "FreeForAll")
 				{

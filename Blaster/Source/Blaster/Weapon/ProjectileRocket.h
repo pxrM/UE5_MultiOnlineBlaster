@@ -7,7 +7,7 @@
 #include "ProjectileRocket.generated.h"
 
 /**
- * 火箭，对一定范围内的角色造成伤害，并对该伤害进行衰减
+ * 鐏锛屽涓�瀹氳寖鍥村唴鐨勮鑹查�犳垚浼ゅ锛屽苟瀵硅浼ゅ杩涜琛板噺
  */
 UCLASS()
 class BLASTER_API AProjectileRocket : public AProjectile
@@ -30,7 +30,7 @@ protected:
 	UPROPERTY()
 		UAudioComponent* ProjectileLoopComp;
 	UPROPERTY(EditAnywhere)
-		USoundAttenuation* LoopingSoundAttenuation; //声音衰减
+		USoundAttenuation* LoopingSoundAttenuation; //澹伴煶琛板噺
 
 	UPROPERTY(VisibleAnywhere)
 		class URocketMovementComponent* RocketMovementComponent;

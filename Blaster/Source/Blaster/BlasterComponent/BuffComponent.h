@@ -13,7 +13,7 @@ class BLASTER_API UBuffComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	friend class ABlasterCharacter;	//½ÇÉ«Àà¿ÉÒÔ·ÃÎÊbuff×é¼şÀà
+	friend class ABlasterCharacter;	//è§’è‰²ç±»å¯ä»¥è®¿é—®buffç»„ä»¶ç±»
 
 public:	
 	// Sets default values for this component's properties
@@ -28,40 +28,40 @@ protected:
 
 public:	
 	/// <summary>
-	/// ÖÎÁÆ
+	/// æ²»ç–—
 	/// </summary>
-	/// <param name="HealAmmp">ÖÎÁÆÁ¿</param>
-	/// <param name="HealingTime">ÖÎÁÆËùĞèÊ±¼ä2</param>
+	/// <param name="HealAmmp">æ²»ç–—é‡</param>
+	/// <param name="HealingTime">æ²»ç–—æ‰€éœ€æ—¶é—´2</param>
 	void Heal(float HealAmmo, float HealingTime);
 
 	/// <summary>
-	/// ²¹³ä»¤¶Ü
+	/// è¡¥å……æŠ¤ç›¾
 	/// </summary>
-	/// <param name="ShieldAmount">»¤¶Ü²¹³äÁ¿</param>
-	/// <param name="ReplenishTime">Ã¿´Î²¹³äµÄÊ±¼ä</param>
+	/// <param name="ShieldAmount">æŠ¤ç›¾è¡¥å……é‡</param>
+	/// <param name="ReplenishTime">æ¯æ¬¡è¡¥å……çš„æ—¶é—´</param>
 	void ReplenishShield(float ShieldAmount, float ReplenishTime);
 
 	/// <summary>
-	/// ËÙ¶Èbuff
+	/// é€Ÿåº¦buff
 	/// </summary>
-	/// <param name="BuffBaseSpeed">»ù±¾ÒÆ¶¯ËÙ¶È</param>
-	/// <param name="BuffCrouchSpeed">¶×·üÒÆ¶¯ËÙ¶È</param>
-	/// <param name="BuffTime">ÔöÒæÊ±¼ä</param>
+	/// <param name="BuffBaseSpeed">åŸºæœ¬ç§»åŠ¨é€Ÿåº¦</param>
+	/// <param name="BuffCrouchSpeed">è¹²ä¼ç§»åŠ¨é€Ÿåº¦</param>
+	/// <param name="BuffTime">å¢ç›Šæ—¶é—´</param>
 	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
 	/// <summary>
-	/// ¼ÇÂ¼½ÇÉ«µÄ³õÊ¼ËÙ¶È
+	/// è®°å½•è§’è‰²çš„åˆå§‹é€Ÿåº¦
 	/// </summary>
-	/// <param name="BaseSpeed">Õı³£ÒÆ¶¯ËÙ¶È</param>
-	/// <param name="CrouchSpeed">¶×·üÒÆ¶¯ËÙ¶È</param>
+	/// <param name="BaseSpeed">æ­£å¸¸ç§»åŠ¨é€Ÿåº¦</param>
+	/// <param name="CrouchSpeed">è¹²ä¼ç§»åŠ¨é€Ÿåº¦</param>
 	void SetInitialSpeeds(const float BaseSpeed, const float CrouchSpeed);
 
 	/// <summary>
-	/// ¼ÇÂ¼½ÇÉ«µÄ³õÊ¼ÌøÔ¾¸ß¶È
+	/// è®°å½•è§’è‰²çš„åˆå§‹è·³è·ƒé«˜åº¦
 	/// </summary>
 	/// <param name="JumpVelocity"></param>
 	void SetInitialJumpVelocity(const float JumpVelocity);
 	/// <summary>
-	/// ÌøÔ¾buff
+	/// è·³è·ƒbuff
 	/// </summary>
 	/// <param name="BuffJumpVelocity"></param>
 	/// <param name="BuffTime"></param>
@@ -70,47 +70,47 @@ public:
 
 private:
 	/// <summary>
-	/// Ã¿Ò»Ö¡µÄÑªÁ¿ĞŞ¸´³Ì¶È
+	/// æ¯ä¸€å¸§çš„è¡€é‡ä¿®å¤ç¨‹åº¦
 	/// </summary>
 	/// <param name="DeltaTime"></param>
 	void HealRampUp(float DeltaTime);
 
 	/// <summary>
-	/// Ã¿Ò»Ö¡µÄ»¤¶Ü²¹³ä³Ì¶È
+	/// æ¯ä¸€å¸§çš„æŠ¤ç›¾è¡¥å……ç¨‹åº¦
 	/// </summary>
 	/// <param name="DeltaTime"></param>
 	void ShieldRampUp(float DeltaTime);
 
 	/// <summary>
-	/// ËÙ¶ÈbuffÊ±Ğ§½áÊø»Ö¸´Ö®Ç°µÄËÙ¶È
+	/// é€Ÿåº¦buffæ—¶æ•ˆç»“æŸæ¢å¤ä¹‹å‰çš„é€Ÿåº¦
 	/// </summary>
 	void ResetSpeeds();
 	/// <summary>
-	/// ÍøÂç¹ã²¥Í¬²½ËÙ¶È
+	/// ç½‘ç»œå¹¿æ’­åŒæ­¥é€Ÿåº¦
 	/// </summary>
 	/// <param name="BaseSpeed"></param>
 	/// <param name="CrouchSpeed"></param>
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
 	/// <summary>
-	/// ´¦ÀíËÙ¶ÈĞŞ¸Ä
+	/// å¤„ç†é€Ÿåº¦ä¿®æ”¹
 	/// </summary>
 	/// <param name="BaseSpeed"></param>
 	/// <param name="CrouchSpeed"></param>
 	void HandleChangeSpeed(float BaseSpeed, float CrouchSpeed);
 
 	/// <summary>
-	/// ÌøÔ¾buffÊ±Ğ§½áÊø»Ö¸´Ö®Ç°µÄÌøÔ¾¸ß¶È
+	/// è·³è·ƒbuffæ—¶æ•ˆç»“æŸæ¢å¤ä¹‹å‰çš„è·³è·ƒé«˜åº¦
 	/// </summary>
 	void ResetJumpVelocity();
 	/// <summary>
-	/// ÍøÂç¹ã²¥ÌøÔ¾ËÙ¶È
+	/// ç½‘ç»œå¹¿æ’­è·³è·ƒé€Ÿåº¦
 	/// </summary>
 	/// <param name="JumpVelocity"></param>
 	UFUNCTION(NetMulticast, Reliable)
 		void MulticastJumpBuff(float JumpVelocity);
 	/// <summary>
-	/// ´¦ÀíÌøÔ¾ËÙ¶ÈĞŞ¸Ä
+	/// å¤„ç†è·³è·ƒé€Ÿåº¦ä¿®æ”¹
 	/// </summary>
 	/// <param name="JumpVelocity"></param>
 	void HandleChangeJumpVelocity(float JumpVelocity);
@@ -121,9 +121,9 @@ private:
 		class ABlasterCharacter* Character;
 
 	/* health buff */
-	bool bHealing = false; //ÊÇ·ñÕıÔÚÖÎÁÆ
-	float HealingRate = 0.f; //ÖÎÓúÂÊ£¬Ã¿ÃëÖÎÁÆ¶àÉÙ
-	float AmountToHeal = 0.f; //ÖÎÁÆbuff×ÜÊıÁ¿
+	bool bHealing = false; //æ˜¯å¦æ­£åœ¨æ²»ç–—
+	float HealingRate = 0.f; //æ²»æ„ˆç‡ï¼Œæ¯ç§’æ²»ç–—å¤šå°‘
+	float AmountToHeal = 0.f; //æ²»ç–—buffæ€»æ•°é‡
 
 	/* speed buff */
 	FTimerHandle SpeedBuffTimer;

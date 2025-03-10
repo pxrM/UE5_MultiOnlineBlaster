@@ -11,12 +11,12 @@
 
 namespace MatchState
 {
-	const FName Cooldown = FName("Cooldown");	//±ÈÈüÊ±¼äÒÑ½áÊø£¬ÏÔÊ¾»ñÊ¤Õß²¢¿ªÊ¼ÀäÈ´µ¹¼ÆÊ±
+	const FName Cooldown = FName("Cooldown");	//æ¯”èµ›æ—¶é—´å·²ç»“æŸï¼Œæ˜¾ç¤ºè·èƒœè€…å¹¶å¼€å§‹å†·å´å€’è®¡æ—¶
 }
 
 ABlasterGameMode::ABlasterGameMode()
 {
-	bDelayedStart = true; //ÓÎÏ·Ä£Ê½½«±£³ÖÔÚµÈ´ı¿ªÊ¼×´Ì¬£¬GameMode»áÎªÃ¿¸öÍæ¼ÒÉú³ÉÄ¬ÈÏµÄPawn£¨Ö»ÄÜ·ÉÀ´·ÉÈ¥£©£¬Ö±µ½ÊÖ¶¯µ÷ÓÃStartMatch()
+	bDelayedStart = true; //æ¸¸æˆæ¨¡å¼å°†ä¿æŒåœ¨ç­‰å¾…å¼€å§‹çŠ¶æ€ï¼ŒGameModeä¼šä¸ºæ¯ä¸ªç©å®¶ç”Ÿæˆé»˜è®¤çš„Pawnï¼ˆåªèƒ½é£æ¥é£å»ï¼‰ï¼Œç›´åˆ°æ‰‹åŠ¨è°ƒç”¨StartMatch()
 }
 
 void ABlasterGameMode::BeginPlay()
@@ -139,11 +139,11 @@ void ABlasterGameMode::ResquestRespawn(ACharacter* ElimmedCharacter, AController
 	}
 	if (ElimmedController)
 	{
-		//ÓÃÓÚ»ñÈ¡³¡¾°ÖĞÖ¸¶¨ÀàĞÍµÄËùÓĞActors¶ÔÏó£¬²¢½«½á¹û´æ´¢µ½PlayerStartsÊı×éÖĞ¡£
-		//ÕâÀïÖ¸¶¨»ñÈ¡µÄÀàĞÍÎªAPlayerStart::StaticClass()£¬¼´»ñÈ¡ÀàĞÍÎªAPlayerStartµÄËùÓĞActor¶ÔÏó£¬APlayerStartÍ¨³£±»ÓÃ×÷Íæ¼ÒÖØÉúµÄ³öÉúµã¡£
+		//ç”¨äºè·å–åœºæ™¯ä¸­æŒ‡å®šç±»å‹çš„æ‰€æœ‰Actorså¯¹è±¡ï¼Œå¹¶å°†ç»“æœå­˜å‚¨åˆ°PlayerStartsæ•°ç»„ä¸­ã€‚
+		//è¿™é‡ŒæŒ‡å®šè·å–çš„ç±»å‹ä¸ºAPlayerStart::StaticClass()ï¼Œå³è·å–ç±»å‹ä¸ºAPlayerStartçš„æ‰€æœ‰Actorå¯¹è±¡ï¼ŒAPlayerStarté€šå¸¸è¢«ç”¨ä½œç©å®¶é‡ç”Ÿçš„å‡ºç”Ÿç‚¹ã€‚
 		TArray<AActor*> PlayerStarts;
 		UGameplayStatics::GetAllActorsOfClass(this, APlayerStart::StaticClass(), PlayerStarts);
-		//ÓÃÓÚ½«ÓÎÏ·Íæ¼ÒµÄ¿ØÖÆÆ÷(ElimmedController)ÖØĞÂ·ÅÖÃµ½Ö¸¶¨µÄÍæ¼ÒÆğÊ¼µã(PlayerStarts[Selection])ÉÏ¡£
+		//ç”¨äºå°†æ¸¸æˆç©å®¶çš„æ§åˆ¶å™¨(ElimmedController)é‡æ–°æ”¾ç½®åˆ°æŒ‡å®šçš„ç©å®¶èµ·å§‹ç‚¹(PlayerStarts[Selection])ä¸Šã€‚
 		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
 		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]);
 	}
@@ -152,13 +152,13 @@ void ABlasterGameMode::ResquestRespawn(ACharacter* ElimmedCharacter, AController
 void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving)
 {
 	if (PlayerLeaving == nullptr) return;
-	// ÒÆ³ıÅÅĞĞ°ñ
+	// ç§»é™¤æ’è¡Œæ¦œ
 	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
 	if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(PlayerLeaving))
 	{
 		BlasterGameState->TopScoringPlayers.Remove(PlayerLeaving);
 	}
-	// ×ßÏú»ÙÂß¼­
+	// èµ°é”€æ¯é€»è¾‘
 	ABlasterCharacter* CharacterLeaving = Cast<ABlasterCharacter>(PlayerLeaving->GetPawn());
 	if (CharacterLeaving)
 	{

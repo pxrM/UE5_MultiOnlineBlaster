@@ -7,8 +7,8 @@
 #include "CaptureTheFlagGameMode.generated.h"
 
 /**
- * 占领旗帜模式:
- *	红蓝队各有自己队伍的旗帜区，玩家从对方区域夺得旗帜并带回自己队伍的旗帜加分，加分后该旗帜消失回到原点
+ * 鍗犻鏃楀笢妯″紡:
+ *	绾㈣摑闃熷悇鏈夎嚜宸遍槦浼嶇殑鏃楀笢鍖猴紝鐜╁浠庡鏂瑰尯鍩熷ず寰楁棗甯滃苟甯﹀洖鑷繁闃熶紞鐨勬棗甯滃姞鍒嗭紝鍔犲垎鍚庤鏃楀笢娑堝け鍥炲埌鍘熺偣
  */
 UCLASS()
 class BLASTER_API ACaptureTheFlagGameMode : public ATeamGameMode
@@ -18,7 +18,7 @@ class BLASTER_API ACaptureTheFlagGameMode : public ATeamGameMode
 public:
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
 	/// <summary>
-	/// server处理加分
+	/// server澶勭悊鍔犲垎
 	/// </summary>
 	/// <param name="Flag"></param>
 	/// <param name="Zone"></param>

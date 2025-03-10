@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 //射线长度
 #define TRACE_LENGTH 8000.f

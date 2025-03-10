@@ -8,20 +8,20 @@
 
 
 /// <summary>
-/// ×¼ĞÄ½á¹¹Ìå
+/// å‡†å¿ƒç»“æ„ä½“
 /// </summary>
 USTRUCT(BlueprintType)
 struct FHUDPackage
 {
 	GENERATED_BODY()
 public:
-	class UTexture2D* CrosshairsCenter;  // Ê®×ÖÃé×¼ÌùÍ¼  ÖĞ
-	UTexture2D* CrosshairsLeft;			 // Ê®×ÖÃé×¼ÌùÍ¼  ×ó
-	UTexture2D* CrosshairsRight;	     // Ê®×ÖÃé×¼ÌùÍ¼  ÓÒ
-	UTexture2D* CrosshairsTop;			 // Ê®×ÖÃé×¼ÌùÍ¼  ÉÏ
-	UTexture2D* CrosshairsBottom;		 // Ê®×ÖÃé×¼ÌùÍ¼  ÏÂ
-	float CrosshairSpread;				 // Ê®×ÖÃé×¼É¢¿ªÖµ Éä»÷ÓÎÏ·ÖĞÊ®×Ö×¼Ïß»á¸ù¾İ½ÇÉ«µÄÎ»ÖÃÒÆ¶¯ÉÔÎ¢ÕÅ¿ª
-	FLinearColor CrosshairColor;		 // Ê®×ÖÃé×¼color
+	class UTexture2D* CrosshairsCenter;  // åå­—ç„å‡†è´´å›¾  ä¸­
+	UTexture2D* CrosshairsLeft;			 // åå­—ç„å‡†è´´å›¾  å·¦
+	UTexture2D* CrosshairsRight;	     // åå­—ç„å‡†è´´å›¾  å³
+	UTexture2D* CrosshairsTop;			 // åå­—ç„å‡†è´´å›¾  ä¸Š
+	UTexture2D* CrosshairsBottom;		 // åå­—ç„å‡†è´´å›¾  ä¸‹
+	float CrosshairSpread;				 // åå­—ç„å‡†æ•£å¼€å€¼ å°„å‡»æ¸¸æˆä¸­åå­—å‡†çº¿ä¼šæ ¹æ®è§’è‰²çš„ä½ç½®ç§»åŠ¨ç¨å¾®å¼ å¼€
+	FLinearColor CrosshairColor;		 // åå­—ç„å‡†color
 };
 
 /**
@@ -34,29 +34,29 @@ class BLASTER_API ABlasterHUD : public AHUD
 
 protected:
 	virtual void BeginPlay() override;
-	//ÖØĞ´¸¸ÀàÖĞµÄDrawHUD()º¯Êı£¬ÒÔÊµÏÖ×Ô¶¨ÒåµÄÓÃ»§½çÃæ£¨UI£©äÖÈ¾Âß¼­
+	//é‡å†™çˆ¶ç±»ä¸­çš„DrawHUD()å‡½æ•°ï¼Œä»¥å®ç°è‡ªå®šä¹‰çš„ç”¨æˆ·ç•Œé¢ï¼ˆUIï¼‰æ¸²æŸ“é€»è¾‘
 	virtual void DrawHUD() override;
 
 public:
 	/// <summary>
-	/// Ìí¼Ó½ÇÉ«ĞÅÏ¢ui
+	/// æ·»åŠ è§’è‰²ä¿¡æ¯ui
 	/// </summary>
 	void AddCharacterOverlay();
 	/// <summary>
-	/// Ìí¼ÓÆ¥Åä×´Ì¬¹«¸æ
+	/// æ·»åŠ åŒ¹é…çŠ¶æ€å…¬å‘Š
 	/// </summary>
 	void AddStateAnnouncement();
 	/// <summary>
-	/// Ìí¼ÓÌÔÌ­¹«¸æ
+	/// æ·»åŠ æ·˜æ±°å…¬å‘Š
 	/// </summary>
 	/// <param name="AttackerName"></param>
 	/// <param name="VictimName"></param>
 	void AddElimAnnouncement(FString AttackerName, FString VictimName);
 
 	/// <summary>
-	/// ÌÔÌ­¹«¸æitemµÄ¼ÆÊ±Æ÷½áÊø»Øµ÷
+	/// æ·˜æ±°å…¬å‘Šitemçš„è®¡æ—¶å™¨ç»“æŸå›è°ƒ
 	/// </summary>
-	/// <param name="MsgToRemove">ÒªÉ¾³ıµÄumg</param>
+	/// <param name="MsgToRemove">è¦åˆ é™¤çš„umg</param>
 	UFUNCTION()
 		void ElimAnnouncementTimerFinish(UElimAnnouncement* MsgToRemove);
 
@@ -66,12 +66,12 @@ public:
 
 private:
 	/// <summary>
-	/// »æÖÆ×¼ĞÄ£¬ÓÉ×¼ĞÄÖĞĞÄµã¡¢ÉÏÏÂ×óÓÒÌùÍ¼×é³É
+	/// ç»˜åˆ¶å‡†å¿ƒï¼Œç”±å‡†å¿ƒä¸­å¿ƒç‚¹ã€ä¸Šä¸‹å·¦å³è´´å›¾ç»„æˆ
 	/// </summary>
-	/// <param name="Texture">Òª»æÖÆµÄ×¼ĞÄÎÆÀí</param>
-	/// <param name="ViewportCenter">ÆÁÄ»ÖĞĞÄµã</param>
-	/// <param name="Spread">Ïà¶ÔÓÚÖĞĞÄµãµÄ×¼ĞÄÕÅ¿ª¾àÀë</param>
-	/// <param name="CrosshairColor">×¼ĞÄÑÕÉ«</param>
+	/// <param name="Texture">è¦ç»˜åˆ¶çš„å‡†å¿ƒçº¹ç†</param>
+	/// <param name="ViewportCenter">å±å¹•ä¸­å¿ƒç‚¹</param>
+	/// <param name="Spread">ç›¸å¯¹äºä¸­å¿ƒç‚¹çš„å‡†å¿ƒå¼ å¼€è·ç¦»</param>
+	/// <param name="CrosshairColor">å‡†å¿ƒé¢œè‰²</param>
 	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
 
 
@@ -82,19 +82,19 @@ private:
 		class APlayerController* OwningPlayerCtr;
 
 	/// <summary>
-	/// ×¼ĞÄ×î´óÕÅ¿ªËÙ¶È
+	/// å‡†å¿ƒæœ€å¤§å¼ å¼€é€Ÿåº¦
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		float MaxCrosshairSpread = 16.f;
 
 	/// <summary>
-	/// ÌÔÌ­¹«¸æÀà
+	/// æ·˜æ±°å…¬å‘Šç±»
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
 
 	/// <summary>
-	/// ÌÔÌ­¹«¸æitemµÄ³ÖĞøÕ¹Ê¾Ê±¼ä
+	/// æ·˜æ±°å…¬å‘Šitemçš„æŒç»­å±•ç¤ºæ—¶é—´
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 		float ElimAnnouncementTime = 2.5f;

@@ -118,14 +118,14 @@ void UReturnToMainMenu::OnDestroySession(bool bWasSuccessful)
 		AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>();
 		if (GameMode)
 		{
-			GameMode->ReturnToMainMenuHost(); // ·µ»ØÖ÷³¡¾°£¬¶Ï¿ªËùÓĞÍæ¼ÒµÄÁ´½Ó
+			GameMode->ReturnToMainMenuHost(); // è¿”å›ä¸»åœºæ™¯ï¼Œæ–­å¼€æ‰€æœ‰ç©å®¶çš„é“¾æ¥
 		}
 		else
 		{
 			PlayerCtl = PlayerCtl == nullptr ? World->GetFirstPlayerController() : PlayerCtl;
 			if (PlayerCtl)
 			{
-				PlayerCtl->ClientReturnToMainMenuWithTextReason(FText()); // ÓÃÓÚ½«Íæ¼Ò¿ØÖÆÆ÷ÇĞ»»»ØÖ÷²Ëµ¥½çÃæ£¬²¢ÏÔÊ¾Ö¸¶¨µÄÎÄ±¾Ô­Òò
+				PlayerCtl->ClientReturnToMainMenuWithTextReason(FText()); // ç”¨äºå°†ç©å®¶æ§åˆ¶å™¨åˆ‡æ¢å›ä¸»èœå•ç•Œé¢ï¼Œå¹¶æ˜¾ç¤ºæŒ‡å®šçš„æ–‡æœ¬åŸå› 
 			}
 		}
 	}

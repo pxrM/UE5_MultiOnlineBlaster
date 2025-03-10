@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 /*
-	²é¿´ÓĞ¶àÉÙÍæ¼ÒÁ¬½Óµ½´óÌü£¬Ò»µ©½øÈëÒ»¶¨ÊıÁ¿¾Í¿ÉÒÔÇ°ÍùÊµ¼ÊµÄÓÎÏ·µØÍ¼
+	æŸ¥çœ‹æœ‰å¤šå°‘ç©å®¶è¿æ¥åˆ°å¤§å…ï¼Œä¸€æ—¦è¿›å…¥ä¸€å®šæ•°é‡å°±å¯ä»¥å‰å¾€å®é™…çš„æ¸¸æˆåœ°å›¾
 */
 
 #pragma once
@@ -19,9 +19,9 @@ class BLASTER_API ALobbyGameMode : public AGameMode
 
 public:
 	/// <summary>
-	/// µÇÂ¼
+	/// ç™»å½•
 	/// </summary>
-	/// <param name="NewPlayer">ĞÂ¼ÓÈëµÄÍæ¼Ò¿ØÖÆÆ÷</param>
+	/// <param name="NewPlayer">æ–°åŠ å…¥çš„ç©å®¶æ§åˆ¶å™¨</param>
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	
 };

@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 /*
-	Ӱ���ɫʮ��׼�ߵĽӿ�
+	影响角色十字准线的接口
 */
 
 #pragma once

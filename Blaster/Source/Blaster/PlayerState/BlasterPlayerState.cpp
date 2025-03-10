@@ -28,7 +28,7 @@ if (Character) \
 void ABlasterPlayerState::AddToScore(float ScoreAmount)
 {
 	SetScore(Score + ScoreAmount);
-	CHECK_SETHUDTEXT(SetHUDScore, Score); //·şÎñÆ÷Ö´ĞĞ
+	CHECK_SETHUDTEXT(SetHUDScore, Score); //æœåŠ¡å™¨æ‰§è¡Œ
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
@@ -43,7 +43,7 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 void ABlasterPlayerState::OnRep_Score()
 {
 	Super::OnRep_Score();
-	CHECK_SETHUDTEXT(SetHUDScore, Score);  //¿Í»§¶ËÖ´ĞĞ
+	CHECK_SETHUDTEXT(SetHUDScore, Score);  //å®¢æˆ·ç«¯æ‰§è¡Œ
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{

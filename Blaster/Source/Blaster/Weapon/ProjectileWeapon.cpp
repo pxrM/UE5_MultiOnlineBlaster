@@ -10,9 +10,9 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 	Super::Fire(HitTarget);
 
 	UWorld* World = GetWorld();
-	// ¹¥»÷·¢ÆğÕß
+	// æ”»å‡»å‘èµ·è€…
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
-	/*ÎäÆ÷µÄÇ¹¿ÚÎ»ÖÃÉú³ÉÍ¶ÉäÎï¶ÔÏó*/
+	/*æ­¦å™¨çš„æªå£ä½ç½®ç”ŸæˆæŠ•å°„ç‰©å¯¹è±¡*/
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName(FName("MuzzleFlash"));
 	if (World && InstigatorPawn && MuzzleFlashSocket)
 	{
@@ -29,14 +29,14 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 		{
 			if (InstigatorPawn->HasAuthority()) //server
 			{
-				if (InstigatorPawn->IsLocallyControlled()) //server¿ØÖÆ½ÇÉ«£¬Ê¹ÓÃ¸´ÖÆµ¯
+				if (InstigatorPawn->IsLocallyControlled()) //serveræ§åˆ¶è§’è‰²ï¼Œä½¿ç”¨å¤åˆ¶å¼¹
 				{
 					SpawnProjectile = World->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnProjectile->bUseServerSideRewind = false;
 					SpawnProjectile->DamageVal = Damage;
 					SpawnProjectile->HeadShotDamageVal = HeadShotDamage;
 				}
-				else //serverÆäËü¿Í»§¶Ë¿ØÖÆ½ÇÉ«£¬Ê¹ÓÃ·Ç¸´ÖÆµ¯£¬ÑéÖ¤µ¹´ø
+				else //serverå…¶å®ƒå®¢æˆ·ç«¯æ§åˆ¶è§’è‰²ï¼Œä½¿ç”¨éå¤åˆ¶å¼¹ï¼ŒéªŒè¯å€’å¸¦
 				{
 					SpawnProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnProjectile->bUseServerSideRewind = true;
@@ -44,14 +44,14 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 			}
 			else //client, using SSR
 			{
-				if (InstigatorPawn->IsLocallyControlled()) //client±¾µØ¿ØÖÆ½ÇÉ«£¬Ê¹ÓÃ·Ç¸´ÖÆµ¯ÑéÖ¤µ¹´ø
+				if (InstigatorPawn->IsLocallyControlled()) //clientæœ¬åœ°æ§åˆ¶è§’è‰²ï¼Œä½¿ç”¨éå¤åˆ¶å¼¹éªŒè¯å€’å¸¦
 				{
 					SpawnProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnProjectile->bUseServerSideRewind = true;
 					SpawnProjectile->TraceStart = SocketTransform.GetLocation();
 					SpawnProjectile->InitialVelocity = SpawnProjectile->GetActorForwardVector() * SpawnProjectile->InitialSpeed;
 				}
-				else //clientÆäËü¸´ÖÆ½ÇÉ«£¬Ê¹ÓÃ·Ç¸´ÖÆµ¯ÑéÖ¤µ¹´ø£¬²»ÑéÖ¤µ¹´ø
+				else //clientå…¶å®ƒå¤åˆ¶è§’è‰²ï¼Œä½¿ç”¨éå¤åˆ¶å¼¹éªŒè¯å€’å¸¦ï¼Œä¸éªŒè¯å€’å¸¦
 				{
 					SpawnProjectile = World->SpawnActor<AProjectile>(ServerSideRewindProjectileClass, SocketTransform.GetLocation(), TargetRotation, SpawnParams);
 					SpawnProjectile->bUseServerSideRewind = false;

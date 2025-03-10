@@ -16,7 +16,7 @@ void ATeamGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	// Íæ¼ÒµÇÂ¼¡¤ÖĞÍ¾¼ÓÈë
+	// ç©å®¶ç™»å½•ãƒ»ä¸­é€”åŠ å…¥
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 	if (BGameState)
 	{
@@ -41,7 +41,7 @@ void ATeamGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 
-	// Íæ¼ÒÍË³ö
+	// ç©å®¶é€€å‡º
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 	if (BGameState)
 	{
@@ -64,7 +64,7 @@ void ATeamGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	// ±ÈÈü¿ªÊ¼Ê±
+	// æ¯”èµ›å¼€å§‹æ—¶
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 	if (BGameState)
 	{
@@ -105,7 +105,7 @@ void ATeamGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlast
 {
 	Super::PlayerEliminated(ElimmedCharacter, VictimController, AttackerController);
 
-	// Ìí¼Ó¶ÓÎéµÃ·Ö
+	// æ·»åŠ é˜Ÿä¼å¾—åˆ†
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	if (BGameState && AttackerPlayerState)

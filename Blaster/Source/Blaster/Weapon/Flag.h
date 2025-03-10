@@ -7,7 +7,7 @@
 #include "Flag.generated.h"
 
 /**
- * 旗帜，继承武器方便使用武器的拾取功能
+ * 鏃楀笢锛岀户鎵挎鍣ㄦ柟渚夸娇鐢ㄦ鍣ㄧ殑鎷惧彇鍔熻兘
  */
 UCLASS()
 class BLASTER_API AFlag : public AWeapon
@@ -31,7 +31,7 @@ private:
 		UStaticMeshComponent* FlagMesh;
 
 	/// <summary>
-	/// 旗帜的初始位置，方便回归
+	/// 鏃楀笢鐨勫垵濮嬩綅缃紝鏂逛究鍥炲綊
 	/// </summary>
 	FTransform InitialTransform;
 

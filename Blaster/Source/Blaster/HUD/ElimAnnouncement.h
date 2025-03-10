@@ -7,7 +7,7 @@
 #include "ElimAnnouncement.generated.h"
 
 /**
- * ÌÔÌ­¹«¸æ
+ * ÃŒÃ”ÃŒÂ­Â¹Â«Â¸Ã¦
  */
 UCLASS()
 class BLASTER_API UElimAnnouncement : public UUserWidget

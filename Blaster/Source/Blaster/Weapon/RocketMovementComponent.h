@@ -7,7 +7,7 @@
 #include "RocketMovementComponent.generated.h"
 
 /**
- * 火箭移动
+ * 鐏绉诲姩
  */
 UCLASS()
 class BLASTER_API URocketMovementComponent : public UProjectileMovementComponent
@@ -15,9 +15,9 @@ class BLASTER_API URocketMovementComponent : public UProjectileMovementComponent
 	GENERATED_BODY()
 
 protected:
-	// 当移动过程中遇到阻挡时调用的函数
+	// 褰撶Щ鍔ㄨ繃绋嬩腑閬囧埌闃绘尅鏃惰皟鐢ㄧ殑鍑芥暟
 	virtual EHandleBlockingHitResult HandleBlockingHit(const FHitResult& Hit, float TimeTick, const FVector& MoveDelta, float& SubTickTimeRemaining) override;
-	// 处理发生碰撞后的影响
+	// 澶勭悊鍙戠敓纰版挒鍚庣殑褰卞搷
 	virtual void HandleImpact(const FHitResult& Hit, float TimeSlice = 0.f, const FVector& MoveDelta = FVector::ZeroVector) override;
 	
 };

@@ -14,10 +14,10 @@ ACasing::ACasing()
 	CasingMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CasingMesh"));
 	SetRootComponent(CasingMesh);
 
-	CasingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore); //È¡Ïû¶ÔÏà»úµÄÅö×²
-	CasingMesh->SetSimulatePhysics(true); //ÉèÖÃÄ£ÄâÎïÀí
-	CasingMesh->SetEnableGravity(true); //¿ªÆôÖØÁ¦
-	CasingMesh->SetNotifyRigidBodyCollision(true); //ÉèÖÃÅö×²Ä£ÐÍÓëÆäËûÅö×²Ìå·¢ÉúÅö×²Ê±´¥·¢RigidBodyµÄ OnCollisionEnter() ºÍ OnCollisionExit() ·½·¨¡£
+	CasingMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore); //å–æ¶ˆå¯¹ç›¸æœºçš„ç¢°æ’ž
+	CasingMesh->SetSimulatePhysics(true); //è®¾ç½®æ¨¡æ‹Ÿç‰©ç†
+	CasingMesh->SetEnableGravity(true); //å¼€å¯é‡åŠ›
+	CasingMesh->SetNotifyRigidBodyCollision(true); //è®¾ç½®ç¢°æ’žæ¨¡åž‹ä¸Žå…¶ä»–ç¢°æ’žä½“å‘ç”Ÿç¢°æ’žæ—¶è§¦å‘RigidBodyçš„ OnCollisionEnter() å’Œ OnCollisionExit() æ–¹æ³•ã€‚
 	ShellEjectImpulse = 2.f;
 }
 
@@ -27,7 +27,7 @@ void ACasing::BeginPlay()
 	Super::BeginPlay();
 	
 	CasingMesh->OnComponentHit.AddDynamic(this, &ACasing::OnHit);
-	//AddImpulseÓÃÓÚÏò½ÇÉ«Ê©¼ÓÒ»¸öË²Ê±µÄÁ¦£¬GetActorForwardVectorÊÇ»ñÈ¡½ÇÉ«ÔÚÊÀ½ç×ø±êÏµÖÐµÄÕýÇ°·½¹éÒ»»¯ºóµÄÏòÁ¿
+	//AddImpulseç”¨äºŽå‘è§’è‰²æ–½åŠ ä¸€ä¸ªçž¬æ—¶çš„åŠ›ï¼ŒGetActorForwardVectoræ˜¯èŽ·å–è§’è‰²åœ¨ä¸–ç•Œåæ ‡ç³»ä¸­çš„æ­£å‰æ–¹å½’ä¸€åŒ–åŽçš„å‘é‡
 	CasingMesh->AddImpulse(GetActorForwardVector() * ShellEjectImpulse);
 }
 

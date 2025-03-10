@@ -3,10 +3,10 @@
 UENUM(BlueprintType)
 enum class ECombatState : uint8
 {
-	ECS_Unoccupied UMETA(DisplayName = "ø’œ–÷–"),
-	ECS_Reloading UMETA(DisplayName = "∏¸ªªµØº–÷–"),
-	ECS_ThrowingGrenade UMETA(DisplayName = "Õ∂÷¿ ÷¡ÒµØ÷–"),
-	ECS_SwappingWeapons UMETA(DisplayName = "ΩªªªŒ‰∆˜÷–"),
+	ECS_Unoccupied UMETA(DisplayName = "Á©∫Èó≤‰∏≠"),
+	ECS_Reloading UMETA(DisplayName = "Êõ¥Êç¢ÂºπÂ§π‰∏≠"),
+	ECS_ThrowingGrenade UMETA(DisplayName = "ÊäïÊé∑ÊâãÊ¶¥Âºπ‰∏≠"),
+	ECS_SwappingWeapons UMETA(DisplayName = "‰∫§Êç¢Ê≠¶Âô®‰∏≠"),
 
 	ECS_MAX UMETA(DisplayName = "DefaultMax")
 };

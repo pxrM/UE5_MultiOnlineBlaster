@@ -41,14 +41,14 @@ void AFlag::OnDroppedState()
 {
 	if (HasAuthority())
 	{
-		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); //ÔÚ·þÎñÆ÷½«ÎäÆ÷ÇòÐÎÅö×²ÌåÉèÎª¿É²éÑ¯
+		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly); //åœ¨æœåŠ¡å™¨å°†æ­¦å™¨çƒå½¢ç¢°æ’žä½“è®¾ä¸ºå¯æŸ¥è¯¢
 	}
-	FlagMesh->SetSimulatePhysics(true); //Ä£ÄâÎïÀíÐ§¹û
-	FlagMesh->SetEnableGravity(true); //ÆôÓÃÖØÁ¦Ð§¹û
-	FlagMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); //ÉèÖÃÎª¿É²éÑ¯ºÍÄ£ÄâÎïÀíÐ§¹ûµÄ¶ÔÏó
-	//ÉèÖÃ WeaponMesh ¶ÔËùÓÐÅö×²Í¨µÀ¶¼¾ßÓÐ Block ÏìÓ¦, »á×èÖ¹Ä³Ð©ÎïÌåÍ¨¹ýËü£¬ÒÔÈ·±£ÎäÆ÷²»»á´©¹ýÍæ¼Ò
+	FlagMesh->SetSimulatePhysics(true); //æ¨¡æ‹Ÿç‰©ç†æ•ˆæžœ
+	FlagMesh->SetEnableGravity(true); //å¯ç”¨é‡åŠ›æ•ˆæžœ
+	FlagMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); //è®¾ç½®ä¸ºå¯æŸ¥è¯¢å’Œæ¨¡æ‹Ÿç‰©ç†æ•ˆæžœçš„å¯¹è±¡
+	//è®¾ç½® WeaponMesh å¯¹æ‰€æœ‰ç¢°æ’žé€šé“éƒ½å…·æœ‰ Block å“åº”, ä¼šé˜»æ­¢æŸäº›ç‰©ä½“é€šè¿‡å®ƒï¼Œä»¥ç¡®ä¿æ­¦å™¨ä¸ä¼šç©¿è¿‡çŽ©å®¶
 	FlagMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	//ÉèÖÃ WeaponMesh ¶Ô Pawn ÀàÐÍÎïÌåµÄÅö×²ÏìÓ¦Îª Ignore£¬WeaponMesh ½«ºöÂÔÓë Pawn Ïà¹ØµÄÈÎºÎÅö×²£¬´Ó¶øÊ¹Íæ¼Ò¿ÉÒÔÍ¨¹ý´©¹ýÎäÆ÷Ê°È¡µØÉÏµÄÎïÆ·
+	//è®¾ç½® WeaponMesh å¯¹ Pawn ç±»åž‹ç‰©ä½“çš„ç¢°æ’žå“åº”ä¸º Ignoreï¼ŒWeaponMesh å°†å¿½ç•¥ä¸Ž Pawn ç›¸å…³çš„ä»»ä½•ç¢°æ’žï¼Œä»Žè€Œä½¿çŽ©å®¶å¯ä»¥é€šè¿‡ç©¿è¿‡æ­¦å™¨æ‹¾å–åœ°ä¸Šçš„ç‰©å“
 	FlagMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
 	FlagMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 

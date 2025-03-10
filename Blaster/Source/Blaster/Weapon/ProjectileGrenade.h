@@ -7,7 +7,7 @@
 #include "ProjectileGrenade.generated.h"
 
 /**
- * 手榴弹，反弹一会再爆炸
+ * 鎵嬫Υ寮癸紝鍙嶅脊涓�浼氬啀鐖嗙偢
  */
 UCLASS()
 class BLASTER_API AProjectileGrenade : public AProjectile
@@ -23,11 +23,11 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-		void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity); //反弹回调
+		void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity); //鍙嶅脊鍥炶皟
 
 
 private:
 	UPROPERTY(EditAnywhere)
-		USoundCue* BounceSound; //反弹音效
+		USoundCue* BounceSound; //鍙嶅脊闊虫晥
 
 };

@@ -6,10 +6,10 @@
 #include "GameFramework/GameMode.h"
 #include "BlasterGameMode.generated.h"
 
-//ÔÚMatchStateÃüÃû¿Õ¼äÏÂÌí¼Ó×Ô¼ºµÄ×´Ì¬
+//åœ¨MatchStateå‘½åç©ºé—´ä¸‹æ·»åŠ è‡ªå·±çš„çŠ¶æ€
 namespace MatchState
 {
-	extern BLASTER_API const FName Cooldown;	//±ÈÈüÊ±¼äÒÑ½áÊø£¬ÏÔÊ¾»ñÊ¤Õß²¢¿ªÊ¼ÀäÈ´µ¹¼ÆÊ±
+	extern BLASTER_API const FName Cooldown;	//æ¯”èµ›æ—¶é—´å·²ç»“æŸï¼Œæ˜¾ç¤ºè·èƒœè€…å¹¶å¼€å§‹å†·å´å€’è®¡æ—¶
 }
 
 /**
@@ -32,28 +32,28 @@ protected:
 
 public:
 	/// <summary>
-	/// ÌÔÌ­½ÇÉ«
+	/// æ·˜æ±°è§’è‰²
 	/// </summary>
-	/// <param name="ElimmedCharacter">±»ÌÔÌ­µÄ½ÇÉ«</param>
-	/// <param name="VictimController">ÊÜº¦ÕßµÄ¿ØÖÆÆ÷</param>
-	/// <param name="AttackerController">¼Óº¦ÕßµÄ¿ØÖÆÆ÷</param>
+	/// <param name="ElimmedCharacter">è¢«æ·˜æ±°çš„è§’è‰²</param>
+	/// <param name="VictimController">å—å®³è€…çš„æ§åˆ¶å™¨</param>
+	/// <param name="AttackerController">åŠ å®³è€…çš„æ§åˆ¶å™¨</param>
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
 	/// <summary>
-	/// ÇëÇó¸´»î
+	/// è¯·æ±‚å¤æ´»
 	/// </summary>
-	/// <param name="ElimmedCharacter">±»ÌÔÌ­µÄ½ÇÉ«</param>
-	/// <param name="ElimmedController">±»ÌÔÌ­µÄ¿ØÖÆÆ÷</param>
+	/// <param name="ElimmedCharacter">è¢«æ·˜æ±°çš„è§’è‰²</param>
+	/// <param name="ElimmedController">è¢«æ·˜æ±°çš„æ§åˆ¶å™¨</param>
 	virtual void ResquestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 	/// <summary>
-	/// ½ÇÉ«ÇëÇóÍË³öÓÎÏ·µÄ´¦Àí
+	/// è§’è‰²è¯·æ±‚é€€å‡ºæ¸¸æˆçš„å¤„ç†
 	/// </summary>
 	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving);
 	/// <summary>
-	/// ¼ÆËãÉËº¦Öµ
+	/// è®¡ç®—ä¼¤å®³å€¼
 	/// </summary>
-	/// <param name="Attacker">¹¥»÷Õß</param>
-	/// <param name="Victim">ÊÜ»÷Õß</param>
-	/// <param name="BaseDamage">»ù´¡ÉËº¦</param>
+	/// <param name="Attacker">æ”»å‡»è€…</param>
+	/// <param name="Victim">å—å‡»è€…</param>
+	/// <param name="BaseDamage">åŸºç¡€ä¼¤å®³</param>
 	/// <returns></returns>
 	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage);
 
@@ -64,33 +64,33 @@ public:
 
 public:
 	/// <summary>
-	/// ¹Ø¿¨¿ªÊ¼Ê±¼ä
+	/// å…³å¡å¼€å§‹æ—¶é—´
 	/// </summary>
 	float LevelStartingTime = 0.f;
 	/// <summary>
-	/// Ô¤ÈÈÊ±¼ä£¬½áÊøºó¿ªÊ¼StartMatch
+	/// é¢„çƒ­æ—¶é—´ï¼Œç»“æŸåå¼€å§‹StartMatch
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
 		float WarmupTime = 10.f;
 	/// <summary>
-	/// ±ÈÈüÊ±³¤
+	/// æ¯”èµ›æ—¶é•¿
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
 		float MatchTime = 120.f;
 	/// <summary>
-	/// ÀäÈ´Ê±³¤
+	/// å†·å´æ—¶é•¿
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
 		float CooldownTime = 10.f;
 	/// <summary>
-	/// ÊÇ·ñÊÇÍÅ¶ÓÄ£Ê½
+	/// æ˜¯å¦æ˜¯å›¢é˜Ÿæ¨¡å¼
 	/// </summary>
 	bool bTeamsMatch = false;
 
 
 private:
 	/// <summary>
-	/// µ±Ç°Ê±³¤µÄµ¹¼ÆÊ±Ê±¼ä
+	/// å½“å‰æ—¶é•¿çš„å€’è®¡æ—¶æ—¶é—´
 	/// </summary>
 	float CountdownTime = 0.f;
 

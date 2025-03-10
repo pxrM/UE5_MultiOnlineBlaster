@@ -4,5 +4,5 @@
 
 #include "CoreMinimal.h"
 
-#define ECC_SkeletalMesh ECollisionChannel::ECC_GameTraceChannel1	//项目设置-Engine-Collision-ObjectChannel中设置的自定义碰撞通道SkeletalMesh
+#define ECC_SkeletalMesh ECollisionChannel::ECC_GameTraceChannel1	//椤圭洰璁剧疆-Engine-Collision-ObjectChannel涓缃殑鑷畾涔夌鎾為�氶亾SkeletalMesh
 #define ECC_HitBox ECollisionChannel::ECC_GameTraceChannel2

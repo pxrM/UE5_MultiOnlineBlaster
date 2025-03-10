@@ -1,7 +1,7 @@
 #pragma once
 
 /// <summary>
-/// ��ɫת��
+/// ½ÇÉ«×ªÏò
 /// </summary>
 UENUM(BlueprintType)
 enum class ETurningInPlace : uint8

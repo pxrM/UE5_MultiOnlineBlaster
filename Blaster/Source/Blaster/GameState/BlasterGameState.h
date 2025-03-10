@@ -9,7 +9,7 @@
 class ABlasterPlayerState;
 
 /**
- * AGameState用于保存游戏数据，如任务进度、游戏活动等
+ * AGameState鐢ㄤ簬淇濆瓨娓告垙鏁版嵁锛屽浠诲姟杩涘害銆佹父鎴忔椿鍔ㄧ瓑
  */
 UCLASS()
 class BLASTER_API ABlasterGameState : public AGameState
@@ -30,7 +30,7 @@ public:
 
 public:
 	/// <summary>
-	/// 最高分玩家，可能有玩家并列高分，所以用TArray
+	/// 鏈�楂樺垎鐜╁锛屽彲鑳芥湁鐜╁骞跺垪楂樺垎锛屾墍浠ョ敤TArray
 	/// </summary>
 	UPROPERTY(Replicated)
 		TArray<ABlasterPlayerState*> TopScoringPlayers;
@@ -44,7 +44,7 @@ public:
 
 private:
 	/// <summary>
-	/// 当前最高分
+	/// 褰撳墠鏈�楂樺垎
 	/// </summary>
 	float CurTopScore = 0.f;
 

@@ -15,7 +15,7 @@ class BLASTER_API UOverheadWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(meta = (BindWidget))	//将c++变量与蓝图中的关联，这样对c++变量的更改都会影响到蓝图里的
+	UPROPERTY(meta = (BindWidget))	//灏哻++鍙橀噺涓庤摑鍥句腑鐨勫叧鑱旓紝杩欐牱瀵筩++鍙橀噺鐨勬洿鏀归兘浼氬奖鍝嶅埌钃濆浘閲岀殑
 		class UTextBlock* DisplayText;
 
 public:

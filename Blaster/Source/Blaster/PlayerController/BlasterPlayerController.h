@@ -6,17 +6,17 @@
 #include "GameFramework/PlayerController.h"
 #include "BlasterPlayerController.generated.h"
 
-/* ¸ßpingÎ¯ÍĞ»Øµ÷ */
+/* é«˜pingå§”æ‰˜å›è°ƒ */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bPingTooHigh);
 
 /**
- * APlayerControllerÊÇÓÉAControllerÅÉÉú³öÀ´×¨ÃÅÓÃÓÚ¸ºÔğÍæ¼Ò½»»¥Âß¼­µÄAController£¬APlayerControllerÌá¹©ÁË£º
- * Camera¹ÜÀí
- * InputÊäÈëÏìÓ¦
- * UPlayer¹ØÁª
- * HUDÏÔÊ¾
- * LevelÇĞ»»
- * VoiceÒôÔ´¼àÌı
+ * APlayerControlleræ˜¯ç”±AControlleræ´¾ç”Ÿå‡ºæ¥ä¸“é—¨ç”¨äºè´Ÿè´£ç©å®¶äº¤äº’é€»è¾‘çš„AControllerï¼ŒAPlayerControlleræä¾›äº†ï¼š
+ * Cameraç®¡ç†
+ * Inputè¾“å…¥å“åº”
+ * UPlayerå…³è”
+ * HUDæ˜¾ç¤º
+ * Levelåˆ‡æ¢
+ * VoiceéŸ³æºç›‘å¬
  */
 UCLASS()
 class BLASTER_API ABlasterPlayerController : public APlayerController
@@ -28,7 +28,7 @@ protected:
 	virtual void SetupInputComponent() override;
 
 public:
-	//µ±Ò»¸ö¿ØÖÆÆ÷»ñÈ¡Ò»¸ö Pawn ºó£¬ÒıÇæ»áµ÷ÓÃ¸Ã¿ØÖÆÆ÷µÄ OnPossess º¯Êı£¬²¢½«»ñÈ¡µÄ Pawn ×÷Îª²ÎÊı´«ÈëÆäÖĞ¡£
+	//å½“ä¸€ä¸ªæ§åˆ¶å™¨è·å–ä¸€ä¸ª Pawn åï¼Œå¼•æ“ä¼šè°ƒç”¨è¯¥æ§åˆ¶å™¨çš„ OnPossess å‡½æ•°ï¼Œå¹¶å°†è·å–çš„ Pawn ä½œä¸ºå‚æ•°ä¼ å…¥å…¶ä¸­ã€‚
 	virtual void OnPossess(APawn* InPawn)override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void ReceivedPlayer() override;
@@ -36,7 +36,7 @@ public:
 
 
 public:
-	virtual float GetServerTime(); //Óë·şÎñÆ÷Ê±¼äÍ¬²½
+	virtual float GetServerTime(); //ä¸æœåŠ¡å™¨æ—¶é—´åŒæ­¥
 	void SetHUDTime();
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDShield(float Shield, float MaxShield);
@@ -49,13 +49,13 @@ public:
 	void SetHUDGrenades(int32 Grenades);
 	void OnMatchStateSet(FName State, bool bTeamsMatch = false);
 	/// <summary>
-	/// ¹ã²¥ÌÔÌ­¹«¸æ£¬server call
+	/// å¹¿æ’­æ·˜æ±°å…¬å‘Šï¼Œserver call
 	/// </summary>
 	/// <param name="Attacker"></param>
 	/// <param name="Victim"></param>
 	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 	/*
-		¶ÓÎéhudÏà¹Øº¯Êı
+		é˜Ÿä¼hudç›¸å…³å‡½æ•°
 	*/
 	void HideTeamSocres();
 	void InitTeamScores();
@@ -65,84 +65,84 @@ public:
 
 protected:
 	/*
-		·şÎñÆ÷ºÍ¿Í»§¶ËÖ®¼äµÄÊ±¼äÍ¬²½
+		æœåŠ¡å™¨å’Œå®¢æˆ·ç«¯ä¹‹é—´çš„æ—¶é—´åŒæ­¥
 	*/
 	/// <summary>
-	/// Ê¹ÓÃRPC£¨ÒòÎªÊÇ·şÎñÆ÷rpcº¯ÊıËùÒÔÇ°Ãæ¼ÓÁË¸öServer£©ÇëÇó·şÎñÆ÷Ê±¼ä£¬¸Ãº¯ÊıÔËĞĞÔÚ·şÎñÆ÷ÉÏ
+	/// ä½¿ç”¨RPCï¼ˆå› ä¸ºæ˜¯æœåŠ¡å™¨rpcå‡½æ•°æ‰€ä»¥å‰é¢åŠ äº†ä¸ªServerï¼‰è¯·æ±‚æœåŠ¡å™¨æ—¶é—´ï¼Œè¯¥å‡½æ•°è¿è¡Œåœ¨æœåŠ¡å™¨ä¸Š
 	/// </summary>
-	/// <param name="TimeOfClientRequest">¿Í»§¶Ë·¢ËÍÇëÇóµÄÊ±¼ä</param>
+	/// <param name="TimeOfClientRequest">å®¢æˆ·ç«¯å‘é€è¯·æ±‚çš„æ—¶é—´</param>
 	UFUNCTION(Server, Reliable)
 		void ServerRequestServerTime(float TimeOfClientRequest);
 	/// <summary>
-	/// ¶ÔServerRequestServerTimeÇëÇóµÄÏìÓ¦£¬»ñµÃ·şÎñÆ÷Ê±¼ä£¬¸Ãº¯ÊıÔËĞĞÔÚ¿Í»§¶ËÉÏ
+	/// å¯¹ServerRequestServerTimeè¯·æ±‚çš„å“åº”ï¼Œè·å¾—æœåŠ¡å™¨æ—¶é—´ï¼Œè¯¥å‡½æ•°è¿è¡Œåœ¨å®¢æˆ·ç«¯ä¸Š
 	/// </summary>
-	/// <param name="TimeOfClientRequest">¿Í»§¶Ë·¢ËÍÇëÇóµÄÊ±¼ä</param>
-	/// <param name="TimeServerReceivedRequest">·şÎñÆ÷½ÓÊÕµ½¿Í»§¶ËÇëÇóµÄÊ±¼ä</param>
+	/// <param name="TimeOfClientRequest">å®¢æˆ·ç«¯å‘é€è¯·æ±‚çš„æ—¶é—´</param>
+	/// <param name="TimeServerReceivedRequest">æœåŠ¡å™¨æ¥æ”¶åˆ°å®¢æˆ·ç«¯è¯·æ±‚çš„æ—¶é—´</param>
 	UFUNCTION(Client, Reliable)
 		void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedRequest);
 	/// <summary>
-	/// ¼ì²éÊÇ·ñÒª½øĞĞÒ»´ÎÊ±¼äÍ¬²½
+	/// æ£€æŸ¥æ˜¯å¦è¦è¿›è¡Œä¸€æ¬¡æ—¶é—´åŒæ­¥
 	/// </summary>
 	/// <param name="DeltaTime"></param>
 	void CheckTimeSync(float DeltaTime);
 	/// <summary>
-	/// ÂÖÑ¯¼ì²é³õÊ¼»¯½ÇÉ«×´Ì¬HUD
+	/// è½®è¯¢æ£€æŸ¥åˆå§‹åŒ–è§’è‰²çŠ¶æ€HUD
 	/// </summary>
 	void PollInit();
 
 	/*
-	 ÓÎÏ·Æ¥Åä×´Ì¬Ïà¹Ø
+	 æ¸¸æˆåŒ¹é…çŠ¶æ€ç›¸å…³
 	*/
 	/// <summary>
-	/// ·şÎñÆ÷¼ì²éÓÎÏ·Æ¥Åä×´Ì¬
+	/// æœåŠ¡å™¨æ£€æŸ¥æ¸¸æˆåŒ¹é…çŠ¶æ€
 	/// </summary>
 	UFUNCTION(Server, Reliable)
 		void ServerCheckMatchState();
 	/// <summary>
-	/// ¿Í»§¶Ë¼ÓÈëÊ±Í¨ÖªÒ»´ÎÓÎÏ·×´Ì¬
+	/// å®¢æˆ·ç«¯åŠ å…¥æ—¶é€šçŸ¥ä¸€æ¬¡æ¸¸æˆçŠ¶æ€
 	/// </summary>
 	UFUNCTION(Client, Reliable)
 		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
 	/// <summary>
-	/// ±ÈÈü¿ªÊ¼ÉèÖÃ
+	/// æ¯”èµ›å¼€å§‹è®¾ç½®
 	/// </summary>
 	void HandleMatchHasStarted(bool bTeamsMatch = false);
 	/// <summary>
-	/// ±ÈÈü½áÊøÀäÈ´½×¶ÎÉèÖÃ
+	/// æ¯”èµ›ç»“æŸå†·å´é˜¶æ®µè®¾ç½®
 	/// </summary>
 	void HandleCooldown();
 	/// <summary>
-	/// ±ÈÈü½áÊø »ñÊ¤Íæ¼ÒµÄÃèÊöÎÄ±¾
+	/// æ¯”èµ›ç»“æŸ è·èƒœç©å®¶çš„æè¿°æ–‡æœ¬
 	/// </summary>
 	/// <param name="TopPlayers"></param>
 	/// <returns></returns>
 	FString GetInfoText(const TArray<class ABlasterPlayerState*>& TopPlayers);
 	/// <summary>
-	/// ÍÅ¶Ó±ÈÈü½áÊø »ñÊ¤ÍÅ¶ÓµÄÃèÊöÎÄ±¾
+	/// å›¢é˜Ÿæ¯”èµ›ç»“æŸ è·èƒœå›¢é˜Ÿçš„æè¿°æ–‡æœ¬
 	/// </summary>
 	/// <param name="BlasterGameState"></param>
 	/// <returns></returns>
 	FString GetTeamInfoText(class ABlasterGameState* BlasterGameState);
 
 	/*
-	*  pingÏà¹Ø
+	*  pingç›¸å…³
 	*/
 	void CheckPing(float DeltaTime);
 	void HighPingWarning();
 	void StopHigtPingWarning();
 	UFUNCTION(Server, Reliable)
-		void ServerReportPingStatus(bool bHighPing); //Ïòserver·¢ËÍ±¨¸æping×´Ì¬
+		void ServerReportPingStatus(bool bHighPing); //å‘serverå‘é€æŠ¥å‘ŠpingçŠ¶æ€
 
 	/// <summary>
-	/// ÏÔÊ¾ÍË³öÓÎÏ·²Ëµ¥
+	/// æ˜¾ç¤ºé€€å‡ºæ¸¸æˆèœå•
 	/// </summary>
 	void ShowReturnToMainMenu();
 
 	/// <summary>
-	/// ¹ã²¥ÌÔÌ­¹«¸æ£¬server call client
+	/// å¹¿æ’­æ·˜æ±°å…¬å‘Šï¼Œserver call client
 	/// </summary>
-	/// <param name="Attacker">¹¥»÷Õß</param>
-	/// <param name="Victim">ÊÜ»÷Õß</param>
+	/// <param name="Attacker">æ”»å‡»è€…</param>
+	/// <param name="Victim">å—å‡»è€…</param>
 	UFUNCTION(Client, Reliable)
 		void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
@@ -156,16 +156,16 @@ private:
 
 protected:
 	/// <summary>
-	/// ¿Í»§¶ËºÍ·şÎñÆ÷Ö®¼äµÄÊ±¼ä²îÒì
+	/// å®¢æˆ·ç«¯å’ŒæœåŠ¡å™¨ä¹‹é—´çš„æ—¶é—´å·®å¼‚
 	/// </summary>
 	float ClientServerDelte = 0.f;
 	/// <summary>
-	/// Ê±¼äÍ¬²½ÆµÂÊ
+	/// æ—¶é—´åŒæ­¥é¢‘ç‡
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Time)
 		float TimeSyncFrequency = 5.f;
 	/// <summary>
-	/// Ê±¼äÍ¬²½ÔËĞĞÊ±¼ä
+	/// æ—¶é—´åŒæ­¥è¿è¡Œæ—¶é—´
 	/// </summary>
 	float TimeSyncRunningTime = 0.f;
 
@@ -197,12 +197,12 @@ private:
 	int32 HUDWeaponAmmo;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
-		FName MatchState; // Æ¥Åä×´Ì¬
-	float LevelStartingTime = 0.f;	// ¹Ø¿¨¿ªÊ¼Ê±¼ä£¬Ã¿¸öÍæ¼Ò½øÈë¹Ø¿¨µÄÊ±¼ä²»Ò»Ñù£¬ËùÒÔÒÔ·şÎñÆ÷Îª×¼
-	float MatchTime = 0.f;	// ±ÈÈüÊ±³¤£¬´ÓgamemodeÖĞ»ñÈ¡
-	float WarmupTime = 0.f;	 // Ô¤ÈÈÊ±³¤
-	float CooldownTime = 0.f; // ±ÈÈüÀäÈ´Ê±³¤
-	uint32 CountdownInt = 0;  // ÉÏÒ»´Îµ¹¼ÆÊ±µÄÊ±¼ä£¬Èç¹ûÓëµ±Ç°²»Í¬Ôò¸üĞÂhud
+		FName MatchState; // åŒ¹é…çŠ¶æ€
+	float LevelStartingTime = 0.f;	// å…³å¡å¼€å§‹æ—¶é—´ï¼Œæ¯ä¸ªç©å®¶è¿›å…¥å…³å¡çš„æ—¶é—´ä¸ä¸€æ ·ï¼Œæ‰€ä»¥ä»¥æœåŠ¡å™¨ä¸ºå‡†
+	float MatchTime = 0.f;	// æ¯”èµ›æ—¶é•¿ï¼Œä»gamemodeä¸­è·å–
+	float WarmupTime = 0.f;	 // é¢„çƒ­æ—¶é•¿
+	float CooldownTime = 0.f; // æ¯”èµ›å†·å´æ—¶é•¿
+	uint32 CountdownInt = 0;  // ä¸Šä¸€æ¬¡å€’è®¡æ—¶çš„æ—¶é—´ï¼Œå¦‚æœä¸å½“å‰ä¸åŒåˆ™æ›´æ–°hud
 
 	UPROPERTY(ReplicatedUsing = OnRep_ShowTeamScores)
 		bool bShowTeamScores = false;
@@ -210,14 +210,14 @@ private:
 	float HighPingRunningTime = 0.f;
 	float PingAnimRunningTime = 0.f;
 	UPROPERTY(EditAnywhere)
-		float CheckPingFrequency = 20.f; //¼ä¸ô¶à¾Ã¼ì²âÒ»´Îping
+		float CheckPingFrequency = 20.f; //é—´éš”å¤šä¹…æ£€æµ‹ä¸€æ¬¡ping
 	UPROPERTY(EditAnywhere)
-		float HighPingThreshold = 50.f; //³¬¹ıÕâ¸öÖµÎª¸ßping
+		float HighPingThreshold = 50.f; //è¶…è¿‡è¿™ä¸ªå€¼ä¸ºé«˜ping
 	UPROPERTY(EditAnywhere)
-		float HighPingDuration = 5.f; //¸ßpingµÄÒ»´ÎÕ¹Ê¾³ÖĞøÊ±¼ä
+		float HighPingDuration = 5.f; //é«˜pingçš„ä¸€æ¬¡å±•ç¤ºæŒç»­æ—¶é—´
 
 	/*
-	* ·µ»ØÖ÷½çÃæui
+	* è¿”å›ä¸»ç•Œé¢ui
 	*/
 	UPROPERTY(EditAnywhere, Category = HUD)
 		TSubclassOf<class UUserWidget> ReturnToMainWidget;
@@ -228,7 +228,7 @@ private:
 
 public:
 	/// <summary>
-	/// rpcµ¥³Ì·¢ËÍÊ±¼ä
+	/// rpcå•ç¨‹å‘é€æ—¶é—´
 	/// </summary>
 	float SingleTripTime = 0.f;
 	FHighPingDelegate HighPingDelegate;

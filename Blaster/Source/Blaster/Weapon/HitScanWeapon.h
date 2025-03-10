@@ -7,7 +7,7 @@
 #include "HitScanWeapon.generated.h"
 
 /**
- * ÉäÏßÀàÎäÆ÷
+ * å°„çº¿ç±»æ­¦å™¨
  */
 UCLASS()
 class BLASTER_API AHitScanWeapon : public AWeapon
@@ -20,11 +20,11 @@ public:
 
 protected:
 	/// <summary>
-	/// ÎäÆ÷»÷ÖĞ¹ìµÀ
+	/// æ­¦å™¨å‡»ä¸­è½¨é“
 	/// </summary>
-	/// <param name="TraceStart">¿ªÊ¼Î»ÖÃ</param>
-	/// <param name="HitTarget">½áÊøÎ»ÖÃ</param>
-	/// <param name="OutFireHits">ÃüÖĞÄ¿±ê</param>
+	/// <param name="TraceStart">å¼€å§‹ä½ç½®</param>
+	/// <param name="HitTarget">ç»“æŸä½ç½®</param>
+	/// <param name="OutFireHits">å‘½ä¸­ç›®æ ‡</param>
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutFireHits);
 
 
