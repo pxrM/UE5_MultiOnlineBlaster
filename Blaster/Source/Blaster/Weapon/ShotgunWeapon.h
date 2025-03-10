@@ -21,6 +21,6 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere)
-		uint32 NumberOfPellets = 10; //霰弹枪同时出的子弹数量
-	
+	uint32 NumberOfPellets = 10; //霰弹枪同时出的子弹数量
+
 };

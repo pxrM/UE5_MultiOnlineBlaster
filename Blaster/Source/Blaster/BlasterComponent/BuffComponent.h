@@ -7,7 +7,7 @@
 #include "BuffComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UBuffComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -15,7 +15,7 @@ class BLASTER_API UBuffComponent : public UActorComponent
 public:
 	friend class ABlasterCharacter;	//角色类可以访问buff组件类
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UBuffComponent();
 	// Called every frame
@@ -26,7 +26,7 @@ protected:
 	virtual void BeginPlay() override;
 
 
-public:	
+public:
 	/// <summary>
 	/// 治疗
 	/// </summary>
@@ -91,7 +91,7 @@ private:
 	/// <param name="BaseSpeed"></param>
 	/// <param name="CrouchSpeed"></param>
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+	void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
 	/// <summary>
 	/// 处理速度修改
 	/// </summary>
@@ -108,17 +108,17 @@ private:
 	/// </summary>
 	/// <param name="JumpVelocity"></param>
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastJumpBuff(float JumpVelocity);
+	void MulticastJumpBuff(float JumpVelocity);
 	/// <summary>
 	/// 处理跳跃速度修改
 	/// </summary>
 	/// <param name="JumpVelocity"></param>
 	void HandleChangeJumpVelocity(float JumpVelocity);
 
-		
+
 private:
 	UPROPERTY()
-		class ABlasterCharacter* Character;
+	class ABlasterCharacter* Character;
 
 	/* health buff */
 	bool bHealing = false; //是否正在治疗

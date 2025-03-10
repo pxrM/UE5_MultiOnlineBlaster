@@ -28,7 +28,7 @@ protected:
 
 protected:
 	UFUNCTION()
-		virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	/// <summary>
 	/// 碰撞后的表现
@@ -57,37 +57,37 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere)
-		class UBoxComponent* CollisionBox;
+	class UBoxComponent* CollisionBox;
 
 	//拖尾特效管理
 	//UNiagaraSystem 是用于创建和管理 Niagara 系统的类。Niagara 是Ue的一个强大的特效系统，用于创建高度可定制的粒子和特效。
 	//UNiagaraSystem 包含了一系列粒子模块和参数，用于定义特效的行为、外观和交互。
 	//UNiagaraSystem 可以被用于创建和管理一个或多个 UNiagaraComponent 实例，并在场景中进行实例化和播放。
 	UPROPERTY(EditAnywhere)
-		class UNiagaraSystem* TrailSystem;
+	class UNiagaraSystem* TrailSystem;
 	//是一个 Unreal Engine 中的组件类，用于在场景中放置和控制 Niagara 系统。
 	UPROPERTY()
-		class UNiagaraComponent* TrailSystemComponent;
+	class UNiagaraComponent* TrailSystemComponent;
 
 	/// <summary>
 	/// 用于实现子弹、火箭等射弹物体运动的组件类
 	/// </summary>
 	UPROPERTY(VisibleAnyWhere)
-		class UProjectileMovementComponent* ProjectileMovementComponent;
+	class UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere)
-		UStaticMeshComponent* ProjectileMash;
+	UStaticMeshComponent* ProjectileMash;
 
 	/// <summary>
 	/// 范围伤害内半径
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float DamageInnerRadius = 200.f;
+	float DamageInnerRadius = 200.f;
 	/// <summary>
 	/// 范围伤害外半径
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float DamageOuterRadius = 500.f;
+	float DamageOuterRadius = 500.f;
 
 
 public:
@@ -95,18 +95,18 @@ public:
 	/// 伤害
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float DamageVal = 20.f;
+	float DamageVal = 20.f;
 	/// <summary>
 	/// 爆头伤害，射弹类使用，和投掷武器（手榴弹）无关
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float HeadShotDamageVal = 40.f;
+	float HeadShotDamageVal = 40.f;
 
 	/// <summary>
 	/// 弹丸的移动速度
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float InitialSpeed = 15000.f;
+	float InitialSpeed = 15000.f;
 
 	/* 与服务器端倒带一起使用 */
 	/// <summary>
@@ -128,24 +128,24 @@ private:
 	/// 用于创建和管理粒子特效的类，子弹飞行时用
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		class UParticleSystem* Tracer;
+	class UParticleSystem* Tracer;
 	/// <summary>
 	/// 粒子系统相关的组件类。该类可以被用于将 "UParticleSystem" 创建的粒子特效附加到游戏中的角色、场景、物体等上
 	/// </summary>
 	UPROPERTY()
-		class UParticleSystemComponent* TracerComponent;
+	class UParticleSystemComponent* TracerComponent;
 
 	/// <summary>
 	/// 撞击时产生的特效
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		UParticleSystem* ImpactParticles;
+	UParticleSystem* ImpactParticles;
 
 	/// <summary>
 	/// 撞击时产生的音效
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		class USoundCue* ImpactSound;
+	class USoundCue* ImpactSound;
 
 	/// <summary>
 	/// 拖尾特效延迟销毁计时器
@@ -155,5 +155,5 @@ private:
 	/// 延迟销毁时间
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float TrailDestroyTime = 3.f;
+	float TrailDestroyTime = 3.f;
 };

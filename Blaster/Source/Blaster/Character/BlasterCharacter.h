@@ -1,4 +1,4 @@
- // Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -50,31 +50,31 @@ private://----------------------------------------------------------------------
 	/// 相机弹簧杆
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = Camera)
-		class USpringArmComponent* CameraBoom;
+	class USpringArmComponent* CameraBoom;
 
 	/// <summary>
 	/// 角色跟随相机
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = Camera)
-		class UCameraComponent* FollowCamera;
+	class UCameraComponent* FollowCamera;
 
 	/// <summary>
 	/// 头顶ui
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UWidgetComponent* OverheadWidget;
+	class UWidgetComponent* OverheadWidget;
 
 	//UPROPERTY(Replicated)//用于标记某个成员变量需要进行同步复制（Replicated）
 	//UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon) 用于标记某个成员变量需要进行同步复制，并指定当该变量复制时需要调用的回调函数
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
-		class AWeapon* OverlappingWeapon;
+	class AWeapon* OverlappingWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UCombatComponent* CombatCmp;
+	class UCombatComponent* CombatCmp;
 	UPROPERTY(VisibleAnywhere)
-		class UBuffComponent* BuffCmp;
+	class UBuffComponent* BuffCmp;
 	UPROPERTY(VisibleAnywhere)
-		class ULagCompensationComponent* LagCompensationCmp;
+	class ULagCompensationComponent* LagCompensationCmp;
 
 	float AO_Yaw;
 	float InterpAO_Yaw;
@@ -87,43 +87,43 @@ private://----------------------------------------------------------------------
 	/// 武器蒙太奇动画，可在角色蓝图指定
 	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		class UAnimMontage* FireWeaponMontage;
+	class UAnimMontage* FireWeaponMontage;
 
 	/// <summary>
 	/// 重新加载弹夹蒙太奇动画
 	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* ReloadMagMontage;
+	UAnimMontage* ReloadMagMontage;
 
 	/// <summary>
 	/// 受击蒙太奇动画
 	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactMontage;
 
 	/// <summary>
 	/// 淘汰蒙太奇动画
 	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* ElimMontage;
+	UAnimMontage* ElimMontage;
 
 	/// <summary>
 	/// 投掷手榴弹蒙太奇动画
 	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* ThrowGrenadeMontage;
+	UAnimMontage* ThrowGrenadeMontage;
 
 	/// <summary>
 	/// 交换蒙太奇动画
 	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = CombatMontage)
-		UAnimMontage* SwapMontage;
+	UAnimMontage* SwapMontage;
 
 	/// <summary>
 	/// 相机和角色距离阈值
 	/// </summary>
 	UPROPERTY(EditAnyWhere)
-		float CameraThreshold = 200.f;
+	float CameraThreshold = 200.f;
 
 	/*  代理角色使用  */
 	bool bRotateRootBone = false; //是否旋转根骨骼
@@ -135,15 +135,15 @@ private://----------------------------------------------------------------------
 
 	/*  player health  */
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float MaxHealth = 100.f;
+	float MaxHealth = 100.f;
 	UPROPERTY(ReplicatedUsing = OnRep_CurHealth, VisibleAnywhere, Category = "Player Stats")
-		float CurHealth = MaxHealth;
+	float CurHealth = MaxHealth;
 
 	/*  player shield  */
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float MaxShield = 100.f;
+	float MaxShield = 100.f;
 	UPROPERTY(ReplicatedUsing = OnRep_CurShield, EditAnywhere, Category = "Player Stats")
-		float CurShield = 0.f;
+	float CurShield = 0.f;
 
 	/// <summary>
 	/// 是否淘汰
@@ -158,105 +158,105 @@ private://----------------------------------------------------------------------
 	///  EditDefaultsOnly可以在编辑器编辑，但只能在默认值之上
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-		float ElimDelay = 3.f;
+	float ElimDelay = 3.f;
 
 	/*  溶解特效  */
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UCurveFloat* DissolveCurve;//溶解时间曲线
+	UCurveFloat* DissolveCurve;//溶解时间曲线
 	UPROPERTY(EditAnywhere)
-		UTimelineComponent* DissolveTimelineCmp;
+	UTimelineComponent* DissolveTimelineCmp;
 	FOnTimelineFloat DissolveTrack; //处理时间轴（timeline）中浮点数值变化的事件
 	UPROPERTY(VisibleAnywhere, Category = Elim)
-		UMaterialInstanceDynamic* DynamicDissolveMatInstance; //在运行时动态创建的材质实例。它可以用于在游戏或应用程序中即时修改材质的属性，例如改变颜色、纹理、参数等等。
+	UMaterialInstanceDynamic* DynamicDissolveMatInstance; //在运行时动态创建的材质实例。它可以用于在游戏或应用程序中即时修改材质的属性，例如改变颜色、纹理、参数等等。
 	UPROPERTY(VisibleAnywhere, Category = Elim)
-		UMaterialInstance* DissolveMatInstance; //溶解材质实例，适合在需要多次使用相同材质但有不同属性的场景中使用，可在蓝图里使用
+	UMaterialInstance* DissolveMatInstance; //溶解材质实例，适合在需要多次使用相同材质但有不同属性的场景中使用，可在蓝图里使用
 
 	/* team color */
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UMaterialInstance* OriginalMaterial;
+	UMaterialInstance* OriginalMaterial;
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UMaterialInstance* RedDissolveMatInst;
+	UMaterialInstance* RedDissolveMatInst;
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UMaterialInstance* RedMaterial;
+	UMaterialInstance* RedMaterial;
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UMaterialInstance* BlueDissolveMatInst;
+	UMaterialInstance* BlueDissolveMatInst;
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UMaterialInstance* BlueMaterial;
+	UMaterialInstance* BlueMaterial;
 
 	/* 淘汰回收机器人特效 */
 	UPROPERTY(EditAnywhere, Category = Elim)
-		class USoundCue* ElimBotSound;
+	class USoundCue* ElimBotSound;
 	UPROPERTY(EditAnywhere, Category = Elim)
-		UParticleSystem* ElimBotEffect;
+	UParticleSystem* ElimBotEffect;
 	UPROPERTY(VisibleAnywhere, Category = Elim)
-		UParticleSystemComponent* ElimBotComponent;
+	UParticleSystemComponent* ElimBotComponent;
 
 	/* 皇冠 */
 	UPROPERTY(EditAnywhere)
-		class UNiagaraSystem* CrownSystem;
+	class UNiagaraSystem* CrownSystem;
 	UPROPERTY(EditAnywhere)
-		class UNiagaraComponent* CrownComponent;
+	class UNiagaraComponent* CrownComponent;
 
 	/* 手榴弹 */
 	UPROPERTY(VisibleAnywhere)
-		UStaticMeshComponent* AttachedGrenade;
+	UStaticMeshComponent* AttachedGrenade;
 
 	/* 出场默认武器 */
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<AWeapon> DefaultWeaponClass;
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 	/* 用于服务器倒带的角色命中框box */
 	UPROPERTY(EditAnywhere)
-		class UBoxComponent* head;
+	class UBoxComponent* head;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* pelvis;
+	UBoxComponent* pelvis;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* spine_02;
+	UBoxComponent* spine_02;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* spine_03;
+	UBoxComponent* spine_03;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* upperarm_l;
+	UBoxComponent* upperarm_l;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* upperarm_r;
+	UBoxComponent* upperarm_r;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* lowerarm_l;
+	UBoxComponent* lowerarm_l;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* lowerarm_r;
+	UBoxComponent* lowerarm_r;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* hand_l;
+	UBoxComponent* hand_l;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* hand_r;
+	UBoxComponent* hand_r;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* blanket;
+	UBoxComponent* blanket;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* backpack;
+	UBoxComponent* backpack;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* thigh_l;
+	UBoxComponent* thigh_l;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* thigh_r;
+	UBoxComponent* thigh_r;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* calf_l;
+	UBoxComponent* calf_l;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* calf_r;
+	UBoxComponent* calf_r;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* foot_l;
+	UBoxComponent* foot_l;
 	UPROPERTY(EditAnywhere)
-		UBoxComponent* foot_r;
+	UBoxComponent* foot_r;
 	UPROPERTY()
-		TMap<FName, UBoxComponent*> HitCollisionBoxs;
+	TMap<FName, UBoxComponent*> HitCollisionBoxs;
 
 	UPROPERTY()
-		class ABlasterGameMode* BlasterGameMode;
+	class ABlasterGameMode* BlasterGameMode;
 	UPROPERTY()
-		class ABlasterPlayerController* BlasterPlayerController;
+	class ABlasterPlayerController* BlasterPlayerController;
 	UPROPERTY()
-		class ABlasterPlayerState* BlasterPlayerState;
+	class ABlasterPlayerState* BlasterPlayerState;
 
 	/// <summary>
 	/// 禁止游戏输入
 	/// </summary>
 	UPROPERTY(Replicated)
-		bool bDisableGameplay = false;
+	bool bDisableGameplay = false;
 
 	/// <summary>
 	/// 退出当前游戏
@@ -317,7 +317,7 @@ protected:
 	/// <param name="InstigatorController">造成伤害的控制器</param>
 	/// <param name="DamageCauser">造成伤害的对象</param>
 	UFUNCTION()
-		void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
 
 public:
@@ -378,24 +378,24 @@ public:
 	/// </summary>
 	/// <param name="bPlayerLeftGame">是否是退出游戏</param>
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastElim(bool bPlayerLeftGame);
+	void MulticastElim(bool bPlayerLeftGame);
 
 	/// <summary>
 	/// 要离开游戏，通知server
 	/// </summary>
 	UFUNCTION(Server, Reliable)
-		void ServerLeavaGame();
+	void ServerLeavaGame();
 
 	/// <summary>
 	/// 设置第一名的状态
 	/// </summary>
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastGainedTheLead();
+	void MulticastGainedTheLead();
 	/// <summary>
 	/// 失去第一位置
 	/// </summary>
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastLostTheLead();
+	void MulticastLostTheLead();
 
 	// 设置队伍材质颜色
 	void SetTeamColor(ETeam Team);
@@ -430,19 +430,19 @@ private:
 	/// 当 OverlappingWeapon 变量在客户端上更新时（服务通知客户端更新），将自动调用该回调函数进行处理
 	/// </summary>
 	UFUNCTION()
-		void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 	/// <summary>
 	/// 同步CurHealth
 	/// </summary>
 	/// <param name="LastHealth">上一次的血量</param>
 	UFUNCTION()
-		void OnRep_CurHealth(float LastHealth);
+	void OnRep_CurHealth(float LastHealth);
 	/// <summary>
 	/// 同步护盾值
 	/// </summary>
 	/// <param name="LastShield">上一次的护盾值</param>
 	UFUNCTION()
-		void OnRep_CurShield(float LastShield);
+	void OnRep_CurShield(float LastShield);
 
 	/// <summary>
 	/// 在客户端调用该函数时实际上会发送一个 RPC 请求到服务器，请求服务器执行其实现版本=ServerEquipBtnPressed_Implementation。
@@ -465,7 +465,7 @@ private:
 	/// </summary>
 	/// <param name="DissloveVal"></param>
 	UFUNCTION()
-		void UpdataDissloveMaterial(float DissloveVal);
+	void UpdataDissloveMaterial(float DissloveVal);
 	/// <summary>
 	/// 开启溶解
 	/// </summary>

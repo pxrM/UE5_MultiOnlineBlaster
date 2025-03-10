@@ -38,27 +38,27 @@ protected:
 
 private:
 	UPROPERTY()
-		class ABlasterCharacter* Character;
+	class ABlasterCharacter* Character;
 	UPROPERTY()
-		class ABlasterPlayerController* Controller;
+	class ABlasterPlayerController* Controller;
 	UPROPERTY()
-		class ABlasterHUD* HUD;
+	class ABlasterHUD* HUD;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
-		class AWeapon* EquippedWeapon; //当前装备的武器
+	class AWeapon* EquippedWeapon; //当前装备的武器
 
 	UPROPERTY(ReplicatedUsing = OnRep_SecsondaryWeapon)
-		AWeapon* SecondaryWeapon; //第二把武器
+	AWeapon* SecondaryWeapon; //第二把武器
 
 	UPROPERTY(ReplicatedUsing = OnRep_Aiming)
-		bool bAiming = false; //是否正在瞄准
+	bool bAiming = false; //是否正在瞄准
 	bool bAimBtnPressed = false;
 
 	UPROPERTY(EditAnywhere)
-		float BaseWalkSpeed; //原始速度
+	float BaseWalkSpeed; //原始速度
 
 	UPROPERTY(EditAnywhere)
-		float AimWalkSpeed; //瞄准时速度
+	float AimWalkSpeed; //瞄准时速度
 
 	bool bFireBtnPressed; //是否按下开火键
 
@@ -75,9 +75,9 @@ private:
 	float DefultFOV;	//没瞄准时的默认视野
 	float CurrentFOV;	//当前视野
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float ZoomedFOV = 30.f;  //瞄准时的放大视野
+	float ZoomedFOV = 30.f;  //瞄准时的放大视野
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float ZoomInterpSpeed = 20.f;  //瞄准时的视野缩放速度
+	float ZoomInterpSpeed = 20.f;  //瞄准时的视野缩放速度
 
 	/*	 自动开火	*/
 	FTimerHandle FireTimer;	//开火计时器
@@ -86,40 +86,40 @@ private:
 	bool bLocallyReloading = false; //本地变量，用来处理高延迟问题，是否在更换弹夹中
 	TMap<EWeaponType, int32> CarriedAmmoMap; //不同武器类型的携带弹药量
 	UPROPERTY(ReplicatedUsing = OnRep_CurWeaponCarriedAmmo)
-		int32 CurWeaponCarriedAmmo;  //携带弹药量（角色当前武器类型的弹药数量）
+	int32 CurWeaponCarriedAmmo;  //携带弹药量（角色当前武器类型的弹药数量）
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingARAmmo = 30;	//用来初始化步枪武器的携带弹药量
+	int32 StartingARAmmo = 30;	//用来初始化步枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingRocketAmmo = 0;	//用来初始化火箭武器的携带弹药量
+	int32 StartingRocketAmmo = 0;	//用来初始化火箭武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingPistolAmmo = 0;	//用来初始化手枪武器的携带弹药量
+	int32 StartingPistolAmmo = 0;	//用来初始化手枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingSMGAmmo = 0;	//用来初始化冲锋枪武器的携带弹药量
+	int32 StartingSMGAmmo = 0;	//用来初始化冲锋枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingShotgunAmmo = 0;	//用来初始化霰弹枪武器的携带弹药量
+	int32 StartingShotgunAmmo = 0;	//用来初始化霰弹枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingSniperAmmo = 0;	//用来初始化狙击步枪武器的携带弹药量
+	int32 StartingSniperAmmo = 0;	//用来初始化狙击步枪武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 StartingGrenadeAmmo = 0;	//用来初始化榴弹武器的携带弹药量
+	int32 StartingGrenadeAmmo = 0;	//用来初始化榴弹武器的携带弹药量
 	UPROPERTY(EditAnywhere, Category = Combat)
-		int32 MaxCarriedAmmo = 500; //最大武器弹药携带量，这里适用于每种武器
+	int32 MaxCarriedAmmo = 500; //最大武器弹药携带量，这里适用于每种武器
 	UPROPERTY(ReplicatedUsing = OnRep_Grenades)
-		int32 Grenades = 4; //当前拥有的手榴弹数量
+	int32 Grenades = 4; //当前拥有的手榴弹数量
 	UPROPERTY(EditAnywhere)
-		int32 MaxGrenades; //最大拥有手榴弹数量
+	int32 MaxGrenades; //最大拥有手榴弹数量
 
 	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
-		ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
+	ECombatState CombatState = ECombatState::ECS_Unoccupied; //战斗状态
 
 	UPROPERTY()
-		AWeapon* TheFlag;
+	AWeapon* TheFlag;
 	UPROPERTY(ReplicatedUsing = OnRep_HoldingTheFlag)
-		bool bHoldingTheFlag = false; //是否持有旗帜
+	bool bHoldingTheFlag = false; //是否持有旗帜
 
 
 protected:
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<class AProjectile> GrenadeClass; //投掷弹药类-手榴弹
+	TSubclassOf<class AProjectile> GrenadeClass; //投掷弹药类-手榴弹
 
 
 public:
@@ -143,49 +143,49 @@ public:
 	/// 在动画蒙太奇中添加动画事件调用Game/Blueprints/Character/Animation/ReloadMag
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void FinishReloadMag();
+	void FinishReloadMag();
 
 	/// <summary>
 	/// 交换武器蒙太奇播放完成
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void FinishSwapMontage();
+	void FinishSwapMontage();
 	/// <summary>
 	/// 交换武器蒙太奇播放到附加武器阶段
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void FinishSwapAttachWeapon();
+	void FinishSwapAttachWeapon();
 
 	/// <summary>
 	/// 开火
 	/// </summary>
 	/// <param name="bPressed"></param>
 	UFUNCTION()
-		void FireBtnPressed(bool bPressed);
+	void FireBtnPressed(bool bPressed);
 
 	/// <summary>
 	/// 霰弹枪更换弹夹时动画填装子弹的回调
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void ShotgunShellReload();
+	void ShotgunShellReload();
 	void AnimJumpToShotgunEnd();
 
 	/// <summary>
 	/// 投掷手榴弹蒙太奇动画结束
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void ThrowGrenadeFinished();
+	void ThrowGrenadeFinished();
 	/// <summary>
 	/// 投掷手榴弹蒙太奇动画播放至扔出手榴弹时刻
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
-		void LaunchGrenade();
+	void LaunchGrenade();
 	/// <summary>
 	/// 生成手榴弹
 	/// </summary>
 	/// <param name="Target">FVector_NetQuantize提供在网络传输中压缩和序列化三维向量功能，提高网络传输性能。</param>
 	UFUNCTION(Server, Reliable)
-		void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
 
 	/// <summary>
 	/// 拾取子弹
@@ -198,14 +198,14 @@ public:
 protected:
 	void SetAiming(bool bIsAiming);
 	UFUNCTION(Server, Reliable)
-		void ServerSetAiming(bool bIsAiming);
+	void ServerSetAiming(bool bIsAiming);
 	UFUNCTION()
-		void OnRep_Aiming();
+	void OnRep_Aiming();
 
 	UFUNCTION()
-		void OnRep_EquippedWeapon();
+	void OnRep_EquippedWeapon();
 	UFUNCTION()
-		void OnRep_SecsondaryWeapon();
+	void OnRep_SecsondaryWeapon();
 	void DropEquippedWeapon();  //使当前装备的武器掉落
 	void AttachActorToRightHand(AActor* ActorToAttach);	//附加actor到角色的右手
 	void AttachActorToLeftHand(AActor* ActorToAttach);	//附加actor到角色的左手
@@ -225,19 +225,19 @@ protected:
 		该结构体可以将 FVector 的值在网络传输时进行压缩，使数据大小更小，减少网络负载和传输延迟。
 		FVector_NetQuantize 支持每个分量最多使用 20 位二进制数，在精度和实时性之间做了一个平衡。*/
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerFire(const FVector_NetQuantize& TraceHitTarget, float FireDelay);
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget, float FireDelay);
 	//标记为 NetMulticast 和 Reliable。这意味着该函数将在各个客户端上进行调用，并且该函数的执行结果将从客户端同步到服务器和其他客户端。
 	//在多人游戏中，此函数通常用于向所有客户端广播某些操作，例如在所有客户端上生成爆炸效果。
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets, float FireDelay);
+	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets, float FireDelay);
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	void MulticastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
 
 	UFUNCTION(Server, Reliable)
-		void ServerReloadMag();	//服务器调用
+	void ServerReloadMag();	//服务器调用
 	void HandleReloadMag();	//服务器和客户端调用
 	//更换弹匣后子弹的变化数量
 	int32 AmountToReloadMag();
@@ -250,7 +250,7 @@ protected:
 	//投掷手榴弹
 	void ThrowGrenade();
 	UFUNCTION(Server, Reliable)
-		void ServerThrowGrenade();
+	void ServerThrowGrenade();
 	void ShowAttachedGrenade(bool bShowGrenade);
 
 	//装备主武器
@@ -280,17 +280,17 @@ private:
 	void UpdateShotgunAmmoValues();
 
 	UFUNCTION()
-		void OnRep_CurWeaponCarriedAmmo();
+	void OnRep_CurWeaponCarriedAmmo();
 
 	UFUNCTION()
-		void OnRep_CombatState();
+	void OnRep_CombatState();
 
 	UFUNCTION()
-		void OnRep_Grenades();
+	void OnRep_Grenades();
 	void UpdateHUDGrenades();
 
 	UFUNCTION()
-		void OnRep_HoldingTheFlag();
+	void OnRep_HoldingTheFlag();
 
 
 public:

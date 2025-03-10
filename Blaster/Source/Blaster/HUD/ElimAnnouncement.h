@@ -13,14 +13,14 @@ UCLASS()
 class BLASTER_API UElimAnnouncement : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
 	void SetElimAnnouncementText(FString AttackerName, FString VictimName);
 
 public:
 	UPROPERTY(meta = (BindWidget))
-		class UHorizontalBox* AnnouncementBox;
+	class UHorizontalBox* AnnouncementBox;
 	UPROPERTY(meta = (BindWidget))
-		class UTextBlock* AnnouncementText;
-		
+	class UTextBlock* AnnouncementText;
+
 };

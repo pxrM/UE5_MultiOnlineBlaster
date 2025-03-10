@@ -32,11 +32,11 @@ private:
 	/// ʰȡ���ӵ�����
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		int32 AmmoAmount = 30;
+	int32 AmmoAmount = 30;
 	/// <summary>
 	/// ʰȡ����
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		EWeaponType WeaponType;
+	EWeaponType WeaponType;
 
 };

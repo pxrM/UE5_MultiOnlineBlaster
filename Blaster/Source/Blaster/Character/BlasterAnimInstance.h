@@ -36,72 +36,72 @@ private:
 	*/
 
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-		class ABlasterCharacter* BlasterCharacter;	//角色
+	class ABlasterCharacter* BlasterCharacter;	//角色
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		float Speed;  //速度
+	float Speed;  //速度
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsInAir;	//是否在空中
+	bool bIsInAir;	//是否在空中
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-		bool bIsAccelerating;	//是否正在加速移动
+	bool bIsAccelerating;	//是否正在加速移动
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bWeaponEquipped;	//是否装备了武器
+	bool bWeaponEquipped;	//是否装备了武器
 	UPROPERTY()
-		class AWeapon* EquippedWeapon;
+	class AWeapon* EquippedWeapon;
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bIsCrouched;	//是否蹲下
+	bool bIsCrouched;	//是否蹲下
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bIsAiming;	  //是否在瞄准
+	bool bIsAiming;	  //是否在瞄准
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		float YawOffset;	  //控制混合动画EquippedRun y
+	float YawOffset;	  //控制混合动画EquippedRun y
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		float Lean;	  //控制混合动画EquippedRun x
+	float Lean;	  //控制混合动画EquippedRun x
 
 	FRotator DeltaRotation;
 	FRotator CharacterRotation;	//当前帧的旋转角度值
 	FRotator CharacterRotationLastFrame; //上一帧的旋转角度值
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		float AO_Yaw; //瞄准偏移量 左右
+	float AO_Yaw; //瞄准偏移量 左右
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		float AO_Pitch; //瞄准偏移量 上下
+	float AO_Pitch; //瞄准偏移量 上下
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		FTransform LeftHandTransform;	//左手的变换位置，抓枪用
+	FTransform LeftHandTransform;	//左手的变换位置，抓枪用
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		ETurningInPlace TurningInPlace;
+	ETurningInPlace TurningInPlace;
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		FRotator RightHandRotation;	//右手骨骼旋转
+	FRotator RightHandRotation;	//右手骨骼旋转
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bLocalControlled; //是否是本地控制器
+	bool bLocalControlled; //是否是本地控制器
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bRotateRootBone; //是否旋转根骨骼
+	bool bRotateRootBone; //是否旋转根骨骼
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bElimmed; //是否淘汰
+	bool bElimmed; //是否淘汰
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bUseFABRIK; //是否启用左手ik
+	bool bUseFABRIK; //是否启用左手ik
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bUseAimOffsets; //是否使用瞄准偏移
+	bool bUseAimOffsets; //是否使用瞄准偏移
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bTransformRightHand; //是否启用右手变换
+	bool bTransformRightHand; //是否启用右手变换
 
 	UPROPERTY(BlueprintReadOnly, Category = Equip, meta = (AllowPrivateAccess = "true"))
-		bool bHoldingTheFlag; //是否持有旗帜
+	bool bHoldingTheFlag; //是否持有旗帜
 
 };

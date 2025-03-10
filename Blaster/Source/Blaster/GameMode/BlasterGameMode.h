@@ -71,17 +71,17 @@ public:
 	/// 预热时间，结束后开始StartMatch
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-		float WarmupTime = 10.f;
+	float WarmupTime = 10.f;
 	/// <summary>
 	/// 比赛时长
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-		float MatchTime = 120.f;
+	float MatchTime = 120.f;
 	/// <summary>
 	/// 冷却时长
 	/// </summary>
 	UPROPERTY(EditDefaultsOnly)
-		float CooldownTime = 10.f;
+	float CooldownTime = 10.f;
 	/// <summary>
 	/// 是否是团队模式
 	/// </summary>

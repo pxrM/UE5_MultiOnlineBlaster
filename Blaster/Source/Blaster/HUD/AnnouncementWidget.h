@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,7 +7,7 @@
 #include "AnnouncementWidget.generated.h"
 
 /**
- * ×´Ì¬¹«¸æ
+ * 状态公告
  */
 UCLASS()
 class BLASTER_API UAnnouncementWidget : public UUserWidget
@@ -16,9 +16,11 @@ class BLASTER_API UAnnouncementWidget : public UUserWidget
 
 public:
 	UPROPERTY(meta = (BindWidget))
-		class UTextBlock* AnnouncementText;
+	class UTextBlock* AnnouncementText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* WarmupTimeText;
+	UTextBlock* WarmupTimeText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* InfoText;
+	UTextBlock* InfoText;
 };

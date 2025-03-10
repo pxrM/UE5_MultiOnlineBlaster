@@ -58,7 +58,7 @@ public:
 	/// </summary>
 	/// <param name="MsgToRemove">要删除的umg</param>
 	UFUNCTION()
-		void ElimAnnouncementTimerFinish(UElimAnnouncement* MsgToRemove);
+	void ElimAnnouncementTimerFinish(UElimAnnouncement* MsgToRemove);
 
 public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
@@ -79,40 +79,40 @@ private:
 	FHUDPackage HUDPackage;
 
 	UPROPERTY()
-		class APlayerController* OwningPlayerCtr;
+	class APlayerController* OwningPlayerCtr;
 
 	/// <summary>
 	/// 准心最大张开速度
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float MaxCrosshairSpread = 16.f;
+	float MaxCrosshairSpread = 16.f;
 
 	/// <summary>
 	/// 淘汰公告类
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
+	TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
 
 	/// <summary>
 	/// 淘汰公告item的持续展示时间
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float ElimAnnouncementTime = 2.5f;
+	float ElimAnnouncementTime = 2.5f;
 
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		TSubclassOf<class UUserWidget> CharacterOverlayClass;
+	TSubclassOf<class UUserWidget> CharacterOverlayClass;
 	UPROPERTY()
-		class UCharacterOverlayWidget* CharacterOverlayWidget;
+	class UCharacterOverlayWidget* CharacterOverlayWidget;
 
 	UPROPERTY(EditAnywhere, Category = "Announcements")
-		TSubclassOf<class UUserWidget> AnnouncementClass;
+	TSubclassOf<class UUserWidget> AnnouncementClass;
 
 	UPROPERTY()
-		class UAnnouncementWidget* AnnouncementWidget;
+	class UAnnouncementWidget* AnnouncementWidget;
 
 	UPROPERTY()
-		TArray<UElimAnnouncement*> ElimMessages;
+	TArray<UElimAnnouncement*> ElimMessages;
 
 };

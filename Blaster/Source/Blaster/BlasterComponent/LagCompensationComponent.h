@@ -22,17 +22,17 @@ public:
 	/// 位置
 	/// </summary>
 	UPROPERTY()
-		FVector Location;
+	FVector Location;
 	/// <summary>
 	/// 旋转
 	/// </summary>
 	UPROPERTY()
-		FRotator Rotation;
+	FRotator Rotation;
 	/// <summary>
 	/// 盒子范围
 	/// </summary>
 	UPROPERTY()
-		FVector BoxExtent;
+	FVector BoxExtent;
 };
 
 /// <summary>
@@ -47,17 +47,17 @@ public:
 	/// 存储时间
 	/// </summary>
 	UPROPERTY()
-		float Time;
+	float Time;
 	/// <summary>
 	/// 角色不同部位所对应的box信息
 	/// </summary>
 	UPROPERTY()
-		TMap<FName, FBoxInformation> HitBoxInfo;
+	TMap<FName, FBoxInformation> HitBoxInfo;
 	/// <summary>
 	/// 角色指针
 	/// </summary>
 	UPROPERTY()
-		ABlasterCharacter* Character;
+	ABlasterCharacter* Character;
 };
 
 /// <summary>
@@ -72,12 +72,12 @@ public:
 	/// 是否命中
 	/// </summary>
 	UPROPERTY()
-		bool bHitConfirmed;
+	bool bHitConfirmed;
 	/// <summary>
 	/// 是否爆头
 	/// </summary>
 	UPROPERTY()
-		bool bHeadShot;
+	bool bHeadShot;
 };
 
 /// <summary>
@@ -92,12 +92,12 @@ public:
 	/// 每个角色的头部击中次数
 	/// </summary>
 	UPROPERTY()
-		TMap<ABlasterCharacter*, uint32> HeadShots;
+	TMap<ABlasterCharacter*, uint32> HeadShots;
 	/// <summary>
 	/// 每个角色的身体击中次数
 	/// </summary>
 	UPROPERTY()
-		TMap<ABlasterCharacter*, uint32> BodyShots;
+	TMap<ABlasterCharacter*, uint32> BodyShots;
 };
 
 
@@ -278,12 +278,12 @@ public:
 	/// <param name="HitTime">命中时间</param>
 	/// <param name="DamageCauser">伤害原因</param>
 	UFUNCTION(Server, Reliable)
-		void ServerScoreRequest(
-			ABlasterCharacter* HitCharacter,
-			const FVector_NetQuantize& TraceStart,
-			const FVector_NetQuantize& HitLocation,
-			float HitTime
-		);
+	void ServerScoreRequest(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation,
+		float HitTime
+	);
 	/// <summary>
 	/// （射弹类武器）向服务器请求攻击结果，获取分数
 	/// </summary>
@@ -292,12 +292,12 @@ public:
 	/// <param name="InitialVelocity"></param>
 	/// <param name="HitTime"></param>
 	UFUNCTION(Server, Reliable)
-		void ProjectileServerScoreRequest(
-			ABlasterCharacter* HitCharacter,
-			const FVector_NetQuantize& TraceStart,
-			const FVector_NetQuantize100& InitialVelocity,
-			float HitTime
-		);
+	void ProjectileServerScoreRequest(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
 	/// <summary>
 	/// （霰弹枪武器）向服务器请求攻击结果，获取分数
 	/// </summary>
@@ -306,24 +306,24 @@ public:
 	/// <param name="HitLocations"></param>
 	/// <param name="HitTime"></param>
 	UFUNCTION(Server, Reliable)
-		void ShotgunServerScoreRequest(
-			const TArray<ABlasterCharacter*>& HitCharacters,
-			const FVector_NetQuantize& TraceStart,
-			const TArray<FVector_NetQuantize>& HitLocations,
-			float HitTime
-		);
+	void ShotgunServerScoreRequest(
+		const TArray<ABlasterCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations,
+		float HitTime
+	);
 
 
 private:
 	UPROPERTY()
-		ABlasterCharacter* Character;
+	ABlasterCharacter* Character;
 	UPROPERTY()
-		class ABlasterPlayerController* Controller;
+	class ABlasterPlayerController* Controller;
 	/// <summary>
 	/// 存储4秒的帧数据，时间太长和太短都会影响体验
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float MaxRecordTime = 4.f;
+	float MaxRecordTime = 4.f;
 	/// <summary>
 	/// 存储《MaxRecordTime》时间内发生的帧数据，使用双向链表方便从链表头尾节点执行添加和移除操作
 	/// </summary>

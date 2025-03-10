@@ -53,52 +53,52 @@ private:
 	/// 武器网格
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-		USkeletalMeshComponent* WeaponMesh;
+	USkeletalMeshComponent* WeaponMesh;
 	/// <summary>
 	/// 角色触发区域
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-		class USphereComponent* AreaSphere;
+	class USphereComponent* AreaSphere;
 	/// <summary>
 	/// 武器状态
 	/// </summary>
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
-		EWeaponState WeaponState;
+	EWeaponState WeaponState;
 	/// <summary>
 	/// 拾取 umg
 	/// </summary>
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-		class UWidgetComponent* PickupWidget;
+	class UWidgetComponent* PickupWidget;
 	/// <summary>
 	/// 开火动画资源
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		class UAnimationAsset* FireAnimation;
+	class UAnimationAsset* FireAnimation;
 	/// <summary>
 	/// 开火时产生的子弹壳类
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		TSubclassOf<class ACasing> CasingClass;
+	TSubclassOf<class ACasing> CasingClass;
 	/// <summary>
 	/// 弹夹容量中剩余子弹数量
 	/// </summary>
 	UPROPERTY(EditAnywhere, /*ReplicatedUsing = OnRep_AmmoNum,*/ Category = "Weapon Properties")
-		int32 AmmoNum;
+	int32 AmmoNum;
 	/// <summary>
 	/// 弹夹容量
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		int32 MagCapacity;
+	int32 MagCapacity;
 	/// <summary>
 	/// 武器类型
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		EWeaponType WeaponType;
+	EWeaponType WeaponType;
 	/// <summary>
 	/// 武器开火子弹类型
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-		EFireType FireType;
+	EFireType FireType;
 	/// <summary>
 	/// 客户端预测，需要存储最后的更新和一个请求服务器的消息序列号，
 	/// 当服务器回消息时，检查序列号，并检查有多少未处理的请求，然后处理更改。
@@ -110,48 +110,48 @@ private:
 	/// 所属队伍
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		ETeam Team;
+	ETeam Team;
 
 
 public:
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
-		class UTexture2D* CrosshairsCenter; // 十字瞄准贴图  中
+	class UTexture2D* CrosshairsCenter; // 十字瞄准贴图  中
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
-		UTexture2D* CrosshairsLeft;			// 十字瞄准贴图  左
+	UTexture2D* CrosshairsLeft;			// 十字瞄准贴图  左
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
-		UTexture2D* CrosshairsRight;		// 十字瞄准贴图  右
+	UTexture2D* CrosshairsRight;		// 十字瞄准贴图  右
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
-		UTexture2D* CrosshairsTop;			// 十字瞄准贴图  上
+	UTexture2D* CrosshairsTop;			// 十字瞄准贴图  上
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
-		UTexture2D* CrosshairsBottom;		// 十字瞄准贴图  下
+	UTexture2D* CrosshairsBottom;		// 十字瞄准贴图  下
 
 	/// <summary>
 	/// 瞄准缩放
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Zoom)
-		float ZoomedFOV = 30.f;
+	float ZoomedFOV = 30.f;
 	/// <summary>
 	/// 缩放速度
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Zoom)
-		float ZoomInterpSpeed = 20.f;
+	float ZoomInterpSpeed = 20.f;
 
 	/// <summary>
 	/// 是否自动开火
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Combat)
-		bool bAutomatic = true;
+	bool bAutomatic = true;
 	/// <summary>
 	/// 开火间隔时间
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Combat)
-		float FireDelay = 0.15f;
+	float FireDelay = 0.15f;
 
 	/// <summary>
 	/// 装备武器音效
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Combat)
-		class USoundCue* EquipSouund;
+	class USoundCue* EquipSouund;
 
 	/// <summary>
 	/// 玩家淘汰时是否销毁武器，一般只对玩家的默认武器生效
@@ -162,43 +162,43 @@ public:
 	/// 是否使用分散子弹
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-		bool bUseSactter = false;
+	bool bUseSactter = false;
 
 
 protected:
 	UPROPERTY()
-		class ABlasterCharacter* BlasterOwnerCharacter;
+	class ABlasterCharacter* BlasterOwnerCharacter;
 	UPROPERTY()
-		class ABlasterPlayerController* BlasterOwnerController;
+	class ABlasterPlayerController* BlasterOwnerController;
 
 	/* 分散子弹 */
 	/// <summary>
 	/// 分散球体和枪口的距离
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-		float DistanceToSphere = 800.f;
+	float DistanceToSphere = 800.f;
 	/// <summary>
 	/// 分散球体半径
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
-		float SphereRadius = 75.f;
+	float SphereRadius = 75.f;
 
 	/// <summary>
 	/// 武器伤害
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float Damage = 20.f;
+	float Damage = 20.f;
 	/// <summary>
 	/// 爆头伤害
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		float HeadShotDamage = 40.f;
+	float HeadShotDamage = 40.f;
 
 	/// <summary>
 	/// 是否启用服务器倒带
 	/// </summary>
 	UPROPERTY(Replicated, EditAnywhere)
-		bool bUseServerSideRewind = false;
+	bool bUseServerSideRewind = false;
 
 
 protected:
@@ -212,24 +212,24 @@ protected:
 	/// <param name="bFromSweep">如果由移动/扫描操作引起重叠，则为 true；如果由物理引擎直接计算引起重叠，则为 false。</param>
 	/// <param name="SweepResult">描述重叠发生的详细信息，包括碰撞的位置、法向量等。</param>
 	UFUNCTION()
-		virtual void OnSphereOverlap(
-			UPrimitiveComponent* OverlappedComponent,
-			AActor* OtherActor,
-			UPrimitiveComponent* OtherComp,
-			int32 OtherBodyIndex,
-			bool bFromSweep,
-			const FHitResult& SweepResult
-		);
+	virtual void OnSphereOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 	/// <summary>
 	/// 退出重叠
 	/// </summary>
 	UFUNCTION()
-		virtual void OnSphereEndOerlap(
-			UPrimitiveComponent* OverlappedComponent,
-			AActor* OtherActor,
-			UPrimitiveComponent* OtherComp,
-			int32 OtherBodyIndex
-		);
+	virtual void OnSphereEndOerlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
+	);
 
 	/* 设置武器状态 */
 	virtual void OnSetWeaponState();
@@ -275,7 +275,7 @@ public:
 
 private:
 	UFUNCTION()
-		void OnRep_WeaponState();
+	void OnRep_WeaponState();
 	//UFUNCTION()
 	//	void OnRep_AmmoNum();
 	void SpeedRound();
@@ -284,12 +284,12 @@ private:
 	/// </summary>
 	/// <param name="ServerAmmo"></param>
 	UFUNCTION(Client, Reliable)
-		void ClientUpdateAmmo(int32 ServerAmmo);
+	void ClientUpdateAmmo(int32 ServerAmmo);
 	/// <summary>
 	/// 服务器通知客户端添加子弹数量
 	/// </summary>
 	/// <param name="AmmoToAdd"></param>
 	UFUNCTION(Client, Reliable)
-		void ClientAddAmmo(int32 AmmoToAdd);
+	void ClientAddAmmo(int32 AmmoToAdd);
 
 };

@@ -30,19 +30,21 @@ protected:
 	void SpawnPickup();
 	void SpawnPickupTimerFinished();
 	UFUNCTION()
-		void StartSpawnPickupTimer(AActor* DestroyedActor);
+	void StartSpawnPickupTimer(AActor* DestroyedActor);
 
 protected:
 	UPROPERTY(EditAnywhere)
-		TArray<TSubclassOf<class APickup>> PickupClasses;
+	TArray<TSubclassOf<class APickup>> PickupClasses;
 	UPROPERTY()
-		APickup* SpawnedPickup;
+	APickup* SpawnedPickup;
 
 private:
 	FTimerHandle SpawnPickupTimer;
+
 	UPROPERTY(EditAnywhere)
-		float SpawnPickupTimeMin;
+	float SpawnPickupTimeMin;
+
 	UPROPERTY(EditAnywhere)
-		float SpawnPickupTimeMax;
+	float SpawnPickupTimeMax;
 
 };

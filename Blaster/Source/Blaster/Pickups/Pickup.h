@@ -14,8 +14,8 @@ UCLASS()
 class BLASTER_API APickup : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	APickup();
 	// Called every frame
@@ -37,30 +37,30 @@ protected:
 	/// <param name="bFromSweep">如果由移动/扫描操作引起重叠，则为 true；如果由物理引擎直接计算引起重叠，则为 false。</param>
 	/// <param name="SweepResult">描述重叠发生的详细信息，包括碰撞的位置、法向量等。</param>
 	UFUNCTION()
-		virtual void OnSphereOverlap(
-			UPrimitiveComponent* OverlappedComponent,
-			AActor* OtherActor,
-			UPrimitiveComponent* OtherComp,
-			int32 OtherBodyIndex,
-			bool bFromSweep,
-			const FHitResult& SweepResult
-		);
+	virtual void OnSphereOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 
 
-private:	
+private:
 	UPROPERTY(EditAnywhere)
-		class USphereComponent* OverlapSphere;
+	class USphereComponent* OverlapSphere;
 	UPROPERTY(EditAnywhere)
-		class USoundCue* PickupSound;
+	class USoundCue* PickupSound;
 	UPROPERTY(EditAnywhere)
-		UStaticMeshComponent* PickupMesh;
+	UStaticMeshComponent* PickupMesh;
 
 	UPROPERTY(EditAnywhere)
-		float BaseTurnRate = 45.f; //旋转速度
+	float BaseTurnRate = 45.f; //旋转速度
 	UPROPERTY(VisibleAnywhere)
-		class UNiagaraComponent* PickupEffectComponent; //场景展示特效
+	class UNiagaraComponent* PickupEffectComponent; //场景展示特效
 	UPROPERTY(EditAnywhere)
-		class UNiagaraSystem* PickupDesEffect; //销毁时产生的特效
+	class UNiagaraSystem* PickupDesEffect; //销毁时产生的特效
 
 	FTimerHandle BindOverlapTimer;
 	float BindOverlapTime = 0.25f;

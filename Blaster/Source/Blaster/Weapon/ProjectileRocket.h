@@ -26,13 +26,15 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere)
-		USoundCue* ProjectileLoop;
+	USoundCue* ProjectileLoop;
+
 	UPROPERTY()
-		UAudioComponent* ProjectileLoopComp;
+	UAudioComponent* ProjectileLoopComp;
+
 	UPROPERTY(EditAnywhere)
-		USoundAttenuation* LoopingSoundAttenuation; //声音衰减
+	USoundAttenuation* LoopingSoundAttenuation; //声音衰减
 
 	UPROPERTY(VisibleAnywhere)
-		class URocketMovementComponent* RocketMovementComponent;
+	class URocketMovementComponent* RocketMovementComponent;
 
 };

@@ -16,35 +16,49 @@ class BLASTER_API UCharacterOverlayWidget : public UUserWidget
 
 public:
 	UPROPERTY(meta = (BindWidget))
-		class UProgressBar* HealthBar;
+	class UProgressBar* HealthBar;
+
 	UPROPERTY(meta = (BindWidget))
-		class UTextBlock* HealthText;
+	class UTextBlock* HealthText;
+
 	UPROPERTY(meta = (BindWidget))
-		UProgressBar* ShieldBar;
+	UProgressBar* ShieldBar;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* ShieldText;
+	UTextBlock* ShieldText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* ScoreAmountText;
+	UTextBlock* ScoreAmountText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* DefeatsAmountText;
+	UTextBlock* DefeatsAmountText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* WeaponAmmoAmountText;
+	UTextBlock* WeaponAmmoAmountText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* CarriedAmmoAmountText;
+	UTextBlock* CarriedAmmoAmountText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* MatchCountdownText;
+	UTextBlock* MatchCountdownText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* GrenadesText;
+	UTextBlock* GrenadesText;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* RedTeamSocre;
+	UTextBlock* RedTeamSocre;
+
 	UPROPERTY(meta = (BindWidget))
-		UTextBlock* BlueTeamSocre;
+	UTextBlock* BlueTeamSocre;
+
 	UPROPERTY(meta = (BindWidget))
-		UWidget* TeamHorizontalBox;
+	UWidget* TeamHorizontalBox;
+
 	UPROPERTY(meta = (BindWidget))
-		class UImage* HighPingImage;
+	class UImage* HighPingImage;
+
 	//标记为 Transient，它不会被序列化和保存到磁盘上，而是只存在于运行时内存中。
 	//这意味着，每次重新启动游戏或重新加载关卡时，该属性都会被重置为默认值。
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
-		UWidgetAnimation* HighPingAnim;
+	UWidgetAnimation* HighPingAnim;
 };

@@ -72,14 +72,14 @@ protected:
 	/// </summary>
 	/// <param name="TimeOfClientRequest">客户端发送请求的时间</param>
 	UFUNCTION(Server, Reliable)
-		void ServerRequestServerTime(float TimeOfClientRequest);
+	void ServerRequestServerTime(float TimeOfClientRequest);
 	/// <summary>
 	/// 对ServerRequestServerTime请求的响应，获得服务器时间，该函数运行在客户端上
 	/// </summary>
 	/// <param name="TimeOfClientRequest">客户端发送请求的时间</param>
 	/// <param name="TimeServerReceivedRequest">服务器接收到客户端请求的时间</param>
 	UFUNCTION(Client, Reliable)
-		void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedRequest);
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedRequest);
 	/// <summary>
 	/// 检查是否要进行一次时间同步
 	/// </summary>
@@ -97,12 +97,12 @@ protected:
 	/// 服务器检查游戏匹配状态
 	/// </summary>
 	UFUNCTION(Server, Reliable)
-		void ServerCheckMatchState();
+	void ServerCheckMatchState();
 	/// <summary>
 	/// 客户端加入时通知一次游戏状态
 	/// </summary>
 	UFUNCTION(Client, Reliable)
-		void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
+	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
 	/// <summary>
 	/// 比赛开始设置
 	/// </summary>
@@ -131,7 +131,7 @@ protected:
 	void HighPingWarning();
 	void StopHigtPingWarning();
 	UFUNCTION(Server, Reliable)
-		void ServerReportPingStatus(bool bHighPing); //向server发送报告ping状态
+	void ServerReportPingStatus(bool bHighPing); //向server发送报告ping状态
 
 	/// <summary>
 	/// 显示退出游戏菜单
@@ -144,14 +144,14 @@ protected:
 	/// <param name="Attacker">攻击者</param>
 	/// <param name="Victim">受击者</param>
 	UFUNCTION(Client, Reliable)
-		void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
 
 private:
 	UFUNCTION()
-		void OnRep_MatchState();
+	void OnRep_MatchState();
 	UFUNCTION()
-		void OnRep_ShowTeamScores();
+	void OnRep_ShowTeamScores();
 
 
 protected:
@@ -163,7 +163,7 @@ protected:
 	/// 时间同步频率
 	/// </summary>
 	UPROPERTY(EditAnywhere, Category = Time)
-		float TimeSyncFrequency = 5.f;
+	float TimeSyncFrequency = 5.f;
 	/// <summary>
 	/// 时间同步运行时间
 	/// </summary>
@@ -172,12 +172,12 @@ protected:
 
 private:
 	UPROPERTY()
-		class ABlasterHUD* BlasterHUD;
+	class ABlasterHUD* BlasterHUD;
 	UPROPERTY()
-		class ABlasterGameMode* BlasterGameMode;
+	class ABlasterGameMode* BlasterGameMode;
 
 	UPROPERTY()
-		class UCharacterOverlayWidget* CharacterOverlayWidget;
+	class UCharacterOverlayWidget* CharacterOverlayWidget;
 
 	bool bInitializeHealth = false;
 	float HUDHealth;
@@ -197,7 +197,7 @@ private:
 	int32 HUDWeaponAmmo;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
-		FName MatchState; // 匹配状态
+	FName MatchState; // 匹配状态
 	float LevelStartingTime = 0.f;	// 关卡开始时间，每个玩家进入关卡的时间不一样，所以以服务器为准
 	float MatchTime = 0.f;	// 比赛时长，从gamemode中获取
 	float WarmupTime = 0.f;	 // 预热时长
@@ -205,24 +205,24 @@ private:
 	uint32 CountdownInt = 0;  // 上一次倒计时的时间，如果与当前不同则更新hud
 
 	UPROPERTY(ReplicatedUsing = OnRep_ShowTeamScores)
-		bool bShowTeamScores = false;
+	bool bShowTeamScores = false;
 
 	float HighPingRunningTime = 0.f;
 	float PingAnimRunningTime = 0.f;
 	UPROPERTY(EditAnywhere)
-		float CheckPingFrequency = 20.f; //间隔多久检测一次ping
+	float CheckPingFrequency = 20.f; //间隔多久检测一次ping
 	UPROPERTY(EditAnywhere)
-		float HighPingThreshold = 50.f; //超过这个值为高ping
+	float HighPingThreshold = 50.f; //超过这个值为高ping
 	UPROPERTY(EditAnywhere)
-		float HighPingDuration = 5.f; //高ping的一次展示持续时间
+	float HighPingDuration = 5.f; //高ping的一次展示持续时间
 
 	/*
 	* 返回主界面ui
 	*/
 	UPROPERTY(EditAnywhere, Category = HUD)
-		TSubclassOf<class UUserWidget> ReturnToMainWidget;
+	TSubclassOf<class UUserWidget> ReturnToMainWidget;
 	UPROPERTY()
-		class UReturnToMainMenu* ReturnToMainMenu;
+	class UReturnToMainMenu* ReturnToMainMenu;
 	bool bReturnToMainMenuOpen = false;
 
 

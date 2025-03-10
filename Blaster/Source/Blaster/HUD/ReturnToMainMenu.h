@@ -17,9 +17,9 @@ class BLASTER_API UReturnToMainMenu : public UUserWidget
 protected:
 	virtual bool Initialize() override;
 	UFUNCTION()
-		void OnDestroySession(bool bWasSuccessful);
+	void OnDestroySession(bool bWasSuccessful);
 	UFUNCTION()
-		void OnPlayerLeftGame();
+	void OnPlayerLeftGame();
 
 public:
 	void MenuSetup();
@@ -27,14 +27,14 @@ public:
 
 private:
 	UFUNCTION()
-		void ReturnBtnClicked();
+	void ReturnBtnClicked();
 
 private:
 	UPROPERTY(meta = (BindWidget))
-		class UButton* ReturnBtn;
+	class UButton* ReturnBtn;
 	UPROPERTY()
-		class UMultiPlayerSessionSubsystem* MultiPlayerSessionSubsystem;
+	class UMultiPlayerSessionSubsystem* MultiPlayerSessionSubsystem;
 	UPROPERTY()
-		class APlayerController* PlayerCtl;
+	class APlayerController* PlayerCtl;
 
 };

@@ -30,8 +30,8 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-		float HealAmount = 100.f; //������
+	float HealAmount = 100.f; //������
 	UPROPERTY(EditAnywhere)
-		float HealingTime = 5.f; //��������ʱ��
-	
+	float HealingTime = 5.f; //��������ʱ��
+
 };
