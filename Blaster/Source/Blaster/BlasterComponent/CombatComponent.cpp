@@ -431,7 +431,7 @@ bool UCombatComponent::ServerFire_Validate(const FVector_NetQuantize& TraceHitTa
 
 void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	//在自己机器上已经走玩流程了
+	//在自己机器上已经走完流程了
 	if (Character && Character->IsLocallyControlled() && !Character->HasAuthority()) return;
 
 	LocalFire(TraceHitTarget);

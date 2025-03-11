@@ -10,92 +10,92 @@
 #include "LagCompensationComponent.generated.h"
 
 
-/// <summary>
-/// 由于不能直接存box的指针，因为指针指向的是地址，所以需要单独的数据结构存储盒子的信息
-/// </summary>
+/**
+ * 由于不能直接存box的指针，因为指针指向的是地址，所以需要单独的数据结构存储盒子的信息
+ */
 USTRUCT(BlueprintType)
 struct FBoxInformation
 {
 	GENERATED_BODY()
 public:
-	/// <summary>
-	/// 位置
-	/// </summary>
+	/**
+	 * 位置
+	 */
 	UPROPERTY()
 	FVector Location;
-	/// <summary>
-	/// 旋转
-	/// </summary>
+	/**
+	 * 旋转
+	 */
 	UPROPERTY()
 	FRotator Rotation;
-	/// <summary>
-	/// 盒子范围
-	/// </summary>
+	/**
+	 * 盒子范围
+	 */
 	UPROPERTY()
 	FVector BoxExtent;
 };
 
-/// <summary>
-/// 角色桢数据
-/// </summary>
+/**
+ * 角色桢数据
+ */
 USTRUCT(BlueprintType)
 struct FFramePackage
 {
 	GENERATED_BODY()
 public:
-	/// <summary>
-	/// 存储时间
-	/// </summary>
+	/**
+	 * 存储时间
+	 */
 	UPROPERTY()
 	float Time;
-	/// <summary>
-	/// 角色不同部位所对应的box信息
-	/// </summary>
+	/**
+	 * 角色不同部位所对应的box信息
+	 */
 	UPROPERTY()
 	TMap<FName, FBoxInformation> HitBoxInfo;
-	/// <summary>
-	/// 角色指针
-	/// </summary>
+	/**
+	 * 角色指针
+	 */
 	UPROPERTY()
 	ABlasterCharacter* Character;
 };
 
-/// <summary>
-/// 服务器倒带命中结果
-/// </summary>
+/**
+ * 服务器倒带命中结果
+ */
 USTRUCT(BlueprintType)
 struct FServerSideRewindResult
 {
 	GENERATED_BODY()
 public:
-	/// <summary>
-	/// 是否命中
-	/// </summary>
+	/**
+	 * 是否命中
+	 */
 	UPROPERTY()
 	bool bHitConfirmed;
-	/// <summary>
-	/// 是否爆头
-	/// </summary>
+	/**
+	 * 是否爆头
+	 */
 	UPROPERTY()
 	bool bHeadShot;
 };
 
-/// <summary>
-/// 霰弹枪）服务器倒带命中结果
-/// </summary>
+/**
+ * 霰弹枪）服务器倒带命中结果
+ */
 USTRUCT(BlueprintType)
 struct FShotgunServerSideRewindResult
 {
 	GENERATED_BODY()
 public:
-	/// <summary>
-	/// 每个角色的头部击中次数
-	/// </summary>
+	/**
+	 * 每个角色的头部击中次数
+	 */
 	UPROPERTY()
 	TMap<ABlasterCharacter*, uint32> HeadShots;
-	/// <summary>
-	/// 每个角色的身体击中次数
-	/// </summary>
+	/**
+	 * 每个角色的身体击中次数
+	 */
 	UPROPERTY()
 	TMap<ABlasterCharacter*, uint32> BodyShots;
 };
@@ -126,10 +126,9 @@ private:
 	/// 缓存每一帧的box数据包
 	/// </summary>
 	void SaveFramePackage();
-	/// <summary>
-	/// 缓存一帧的数据包
-	/// </summary>
-	/// <param name="Package"></param>
+	/**
+	 * 缓存一帧的数据包
+	 */
 	void SaveFramePackage(FFramePackage& Package);
 	/// <summary>
 	/// 根据命中时间获取需要检测的帧数据包
@@ -317,13 +316,16 @@ public:
 private:
 	UPROPERTY()
 	ABlasterCharacter* Character;
+
 	UPROPERTY()
 	class ABlasterPlayerController* Controller;
+
 	/// <summary>
 	/// 存储4秒的帧数据，时间太长和太短都会影响体验
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 	float MaxRecordTime = 4.f;
+	
 	/// <summary>
 	/// 存储《MaxRecordTime》时间内发生的帧数据，使用双向链表方便从链表头尾节点执行添加和移除操作
 	/// </summary>

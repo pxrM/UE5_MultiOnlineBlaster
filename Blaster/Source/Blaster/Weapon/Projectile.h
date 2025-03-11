@@ -27,31 +27,39 @@ protected:
 
 
 protected:
+	/**
+	 * 碰撞回调
+	 * @param HitComp 碰撞的组件
+	 * @param OtherActor 碰撞的Actor
+	 * @param OtherComp 碰撞的组件
+	 * @param NormalImpulse 碰撞的冲量
+	 * @param Hit 碰撞的结果
+	 */
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	/// <summary>
-	/// 碰撞后的表现
-	/// </summary>
+	/**
+	 * 碰撞后的表现
+	 */
 	virtual void CollideManifestation();
 
-	/// <summary>
-	/// 生成拖尾特效
-	/// </summary>
+	/**
+	 * 生成拖尾特效
+	 */
 	void SpawnTrailSystem();
 
-	/// <summary>
-	/// 启动延迟销毁计时器
-	/// </summary>
+	/**
+	 * 启动延迟销毁计时器
+	 */
 	void StartDestroyTimer();
-	/// <summary>
-	/// 拖尾特效延迟销毁计时器完成回调
-	/// </summary>
+	/**
+	 * 拖尾特效延迟销毁计时器完成回调
+	 */
 	void TrailDestroyTimerFinished();
 
-	/// <summary>
-	/// 爆炸产生伤害
-	/// </summary>
+	/**
+	 * 爆炸产生伤害
+	 */
 	void ExplodeDamage();
 
 
@@ -65,73 +73,73 @@ protected:
 	//UNiagaraSystem 可以被用于创建和管理一个或多个 UNiagaraComponent 实例，并在场景中进行实例化和播放。
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* TrailSystem;
-	//是一个 Unreal Engine 中的组件类，用于在场景中放置和控制 Niagara 系统。
+	// UNiagaraComponent 是一个 Unreal Engine 中的组件类，用于在场景中放置和控制 Niagara 系统。
 	UPROPERTY()
 	class UNiagaraComponent* TrailSystemComponent;
 
-	/// <summary>
-	/// 用于实现子弹、火箭等射弹物体运动的组件类
-	/// </summary>
+	/**
+	 * 用于实现子弹、火箭等射弹物体运动的组件类
+	 */
 	UPROPERTY(VisibleAnyWhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ProjectileMash;
 
-	/// <summary>
-	/// 范围伤害内半径
-	/// </summary>
+	/**
+	 * 范围伤害内半径
+	 */
 	UPROPERTY(EditAnywhere)
 	float DamageInnerRadius = 200.f;
-	/// <summary>
-	/// 范围伤害外半径
-	/// </summary>
+	/**
+	 * 范围伤害外半径
+	 */
 	UPROPERTY(EditAnywhere)
 	float DamageOuterRadius = 500.f;
 
 
 public:
-	/// <summary>
-	/// 伤害
-	/// </summary>
+	/**
+	 * 伤害
+	 */
 	UPROPERTY(EditAnywhere)
 	float DamageVal = 20.f;
-	/// <summary>
-	/// 爆头伤害，射弹类使用，和投掷武器（手榴弹）无关
-	/// </summary>
+	/**
+	 * 爆头伤害，射弹类使用，和投掷武器（手榴弹）无关
+	 */
 	UPROPERTY(EditAnywhere)
 	float HeadShotDamageVal = 40.f;
 
-	/// <summary>
-	/// 弹丸的移动速度
-	/// </summary>
+	/**
+	 * 弹丸的移动速度
+	 */
 	UPROPERTY(EditAnywhere)
 	float InitialSpeed = 15000.f;
 
 	/* 与服务器端倒带一起使用 */
-	/// <summary>
-	/// 是否启用服务器倒带验证
-	/// </summary>
+	/**
+	 * 是否启用服务器倒带验证
+	 */
 	bool bUseServerSideRewind = false;
-	/// <summary>
-	/// 开始发射位置（FVector_NetQuantize整数）
-	/// </summary>
+	/**
+	 * 开始发射位置（FVector_NetQuantize整数）
+	 */
 	FVector_NetQuantize TraceStart;
-	/// <summary>
-	/// 子弹初始发射速度（FVector_NetQuantize100精确到小数点后两位）
-	/// </summary>
+	/**
+	 * 子弹初始发射速度（FVector_NetQuantize100精确到小数点后两位）
+	 */
 	FVector_NetQuantize100 InitialVelocity;
 
 
 private:
-	/// <summary>
-	/// 用于创建和管理粒子特效的类，子弹飞行时用
-	/// </summary>
+	/**
+	 * 用于创建和管理粒子特效的类，子弹飞行时用
+	 */
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* Tracer;
-	/// <summary>
-	/// 粒子系统相关的组件类。该类可以被用于将 "UParticleSystem" 创建的粒子特效附加到游戏中的角色、场景、物体等上
-	/// </summary>
+	/**
+	 * 粒子系统相关的组件类。该类可以被用于将 "UParticleSystem" 创建的粒子特效附加到游戏中的角色、场景、物体等上
+	 */
 	UPROPERTY()
 	class UParticleSystemComponent* TracerComponent;
 

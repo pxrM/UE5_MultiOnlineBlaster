@@ -66,7 +66,8 @@ void AProjectile::BeginPlay()
 
 	if (HasAuthority())
 	{
-		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit); //将OnHit函数绑定到CollisionBox组件的碰撞事件上，在碰撞事件触发时自动执行该函数。
+		//将OnHit函数绑定到CollisionBox组件的碰撞事件上，在碰撞事件触发时自动执行该函数。
+		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 	}
 }
 
