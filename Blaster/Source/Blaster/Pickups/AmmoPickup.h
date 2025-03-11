@@ -29,12 +29,12 @@ protected:
 
 private:
 	/// <summary>
-	/// ʰȡ���ӵ�����
+	/// 拾取的弹药数量
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 	int32 AmmoAmount = 30;
 	/// <summary>
-	/// ʰȡ����
+	/// 拾取的武器类型
 	/// </summary>
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;

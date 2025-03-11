@@ -83,19 +83,19 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaSeconds, 6.f);
 	YawOffset = DeltaRotation.Yaw;
 
-	/*获取角色身体倾斜角度*/
-	//记录上一帧的旋转值
+	/* 计算角色旋转变化导致的倾斜 */
+	// 记录上一帧的旋转值
 	CharacterRotationLastFrame = CharacterRotation;
-	//获取当前角色的旋转值
+	// 获取当前角色的旋转值
 	CharacterRotation = BlasterCharacter->GetActorRotation();
-	//计算出上一帧角色旋转值与当前帧角色旋转值之间的差值Delta。Delta.Yaw表示角色在Yaw轴上旋转的角度差值。
+	// 计算出上一帧角色旋转值与当前帧角色旋转值之间的差值Delta。Delta.Yaw表示角色在Yaw轴上旋转的角度差值。
 	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
-	//(从上一帧到当前帧所经过的时间)得到每秒钟角色身体需要倾斜的角度量Target
+	// (从上一帧到当前帧所经过的时间)得到每秒钟角色身体需要倾斜的角度量Target
 	const float Target = Delta.Yaw / DeltaSeconds;
-	//使用FInterpTo()方法在Lean(角色身体倾斜角度)和目标值Target之间进行插值计算，得到插值结果Interp。
-	//该方法会自动处理插值过程中的超调问题，并确保插值结果在规定的时间内到达目标值。
+	// 使用FInterpTo()方法在Lean(角色身体倾斜角度)和目标值Target之间进行插值计算，得到插值结果Interp。
+	// 该方法会自动处理插值过程中的超调问题，并确保插值结果在规定的时间内到达目标值。
 	const float Interp = FMath::FInterpTo(Lean, Target, DeltaSeconds, 6.f);
-	//使用FMath::Clamp()方法将计算出来的插值结果限制在-90和90度之间，以防止过度倾斜。
+	// 使用FMath::Clamp()方法将计算出来的插值结果限制在-90和90度之间，以防止过度倾斜。
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
@@ -106,15 +106,14 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	/*将左手插座的位置和旋转信息与BlasterCharacter骨架中的左手骨骼同步，由于不同的武器、物品等左手的位置可能有所不同，因此程序应该能够动态调整左手的位置*/
 	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh())
 	{
-		//根据武器插槽获得左手变换位置，并以世界空间为基础。使用时转为骨骼上的骨骼空间
+		// 根据武器插槽获得左手变换位置，并以世界空间为基础。使用时转为骨骼上的骨骼空间
 		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
-		//左手插座位置从世界空间转换为BlasterCharacter骨架中右手骨骼的本地空间，并将转换后的位置和旋转信息存储在OutPosition和OutRotation变量中
+		// 左手插座位置从世界空间转换为BlasterCharacter骨架中右手骨骼的本地空间，并将转换后的位置和旋转信息存储在OutPosition和OutRotation变量中
 		FVector OutPosition;
 		FRotator OutRotation;
 		BlasterCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
-
 
 		if (BlasterCharacter->IsLocallyControlled())
 		{
@@ -126,7 +125,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaSeconds, 30.f);
 		}
 
-
 		/* ===  Debug  ===  从枪口处画两条线来调试查看武器枪管的角度 */
 		FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
 		//通过MuzzleTipTransform.GetRotation().Rotator()获取枪口变换的旋转值，并传入FRotationMatrix构造函数中，得到一个旋转矩阵。调用GetUnitAxis方法，获取旋转矩阵中X轴的单位向量。
@@ -137,6 +135,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), BlasterCharacter->GetHitTarget(), FColor::Orange);
 	}
 
+	// FABRIK（前向和后向运动学）控制
 	bUseFABRIK = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
 	bool bFABRIKOverride = BlasterCharacter->IsLocallyControlled() && 
 		BlasterCharacter->GetCombatState() != ECombatState::ECS_ThrowingGrenade && 

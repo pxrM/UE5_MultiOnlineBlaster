@@ -29,9 +29,16 @@ protected:
 
 
 private:
+	/// <summary>
+	/// 治疗量
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-	float HealAmount = 100.f; //������
+	float HealAmount = 100.f;
+	
+	/// <summary>
+	/// 治疗时间
+	/// </summary>
 	UPROPERTY(EditAnywhere)
-	float HealingTime = 5.f; //��������ʱ��
+	float HealingTime = 5.f;
 
 };
