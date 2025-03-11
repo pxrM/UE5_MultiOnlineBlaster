@@ -20,6 +20,7 @@ public:
 public:
 	UPROPERTY(meta = (BindWidget))
 	class UHorizontalBox* AnnouncementBox;
+	
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* AnnouncementText;
 

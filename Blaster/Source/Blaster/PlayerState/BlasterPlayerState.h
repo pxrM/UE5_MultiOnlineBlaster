@@ -21,13 +21,15 @@ public:
 	virtual void OnRep_Score() override;
 
 public:
-	void AddToScore(float ScoreAmount);
-	void AddToDefeats(int32 DefeatsAmount);
 	UFUNCTION()
-		virtual void OnRep_Defeats();
+	virtual void OnRep_Defeats();
 
 	UFUNCTION()
-		virtual void OnRep_Team(); 
+	virtual void OnRep_Team(); 
+	
+	void AddToScore(float ScoreAmount);
+	void AddToDefeats(int32 DefeatsAmount);
+
 	void SetTeam(ETeam TeamToSet);
 	FORCEINLINE ETeam GetTeam() const { return Team; }
 
@@ -49,14 +51,14 @@ private:
 	*/
 
 	UPROPERTY()
-		class ABlasterCharacter* Character;
+	class ABlasterCharacter* Character;
 	UPROPERTY()
-		class ABlasterPlayerController* Controller;
+	class ABlasterPlayerController* Controller;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
-		int32 Defeats; //失败次数
+	int32 Defeats; //失败次数
 
 	UPROPERTY(ReplicatedUsing = OnRep_Team)
-		ETeam Team = ETeam::ET_NoTeam;
+	ETeam Team = ETeam::ET_NoTeam;
 
 };

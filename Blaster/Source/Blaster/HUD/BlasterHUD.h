@@ -34,7 +34,7 @@ class BLASTER_API ABlasterHUD : public AHUD
 
 protected:
 	virtual void BeginPlay() override;
-	//重写父类中的DrawHUD()函数，以实现自定义的用户界面（UI）渲染逻辑
+	// 重写父类中的DrawHUD()函数，以实现自定义的用户界面（UI）渲染逻辑
 	virtual void DrawHUD() override;
 
 public:
