@@ -62,7 +62,6 @@ class AURA_API AAuraEffectActor : public AActor
 	
 public:	
 	AAuraEffectActor();
-	
 
 protected:
 	virtual void BeginPlay() override;
@@ -87,12 +86,10 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StartSinusoidalMovement();
 
-
 private:
 	// 每一帧更新Actor的位置和转向
 	void ItemMovement(float DeltaSeconds);
-	
-	
+
 protected:
 	// 立即生效的Effect
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
@@ -101,7 +98,7 @@ protected:
 	// 立即生效的Effect的添加时机
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	EEffectApplicationPolicy InstantEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
-
+	
 	
 	// 有限持续时间的Effect
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
@@ -162,18 +159,18 @@ protected:
 	float SinePeriod = 1.f;
 
 	// 计算后的Actor所在的位置
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	FVector CalculatedLocation;
 
 	// 计算后的Actor的旋转
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	FRotator CalculatedRotation;
 
+	// Actor生成的默认初始位置
+	UPROPERTY(BlueprintReadOnly)
+	FVector InitialLocation;
 
 private:
 	//当前掉落物的存在时间，可以通过此时间实现动态效果
 	float RunningTime = 0.f;
-
-	// Actor生成的默认初始位置
-	FVector InitialLocation;
 };
