@@ -17,6 +17,9 @@ class AURA_API UMVVM_Photo : public UMVVMViewModelBase
 {
 	GENERATED_BODY()
 
+protected:
+
+
 public:
 	UFUNCTION(BlueprintCallable)
 	void OnPhotoButtonPressed();

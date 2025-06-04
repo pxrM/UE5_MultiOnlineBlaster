@@ -2,6 +2,8 @@
 
 
 #include "UI/ViewModel/MVVM_Photo.h"
+
+#include "Components/SlateWrapperTypes.h"
 #include "Engine/GameViewportClient.h"
 
 
