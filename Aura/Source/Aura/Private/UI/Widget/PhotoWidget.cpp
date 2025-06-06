@@ -3,20 +3,13 @@
 
 #include "UI/Widget/PhotoWidget.h"
 
-FEventReply UPhotoWidget::TouchGesture(FGeometry MyGeometry, const FPointerEvent& GestureEvent)
-{
-	FEventReply Reply;
-	Reply.NativeReply = FReply::Handled();
-	return Reply;
-}
-
 FEventReply UPhotoWidget::TouchStarted(FGeometry MyGeometry, const FPointerEvent& InTouchEvent)
 {
 	FEventReply Reply;
 	Reply.NativeReply = FReply::Handled();
 	SelectionStart = MyGeometry.AbsoluteToLocal(InTouchEvent.GetScreenSpacePosition());
 	bIsSelecting = true;
-	// ³õÊ¼»¯Ñ¡Ôñ¿òUI£¨Èç°ëÍ¸Ã÷¾ØĞÎ£©
+	// åˆå§‹åŒ–é€‰æ‹©æ¡†UIï¼ˆå¦‚åŠé€æ˜çŸ©å½¢ï¼‰
 	return Reply;
 }
 
@@ -26,25 +19,25 @@ FEventReply UPhotoWidget::TouchMoved(FGeometry MyGeometry, const FPointerEvent& 
 	Reply.NativeReply = FReply::Handled();
 	if (bIsSelecting)
 	{
-		// ¸üĞÂÑ¡Ôñ¿òµÄ½áÊøÎ»ÖÃ
+		// æ›´æ–°é€‰æ‹©æ¡†çš„ç»“æŸä½ç½®
 		SelectionEnd = MyGeometry.AbsoluteToLocal(InTouchEvent.GetScreenSpacePosition());
-		// ¼ÆËãÑ¡Ôñ¿òµÄ´óĞ¡
+		// è®¡ç®—é€‰æ‹©æ¡†çš„å¤§å°
 		FVector2D BoxSize = FVector2D(FMath::Abs(SelectionEnd.X - SelectionStart.X), FMath::Abs(SelectionEnd.Y - SelectionStart.Y));
-		// ¼ÆËãÑ¡Ôñ¿òµÄ×óÉÏ½ÇÎ»ÖÃ
+		// è®¡ç®—é€‰æ‹©æ¡†çš„å·¦ä¸Šè§’ä½ç½®
 		FVector2D BoxLeftTop = FVector2D(
 			FMath::Min(SelectionStart.X, SelectionEnd.X),
 			FMath::Min(SelectionStart.Y, SelectionEnd.Y)
 		);
-		// »ñÈ¡Ğ¡²¿¼şµÄ±¾µØ´óĞ¡
+		// è·å–å°éƒ¨ä»¶çš„æœ¬åœ°å¤§å°
 		FVector2D WidgetSize = MyGeometry.GetLocalSize();
-		// ¼ÆËãÑ¡Ôñ¿òµÄÖĞĞÄµã£¨ÖĞĞÄµã×ø±ê¿ÉÒÔ±íÊ¾Îª£ºÖĞĞÄµãx = ×óÉÏ½Çx + ¿í¶È/2£¬ÖĞĞÄµãy = ×óÉÏ½Çy + ¸ß¶È/2¡££©
+		// è®¡ç®—é€‰æ‹©æ¡†çš„ä¸­å¿ƒç‚¹ï¼ˆä¸­å¿ƒç‚¹åæ ‡å¯ä»¥è¡¨ç¤ºä¸ºï¼šä¸­å¿ƒç‚¹x = å·¦ä¸Šè§’x + å®½åº¦/2ï¼Œä¸­å¿ƒç‚¹y = å·¦ä¸Šè§’y + é«˜åº¦/2ã€‚ï¼‰
 		FVector2D CenterPoint = BoxLeftTop + BoxSize * 0.5f;
-		// ½«ÖĞĞÄµã¹éÒ»»¯µ½0-1·¶Î§
+		// å°†ä¸­å¿ƒç‚¹å½’ä¸€åŒ–åˆ°0-1èŒƒå›´
 		float NormailizedX = FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f);
 		float NormailizedY = FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f);
 
 
-		// ¸üĞÂÑ¡Ôñ¿òUI£¨Èç°ëÍ¸Ã÷¾ØĞÎ£©
+		// æ›´æ–°é€‰æ‹©æ¡†UIï¼ˆå¦‚åŠé€æ˜çŸ©å½¢ï¼‰
 		UpdateSelectionBox(BoxSize);
 	}
 	return Reply;
@@ -57,7 +50,7 @@ FEventReply UPhotoWidget::TouchEnded(FGeometry MyGeometry, const FPointerEvent& 
 	if (bIsSelecting)
 	{
 		bIsSelecting = false;
-		// Ñ¡Ôñ½áÊø£¬¸üĞÂÑ¡Ôñ¿òUI
+		// é€‰æ‹©ç»“æŸï¼Œæ›´æ–°é€‰æ‹©æ¡†UI
 		FIntRect CropArea(
 			FMath::Min(SelectionStart.X, SelectionEnd.X),
 			FMath::Min(SelectionStart.Y, SelectionEnd.Y),

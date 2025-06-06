@@ -4,34 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PhotoWidget.generated.h"
+#include "PhotoTouchWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhotoTouchDelegate, const FPointerEvent&, PointerEvent);
 /**
  * 
  */
 UCLASS()
-class AURA_API UPhotoWidget : public UUserWidget
+class AURA_API UPhotoTouchWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	FEventReply TouchStarted(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
 
 	FEventReply TouchMoved(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
 
 	FEventReply TouchEnded(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
 
-public:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void BlueprintInitializeWidget();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void UpdateSelectionBox(FVector2D BoxSize);
-
+	static bool CheckPointEffectiveIndex(const int32 PointIndex);
 
 public:
 	FVector2D SelectionStart;
 	FVector2D SelectionEnd;
 	bool bIsSelecting = false;
 	
+	FPhotoTouchDelegate TouchStartedCallBack;
+	FPhotoTouchDelegate TouchMovedCallBack;
+	FPhotoTouchDelegate TouchEndedCallBack;
 };
