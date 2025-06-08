@@ -6,6 +6,9 @@
 #include "Blueprint/UserWidget.h"
 #include "PhotoWidget.generated.h"
 
+ // 裁剪模式枚举
+enum class ECropMode { FreeDrag, FixedRatio };
+
 /**
  * 
  */
@@ -27,6 +30,13 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void UpdateSelectionBox(FVector2D BoxSize);
+
+	// 执行裁剪 (支持拖拽区域和比例裁剪)
+	UFUNCTION(BlueprintCallable)
+	UTexture2D* CropScreenshot(UTexture2D* SourceTexture, FVector2D NormalizedCenter, float NormalizedWidth, float NormalizedHeight);
+
+	UFUNCTION(BlueprintCallable)
+	UTexture2D* CropScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio);
 
 
 public:

@@ -5,18 +5,49 @@
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/KismetInputLibrary.h"
+#include "GameFramework/HUD.h"
+
+int32 UPhotoTouchWidget::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+{
+	// 调用父类的绘制逻辑，获取基础图层ID
+	int32 RetLayer = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
+
+	if (bIsSelecting)
+	{
+		FVector2D BoxLeftTop(
+			FMath::Min(SelectionStart.X, SelectionEnd.X),
+			FMath::Min(SelectionStart.Y, SelectionEnd.Y)
+		);
+		FVector2D BoxSize(
+			FMath::Abs(SelectionEnd.X - SelectionStart.X),
+			FMath::Abs(SelectionEnd.Y - SelectionStart.Y)
+		);
+		FLinearColor BoxColor(0.f, 0.5f, 1.f, 0.5f);
+		FSlateBrush Brush;
+		Brush.DrawAs = ESlateBrushDrawType::Box;
+		Brush.TintColor = FSlateColor(BoxColor);
+
+		FSlateDrawElement::MakeBox(
+			OutDrawElements,
+			RetLayer + 1,
+			AllottedGeometry.ToPaintGeometry(BoxLeftTop, BoxSize),
+			&Brush
+		);
+	}
+	return RetLayer + 1;
+}
 
 FEventReply UPhotoTouchWidget::TouchStarted(FGeometry MyGeometry, const FPointerEvent& InTouchEvent)
 {
 	
-	if (CheckPointEffectiveIndex(UKismetInputLibrary::PointerEvent_GetPointerIndex(InTouchEvent)))
+	if (!CheckPointEffectiveIndex(UKismetInputLibrary::PointerEvent_GetPointerIndex(InTouchEvent)))
 	{
 		return UWidgetBlueprintLibrary::Unhandled();
 	}
+	SelectionEnd = FVector2D();
 	SelectionStart = MyGeometry.AbsoluteToLocal(InTouchEvent.GetScreenSpacePosition());
 	bIsSelecting = true;
 	// 初始化选择框UI（如半透明矩形）
-
 	TouchStartedCallBack.Broadcast(InTouchEvent);
 
 	// Reply 事件回复的引用，用于传递和修改事件处理状态
@@ -27,34 +58,30 @@ FEventReply UPhotoTouchWidget::TouchStarted(FGeometry MyGeometry, const FPointer
 
 FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEvent& InTouchEvent)
 {
-	if (CheckPointEffectiveIndex(UKismetInputLibrary::PointerEvent_GetPointerIndex(InTouchEvent)))
+	if (!CheckPointEffectiveIndex(UKismetInputLibrary::PointerEvent_GetPointerIndex(InTouchEvent)))
 	{
-		UWidgetBlueprintLibrary::Handled();
+		return UWidgetBlueprintLibrary::Unhandled();
 	}
 	
 	if (bIsSelecting)
 	{
-		// 更新选择框的结束位置
 		SelectionEnd = MyGeometry.AbsoluteToLocal(InTouchEvent.GetScreenSpacePosition());
-		// 计算选择框的大小
-		FVector2D BoxSize = FVector2D(FMath::Abs(SelectionEnd.X - SelectionStart.X), FMath::Abs(SelectionEnd.Y - SelectionStart.Y));
-		// 计算选择框的左上角位置
-		FVector2D BoxLeftTop = FVector2D(
-			FMath::Min(SelectionStart.X, SelectionEnd.X),
-			FMath::Min(SelectionStart.Y, SelectionEnd.Y)
-		);
-		// 获取小部件的本地大小
+		// 仅当选区发生变化时才更新UI
+		if ((SelectionEnd - LastSelectionEnd).SizeSquared() < 4.0f)
+		{
+			return  UWidgetBlueprintLibrary::Unhandled();
+		}
+		LastSelectionEnd = SelectionEnd;
 		FVector2D WidgetSize = MyGeometry.GetLocalSize();
-		// 计算选择框的中心点（中心点坐标可以表示为：中心点x = 左上角x + 宽度/2，中心点y = 左上角y + 高度/2。）
+		// 计算选区矩形
+		FVector2D BoxLeftTop(FMath::Min(SelectionStart.X, SelectionEnd.X),FMath::Min(SelectionStart.Y, SelectionEnd.Y));
+		FVector2D BoxSize(FMath::Abs(SelectionEnd.X - SelectionStart.X),FMath::Abs(SelectionEnd.Y - SelectionStart.Y));
 		FVector2D CenterPoint = BoxLeftTop + BoxSize * 0.5f;
-		// 将中心点归一化到0-1范围
-		float NormailizedX = FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f);
-		float NormailizedY = FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f);
-
-
-		// 更新选择框UI（如半透明矩形）
-		//UpdateSelectionBox(BoxSize);
-
+		// 归一化处理（比例值）
+		FVector2D NormalizedSize(FMath::Clamp(BoxSize.X / WidgetSize.X, 0.0f, 1.0f),FMath::Clamp(BoxSize.Y / WidgetSize.Y, 0.0f, 1.0f));
+		FVector2D NormalizedCenter(FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f),FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f));
+		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize.X, NormalizedSize.Y);
+		UE_LOG(LogTemp, Warning, TEXT("Current values: %s, %f, %f"), *NormalizedCenter.ToString(), NormalizedSize.X, NormalizedSize.Y);
 		TouchMovedCallBack.Broadcast(InTouchEvent);
 	}
 	
@@ -63,9 +90,9 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 
 FEventReply UPhotoTouchWidget::TouchEnded(FGeometry MyGeometry, const FPointerEvent& InTouchEvent)
 {
-	if (CheckPointEffectiveIndex(UKismetInputLibrary::PointerEvent_GetPointerIndex(InTouchEvent)))
+	if (!CheckPointEffectiveIndex(UKismetInputLibrary::PointerEvent_GetPointerIndex(InTouchEvent)))
 	{
-		return UWidgetBlueprintLibrary::Handled();
+		return UWidgetBlueprintLibrary::Unhandled();
 	}
 	if (bIsSelecting)
 	{
