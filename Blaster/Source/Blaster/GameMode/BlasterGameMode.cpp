@@ -114,7 +114,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 
 	if (ElimmedCharacter)
 	{
-		ElimmedCharacter->Elim(false);
+		ElimmedCharacter->Eliminate(false);
 	}
 
 	if (AttackPlayerState && VictimPlayerState)
@@ -162,7 +162,7 @@ void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving)
 	ABlasterCharacter* CharacterLeaving = Cast<ABlasterCharacter>(PlayerLeaving->GetPawn());
 	if (CharacterLeaving)
 	{
-		CharacterLeaving->Elim(true);
+		CharacterLeaving->Eliminate(true);
 	}
 }
 

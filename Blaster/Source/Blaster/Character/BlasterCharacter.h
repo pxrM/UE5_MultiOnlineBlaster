@@ -323,27 +323,32 @@ protected:
 public:
 	//设置武器，内联函数
 	//FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon) { OverlappingWeapon = Weapon; }
+	
 	/// <summary>
 	/// 设置与地面上的重叠武器
 	/// </summary>
 	/// <param name="Weapon"></param>
 	void SetOverlappingWeapon(AWeapon* Weapon);
+	
 	/// <summary>
 	/// 是否装备了武器
 	/// </summary>
 	/// <returns></returns>
 	bool IsWeaponEquipped();
+	
 	/// <summary>
 	/// 是否正在瞄准
 	/// </summary>
 	/// <returns></returns>
 	bool IsAiming();
+	
 	/// <summary>
 	/// 是否显示瞄准umg
 	/// </summary>
 	/// <param name="bShowScope"></param>
 	UFUNCTION(BlueprintImplementableEvent) //可蓝图实现函数
-		void ShowSniperScopeWidget(bool bShowScope);
+	void ShowSniperScopeWidget(bool bShowScope);
+	
 	/// <summary>
 	/// 出生时生成默认武器
 	/// </summary>
@@ -366,13 +371,13 @@ public:
 	void UpdateHUDAmmo();
 
 	/*	UFUNCTION(NetMulticast, Unreliable) //** 这里改为由更新角色健康值时触发，健康值会被同步到所有客服端，放到这那里会减少一次网络广播消耗
-			void MulticastHit();	*///播放受击动画 NetMulticast会从服务端同步到所有客户端 Unreliable表示同步消息不可靠
+		void MulticastHit();	*///播放受击动画 NetMulticast会从服务端同步到所有客户端 Unreliable表示同步消息不可靠
 
-			/// <summary>
-			/// 淘汰，server上执行
-			/// </summary>
-			/// <param name="bPlayerLeftGame">是否是退出游戏</param>
-	void Elim(bool bPlayerLeftGame);
+	/// <summary>
+	/// 淘汰，server上执行
+	/// </summary>
+	/// <param name="bPlayerLeftGame">是否是退出游戏</param>
+	void Eliminate(bool bPlayerLeftGame);
 	/// <summary>
 	/// 淘汰网络多播
 	/// </summary>
@@ -384,7 +389,7 @@ public:
 	/// 要离开游戏，通知server
 	/// </summary>
 	UFUNCTION(Server, Reliable)
-	void ServerLeavaGame();
+	void ServerLeaveGame();
 
 	/// <summary>
 	/// 设置第一名的状态
@@ -431,12 +436,14 @@ private:
 	/// </summary>
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+	
 	/// <summary>
 	/// 同步CurHealth
 	/// </summary>
 	/// <param name="LastHealth">上一次的血量</param>
 	UFUNCTION()
 	void OnRep_CurHealth(float LastHealth);
+	
 	/// <summary>
 	/// 同步护盾值
 	/// </summary>
@@ -449,7 +456,7 @@ private:
 	/// https://docs.unrealengine.com/5.1/zh-CN/rpcs-in-unreal-engine/
 	/// </summary>
 	UFUNCTION(Server, Reliable)	//声明为一个要在客户端上调用、但需要在服务器上执行代码的 RPC，并使用可靠的网络传输方式进行通信。
-		void ServerEquipBtnPressed();
+	void ServerEquipBtnPressed();
 
 	void TurnInPlace(float DeltaTime);
 
@@ -463,12 +470,13 @@ private:
 	/// <summary>
 	/// 更新溶解材质的参数值
 	/// </summary>
-	/// <param name="DissloveVal"></param>
+	/// <param name="DissolveVal"></param>
 	UFUNCTION()
-	void UpdataDissloveMaterial(float DissloveVal);
+	void UpdateDissolveMaterial(float DissolveVal);
+	
 	/// <summary>
 	/// 开启溶解
 	/// </summary>
-	void StartDisslove();
+	void StartDissolve();
 
 };

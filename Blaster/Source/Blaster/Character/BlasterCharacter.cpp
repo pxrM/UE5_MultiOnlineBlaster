@@ -504,7 +504,8 @@ void ABlasterCharacter::TurnInPlace(float DeltaTime)
 
 	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning)
 	{
-		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f); //使用 FInterpTo 函数实现平滑的偏移量插值
+		//使用 FInterpTo 函数实现平滑的偏移量插值
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
 		AO_Yaw = InterpAO_Yaw; //将 InterpAO_Yaw 赋值给 AO_Yaw，使得角色的 AIM Offset 偏移量随着插值而发生平滑的变化
 		//在 AO_Yaw 偏移量小于一定阈值（15 度）时，表示原地转向完成，将 TurningInPlace 设置为 ETIP_NotTurning，
 		//并重新将 StartingAimRotation 设为当前角色的基础瞄准旋转，以便下一次原地转向时的参考。
@@ -932,7 +933,7 @@ void ABlasterCharacter::SetSpawnPoint()
 	}
 }
 
-void ABlasterCharacter::Elim(bool bPlayerLeftGame)
+void ABlasterCharacter::Eliminate(bool bPlayerLeftGame)
 {
 	if (CombatCmp)
 	{
@@ -1026,7 +1027,7 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	// 播放淘汰蒙太奇
 	PlayElimMontage();
 	// 开始溶解特效
-	StartDisslove();
+	StartDissolve();
 	// 关闭角色移动
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
@@ -1085,7 +1086,7 @@ void ABlasterCharacter::ElimTimerFinished()
 	}
 }
 
-void ABlasterCharacter::ServerLeavaGame_Implementation()
+void ABlasterCharacter::ServerLeaveGame_Implementation()
 {
 	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	BlasterPlayerState = BlasterPlayerState ? BlasterPlayerState : GetPlayerState<ABlasterPlayerState>();
@@ -1095,7 +1096,7 @@ void ABlasterCharacter::ServerLeavaGame_Implementation()
 	}
 }
 
-void ABlasterCharacter::UpdataDissloveMaterial(float DissloveVal)
+void ABlasterCharacter::UpdateDissolveMaterial(float DissloveVal)
 {
 	if (DynamicDissolveMatInstance)
 	{
@@ -1103,7 +1104,7 @@ void ABlasterCharacter::UpdataDissloveMaterial(float DissloveVal)
 	}
 }
 
-void ABlasterCharacter::StartDisslove()
+void ABlasterCharacter::StartDissolve()
 {
 	if (DissolveMatInstance)
 	{
@@ -1113,7 +1114,7 @@ void ABlasterCharacter::StartDisslove()
 		DynamicDissolveMatInstance->SetScalarParameterValue(TEXT("Glow"), 200.f);
 	}
 
-	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdataDissloveMaterial);
+	DissolveTrack.BindDynamic(this, &ABlasterCharacter::UpdateDissolveMaterial);
 	if (DissolveCurve && DissolveTimelineCmp)
 	{
 		DissolveTimelineCmp->AddInterpFloat(DissolveCurve, DissolveTrack);

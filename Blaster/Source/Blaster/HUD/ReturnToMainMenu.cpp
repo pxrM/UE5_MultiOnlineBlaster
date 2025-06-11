@@ -93,7 +93,7 @@ void UReturnToMainMenu::ReturnBtnClicked()
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FirstPlayerController->GetPawn());
 			if (BlasterCharacter)
 			{
-				BlasterCharacter->ServerLeavaGame();
+				BlasterCharacter->ServerLeaveGame();
 				BlasterCharacter->OnLeftGame.AddDynamic(this, &UReturnToMainMenu::OnPlayerLeftGame);
 			}
 			else
