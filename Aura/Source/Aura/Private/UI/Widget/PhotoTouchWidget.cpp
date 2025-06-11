@@ -27,12 +27,12 @@ int32 UPhotoTouchWidget::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		Brush.DrawAs = ESlateBrushDrawType::Box;
 		Brush.TintColor = FSlateColor(BoxColor);
 
-		FSlateDrawElement::MakeBox(
-			OutDrawElements,
-			RetLayer + 1,
-			AllottedGeometry.ToPaintGeometry(BoxLeftTop, BoxSize),
-			&Brush
-		);
+		//FSlateDrawElement::MakeBox(
+		//	OutDrawElements,
+		//	RetLayer + 1,
+		//	AllottedGeometry.ToPaintGeometry(BoxLeftTop, BoxSize),
+		//	&Brush
+		//);
 	}
 	return RetLayer + 1;
 }
@@ -80,7 +80,7 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 		// 归一化处理（比例值）
 		FVector2D NormalizedSize(FMath::Clamp(BoxSize.X / WidgetSize.X, 0.0f, 1.0f),FMath::Clamp(BoxSize.Y / WidgetSize.Y, 0.0f, 1.0f));
 		FVector2D NormalizedCenter(FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f),FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f));
-		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize.X, NormalizedSize.Y);
+		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
 		UE_LOG(LogTemp, Warning, TEXT("Current values: %s, %f, %f"), *NormalizedCenter.ToString(), NormalizedSize.X, NormalizedSize.Y);
 		TouchMovedCallBack.Broadcast(InTouchEvent);
 	}
@@ -106,6 +106,20 @@ FEventReply UPhotoTouchWidget::TouchEnded(FGeometry MyGeometry, const FPointerEv
 		);
 
 		TouchEndedCallBack.Broadcast(InTouchEvent);
+
+		//FVector2D WidgetSize = MyGeometry.GetLocalSize();
+		//// 计算选区矩形
+		//FVector2D BoxLeftTop(FMath::Min(SelectionStart.X, SelectionEnd.X), FMath::Min(SelectionStart.Y, SelectionEnd.Y));
+		//FVector2D BoxSize(FMath::Abs(SelectionEnd.X - SelectionStart.X), FMath::Abs(SelectionEnd.Y - SelectionStart.Y));
+		//FVector2D CenterPoint = BoxLeftTop + BoxSize * 0.5f;
+		//// 归一化处理（比例值）
+		//FVector2D NormalizedSize(FMath::Clamp(BoxSize.X / WidgetSize.X, 0.0f, 1.0f), FMath::Clamp(BoxSize.Y / WidgetSize.Y, 0.0f, 1.0f));
+		//FVector2D NormalizedCenter(FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f), FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f));
+		//SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, true);
+		SelectAreaCallBack.Broadcast(SelectionStart, SelectionEnd, true);
+
+		SelectionEnd = FVector2D::Zero();
+		LastSelectionEnd = FVector2D::Zero();
 	}
 	
 	FEventReply Reply = UWidgetBlueprintLibrary::Handled();

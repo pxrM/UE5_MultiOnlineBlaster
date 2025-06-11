@@ -7,7 +7,7 @@
 #include "PhotoTouchWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPhotoTouchDelegate, const FPointerEvent&, PointerEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSelectAreaDelegate, const FVector2D, BoxSize, const float, CentreX, const float, CentreY);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSelectAreaDelegate, const FVector2D, CentrePoint, const FVector2D, BoxSize,  bool, bIsEnd);
 /**
  * 
  */

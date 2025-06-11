@@ -61,6 +61,112 @@ FEventReply UPhotoWidget::TouchEnded(FGeometry MyGeometry, const FPointerEvent& 
 	return Reply;
 }
 
+void UPhotoWidget::CalculateCropRange(const int32 SourceWidth, const int32 SourceHeight, const FVector2D NormalizedCenter, const float NormalizedWidth, const float NormalizedHeight,
+	FVector2D& OutStartPoint, FVector2D& OutEndPoint, FIntPoint& OutCropWidth)
+{
+	// 将归一化的中心点坐标（范围 [0,1]）转换为实际像素坐标
+	FVector2D CenterPixel(NormalizedCenter.X * SourceWidth, NormalizedCenter.Y * SourceHeight);
+	// 计算裁剪区域的半宽和半高（便于后续计算边界）0.5f 表示除以 2，因为要从中心向两侧扩展
+	// 例如：归一化宽度 0.4，源宽 1000 → 半宽 = 0.4 * 1000 * 0.5 = 200 像素
+	FVector2D HalfSize(NormalizedWidth * SourceWidth * 0.5f, NormalizedHeight * SourceHeight * 0.5f);
+	// 左上角X坐标：中心X - 半宽，并限制在图像范围内（0到SourceWidth-1）
+	int32 StartX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X - HalfSize.X), 0, SourceWidth - 1);
+	// 左上角Y坐标：中心Y - 半高，并限制在图像范围内
+	int32 StartY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y - HalfSize.Y), 0, SourceHeight - 1);
+	// 右下角X坐标：中心X + 半宽，并限制在图像范围内
+	int32 EndX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X + HalfSize.X), 0, SourceWidth - 1);
+	// 右下角Y坐标：中心Y + 半高，并限制在图像范围内
+	int32 EndY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y + HalfSize.Y), 0, SourceHeight - 1);
+	int32 CropWidth = EndX - StartX;
+	int32 CropHeight = EndY - StartY;
+
+	OutStartPoint = FVector2D(StartX, StartY);
+	OutEndPoint = FVector2D(EndX, EndY);
+	OutCropWidth = FIntPoint(CropWidth, CropHeight);
+}
+
+UTexture2D* UPhotoWidget::CropScreenshotCropScreenshot(const TArray<FColor>& InImageData,
+	const int32 SourceWidth, const int32 SourceHeight, const int32 StartX, const int32 StartY, const int32 CropWidth, const int32 CropHeight)
+{
+	TArray<FColor> CroppedPixels;
+	CroppedPixels.SetNumUninitialized(CropWidth * CropHeight);
+
+	/*
+	* 假设：
+	* •	源图像宽度为 10，高度为 5。
+	* •	裁剪区域起始点为 (2, 1)，宽度为 4，高度为 3。
+	* •	源图像像素数据如下（每个数字表示像素索引）：
+	  		 0   1   2   3   4   5   6	 7	 8   9
+			10  11  12  13  14  15  16  17  18  19
+			20  21  22  23  24  25  26  27  28  29
+			30  31  32  33  34  35  36  37  38  39
+			40  41  42  43  44  45  46  47  48  49
+
+		裁剪区域为：
+		•	起始点 (2, 1)，即从像素索引 12 开始。
+		•	宽度为 4，高度为 3，即裁剪出以下像素：
+			12  13  14  15
+			22  23  24  25
+			32  33  34  35
+
+		循环执行过程：
+		1.	第一行 (Y = 0)：
+			•	SrcRowStart = (1 + 0) * 10 + 2 = 12。
+			•	DstRowStart = 0 * 4 = 0。
+			•	拷贝源图像中从索引 12 开始的 4 个像素到目标数组的索引 0 开始。
+		2.	第二行 (Y = 1)：
+			•	SrcRowStart = (1 + 1) * 10 + 2 = 22。
+			•	DstRowStart = 1 * 4 = 4。
+			•	拷贝源图像中从索引 22 开始的 4 个像素到目标数组的索引 4 开始。
+		3.	第三行 (Y = 2)：
+			•	SrcRowStart = (1 + 2) * 10 + 2 = 32。
+			•	DstRowStart = 2 * 4 = 8。
+			•	拷贝源图像中从索引 32 开始的 4 个像素到目标数组的索引 8 开始。
+	*/
+	// 遍历裁剪区域的每一行
+	for (int32 Y = 0; Y < CropHeight; Y++)
+	{
+		// 计算源图像中当前行的起始索引
+		// (StartY + Y)：表示裁剪行在源图中的起始行的像素索引
+		// * SourceWidth：将行号转为源图像中该行的起始像素索引
+		// + StartX：加上裁剪区域的起始列号，得到裁剪区域当前行在源图像中的起始像素索引。
+		const int32 SrcRowStart = (StartY + Y) * SourceWidth + StartX;
+		// 计算目标图像中当前行的起始索引
+		// Y* CropWidth：表示裁剪区域当前行在目标数组 CroppedPixels 中的起始像素索引。
+		const int32 DstRowStart = Y * CropWidth;
+		// &CroppedPixels[DstRowStart]：目标数组中当前行的起始地址。
+		// &CroppedPixels[DstRowStart]：源图像中裁剪区域当前行的起始地址。
+		// CropWidth * sizeof(FColor)：需要拷贝的字节数，等于裁剪区域的宽度乘以每个像素的大小（FColor 的大小）。
+		FMemory::Memcpy(&CroppedPixels[DstRowStart], &InImageData[SrcRowStart], CropWidth * sizeof(FColor));
+	}
+
+	UTexture2D* NewTexture = UTexture2D::CreateTransient(CropWidth, CropHeight, PF_B8G8R8A8);
+	FTexture2DMipMap& NewMip = NewTexture->GetPlatformData()->Mips[0];
+	void* TextureData = NewMip.BulkData.Lock(LOCK_READ_WRITE);
+	FMemory::Memcpy(TextureData, CroppedPixels.GetData(), CroppedPixels.Num() * sizeof(FColor));
+	NewMip.BulkData.Unlock();
+
+	NewTexture->UpdateResource();
+
+	return NewTexture;
+}
+
+void UPhotoWidget::NormalizeSize(const FVector2D InSelectionStart, const FVector2D InSelectionEnd, FVector2D& OutNormalizedCenter, FVector2D& OutNormalizedSize)
+{
+	FVector2D WidgetSize = FVector2D(CacheSourceTexture->GetSizeX(), CacheSourceTexture->GetSizeY());
+	// 计算选择框的大小
+	FVector2D BoxSize(FMath::Abs(InSelectionEnd.X - InSelectionStart.X), FMath::Abs(InSelectionEnd.Y - InSelectionStart.Y));
+	// 计算选择框的左上角位置
+	FVector2D BoxLeftTop(FMath::Min(InSelectionStart.X, InSelectionEnd.X), FMath::Min(InSelectionStart.Y, InSelectionEnd.Y));
+	// 将选择框的中心点归一化到0-1范围
+	FVector2D CenterPoint = BoxLeftTop + BoxSize * 0.5f;
+	// 归一化处理（比例值）
+	OutNormalizedCenter = FVector2D(FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f), FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f));
+	OutNormalizedSize = FVector2D(FMath::Clamp(BoxSize.X / WidgetSize.X, 0.0f, 1.0f), FMath::Clamp(BoxSize.Y / WidgetSize.Y, 0.0f, 1.0f));
+
+	UE_LOG(LogTemp, Log, TEXT("Normalized Center: (%f, %f), Normalized Size: (%f, %f)"), OutNormalizedCenter.X, OutNormalizedCenter.Y, OutNormalizedSize.X, OutNormalizedSize.Y);
+}
+
 UTexture2D* UPhotoWidget::CropScreenshot(UTexture2D* SourceTexture, FVector2D NormalizedCenter, float NormalizedWidth, float NormalizedHeight)
 {
 	if (!SourceTexture) return nullptr;
@@ -100,15 +206,15 @@ UTexture2D* UPhotoWidget::CropScreenshot(UTexture2D* SourceTexture, FVector2D No
 	Mip.BulkData.Unlock();
 
 	// 创建新纹理
-	UTexture2D* NewTexture = UTexture2D::CreateTransient(CropWidth, CropHeight, PF_B8G8R8A8);
-	FTexture2DMipMap& NewMip = NewTexture->PlatformData->Mips[0];
+	UTexture2D* NewTexture = UTexture2D::CreateTransient(CropWidth, CropHeight, PF_B8G8R8A8, FName("123_1"));
+	FTexture2DMipMap& NewMip = NewTexture->GetPlatformData()->Mips.Last();
 	void* TextureData = NewMip.BulkData.Lock(LOCK_READ_WRITE);
 	FMemory::Memcpy(TextureData, CroppedPixels.GetData(), CroppedPixels.Num() * sizeof(FColor));
 	NewMip.BulkData.Unlock();
 
 	NewTexture->UpdateResource();
 
-	return nullptr;
+	return NewTexture;
 }
 
 UTexture2D* UPhotoWidget::CropScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio/*3.0f/4.0f*/)

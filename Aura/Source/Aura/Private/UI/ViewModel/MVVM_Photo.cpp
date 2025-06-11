@@ -19,6 +19,7 @@ void UMVVM_Photo::OnPhotoButtonPressed()
 
 void UMVVM_Photo::MScreenShot(int32 InSizeX, int32 InSizeY, const TArray<FColor>& InImageData)
 {
+	CachedImageData = InImageData;
 	// 常用的8位BGRA格式
 	constexpr EPixelFormat PixelFormat = PF_B8G8R8A8;
 	// 创建一个临时的2D纹理对象，尺寸和像素格式与截图一致。

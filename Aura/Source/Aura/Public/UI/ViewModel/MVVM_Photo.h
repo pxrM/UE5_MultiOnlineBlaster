@@ -44,5 +44,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta = (AllowPrivateAccess = "true"))
 	FSlateBrush PhotoBrush;
+
+	TArray<FColor> CachedImageData;
 	
 };
