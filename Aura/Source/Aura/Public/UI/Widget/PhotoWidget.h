@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "PhotoWidget.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSetPhotoTexture, int32, InSizeX, int32, InSizeY, UTexture2D*, PhotoTexture);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FPhotoSelectAreaDelegate, const FVector2D, CentrePoint, const FVector2D, BoxSize, bool, bIsEnd);
 
 /**
  * 
@@ -23,11 +25,10 @@ protected:
 	FEventReply TouchEnded(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void BlueprintInitializeWidget();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void UpdateSelectionBox(FVector2D BoxSize);
+	UFUNCTION(BlueprintCallable)
+	void OnPhotoButtonPressed();
+	UFUNCTION()
+	void MScreenShot(int32 InSizeX, int32 InSizeY, const TArray<FColor>& InImageData);
 
 	/**
 	* @SourceWidth Ô´Í¼ÏñµÄ¿í¶È
@@ -50,6 +51,9 @@ public:
 		FVector2D& OutEndPoint,
 		FIntPoint& OutCropWidth);
 
+	/**
+	 * 
+	 */
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* CropScreenshotCropScreenshot(
 		const TArray<FColor>& InImageData,
@@ -60,8 +64,11 @@ public:
 		const int32 CropWidth,
 		const int32 CropHeight);
 
+	/**
+	 * 
+	 */
 	UFUNCTION(BlueprintCallable)
-	void NormalizeSize(const FVector2D InSelectionStart, const FVector2D InSelectionEnd, FVector2D& OutNormalizedCenter, FVector2D& OutNormalizedSize);
+	void NormalizeSize(const FVector2D InImageWidgetSize, const FVector2D InSelectionStart, const FVector2D InSelectionEnd, FVector2D& OutNormalizedCenter, FVector2D& OutNormalizedSize);
 
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* CropScreenshot(UTexture2D* SourceTexture, FVector2D NormalizedCenter, float NormalizedWidth, float NormalizedHeight);
@@ -71,11 +78,19 @@ public:
 
 
 public:
+	FDelegateHandle PhotoDelegateHandle;
+	TArray<FColor> CachedImageData;
+	UPROPERTY(BlueprintAssignable)
+	FSetPhotoTexture SetPhotoTexture;
+
 	FVector2D SelectionStart;
 	FVector2D SelectionEnd;
 	bool bIsSelecting = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* CacheSourceTexture;
+
+	UPROPERTY(BlueprintAssignable)
+	FPhotoSelectAreaDelegate PhotoSelectAreaCallBack;
 	
 };

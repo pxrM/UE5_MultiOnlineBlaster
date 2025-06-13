@@ -17,13 +17,19 @@ class AURA_API UPhotoTouchWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
+	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, 
+		FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
+
 	UFUNCTION(BlueprintCallable)
 	FEventReply TouchStarted(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
 	UFUNCTION(BlueprintCallable)
 	FEventReply TouchMoved(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
 	UFUNCTION(BlueprintCallable)
 	FEventReply TouchEnded(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
+
+	//virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
+	//virtual FReply NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
+	//virtual FReply NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
 
 	static bool CheckPointEffectiveIndex(const int32 PointIndex);
 
@@ -32,6 +38,12 @@ public:
 	FVector2D SelectionEnd;
 	FVector2D LastSelectionEnd;
 	bool bIsSelecting = false;
+
+	FVector2D DStartPos;
+	FVector2D DDragOffset;
+	FVector2D DSelectionStart;
+	FVector2D DSelectionEnd;
+	bool bIsDragging = false;
 	
 	UPROPERTY(BlueprintAssignable)
 	FPhotoTouchDelegate TouchStartedCallBack;
@@ -41,4 +53,7 @@ public:
 	FPhotoTouchDelegate TouchEndedCallBack;
 	UPROPERTY(BlueprintAssignable)
 	FSelectAreaDelegate SelectAreaCallBack;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PhotoTouchWidget")
+	class UImage* ImageWidget = nullptr; // Reference to the image widget to be manipulated
 };

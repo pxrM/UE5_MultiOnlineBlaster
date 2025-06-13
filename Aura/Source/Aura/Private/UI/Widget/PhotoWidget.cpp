@@ -3,6 +3,53 @@
 
 #include "UI/Widget/PhotoWidget.h"
 
+#include "Components/SlateWrapperTypes.h"
+#include "Engine/GameViewportClient.h"
+// HighResShot
+
+void UPhotoWidget::OnPhotoButtonPressed()
+{
+	if (PhotoDelegateHandle.IsValid())
+	{
+		UGameViewportClient::OnScreenshotCaptured().Remove(PhotoDelegateHandle);
+	}
+	PhotoDelegateHandle = UGameViewportClient::OnScreenshotCaptured().AddUObject(this, &UPhotoWidget::MScreenShot);
+	FScreenshotRequest::RequestScreenshot(false);
+}
+
+void UPhotoWidget::MScreenShot(int32 InSizeX, int32 InSizeY, const TArray<FColor>& InImageData)
+{
+	CachedImageData = InImageData;
+	// 常用的8位BGRA格式
+	constexpr EPixelFormat PixelFormat = PF_B8G8R8A8;
+	// 创建一个临时的2D纹理对象，尺寸和像素格式与截图一致。
+	UTexture2D* Texture = UTexture2D::CreateTransient(InSizeX, InSizeY, PixelFormat, FName("123"));
+
+	// UE的纹理有多级 MipMap，获取纹理的最高分辨率Mip层级（即Mip链中的第0级）
+	FTexture2DMipMap& Mip = Texture->GetPlatformData()->Mips.Last();
+
+	// 获取指定像素格式（如 PF_B8G8R8A8）在内存中每个“块”在 X 方向上的像素数。
+	// 它的作用主要体现在压缩纹理格式（如DXT、ASTC等），这些格式以“块”为单位存储像素数据，每个块通常是 4x4 像素。
+	int32 NumBlocksX = InSizeX / GPixelFormats[PixelFormat].BlockSizeX;
+	int32 NumBlocksY = InSizeY / GPixelFormats[PixelFormat].BlockSizeY;
+	NumBlocksX = FMath::Max(NumBlocksX, 1);
+	NumBlocksY = FMath::Max(NumBlocksY, 1);
+	// 总字节数 = X方向块数 × Y方向块数 × 单块字节数
+	const int32 PixelSize = NumBlocksX * NumBlocksY * GPixelFormats[PixelFormat].BlockBytes;
+
+	// 获取Mip数据可读写指针
+	uint8* TextureData = static_cast<uint8*>(Mip.BulkData.Lock(LOCK_READ_WRITE));
+	// 高效内存拷贝（SIMD优化）
+	FMemory::Memcpy(TextureData, InImageData.GetData(), PixelSize);
+	// 释放内存锁并标记数据变更
+	Mip.BulkData.Unlock();
+
+	// 更新纹理资源
+	Texture->UpdateResource();
+
+	SetPhotoTexture.Broadcast(InSizeX, InSizeY, Texture);
+}
+
 FEventReply UPhotoWidget::TouchStarted(FGeometry MyGeometry, const FPointerEvent& InTouchEvent)
 {
 	FEventReply Reply;
@@ -38,7 +85,6 @@ FEventReply UPhotoWidget::TouchMoved(FGeometry MyGeometry, const FPointerEvent& 
 
 
 		// 更新选择框UI（如半透明矩形）
-		UpdateSelectionBox(BoxSize);
 	}
 	return Reply;
 }
@@ -62,7 +108,7 @@ FEventReply UPhotoWidget::TouchEnded(FGeometry MyGeometry, const FPointerEvent& 
 }
 
 void UPhotoWidget::CalculateCropRange(const int32 SourceWidth, const int32 SourceHeight, const FVector2D NormalizedCenter, const float NormalizedWidth, const float NormalizedHeight,
-	FVector2D& OutStartPoint, FVector2D& OutEndPoint, FIntPoint& OutCropWidth)
+	FVector2D& OutStartPoint, FVector2D& OutEndPoint, FIntPoint& OutCropWH)
 {
 	// 将归一化的中心点坐标（范围 [0,1]）转换为实际像素坐标
 	FVector2D CenterPixel(NormalizedCenter.X * SourceWidth, NormalizedCenter.Y * SourceHeight);
@@ -82,7 +128,7 @@ void UPhotoWidget::CalculateCropRange(const int32 SourceWidth, const int32 Sourc
 
 	OutStartPoint = FVector2D(StartX, StartY);
 	OutEndPoint = FVector2D(EndX, EndY);
-	OutCropWidth = FIntPoint(CropWidth, CropHeight);
+	OutCropWH = FIntPoint(CropWidth, CropHeight);
 }
 
 UTexture2D* UPhotoWidget::CropScreenshotCropScreenshot(const TArray<FColor>& InImageData,
@@ -151,9 +197,10 @@ UTexture2D* UPhotoWidget::CropScreenshotCropScreenshot(const TArray<FColor>& InI
 	return NewTexture;
 }
 
-void UPhotoWidget::NormalizeSize(const FVector2D InSelectionStart, const FVector2D InSelectionEnd, FVector2D& OutNormalizedCenter, FVector2D& OutNormalizedSize)
+void UPhotoWidget::NormalizeSize(const FVector2D InImageWidgetSize, const FVector2D InSelectionStart, const FVector2D InSelectionEnd, FVector2D& OutNormalizedCenter, FVector2D& OutNormalizedSize)
 {
-	FVector2D WidgetSize = FVector2D(CacheSourceTexture->GetSizeX(), CacheSourceTexture->GetSizeY());
+	//FVector2D WidgetSize = FVector2D(CacheSourceTexture->GetSizeX(), CacheSourceTexture->GetSizeY());
+	FVector2D WidgetSize = InImageWidgetSize;
 	// 计算选择框的大小
 	FVector2D BoxSize(FMath::Abs(InSelectionEnd.X - InSelectionStart.X), FMath::Abs(InSelectionEnd.Y - InSelectionStart.Y));
 	// 计算选择框的左上角位置
@@ -173,16 +220,22 @@ UTexture2D* UPhotoWidget::CropScreenshot(UTexture2D* SourceTexture, FVector2D No
 	int32 SourceWidth = SourceTexture->GetSizeX();
 	int32 SourceHeight = SourceTexture->GetSizeY();
 
-	FVector2D CenterPixel(NormalizedCenter.X * SourceWidth, NormalizedCenter.Y * SourceHeight);
-	FVector2D HalfSize(NormalizedWidth * SourceWidth * 0.5f, NormalizedHeight * SourceHeight * 0.5f);
-	int32 StartX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X - HalfSize.X), 0, SourceWidth - 1);
-	int32 StartY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y - HalfSize.Y), 0, SourceHeight - 1);
-	int32 EndX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X + HalfSize.X), 0, SourceWidth - 1);
-	int32 EndY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y + HalfSize.Y), 0, SourceHeight - 1);
-	int32 CropWidth = EndX - StartX;
-	int32 CropHeight = EndY - StartY;
+	//FVector2D CenterPixel(NormalizedCenter.X * SourceWidth, NormalizedCenter.Y * SourceHeight);
+	//FVector2D HalfSize(NormalizedWidth * SourceWidth * 0.5f, NormalizedHeight * SourceHeight * 0.5f);
+	//int32 StartX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X - HalfSize.X), 0, SourceWidth - 1);
+	//int32 StartY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y - HalfSize.Y), 0, SourceHeight - 1);
+	//int32 EndX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X + HalfSize.X), 0, SourceWidth - 1);
+	//int32 EndY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y + HalfSize.Y), 0, SourceHeight - 1);
+	//int32 CropWidth = EndX - StartX;
+	//int32 CropHeight = EndY - StartY;
+
+	FVector2D OutStartPoint; 
+	FVector2D OutEndPoint; 
+	FIntPoint OutCropWH;
+	CalculateCropRange(SourceWidth, SourceHeight, NormalizedCenter, NormalizedWidth, NormalizedHeight, OutStartPoint, OutEndPoint, OutCropWH);
+
 	TArray<FColor> CroppedPixels;
-	CroppedPixels.SetNumUninitialized(CropWidth * CropHeight);
+	CroppedPixels.SetNumUninitialized(OutCropWH.X * OutCropWH.Y);
 	// 锁定纹理数据
 	FTexture2DMipMap& Mip = SourceTexture->GetPlatformData()->Mips[0];
 	const FColor* SourceData = reinterpret_cast<const FColor*>(Mip.BulkData.LockReadOnly());
@@ -197,16 +250,16 @@ UTexture2D* UPhotoWidget::CropScreenshot(UTexture2D* SourceTexture, FVector2D No
 	//		}
 	//	}
 	//}
-	for (int32 Y = 0; Y < CropHeight; Y++)
+	for (int32 Y = 0; Y < OutCropWH.Y; Y++)
 	{
-		const int32 SrcRowStart = (StartY + Y) * SourceWidth + StartX;
-		const int32 DstRowStart = Y * CropWidth;
-		FMemory::Memcpy(&CroppedPixels[DstRowStart], &SourceData[SrcRowStart], CropWidth * sizeof(FColor));
+		const int32 SrcRowStart = (OutStartPoint.Y + Y) * SourceWidth + OutStartPoint.X;
+		const int32 DstRowStart = Y * OutCropWH.X;
+		FMemory::Memcpy(&CroppedPixels[DstRowStart], &SourceData[SrcRowStart], OutCropWH.X * sizeof(FColor));
 	}
 	Mip.BulkData.Unlock();
 
 	// 创建新纹理
-	UTexture2D* NewTexture = UTexture2D::CreateTransient(CropWidth, CropHeight, PF_B8G8R8A8, FName("123_1"));
+	UTexture2D* NewTexture = UTexture2D::CreateTransient(OutCropWH.X, OutCropWH.Y, PF_B8G8R8A8, FName("123_1"));
 	FTexture2DMipMap& NewMip = NewTexture->GetPlatformData()->Mips.Last();
 	void* TextureData = NewMip.BulkData.Lock(LOCK_READ_WRITE);
 	FMemory::Memcpy(TextureData, CroppedPixels.GetData(), CroppedPixels.Num() * sizeof(FColor));
@@ -219,7 +272,8 @@ UTexture2D* UPhotoWidget::CropScreenshot(UTexture2D* SourceTexture, FVector2D No
 
 UTexture2D* UPhotoWidget::CropScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio/*3.0f/4.0f*/)
 {
-	if (!SourceTexture) return nullptr;
+	if (!SourceTexture || FMath::IsNearlyZero(TargetAspectRatio))
+		return nullptr;
 
 	// 获取纹理的尺寸
 	int32 SourceWidth = SourceTexture->GetSizeX();
@@ -228,54 +282,60 @@ UTexture2D* UPhotoWidget::CropScreenshotRatio(UTexture2D* SourceTexture, const f
 	int32 CropHeight = SourceHeight;
 	int32 StartX = 0;
 	int32 StartY = 0;
+
+	// 计算裁剪区域
 	const float OriginalAspect = static_cast<float>(SourceWidth) / SourceHeight;
 	if (OriginalAspect > TargetAspectRatio)
 	{
-		// 原始更宽：裁剪宽度
+		// 原始宽高比更宽：裁剪宽度
 		CropWidth = static_cast<int32>(SourceHeight * TargetAspectRatio);
 		StartX = (SourceWidth - CropWidth) / 2;
 	}
 	else
 	{
-		// 原始更高：裁剪高度
+		// 原始宽高比更高：裁剪高度
 		CropHeight = static_cast<int32>(SourceWidth / TargetAspectRatio);
 		StartY = (SourceHeight - CropHeight) / 2;
 	}
+
+	FBox2D CropFrame;
+	CropFrame.Min = FVector2D(StartX, StartY);
+	CropFrame.Max = FVector2D(StartX + CropWidth, StartY + CropHeight);
+	FVector2D BoxSize(FMath::Abs(CropFrame.Max.X - CropFrame.Min.X), FMath::Abs(CropFrame.Max.Y - CropFrame.Min.Y));
+	FVector2D CropCenter = CropFrame.Min + (CropFrame.Max - CropFrame.Min) * 0.5f; // 计算裁剪区域的中心点
+	FVector2D NormalizedCenter = FVector2D(
+		FMath::Clamp(CropCenter.X / SourceWidth, 0.0f, 1.0f),
+		FMath::Clamp(CropCenter.Y / SourceHeight, 0.0f, 1.0f)
+	);
+	FVector2D NormalizedSize = FVector2D(
+		FMath::Clamp(BoxSize.X / SourceWidth, 0.0f, 1.0f),
+		FMath::Clamp(BoxSize.Y / SourceHeight, 0.0f, 1.0f)
+	);
+	PhotoSelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
 	UE_LOG(LogTemp, Log, TEXT("Cropping %dx%d to %dx%d (Start: %d,%d)"), SourceWidth, SourceHeight, CropWidth, CropHeight, StartX, StartY);
 
-	TArray<FColor> CroppedBitmap;
-	CroppedBitmap.Reserve(CropWidth * CropHeight);
-
+	// 锁定纹理数据
 	FTexture2DMipMap& Mip = SourceTexture->GetPlatformData()->Mips[0];
-	const FColor* SourceData = static_cast<FColor*>(Mip.BulkData.Lock(LOCK_READ_ONLY));
-	/*
-	int32 NumBlocksX = SourceWidth / GPixelFormats[PF_B8G8R8A8].BlockSizeX;
-	int32 NumBlocksY = SourceHeight / GPixelFormats[PF_B8G8R8A8].BlockSizeY;
-	NumBlocksX = FMath::Max(NumBlocksX, 1);
-	NumBlocksY = FMath::Max(NumBlocksY, 1);
-	const int32 PixelSize = NumBlocksX * NumBlocksY * GPixelFormats[PF_B8G8R8A8].BlockBytes;
-	const void* DataPtr = Mip.BulkData.LockReadOnly();
-	TArray<uint8> RawData;
-	RawData.SetNumUninitialized(PixelSize);
-	FMemory::Memcpy(RawData.GetData(), DataPtr, PixelSize);
-	Mip.BulkData.Unlock();
-	*/
-	for (int32 y = StartY; y < StartY + CropHeight; y++)
+	const FColor* SourceData = reinterpret_cast<const FColor*>(Mip.BulkData.LockReadOnly());
+
+	// 提取裁剪区域的像素数据
+	TArray<FColor> CroppedPixels;
+	CroppedPixels.SetNumUninitialized(CropWidth * CropHeight);
+	for (int32 Y = 0; Y < CropHeight; Y++)
 	{
-		for (int32 x = StartX; x < StartX + CropWidth; x++)
-		{
-			int32 Index = y * SourceWidth + x;
-			if (Index >= 0 && Index < Mip.BulkData.GetBulkDataSize() / sizeof(FColor))
-			{
-				CroppedBitmap.Add(SourceData[Index]);
-			}
-		}
+		const int32 SrcRowStart = (StartY + Y) * SourceWidth + StartX;
+		const int32 DstRowStart = Y * CropWidth;
+		FMemory::Memcpy(&CroppedPixels[DstRowStart], &SourceData[SrcRowStart], CropWidth * sizeof(FColor));
 	}
 	Mip.BulkData.Unlock();
+
+	// 创建新纹理
 	UTexture2D* CroppedTexture = UTexture2D::CreateTransient(CropWidth, CropHeight, PF_B8G8R8A8);
-	void* TextureData = CroppedTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
-	FMemory::Memcpy(TextureData, CroppedBitmap.GetData(), CroppedBitmap.Num() * sizeof(FColor));
-	CroppedTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+	FTexture2DMipMap& NewMip = CroppedTexture->GetPlatformData()->Mips[0];
+	void* TextureData = NewMip.BulkData.Lock(LOCK_READ_WRITE);
+	FMemory::Memcpy(TextureData, CroppedPixels.GetData(), CroppedPixels.Num() * sizeof(FColor));
+	NewMip.BulkData.Unlock();
+
 	CroppedTexture->UpdateResource();
 
 	return CroppedTexture;
