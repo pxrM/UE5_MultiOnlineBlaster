@@ -5,6 +5,9 @@
 
 #include "Components/SlateWrapperTypes.h"
 #include "Engine/GameViewportClient.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Engine/Canvas.h"
+#include "CanvasItem.h"
 // HighResShot
 
 void UPhotoWidget::OnPhotoButtonPressed()
@@ -339,4 +342,73 @@ UTexture2D* UPhotoWidget::CropScreenshotRatio(UTexture2D* SourceTexture, const f
 	CroppedTexture->UpdateResource();
 
 	return CroppedTexture;
+}
+
+void UPhotoWidget::AddElementImage(UTexture2D* Image, FVector2D Position, FVector2D Size, FVector2D Scale)
+{
+	FPhotoTextureElement NewElement;
+	NewElement.Image = Image;
+	NewElement.Position = Position;
+	NewElement.Size = Size;
+	NewElement.Scale = Scale;
+	PhotoTextureElements.Add(NewElement);
+} 
+
+void UPhotoWidget::AddElementTxt(const FString& Text, FVector2D Position, FVector2D Size, FVector2D Scale)
+{
+	FPhotoTextureElement NewElement;
+	NewElement.Text = Text;
+	NewElement.Position = Position;
+	NewElement.Size = Size;
+	NewElement.Scale = Scale;
+	PhotoTextureElements.Add(NewElement);
+}
+
+UTexture2D* UPhotoWidget::GenerateFinalTexture(UTexture2D* SourceTexture)
+{
+	int32 SourceWidth = SourceTexture->GetSizeX();
+	int32 SourceHeight = SourceTexture->GetSizeY();
+
+	// 1.创建RenderTarget
+	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
+	RenderTarget->InitAutoFormat(SourceWidth, SourceHeight);
+
+	// 2.创建一个画布来绘制元素
+	FTextureRenderTargetResource* RTResource = RenderTarget->GameThread_GetRenderTargetResource();
+	ERHIFeatureLevel::Type FeatureLevel = GetWorld()->GetFeatureLevel();
+	FCanvas Canvas(RTResource, nullptr, 0, 0, 0, FeatureLevel);
+
+	// 3.按ZOrder排序，依次绘制
+	//	3.1 绘制原图
+	Canvas.DrawTile(0, 0, SourceWidth, SourceHeight, 0, 0, 1, 1, FLinearColor::White, SourceTexture->GetResource());
+
+	//	3.2 绘制贴图和文字
+	for (const FPhotoTextureElement& Element : PhotoTextureElements)
+	{
+		if (Element.Image)
+		{
+			// 贴图
+			Canvas.DrawTile(Element.Position.X, Element.Position.Y, Element.Size.X, Element.Size.Y, 0, 0, 1, 1, FLinearColor::White, Element.Image->GetResource(), SE_BLEND_Translucent);
+		}
+		else if (!Element.Text.IsEmpty())
+		{
+			// 文字
+			FCanvasTextItem TextItem(Element.Position, FText::FromString(Element.Text), Element.Font, Element.Color);
+			TextItem.Scale = FVector2D(Element.Scale.X, Element.Scale.Y);
+			Canvas.DrawItem(TextItem);
+		}
+	}
+
+	Canvas.Flush_GameThread();
+
+	// 4.读取像素并生成新纹理
+	TArray<FColor> OutPixels;
+	RTResource->ReadPixels(OutPixels);
+	UTexture2D* NewTexture = UTexture2D::CreateTransient(SourceWidth, SourceHeight, PF_B8G8R8A8);
+	void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+	FMemory::Memcpy(TextureData, OutPixels.GetData(), OutPixels.Num() * sizeof(FColor));
+	NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+	NewTexture->UpdateResource();
+
+	return NewTexture;
 }

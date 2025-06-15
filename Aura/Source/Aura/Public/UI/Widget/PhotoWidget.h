@@ -9,6 +9,34 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSetPhotoTexture, int32, InSizeX, int32, InSizeY, UTexture2D*, PhotoTexture);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FPhotoSelectAreaDelegate, const FVector2D, CentrePoint, const FVector2D, BoxSize, bool, bIsEnd);
 
+USTRUCT(BlueprintType)
+struct FPhotoTextureElement
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	UTexture2D* Image; // 贴图（可选）
+
+	UPROPERTY()
+	FString Text;      // 文字（可选）
+
+	UPROPERTY()
+	FVector2D Position;
+
+	UPROPERTY()
+	FVector2D Size;
+
+	UPROPERTY()
+	FVector2D Scale;
+
+	UPROPERTY()
+	UFont* Font;
+
+	UPROPERTY()
+	FLinearColor Color;
+};
+
+
 /**
  * 
  */
@@ -76,6 +104,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* CropScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio);
 
+	void AddElementImage(UTexture2D* Image, FVector2D Position, FVector2D Size, FVector2D Scale);
+	void AddElementTxt(const FString& Text, FVector2D Position, FVector2D Size, FVector2D Scale);
+	UTexture2D* GenerateFinalTexture(UTexture2D* SourceTexture);
+
+
 
 public:
 	FDelegateHandle PhotoDelegateHandle;
@@ -92,5 +125,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FPhotoSelectAreaDelegate PhotoSelectAreaCallBack;
+
+	TArray<FPhotoTextureElement> PhotoTextureElements;
 	
 };
