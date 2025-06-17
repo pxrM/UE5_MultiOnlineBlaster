@@ -8,6 +8,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/Canvas.h"
 #include "CanvasItem.h"
+#include <Slate/WidgetRenderer.h>
 // HighResShot
 
 void UPhotoWidget::OnPhotoButtonPressed()
@@ -145,7 +146,7 @@ UTexture2D* UPhotoWidget::CropScreenshotCropScreenshot(const TArray<FColor>& InI
 	* •	源图像宽度为 10，高度为 5。
 	* •	裁剪区域起始点为 (2, 1)，宽度为 4，高度为 3。
 	* •	源图像像素数据如下（每个数字表示像素索引）：
-	  		 0   1   2   3   4   5   6	 7	 8   9
+			 0   1   2   3   4   5   6	 7	 8   9
 			10  11  12  13  14  15  16  17  18  19
 			20  21  22  23  24  25  26  27  28  29
 			30  31  32  33  34  35  36  37  38  39
@@ -232,8 +233,8 @@ UTexture2D* UPhotoWidget::CropScreenshot(UTexture2D* SourceTexture, FVector2D No
 	//int32 CropWidth = EndX - StartX;
 	//int32 CropHeight = EndY - StartY;
 
-	FVector2D OutStartPoint; 
-	FVector2D OutEndPoint; 
+	FVector2D OutStartPoint;
+	FVector2D OutEndPoint;
 	FIntPoint OutCropWH;
 	CalculateCropRange(SourceWidth, SourceHeight, NormalizedCenter, NormalizedWidth, NormalizedHeight, OutStartPoint, OutEndPoint, OutCropWH);
 
@@ -352,7 +353,7 @@ void UPhotoWidget::AddElementImage(UTexture2D* Image, FVector2D Position, FVecto
 	NewElement.Size = Size;
 	NewElement.Scale = Scale;
 	PhotoTextureElements.Add(NewElement);
-} 
+}
 
 void UPhotoWidget::AddElementTxt(const FString& Text, FVector2D Position, FVector2D Size, FVector2D Scale)
 {
@@ -408,6 +409,57 @@ UTexture2D* UPhotoWidget::GenerateFinalTexture(UTexture2D* SourceTexture)
 	void* TextureData = NewTexture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
 	FMemory::Memcpy(TextureData, OutPixels.GetData(), OutPixels.Num() * sizeof(FColor));
 	NewTexture->GetPlatformData()->Mips[0].BulkData.Unlock();
+	NewTexture->UpdateResource();
+
+	return NewTexture;
+}
+
+UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY)
+{
+	// FWidgetRenderer 是一个工具类，用于将 UWidget 渲染到 UTextureRenderTarget2D。
+	auto WRDeleter = [](FWidgetRenderer* p) {BeginCleanup(p); };
+	// 使用 std::unique_ptr 管理 FWidgetRenderer 的生命周期，并在销毁时调用 WRDeleter（BeginCleanup）。
+	std::unique_ptr<FWidgetRenderer, decltype(WRDeleter)> WidgetRenderer(new FWidgetRenderer(true), WRDeleter);
+
+	// 创建一个 UTextureRenderTarget2D，用于存储渲染结果。
+	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
+	// InitAutoFormat 方法根据输入的宽度和高度初始化渲染目标。
+	RenderTarget->InitAutoFormat(InSizeX, InSizeY);
+
+	// DrawWidget 方法将 InWidget 的内容绘制到 RenderTarget。
+	// InWidget->TakeWidget() 将 UWidget 转换为 SWidget（Slate 的基础类）。
+	WidgetRenderer->DrawWidget(RenderTarget, InWidget->TakeWidget(), FVector2D(InSizeX, InSizeY), 0, false);
+
+	// GameThread_GetRenderTargetResource 获取渲染目标的资源。
+	FTextureRenderTargetResource* RTResource = RenderTarget->GameThread_GetRenderTargetResource();
+	// 从渲染目标中读取像素数据，并存储到 RawData 数组中。
+	TArray<FColor> RawData;
+	RTResource->ReadPixels(RawData);
+
+	// 使用 CreateTransient 创建一个新的 UTexture2D，尺寸和格式与 RenderTarget 相同。
+	UTexture2D* NewTexture = UTexture2D::CreateTransient(RenderTarget->SizeX, RenderTarget->SizeY, RenderTarget->GetFormat());
+	NewTexture->UpdateResource();
+
+	FReadSurfaceDataFlags ReadSurfaceDataFlags;
+	ReadSurfaceDataFlags.SetLinearToGamma(false);
+
+	FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->Mips[0];
+	void* Data = Mip.BulkData.Lock(LOCK_READ_WRITE);
+
+	// 使用 FMemory::Memcpy 将像素数据从 RawData 拷贝到纹理的 Mip 数据中。
+	FMemory::Memcpy(Data, RawData.GetData(), RawData.Num() * sizeof(FColor));
+	Mip.BulkData.Unlock();
+
+	if (UTexture* ATex = Cast<UTexture>(NewTexture))
+	{
+#if WITH_EDITORONLY_DATA
+		ATex->MipGenSettings = TMGS_NoMipmaps; // 关闭Mipmap生成
+#endif
+		ATex->Filter = TF_Nearest; // 使用最近邻过滤
+		ATex->CompressionSettings = TC_EditorIcon; // 对于UI纹理使用无压缩
+		ATex->LODGroup = TEXTUREGROUP_UI; // 指定为UI组
+	}
+
 	NewTexture->UpdateResource();
 
 	return NewTexture;

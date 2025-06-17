@@ -13,7 +13,7 @@ public class Aura : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "AIModule" });
 
 		// Uncomment if you are using Slate UI
-		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "UMG" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "UMG", "RenderCore" });
 
         PublicDefinitions.Add("UE_WITH_SLATE_DEBUG_WIDGELIST=1");
 

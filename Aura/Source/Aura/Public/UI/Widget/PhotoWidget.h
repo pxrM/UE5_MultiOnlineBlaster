@@ -106,7 +106,16 @@ public:
 
 	void AddElementImage(UTexture2D* Image, FVector2D Position, FVector2D Size, FVector2D Scale);
 	void AddElementTxt(const FString& Text, FVector2D Position, FVector2D Size, FVector2D Scale);
+
+	/**
+	 * 基于一个已有的 UTexture2D 纹理，生成一个新的纹理，并在其上绘制额外的元素（如贴图和文字）。
+	 */
 	UTexture2D* GenerateFinalTexture(UTexture2D* SourceTexture);
+
+	/**
+	 * 将一个 UWidget 渲染为纹理，生成一个新的 UTexture2D。
+	 */
+	UTexture2D* GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY);
 
 
 
