@@ -464,3 +464,60 @@ UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX,
 
 	return NewTexture;
 }
+
+UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY, FVector2D NormalizedCenter, FVector2D NormalizedSize)
+{
+	// 1. 渲染整个Widget到RenderTarget
+	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
+	RenderTarget->InitAutoFormat(InSizeX, InSizeY);
+
+	auto WRDeleter = [](FWidgetRenderer* p) {BeginCleanup(p); };
+	std::unique_ptr<FWidgetRenderer, decltype(WRDeleter)> WidgetRenderer(new FWidgetRenderer(true), WRDeleter);
+
+	WidgetRenderer->DrawWidget(RenderTarget, InWidget->TakeWidget(), FVector2D(InSizeX, InSizeY), 0, false);
+
+	FTextureRenderTargetResource* RTResource = RenderTarget->GameThread_GetRenderTargetResource();
+	TArray<FColor> RawData;
+	RTResource->ReadPixels(RawData);
+
+	// 2. 计算裁剪区域
+	FVector2D CenterPixel = NormalizedCenter * FVector2D(InSizeX, InSizeY);
+	FVector2D HalfSize = NormalizedSize * FVector2D(InSizeX, InSizeY) * 0.5f;
+	int32 StartX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X - HalfSize.X), 0, InSizeX - 1);
+	int32 StartY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y - HalfSize.Y), 0, InSizeY - 1);
+	int32 EndX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X + HalfSize.X), 0, InSizeX - 1);
+	int32 EndY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y + HalfSize.Y), 0, InSizeY - 1);
+	int32 CropWidth = EndX - StartX;
+	int32 CropHeight = EndY - StartY;
+
+	// 3. 裁剪像素
+	TArray<FColor> CroppedPixels;
+	CroppedPixels.SetNumUninitialized(CropWidth * CropHeight);
+	for (int32 Y = 0; Y < CropHeight; Y++)
+	{
+		const int32 SrcRowStart = (StartY + Y) * InSizeX + StartX;
+		const int32 DstRowStart = Y * CropWidth;
+		FMemory::Memcpy(&CroppedPixels[DstRowStart], &RawData[SrcRowStart], CropWidth * sizeof(FColor));
+	}
+
+	// 4. 生成新纹理
+	UTexture2D* NewTexture = UTexture2D::CreateTransient(CropWidth, CropHeight, PF_B8G8R8A8);
+	FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->Mips[0];
+	void* Data = Mip.BulkData.Lock(LOCK_READ_WRITE);
+	FMemory::Memcpy(Data, CroppedPixels.GetData(), CroppedPixels.Num() * sizeof(FColor));
+	Mip.BulkData.Unlock();
+
+	if (UTexture* ATex = Cast<UTexture>(NewTexture))
+	{
+#if WITH_EDITORONLY_DATA
+		ATex->MipGenSettings = TMGS_NoMipmaps; // 关闭Mipmap生成
+#endif
+		ATex->Filter = TF_Nearest; // 使用最近邻过滤
+		ATex->CompressionSettings = TC_EditorIcon; // 对于UI纹理使用无压缩
+		ATex->LODGroup = TEXTUREGROUP_UI; // 指定为UI组
+	}
+
+	NewTexture->UpdateResource();
+
+	return NewTexture;
+}
