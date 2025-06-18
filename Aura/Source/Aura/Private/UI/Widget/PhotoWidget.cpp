@@ -118,6 +118,7 @@ void UPhotoWidget::CalculateCropRange(const int32 SourceWidth, const int32 Sourc
 	FVector2D CenterPixel(NormalizedCenter.X * SourceWidth, NormalizedCenter.Y * SourceHeight);
 	// 计算裁剪区域的半宽和半高（便于后续计算边界）0.5f 表示除以 2，因为要从中心向两侧扩展
 	// 例如：归一化宽度 0.4，源宽 1000 → 半宽 = 0.4 * 1000 * 0.5 = 200 像素
+	//	FVector2D HalfSize = NormalizedSize * FVector2D(SourceWidth, NormalizedHeight) * 0.5f;
 	FVector2D HalfSize(NormalizedWidth * SourceWidth * 0.5f, NormalizedHeight * SourceHeight * 0.5f);
 	// 左上角X坐标：中心X - 半宽，并限制在图像范围内（0到SourceWidth-1）
 	int32 StartX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X - HalfSize.X), 0, SourceWidth - 1);
@@ -481,27 +482,23 @@ UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX,
 	RTResource->ReadPixels(RawData);
 
 	// 2. 计算裁剪区域
-	FVector2D CenterPixel = NormalizedCenter * FVector2D(InSizeX, InSizeY);
-	FVector2D HalfSize = NormalizedSize * FVector2D(InSizeX, InSizeY) * 0.5f;
-	int32 StartX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X - HalfSize.X), 0, InSizeX - 1);
-	int32 StartY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y - HalfSize.Y), 0, InSizeY - 1);
-	int32 EndX = FMath::Clamp(FMath::RoundToInt(CenterPixel.X + HalfSize.X), 0, InSizeX - 1);
-	int32 EndY = FMath::Clamp(FMath::RoundToInt(CenterPixel.Y + HalfSize.Y), 0, InSizeY - 1);
-	int32 CropWidth = EndX - StartX;
-	int32 CropHeight = EndY - StartY;
+	FVector2D OutStartPoint;
+	FVector2D OutEndPoint;
+	FIntPoint OutCropWH;
+	CalculateCropRange(InSizeX, InSizeY, NormalizedCenter, NormalizedSize.X, NormalizedSize.Y, OutStartPoint, OutEndPoint, OutCropWH);
 
 	// 3. 裁剪像素
 	TArray<FColor> CroppedPixels;
-	CroppedPixels.SetNumUninitialized(CropWidth * CropHeight);
-	for (int32 Y = 0; Y < CropHeight; Y++)
+	CroppedPixels.SetNumUninitialized(OutCropWH.X * OutCropWH.Y);
+	for (int32 Y = 0; Y < OutCropWH.Y; Y++)
 	{
-		const int32 SrcRowStart = (StartY + Y) * InSizeX + StartX;
-		const int32 DstRowStart = Y * CropWidth;
-		FMemory::Memcpy(&CroppedPixels[DstRowStart], &RawData[SrcRowStart], CropWidth * sizeof(FColor));
+		const int32 SrcRowStart = (OutStartPoint.Y + Y) * InSizeX + OutStartPoint.X;
+		const int32 DstRowStart = Y * OutCropWH.X;
+		FMemory::Memcpy(&CroppedPixels[DstRowStart], &RawData[SrcRowStart], OutCropWH.X * sizeof(FColor));
 	}
 
 	// 4. 生成新纹理
-	UTexture2D* NewTexture = UTexture2D::CreateTransient(CropWidth, CropHeight, PF_B8G8R8A8);
+	UTexture2D* NewTexture = UTexture2D::CreateTransient(OutCropWH.X, OutCropWH.Y, PF_B8G8R8A8);
 	FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->Mips[0];
 	void* Data = Mip.BulkData.Lock(LOCK_READ_WRITE);
 	FMemory::Memcpy(Data, CroppedPixels.GetData(), CroppedPixels.Num() * sizeof(FColor));
