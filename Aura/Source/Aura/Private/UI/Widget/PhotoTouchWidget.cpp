@@ -7,6 +7,9 @@
 #include "Kismet/KismetInputLibrary.h"
 #include "GameFramework/HUD.h"
 #include "Components/Image.h"
+#include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/SizeBox.h"
 
 int32 UPhotoTouchWidget::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
@@ -79,10 +82,7 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 
 	if (bIsSelecting)
 	{
-		//SelectionEnd = MyGeometry.AbsoluteToLocal(InTouchEvent.GetScreenSpacePosition());
-		//FVector2D WidgetSize = MyGeometry.GetLocalSize();
 		SelectionEnd = ImageWidget->GetCachedGeometry().AbsoluteToLocal(InTouchEvent.GetScreenSpacePosition());
-		// 仅当选区发生变化时才更新UI
 		if ((SelectionEnd - LastSelectionEnd).SizeSquared() < 4.0f)
 		{
 			return  UWidgetBlueprintLibrary::Unhandled();
@@ -90,22 +90,29 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 		LastSelectionEnd = SelectionEnd;
 
 		FVector2D WidgetSize = ImageWidget->GetCachedGeometry().GetLocalSize();
-		// 计算选区矩形
 		FVector2D BoxLeftTop(FMath::Min(SelectionStart.X, SelectionEnd.X), FMath::Min(SelectionStart.Y, SelectionEnd.Y));
 		FVector2D BoxSize(FMath::Abs(SelectionEnd.X - SelectionStart.X), FMath::Abs(SelectionEnd.Y - SelectionStart.Y));
 		FVector2D CenterPoint = BoxLeftTop + BoxSize * 0.5f;
-		// 归一化处理（比例值）
 		FVector2D NormalizedSize(
-			FMath::Clamp(BoxSize.X / WidgetSize.X, 0.0f, 1.0f), 
+			FMath::Clamp(BoxSize.X / WidgetSize.X, 0.0f, 1.0f),
 			FMath::Clamp(BoxSize.Y / WidgetSize.Y, 0.0f, 1.0f)
 		);
 		FVector2D NormalizedCenter(
-			FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f), 
+			FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f),
 			FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f)
 		);
 		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
-		UE_LOG(LogTemp, Warning, TEXT("Current values: %s, %f, %f"), *NormalizedCenter.ToString(), NormalizedSize.X, NormalizedSize.Y);
-		TouchMovedCallBack.Broadcast(InTouchEvent);
+
+		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(DecorateCanvasPanel->Slot);
+		const FGeometry& ParentGeometry = DecorateCanvasPanel->GetParent()->GetCachedGeometry();
+		FVector2D AbsolutePos = ImageWidget->GetCachedGeometry().LocalToAbsolute(BoxLeftTop);
+		FVector2D ParentLocalPos = ParentGeometry.AbsoluteToLocal(AbsolutePos);
+		CanvasSlot->SetAnchors(FAnchors(0.f, 0.f));
+		CanvasSlot->SetAlignment(FVector2D(0.f, 0.f));
+		CanvasSlot->SetPosition(ParentLocalPos);
+		CanvasSlot->SetSize(BoxSize/* * ParentGeometry.Scale*/);
+
+		UE_LOG(LogTemp, Log, TEXT("SetPosition: (%s)"), *ParentLocalPos.ToString());
 	}
 
 	if (bIsDragging)
@@ -135,6 +142,7 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 			FMath::Clamp(BoxSize.Y / WidgetSize.Y, 0.0f, 1.0f)
 		);
 		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
+
 	}
 
 	return UWidgetBlueprintLibrary::Handled();
@@ -166,7 +174,7 @@ FEventReply UPhotoTouchWidget::TouchEnded(FGeometry MyGeometry, const FPointerEv
 		DSelectionStart = SelectionStart;
 		DSelectionEnd = SelectionEnd;
 
-		SelectAreaCallBack.Broadcast(SelectionStart, SelectionEnd, true);
+		//SelectAreaCallBack.Broadcast(SelectionStart, SelectionEnd, true);
 
 		TouchEndedCallBack.Broadcast(InTouchEvent);
 
@@ -185,4 +193,30 @@ bool UPhotoTouchWidget::CheckPointEffectiveIndex(const int32 PointIndex)
 		return false;
 	}
 	return true;
+}
+
+void UPhotoTouchWidget::UpdateCanvasPanelSlot(UCanvasPanelSlot* CanvasSlot, const FVector2D& BoxSize, const FVector2D& CenterPoint, const FVector2D& NormalizedSize, const FVector2D& NormalizedCenter)
+{
+	if (!CanvasSlot || !CanvasSlot->Parent)
+	{
+		return;
+	}
+
+	// 获取 CanvasPanel 的大小
+	UCanvasPanel* CanvasPanel = Cast<UCanvasPanel>(CanvasSlot->Parent);
+	if (!CanvasPanel)
+	{
+		return;
+	}
+
+	FVector2D CanvasSize = CanvasPanel->GetCachedGeometry().GetLocalSize();
+
+	// 计算选区的实际大小和位置
+	FVector2D ActualSize = NormalizedSize * CanvasSize;
+	FVector2D Center = NormalizedCenter * CanvasSize;
+
+	FVector2D BoxLeftTop = Center - CanvasSize;
+	UE_LOG(LogTemp, Log, TEXT("BoxLeftTop: (%s)"), *BoxLeftTop.ToString());
+	CanvasSlot->SetPosition(BoxLeftTop);
+	CanvasSlot->SetSize(ActualSize);
 }

@@ -33,6 +33,7 @@ public:
 
 	static bool CheckPointEffectiveIndex(const int32 PointIndex);
 
+	void UpdateCanvasPanelSlot(class UCanvasPanelSlot* CanvasSlot, const FVector2D& BoxSize, const FVector2D& CenterPoint, const FVector2D& NormalizedSize, const FVector2D& NormalizedCenter);
 public:
 	FVector2D SelectionStart;
 	FVector2D SelectionEnd;
@@ -56,4 +57,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PhotoTouchWidget")
 	class UImage* ImageWidget = nullptr; // Reference to the image widget to be manipulated
+
+	//UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PhotoTouchWidget")
+	class UCanvasPanel* DecorateCanvasPanel;
 };
