@@ -9,6 +9,10 @@
 #include "Engine/Canvas.h"
 #include "CanvasItem.h"
 #include <Slate/WidgetRenderer.h>
+#include "Misc/FileHelper.h"
+#include "HAL/PlatformFilemanager.h"
+#include "ImageUtils.h"
+
 // HighResShot
 
 void UPhotoWidget::OnPhotoButtonPressed()
@@ -517,4 +521,35 @@ UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX,
 	NewTexture->UpdateResource();
 
 	return NewTexture;
+}
+
+void UPhotoWidget::SaveCroppedTextureToDisk(UTexture2D* Texture)
+{
+	FDateTime Now = FDateTime::Now();
+	FString TimeStr = Now.ToString(TEXT("%Y-%m-%d_%H-%M-%S"));
+	FString FilePath = FPaths::ProjectSavedDir() / FString::Printf(TEXT("CaptureImage_%s.png"), *TimeStr);
+	SaveCroppedTextureToDisk(Texture, FilePath);
+}
+
+void UPhotoWidget::SaveCroppedTextureToDisk(UTexture2D* Texture, const FString& FilePath)
+{
+	if (!Texture) return;
+
+	// 获取像素数据
+	FTexture2DMipMap& Mip = Texture->GetPlatformData()->Mips[0];
+	const int32 Width = Texture->GetSizeX();
+	const int32 Height = Texture->GetSizeY();
+	const FColor* FormattedImageData = static_cast<const FColor*>(Mip.BulkData.LockReadOnly());
+
+	TArray<FColor> Pixels;
+	Pixels.AddUninitialized(Width * Height);
+	FMemory::Memcpy(Pixels.GetData(), FormattedImageData, Width * Height * sizeof(FColor));
+	Mip.BulkData.Unlock();
+
+	// 压缩为PNG
+	TArray<uint8> CompressedPNG;
+	FImageUtils::CompressImageArray(Width, Height, Pixels, CompressedPNG);
+
+	// 保存到本地
+	FFileHelper::SaveArrayToFile(CompressedPNG, *FilePath);
 }

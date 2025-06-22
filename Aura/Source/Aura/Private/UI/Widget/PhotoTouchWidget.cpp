@@ -103,16 +103,7 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 		);
 		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
 
-		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(DecorateCanvasPanel->Slot);
-		const FGeometry& ParentGeometry = DecorateCanvasPanel->GetParent()->GetCachedGeometry();
-		FVector2D AbsolutePos = ImageWidget->GetCachedGeometry().LocalToAbsolute(BoxLeftTop);
-		FVector2D ParentLocalPos = ParentGeometry.AbsoluteToLocal(AbsolutePos);
-		CanvasSlot->SetAnchors(FAnchors(0.f, 0.f));
-		CanvasSlot->SetAlignment(FVector2D(0.f, 0.f));
-		CanvasSlot->SetPosition(ParentLocalPos);
-		CanvasSlot->SetSize(BoxSize/* * ParentGeometry.Scale*/);
-
-		UE_LOG(LogTemp, Log, TEXT("SetPosition: (%s)"), *ParentLocalPos.ToString());
+		UpdateCanvasPanelSlot(BoxLeftTop, BoxSize);
 	}
 
 	if (bIsDragging)
@@ -143,6 +134,8 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 		);
 		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
 
+		FVector2D BoxLeftTop(FMath::Min(NewSelectionStart.X, DSelectionEnd.X), FMath::Min(NewSelectionStart.Y, DSelectionEnd.Y));
+		UpdateCanvasPanelSlot(BoxLeftTop, BoxSize);
 	}
 
 	return UWidgetBlueprintLibrary::Handled();
@@ -174,7 +167,7 @@ FEventReply UPhotoTouchWidget::TouchEnded(FGeometry MyGeometry, const FPointerEv
 		DSelectionStart = SelectionStart;
 		DSelectionEnd = SelectionEnd;
 
-		//SelectAreaCallBack.Broadcast(SelectionStart, SelectionEnd, true);
+		SelectAreaCallBack.Broadcast(SelectionStart, SelectionEnd, true);
 
 		TouchEndedCallBack.Broadcast(InTouchEvent);
 
@@ -195,28 +188,16 @@ bool UPhotoTouchWidget::CheckPointEffectiveIndex(const int32 PointIndex)
 	return true;
 }
 
-void UPhotoTouchWidget::UpdateCanvasPanelSlot(UCanvasPanelSlot* CanvasSlot, const FVector2D& BoxSize, const FVector2D& CenterPoint, const FVector2D& NormalizedSize, const FVector2D& NormalizedCenter)
+void UPhotoTouchWidget::UpdateCanvasPanelSlot(const FVector2D& BoxLeftTop, const FVector2D& BoxSize)
 {
-	if (!CanvasSlot || !CanvasSlot->Parent)
+	if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(DecorateCanvasPanel->Slot))
 	{
-		return;
+		const FGeometry& ParentGeometry = DecorateCanvasPanel->GetParent()->GetCachedGeometry();
+		FVector2D AbsolutePos = ImageWidget->GetCachedGeometry().LocalToAbsolute(BoxLeftTop);
+		FVector2D ParentLocalPos = ParentGeometry.AbsoluteToLocal(AbsolutePos);
+		CanvasSlot->SetAnchors(FAnchors(0.f, 0.f));
+		CanvasSlot->SetAlignment(FVector2D(0.f, 0.f));
+		CanvasSlot->SetPosition(ParentLocalPos);
+		CanvasSlot->SetSize(BoxSize/* * ParentGeometry.Scale*/);
 	}
-
-	// 获取 CanvasPanel 的大小
-	UCanvasPanel* CanvasPanel = Cast<UCanvasPanel>(CanvasSlot->Parent);
-	if (!CanvasPanel)
-	{
-		return;
-	}
-
-	FVector2D CanvasSize = CanvasPanel->GetCachedGeometry().GetLocalSize();
-
-	// 计算选区的实际大小和位置
-	FVector2D ActualSize = NormalizedSize * CanvasSize;
-	FVector2D Center = NormalizedCenter * CanvasSize;
-
-	FVector2D BoxLeftTop = Center - CanvasSize;
-	UE_LOG(LogTemp, Log, TEXT("BoxLeftTop: (%s)"), *BoxLeftTop.ToString());
-	CanvasSlot->SetPosition(BoxLeftTop);
-	CanvasSlot->SetSize(ActualSize);
 }

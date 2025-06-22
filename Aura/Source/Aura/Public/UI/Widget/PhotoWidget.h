@@ -128,6 +128,10 @@ public:
 	*/
 	UTexture2D* GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY, FVector2D NormalizedCenter, FVector2D NormalizedSize);
 
+	UFUNCTION(BlueprintCallable)
+	void SaveCroppedTextureToDisk(UTexture2D* Texture);
+	void SaveCroppedTextureToDisk(UTexture2D* Texture, const FString& FilePath);
+
 
 
 public:

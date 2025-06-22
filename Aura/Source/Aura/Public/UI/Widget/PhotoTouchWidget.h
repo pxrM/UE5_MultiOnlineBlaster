@@ -33,7 +33,9 @@ public:
 
 	static bool CheckPointEffectiveIndex(const int32 PointIndex);
 
-	void UpdateCanvasPanelSlot(class UCanvasPanelSlot* CanvasSlot, const FVector2D& BoxSize, const FVector2D& CenterPoint, const FVector2D& NormalizedSize, const FVector2D& NormalizedCenter);
+	void UpdateCanvasPanelSlot(const FVector2D& BoxLeftTop, const FVector2D& BoxSize);
+
+
 public:
 	FVector2D SelectionStart;
 	FVector2D SelectionEnd;
