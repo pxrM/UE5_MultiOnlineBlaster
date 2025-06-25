@@ -121,12 +121,14 @@ public:
 	/**
 	 * 将一个 UWidget 渲染为纹理，生成一个新的 UTexture2D。
 	 */
+	UFUNCTION(BlueprintCallable)
 	UTexture2D* GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY);
 
 	/**
 	* 将一个 UWidget 渲染为纹理，然后进行裁剪，生成一个新的 UTexture2D。
 	*/
-	UTexture2D* GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY, FVector2D NormalizedCenter, FVector2D NormalizedSize);
+	UFUNCTION(BlueprintCallable)
+	UTexture2D* GenerateFinalTextureCrop(UWidget* InWidget, int32 InSizeX, int32 InSizeY, FVector2D NormalizedCenter, FVector2D NormalizedSize);
 
 	UFUNCTION(BlueprintCallable)
 	void SaveCroppedTextureToDisk(UTexture2D* Texture);

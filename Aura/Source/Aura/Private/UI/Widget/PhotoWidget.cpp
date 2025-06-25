@@ -470,7 +470,7 @@ UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX,
 	return NewTexture;
 }
 
-UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY, FVector2D NormalizedCenter, FVector2D NormalizedSize)
+UTexture2D* UPhotoWidget::GenerateFinalTextureCrop(UWidget* InWidget, int32 InSizeX, int32 InSizeY, FVector2D NormalizedCenter, FVector2D NormalizedSize)
 {
 	// 1. 渲染整个Widget到RenderTarget
 	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
@@ -503,7 +503,9 @@ UTexture2D* UPhotoWidget::GenerateFinalTexture(UWidget* InWidget, int32 InSizeX,
 
 	// 4. 生成新纹理
 	UTexture2D* NewTexture = UTexture2D::CreateTransient(OutCropWH.X, OutCropWH.Y, PF_B8G8R8A8);
-	FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->Mips[0];
+	NewTexture->UpdateResource();
+	//FTexture2DMipMap& Mip = NewTexture->GetPlatformData()->AreDerivedMipsAvailable() ? NewTexture->GetPlatformData()->Mips[0] : NewTexture->GetPlatformData()->Mips.Last();
+	FTexture2DMipMap& Mip =  NewTexture->GetPlatformData()->Mips.Last();
 	void* Data = Mip.BulkData.Lock(LOCK_READ_WRITE);
 	FMemory::Memcpy(Data, CroppedPixels.GetData(), CroppedPixels.Num() * sizeof(FColor));
 	Mip.BulkData.Unlock();
