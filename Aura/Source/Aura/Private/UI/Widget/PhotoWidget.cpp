@@ -12,6 +12,7 @@
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformFilemanager.h"
 #include "ImageUtils.h"
+#include "UI/Widget/PhotoTouchWidget.h"
 
 // HighResShot
 
@@ -279,10 +280,10 @@ UTexture2D* UPhotoWidget::CropScreenshot(UTexture2D* SourceTexture, FVector2D No
 	return NewTexture;
 }
 
-UTexture2D* UPhotoWidget::CropScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio/*3.0f/4.0f*/)
+void UPhotoWidget::CalculateScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio, bool IsCrop)
 {
 	if (!SourceTexture || FMath::IsNearlyZero(TargetAspectRatio))
-		return nullptr;
+		return;
 
 	// 获取纹理的尺寸
 	int32 SourceWidth = SourceTexture->GetSizeX();
@@ -320,8 +321,28 @@ UTexture2D* UPhotoWidget::CropScreenshotRatio(UTexture2D* SourceTexture, const f
 		FMath::Clamp(BoxSize.X / SourceWidth, 0.0f, 1.0f),
 		FMath::Clamp(BoxSize.Y / SourceHeight, 0.0f, 1.0f)
 	);
+
+	PhotoTouchWidget->IsFixedRatio = true;
+	PhotoTouchWidget->CurrentAspectRatio = TargetAspectRatio;
+	PhotoTouchWidget->FixedNormalizedSize = NormalizedSize;
+	PhotoTouchWidget->FixedNormalizedCenter = NormalizedCenter;
+
 	PhotoSelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
+
 	UE_LOG(LogTemp, Log, TEXT("Cropping %dx%d to %dx%d (Start: %d,%d)"), SourceWidth, SourceHeight, CropWidth, CropHeight, StartX, StartY);
+
+	if (IsCrop)
+	{
+		CropScreenshotRatio(SourceTexture, CropWidth, CropHeight, StartX, StartY);
+	}
+}
+
+UTexture2D* UPhotoWidget::CropScreenshotRatio(UTexture2D* SourceTexture, int32 CropWidth, int32 CropHeight, int32 StartX, int32 StartY)
+{
+	if (!SourceTexture) return nullptr;
+
+	int32 SourceWidth = SourceTexture->GetSizeX();
+	int32 SourceHeight = SourceTexture->GetSizeY();
 
 	// 锁定纹理数据
 	FTexture2DMipMap& Mip = SourceTexture->GetPlatformData()->Mips[0];

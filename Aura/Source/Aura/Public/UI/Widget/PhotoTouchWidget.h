@@ -63,4 +63,13 @@ public:
 	//UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PhotoTouchWidget")
 	class UCanvasPanel* DecorateCanvasPanel;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PhotoTouchWidget")
+	class UScaleBox* ScaleBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool IsFixedRatio = false; // ÊÇ·ñ¹Ì¶¨±ÈÀý²Ã¼ô
+	float CurrentAspectRatio;
+	FVector2D FixedNormalizedSize;
+	FVector2D FixedNormalizedCenter;
 };

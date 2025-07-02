@@ -10,6 +10,8 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/SizeBox.h"
+#include "Components/ScaleBox.h"
+
 
 int32 UPhotoTouchWidget::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
@@ -51,6 +53,12 @@ FEventReply UPhotoTouchWidget::TouchStarted(FGeometry MyGeometry, const FPointer
 	FVector2D ScreenPos = InTouchEvent.GetScreenSpacePosition();
 	FVector2D LocalPos = ImageWidget->GetCachedGeometry().AbsoluteToLocal(ScreenPos);
 
+	if (IsFixedRatio)
+	{
+		LastSelectionEnd = LocalPos;
+		return UWidgetBlueprintLibrary::Handled();
+	}
+
 	if (bIsDragging &&
 		LocalPos.X >= DSelectionStart.X && LocalPos.X <= DSelectionEnd.X &&
 		LocalPos.Y >= DSelectionStart.Y && LocalPos.Y <= DSelectionEnd.Y)
@@ -80,6 +88,11 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 		return UWidgetBlueprintLibrary::Unhandled();
 	}
 
+	if (IsFixedRatio)
+	{
+		
+	}
+
 	if (bIsSelecting)
 	{
 		SelectionEnd = ImageWidget->GetCachedGeometry().AbsoluteToLocal(InTouchEvent.GetScreenSpacePosition());
@@ -101,6 +114,7 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 			FMath::Clamp(CenterPoint.X / WidgetSize.X, 0.0f, 1.0f),
 			FMath::Clamp(CenterPoint.Y / WidgetSize.Y, 0.0f, 1.0f)
 		);
+		UE_LOG(LogTemp, Log, TEXT("TouchMoved:%s"), *BoxSize.ToString());
 		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
 
 		UpdateCanvasPanelSlot(BoxLeftTop, BoxSize);
@@ -135,6 +149,8 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 		SelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
 
 		FVector2D BoxLeftTop(FMath::Min(NewSelectionStart.X, DSelectionEnd.X), FMath::Min(NewSelectionStart.Y, DSelectionEnd.Y));
+		//FVector2D ImageDrawSize = ImageWidget->Brush.GetImageSize();
+		//FVector2D ScaleFactor = WidgetSize / ImageDrawSize;
 		UpdateCanvasPanelSlot(BoxLeftTop, BoxSize);
 	}
 

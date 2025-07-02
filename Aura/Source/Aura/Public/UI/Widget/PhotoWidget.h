@@ -111,7 +111,9 @@ public:
 	* 对图片按比例进行裁剪
 	*/
 	UFUNCTION(BlueprintCallable)
-	UTexture2D* CropScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio/*3:4*/);
+	void CalculateScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio/*3:4*/, bool IsCrop);
+	UFUNCTION(BlueprintCallable)
+	UTexture2D* CropScreenshotRatio(UTexture2D* SourceTexture, int32 CropWidth, int32 CropHeight, int32 StartX, int32 StartY);
 
 	/**
 	 * 基于一个已有的 UTexture2D 纹理，生成一个新的纹理，并在其上绘制额外的元素（如贴图和文字 PhotoTextureElements）。
@@ -135,7 +137,6 @@ public:
 	void SaveCroppedTextureToDisk(UTexture2D* Texture, const FString& FilePath);
 
 
-
 public:
 	FDelegateHandle PhotoDelegateHandle;
 	TArray<FColor> CachedImageData;
@@ -153,5 +154,8 @@ public:
 	FPhotoSelectAreaDelegate PhotoSelectAreaCallBack;
 
 	TArray<FPhotoTextureElement> PhotoTextureElements;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UPhotoTouchWidget* PhotoTouchWidget;
 	
 };
