@@ -156,14 +156,10 @@ FEventReply UPhotoTouchWidget::TouchMoved(FGeometry MyGeometry, const FPointerEv
 		const FVector2D MouseDelta = InTouchEvent.GetScreenSpacePosition() - TouchStartMousePosition;
 		FVector2D TargetScreenPos =  MouseDelta;
 		float CurrentScale = static_cast<float>(ImageWidget->GetRenderTransform().Scale.X);
-		if (UCanvasPanelSlot* ImageParentSlot = Cast<UCanvasPanelSlot>(ImageWidget->GetParent()->Slot))
+		FVector2D LocalPos = ImageWidget->GetParent()->GetCachedGeometry().AbsoluteToLocal(UpdateImgPos(TargetScreenPos));
+		if (UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(ImageWidget->Slot))
 		{
-			FVector2D LocalPos = ImageWidget->GetParent()->GetCachedGeometry().AbsoluteToLocal(UpdateImgPos(TargetScreenPos/= CurrentScale));
-
-			if (UCanvasPanelSlot* ImageSlot = Cast<UCanvasPanelSlot>(ImageWidget->Slot))
-			{
-				ImageSlot->SetPosition(LocalPos);
-			}
+			ImageSlot->SetPosition(LocalPos);
 		}
 		//float CurrentScale = static_cast<float>(ImageWidget->GetRenderTransform().Scale.X);
 		//FVector2D ScaledLocalPos = ImageWidget->GetParent()->GetCachedGeometry().AbsoluteToLocal(
@@ -278,7 +274,8 @@ void UPhotoTouchWidget::UpdateSizePos()
 
 FVector2D UPhotoTouchWidget::UpdateImgPos(FVector2D TargetScreenPos)
 {
-	const FGeometry& ParentGeometry = ImageMaskWidget->GetParent()->GetCachedGeometry();
+	//const FGeometry& ParentGeometry = ImageMaskWidget->GetParent()->GetCachedGeometry();
+	const FGeometry& ParentGeometry = ImageMaskWidget->GetCachedGeometry();
 	FVector2D CropScreenStartPos = ParentGeometry.LocalToAbsolute(SelectionStart);
 	FVector2D CropScreenEndPos = ParentGeometry.LocalToAbsolute(SelectionEnd);
 
@@ -286,7 +283,7 @@ FVector2D UPhotoTouchWidget::UpdateImgPos(FVector2D TargetScreenPos)
 	FVector2D ImageSize = ImageWidgetGeo.GetAbsoluteSize();
 	FVector2D ImageTargetEndPos = TargetScreenPos + ImageSize;
 	UE_LOG(LogTemp, Log, TEXT("ImageWidget:%s"), *ImageWidget->GetCachedGeometry().GetAbsolutePosition().ToString());
-	UE_LOG(LogTemp, Log, TEXT("CropScreenStartPos:%s"), *CropScreenStartPos.ToString());
+	UE_LOG(LogTemp, Log, TEXT("CropScreenStartPos:%s"), *ImageMaskWidget->GetCachedGeometry().LocalToAbsolute(SelectionStart).ToString());
 
 	float CurrentScale = static_cast<float>(ImageWidget->GetRenderTransform().Scale.X);
 	FVector2D NewPos = TargetScreenPos;
@@ -324,7 +321,7 @@ FVector2D UPhotoTouchWidget::UpdateImgPos(FVector2D TargetScreenPos)
 		(ImageTargetEndPos.X  >= CropScreenEndPos.X) &&
 		// 绿色下边界 <= 红色下边界
 		(ImageTargetEndPos.Y >= CropScreenEndPos.Y);
-
+	UE_LOG(LogTemp, Log, TEXT("NewPos:%s"), *NewPos.ToString());
 	return NewPos;
 }
 
