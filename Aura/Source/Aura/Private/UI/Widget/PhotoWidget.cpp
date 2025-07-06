@@ -321,12 +321,10 @@ void UPhotoWidget::CalculateScreenshotRatio(UTexture2D* SourceTexture, const flo
 		FMath::Clamp(BoxSize.X / SourceWidth, 0.0f, 1.0f),
 		FMath::Clamp(BoxSize.Y / SourceHeight, 0.0f, 1.0f)
 	);
-
-	PhotoTouchWidget->IsFixedRatio = true;
-	PhotoTouchWidget->CurrentAspectRatio = TargetAspectRatio;
-	PhotoTouchWidget->FixedNormalizedSize = NormalizedSize;
-	PhotoTouchWidget->FixedNormalizedCenter = NormalizedCenter;
-
+	PhotoTouchWidget->bIsSelected = true;
+	PhotoTouchWidget->bIsSelecting = false;
+	PhotoTouchWidget->SelectionStart = CropFrame.Min;
+	PhotoTouchWidget->SelectionEnd = CropFrame.Max;
 	PhotoSelectAreaCallBack.Broadcast(NormalizedCenter, NormalizedSize, false);
 
 	UE_LOG(LogTemp, Log, TEXT("Cropping %dx%d to %dx%d (Start: %d,%d)"), SourceWidth, SourceHeight, CropWidth, CropHeight, StartX, StartY);

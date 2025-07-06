@@ -1,42 +1,41 @@
 {
-  "FileVersion": 3,
-  "EngineAssociation": "5.3",
-  "Category": "",
-  "Description": "",
-  "Modules": [
-    {
-      "Name": "Aura",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ],
-  "Plugins": [
-    {
-      "Name": "ModelingToolsEditorMode",
-      "Enabled": true
-    },
-    {
-      "Name": "GameplayAbilities",
-      "Enabled": true
-    },
-    {
-      "Name": "MotionWarping",
-      "Enabled": true
-    },
-    {
-      "Name": "ModelViewViewModel",
-      "Enabled": true
-    },
-    {
-      "Name": "VisualStudioTools",
-      "Enabled": false,
-      "SupportedTargetPlatforms": [
-        "Win64"
-      ]
-    }
-  ],
-  "TargetPlatforms": [],
-  "AdditionalRootDirectories": [],
-  "AdditionalPluginDirectories": [],
-  "EpicSampleNameHash": ""
+	"FileVersion": 3,
+	"EngineAssociation": "5.3",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "Aura",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"UMG"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "MotionWarping",
+			"Enabled": true
+		},
+		{
+			"Name": "ModelViewViewModel",
+			"Enabled": true
+		},
+		{
+			"Name": "VisualStudioTools",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Win64"
+			]
+		}
+	]
 }

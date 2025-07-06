@@ -26,26 +26,27 @@ public:
 	FEventReply TouchMoved(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
 	UFUNCTION(BlueprintCallable)
 	FEventReply TouchEnded(FGeometry MyGeometry, const FPointerEvent& InTouchEvent);
-
-	//virtual FReply NativeOnTouchStarted(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
-	//virtual FReply NativeOnTouchMoved(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
-	//virtual FReply NativeOnTouchEnded(const FGeometry& InGeometry, const FPointerEvent& InGestureEvent) override;
+	FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	static bool CheckPointEffectiveIndex(const int32 PointIndex);
 
 	void UpdateCanvasPanelSlot(const FVector2D& BoxLeftTop, const FVector2D& BoxSize);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateSizePos();
+
+	FVector2D UpdateImgPos(FVector2D TargetScreenPos);
 
 
 public:
 	FVector2D SelectionStart;
 	FVector2D SelectionEnd;
 	FVector2D LastSelectionEnd;
+	bool bIsSelected = false;
 	bool bIsSelecting = false;
 
 	FVector2D DStartPos;
 	FVector2D DDragOffset;
-	FVector2D DSelectionStart;
-	FVector2D DSelectionEnd;
 	bool bIsDragging = false;
 	
 	UPROPERTY(BlueprintAssignable)
@@ -65,11 +66,15 @@ public:
 	class UCanvasPanel* DecorateCanvasPanel;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "PhotoTouchWidget")
-	class UScaleBox* ScaleBox;
+	UImage* ImageMaskWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool IsFixedRatio = false; // ÊÇ·ñ¹Ì¶¨±ÈÀý²Ã¼ô
-	float CurrentAspectRatio;
-	FVector2D FixedNormalizedSize;
-	FVector2D FixedNormalizedCenter;
+	bool bIsMoveImg = false;
+	FVector2D TouchStartImagePosition;
+	FVector2D TouchStartMousePosition;
+	FVector2D InitialImagePosition;
+	FVector2D InitialImageSize;
+	const float MinZoom = 1.f;
+	const float MaxZoom = 3.0f;
+	const float ZoomSpeed = 0.1f;
+	float ZoomFactor = 1.0f;
 };
