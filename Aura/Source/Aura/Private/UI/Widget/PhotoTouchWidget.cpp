@@ -235,8 +235,8 @@ FReply UPhotoTouchWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const 
 	);
 
 	// 5. 应用新的缩放和位置
-	FVector2D OriginalPosition = ImageWidget->RenderTransform.Translation;
-	ImageWidget->SetRenderScale(FVector2D(NewScale, NewScale));
+	//FVector2D OriginalPosition = ImageWidget->RenderTransform.Translation;
+	//ImageWidget->SetRenderScale(FVector2D(NewScale, NewScale));
 	//ImageWidget->SetRenderTranslation(OriginalPosition + Offset);
 
 	return FReply::Handled();

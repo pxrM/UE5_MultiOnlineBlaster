@@ -568,8 +568,8 @@ void UPhotoWidget::SaveCroppedTextureToDisk(UTexture2D* Texture, const FString& 
 	Mip.BulkData.Unlock();
 
 	// 压缩为PNG
-	TArray<uint8> CompressedPNG;
-	FImageUtils::CompressImageArray(Width, Height, Pixels, CompressedPNG);
+	TArray64<uint8> CompressedPNG;
+	FImageUtils::PNGCompressImageArray(Width, Height, Pixels, CompressedPNG);
 
 	// 保存到本地
 	FFileHelper::SaveArrayToFile(CompressedPNG, *FilePath);

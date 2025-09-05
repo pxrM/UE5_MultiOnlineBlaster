@@ -15,10 +15,10 @@ struct FPhotoTextureElement
 	GENERATED_BODY()
 
 	UPROPERTY()
-	UTexture2D* Image; // ÌùÍ¼£¨¿ÉÑ¡£©
+	UTexture2D* Image; // è´´å›¾ï¼ˆå¯é€‰ï¼‰
 
 	UPROPERTY()
-	FString Text;      // ÎÄ×Ö£¨¿ÉÑ¡£©
+	FString Text;      // æ–‡å­—ï¼ˆå¯é€‰ï¼‰
 
 	UPROPERTY()
 	FVector2D Position;
@@ -59,15 +59,15 @@ public:
 	void MScreenShot(int32 InSizeX, int32 InSizeY, const TArray<FColor>& InImageData);
 
 	/**
-	* @SourceWidth Ô´Í¼ÏñµÄ¿í¶È
-	* @SourceHeight Ô´Í¼ÏñµÄ¸ß¶È
-	* @NormalizedCenter	¹éÒ»»¯ºóµÄ²Ã¼ôÖĞĞÄµã
-	* @NormalizedWidth ¹éÒ»»¯ºóµÄ²Ã¼ô¿í¶È
-	* @NormalizedHeight	¹éÒ»»¯ºóµÄ²Ã¼ô¸ß¶È
+	* @SourceWidth æºå›¾åƒçš„å®½åº¦
+	* @SourceHeight æºå›¾åƒçš„é«˜åº¦
+	* @NormalizedCenter	å½’ä¸€åŒ–åçš„è£å‰ªä¸­å¿ƒç‚¹
+	* @NormalizedWidth å½’ä¸€åŒ–åçš„è£å‰ªå®½åº¦
+	* @NormalizedHeight	å½’ä¸€åŒ–åçš„è£å‰ªé«˜åº¦
 	* 
-	* @OutStartPoint  ²Ã¼ôÇøÓò×óÉÏ½Ç×ø±ê£¨ÏñËØ£©
-	* @OutEndPoint  ²Ã¼ôÇøÓòÓÒÏÂ½Ç×ø±ê£¨ÏñËØ£©
-	* @OutCropWidth  ²Ã¼ôÇøÓòµÄ¿í¶ÈºÍ¸ß¶È£¨ÏñËØ£©
+	* @OutStartPoint  è£å‰ªåŒºåŸŸå·¦ä¸Šè§’åæ ‡ï¼ˆåƒç´ ï¼‰
+	* @OutEndPoint  è£å‰ªåŒºåŸŸå³ä¸‹è§’åæ ‡ï¼ˆåƒç´ ï¼‰
+	* @OutCropWidth  è£å‰ªåŒºåŸŸçš„å®½åº¦å’Œé«˜åº¦ï¼ˆåƒç´ ï¼‰
 	*/
 	void CalculateCropRange(
 		const int32 SourceWidth,
@@ -96,7 +96,7 @@ public:
 	void AddElementTxt(const FString& Text, FVector2D Position, FVector2D Size, FVector2D Scale);
 
 	/**
-	 * ½«²Ã¼ô·¶Î§Êı¾İ½øĞĞ¹éÒ»»¯
+	 * å°†è£å‰ªèŒƒå›´æ•°æ®è¿›è¡Œå½’ä¸€åŒ–
 	 */
 	UFUNCTION(BlueprintCallable)
 	void NormalizeSize(const FVector2D InImageWidgetSize, const FVector2D InSelectionStart, const FVector2D InSelectionEnd, FVector2D& OutNormalizedCenter, FVector2D& OutNormalizedSize);
@@ -108,7 +108,7 @@ public:
 	UTexture2D* CropScreenshot(UTexture2D* SourceTexture, FVector2D NormalizedCenter, float NormalizedWidth, float NormalizedHeight);
 
 	/**
-	* ¶ÔÍ¼Æ¬°´±ÈÀı½øĞĞ²Ã¼ô
+	* å¯¹å›¾ç‰‡æŒ‰æ¯”ä¾‹è¿›è¡Œè£å‰ª
 	*/
 	UFUNCTION(BlueprintCallable)
 	void CalculateScreenshotRatio(UTexture2D* SourceTexture, const float TargetAspectRatio/*3:4*/, bool IsCrop);
@@ -116,18 +116,18 @@ public:
 	UTexture2D* CropScreenshotRatio(UTexture2D* SourceTexture, int32 CropWidth, int32 CropHeight, int32 StartX, int32 StartY);
 
 	/**
-	 * »ùÓÚÒ»¸öÒÑÓĞµÄ UTexture2D ÎÆÀí£¬Éú³ÉÒ»¸öĞÂµÄÎÆÀí£¬²¢ÔÚÆäÉÏ»æÖÆ¶îÍâµÄÔªËØ£¨ÈçÌùÍ¼ºÍÎÄ×Ö PhotoTextureElements£©¡£
+	 * åŸºäºä¸€ä¸ªå·²æœ‰çš„ UTexture2D çº¹ç†ï¼Œç”Ÿæˆä¸€ä¸ªæ–°çš„çº¹ç†ï¼Œå¹¶åœ¨å…¶ä¸Šç»˜åˆ¶é¢å¤–çš„å…ƒç´ ï¼ˆå¦‚è´´å›¾å’Œæ–‡å­— PhotoTextureElementsï¼‰ã€‚
 	 */
 	UTexture2D* GenerateFinalTexture(UTexture2D* SourceTexture);
 
 	/**
-	 * ½«Ò»¸ö UWidget äÖÈ¾ÎªÎÆÀí£¬Éú³ÉÒ»¸öĞÂµÄ UTexture2D¡£
+	 * å°†ä¸€ä¸ª UWidget æ¸²æŸ“ä¸ºçº¹ç†ï¼Œç”Ÿæˆä¸€ä¸ªæ–°çš„ UTexture2Dã€‚
 	 */
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* GenerateFinalTexture(UWidget* InWidget, int32 InSizeX, int32 InSizeY);
 
 	/**
-	* ½«Ò»¸ö UWidget äÖÈ¾ÎªÎÆÀí£¬È»ºó½øĞĞ²Ã¼ô£¬Éú³ÉÒ»¸öĞÂµÄ UTexture2D¡£
+	* å°†ä¸€ä¸ª UWidget æ¸²æŸ“ä¸ºçº¹ç†ï¼Œç„¶åè¿›è¡Œè£å‰ªï¼Œç”Ÿæˆä¸€ä¸ªæ–°çš„ UTexture2Dã€‚
 	*/
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* GenerateFinalTextureCrop(UWidget* InWidget, int32 InSizeX, int32 InSizeY, FVector2D NormalizedCenter, FVector2D NormalizedSize);
