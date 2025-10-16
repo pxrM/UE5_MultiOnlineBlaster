@@ -22,12 +22,17 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	/**
+	 * 当抛射物与场景发生碰撞并发生“弹跳”（bounce）时，该事件会被自动触发。
+	 * @param ImpactResult 碰撞/射线检测结果的核心结构体。
+	 * @param ImpactVelocity 表示抛射物在碰撞瞬间的速度向量（单位：厘米/秒）。(这是碰撞前的瞬时速度，不是反弹后的速度。作用：速度越大，弹跳越高/音效越响。)
+	 */
 	UFUNCTION()
-		void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity); //反弹回调
+	void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
 
 
 private:
 	UPROPERTY(EditAnywhere)
-		USoundCue* BounceSound; //反弹音效
+	USoundCue* BounceSound; //反弹音效
 
 };

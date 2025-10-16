@@ -19,7 +19,7 @@ public:
 	class UTextBlock* DisplayText;
 
 public:
-	void SetDisplayText(FString TextToDisplay);
+	void SetDisplayText(const FString& TextToDisplay) const;
 
 	UFUNCTION(BlueprintCallable)
 	void ShowPlayerNetRole(APawn* InPawn);

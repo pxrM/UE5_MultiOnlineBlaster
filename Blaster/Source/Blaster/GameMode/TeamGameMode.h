@@ -20,7 +20,7 @@ public:
 	virtual void Logout(AController* Exiting) override; // Íæ¼ÒÍË³ö
 
 	virtual float CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage) override;
-	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
+	virtual void PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
 
 
 protected:

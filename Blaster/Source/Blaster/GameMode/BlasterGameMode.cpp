@@ -60,10 +60,9 @@ void ABlasterGameMode::OnMatchStateSet()
 {
 	Super::OnMatchStateSet();
 
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; It++)
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
-		if (BlasterPlayer)
+		if (ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It))
 		{
 			BlasterPlayer->OnMatchStateSet(MatchState, bTeamsMatch);
 		}
@@ -88,8 +87,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 
 		if (BlasterGameState->TopScoringPlayers.Contains(AttackPlayerState))
 		{
-			ABlasterCharacter* Leader = Cast<ABlasterCharacter>(AttackPlayerState->GetPawn());
-			if (Leader)
+			if (ABlasterCharacter* Leader = Cast<ABlasterCharacter>(AttackPlayerState->GetPawn()))
 			{
 				Leader->MulticastGainedTheLead();
 			}
@@ -99,8 +97,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 		{
 			if (!BlasterGameState->TopScoringPlayers.Contains(PlayerCurrentlyInTheLead[i]))
 			{
-				ABlasterCharacter* Loser = Cast<ABlasterCharacter>(PlayerCurrentlyInTheLead[i]->GetPawn());
-				if (Loser)
+				if (ABlasterCharacter* Loser = Cast<ABlasterCharacter>(PlayerCurrentlyInTheLead[i]->GetPawn()))
 				{
 					Loser->MulticastLostTheLead();
 				}
@@ -121,8 +118,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	{
 		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 		{
-			ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
-			if (BlasterPlayer)
+			if (ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It))
 			{
 				BlasterPlayer->BroadcastElim(AttackPlayerState, VictimPlayerState);
 			}
@@ -130,7 +126,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	}
 }
 
-void ABlasterGameMode::ResquestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController)
+void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController)
 {
 	if (ElimmedCharacter)
 	{
@@ -149,7 +145,7 @@ void ABlasterGameMode::ResquestRespawn(ACharacter* ElimmedCharacter, AController
 	}
 }
 
-void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving)
+void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving) const
 {
 	if (PlayerLeaving == nullptr) return;
 	// 移除排行榜
@@ -159,8 +155,7 @@ void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving)
 		BlasterGameState->TopScoringPlayers.Remove(PlayerLeaving);
 	}
 	// 走销毁逻辑
-	ABlasterCharacter* CharacterLeaving = Cast<ABlasterCharacter>(PlayerLeaving->GetPawn());
-	if (CharacterLeaving)
+	if (ABlasterCharacter* CharacterLeaving = Cast<ABlasterCharacter>(PlayerLeaving->GetPawn()))
 	{
 		CharacterLeaving->Eliminate(true);
 	}

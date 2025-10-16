@@ -9,6 +9,7 @@
 #include "Components/ActorComponent.h"
 #include "LagCompensationComponent.generated.h"
 
+class ABlasterCharacter;
 
 /**
  * 由于不能直接存box的指针，因为指针指向的是地址，所以需要单独的数据结构存储盒子的信息
@@ -192,7 +193,7 @@ private:
 	/// <param name="Package">倒带出来的结果包</param>
 	/// <param name="HitCharacter">击中的角色</param>
 	/// <param name="TraceStart">射击开始位置</param>
-	/// <param name="HitLocaton">命中位置</param>
+	/// <param name="HitLocation">命中位置</param>
 	/// <returns></returns>
 	FServerSideRewindResult ConfirmHit(
 		const FFramePackage& Package,

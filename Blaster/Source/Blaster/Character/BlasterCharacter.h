@@ -24,6 +24,8 @@ class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCro
 public:
 	// Sets default values for this character's properties
 	ABlasterCharacter();
+	// 服务器端倒带使用的碰撞盒
+	void InitialServerBoxData();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -45,7 +47,7 @@ protected:
 	virtual void Destroyed() override; //会在所有机器上调用
 
 
-private://-----------------------------------------------------------------------------------------------------------
+private:
 	/// <summary>
 	/// 相机弹簧杆
 	/// </summary>
@@ -334,13 +336,13 @@ public:
 	/// 是否装备了武器
 	/// </summary>
 	/// <returns></returns>
-	bool IsWeaponEquipped();
+	bool IsWeaponEquipped() const;
 	
 	/// <summary>
 	/// 是否正在瞄准
 	/// </summary>
 	/// <returns></returns>
-	bool IsAiming();
+	bool IsAiming() const;
 	
 	/// <summary>
 	/// 是否显示瞄准umg
@@ -355,16 +357,16 @@ public:
 	void SpawnDefaultWeapon();
 
 	FVector GetHitTarget() const;
-	AWeapon* GetEquippedWeapon();
+	AWeapon* GetEquippedWeapon() const;
 	ECombatState GetCombatState() const;
 	bool GetIsLocallyReloading() const;
 
-	void PlayFireMontage(bool bAiming);
-	void PlayReloadMagMontage(); //播放装弹夹动画
-	void PlayHitReactMontage();
-	void PlayElimMontage();
-	void PlayThrowGrenadeMontage(); //投掷手榴弹蒙太奇
-	void PlaySwapMontage();
+	void PlayFireMontage(bool bAiming) const;
+	void PlayReloadMagMontage() const; //播放装弹夹动画
+	void PlayHitReactMontage() const;
+	void PlayElimMontage() const;
+	void PlayThrowGrenadeMontage() const; //投掷手榴弹蒙太奇
+	void PlaySwapMontage() const;
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();

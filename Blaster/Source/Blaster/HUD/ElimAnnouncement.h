@@ -7,7 +7,7 @@
 #include "ElimAnnouncement.generated.h"
 
 /**
- * ÌÔÌ­¹«¸æ
+ * 淘汰公告
  */
 UCLASS()
 class BLASTER_API UElimAnnouncement : public UUserWidget
@@ -15,7 +15,7 @@ class BLASTER_API UElimAnnouncement : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void SetElimAnnouncementText(FString AttackerName, FString VictimName);
+	void SetElimAnnouncementText(const FString& AttackerName, const FString& VictimName) const;
 
 public:
 	UPROPERTY(meta = (BindWidget))

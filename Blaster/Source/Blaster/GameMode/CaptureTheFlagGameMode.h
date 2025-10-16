@@ -16,12 +16,12 @@ class BLASTER_API ACaptureTheFlagGameMode : public ATeamGameMode
 	GENERATED_BODY()
 
 public:
-	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
+	virtual void PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController) override;
 	/// <summary>
 	/// server处理加分
 	/// </summary>
 	/// <param name="Flag"></param>
 	/// <param name="Zone"></param>
-	void FlagCaptured(class AFlag* Flag, class AFlagZone* Zone);
+	void FlagCaptured(const class AFlag* Flag, const class AFlagZone* Zone) const;
 
 };

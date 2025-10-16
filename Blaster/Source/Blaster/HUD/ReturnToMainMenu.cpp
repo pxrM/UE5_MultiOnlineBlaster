@@ -23,10 +23,10 @@ void UReturnToMainMenu::MenuSetup()
 {
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
-	bIsFocusable = true;
+	//bIsFocusable = true;
+	SetIsFocusable(true);
 
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
 		PlayerCtl = PlayerCtl == nullptr ? World->GetFirstPlayerController() : PlayerCtl;
 		if (PlayerCtl)
@@ -43,8 +43,7 @@ void UReturnToMainMenu::MenuSetup()
 		ReturnBtn->OnClicked.AddDynamic(this, &UReturnToMainMenu::ReturnBtnClicked);
 	}
 
-	UGameInstance* GameInstance = GetGameInstance();
-	if (GameInstance)
+	if (const UGameInstance* GameInstance = GetGameInstance())
 	{
 		MultiPlayerSessionSubsystem = GameInstance->GetSubsystem<UMultiPlayerSessionSubsystem>();
 		if (MultiPlayerSessionSubsystem)
@@ -58,8 +57,7 @@ void UReturnToMainMenu::MenuTearDown()
 {
 	RemoveFromParent();
 
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
 		PlayerCtl = PlayerCtl == nullptr ? World->GetFirstPlayerController() : PlayerCtl;
 		if (PlayerCtl)
@@ -84,14 +82,11 @@ void UReturnToMainMenu::ReturnBtnClicked()
 {
 	ReturnBtn->SetIsEnabled(false);
 
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
-		APlayerController* FirstPlayerController = World->GetFirstPlayerController();
-		if (FirstPlayerController)
+		if (const APlayerController* FirstPlayerController = World->GetFirstPlayerController())
 		{
-			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FirstPlayerController->GetPawn());
-			if (BlasterCharacter)
+			if (ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FirstPlayerController->GetPawn()))
 			{
 				BlasterCharacter->ServerLeaveGame();
 				BlasterCharacter->OnLeftGame.AddDynamic(this, &UReturnToMainMenu::OnPlayerLeftGame);
@@ -112,11 +107,9 @@ void UReturnToMainMenu::OnDestroySession(bool bWasSuccessful)
 		return;
 	}
 
-	UWorld* World = GetWorld();
-	if (World)
+	if (const UWorld* World = GetWorld())
 	{
-		AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>();
-		if (GameMode)
+		if (AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>())
 		{
 			GameMode->ReturnToMainMenuHost(); // 返回主场景，断开所有玩家的链接
 		}

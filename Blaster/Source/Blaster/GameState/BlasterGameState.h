@@ -22,26 +22,36 @@ public:
 	void UpdateTopScore(ABlasterPlayerState* ScoringPlayer);
 
 	void RedTeamScores();
+	
 	void BlueTeamScores();
+	
 	UFUNCTION()
 	void OnRep_RedTeamScore();
+	
 	UFUNCTION()
 	void OnRep_BlueTeamScore();
 
+	
 public:
 	/// <summary>
 	/// 最高分玩家，可能有玩家并列高分，所以用TArray
 	/// </summary>
 	UPROPERTY(Replicated)
 	TArray<ABlasterPlayerState*> TopScoringPlayers;
-
+	
+	UPROPERTY()
 	TArray<ABlasterPlayerState*> RedTeam;
+	
+	UPROPERTY()
 	TArray<ABlasterPlayerState*> BlueTeam;
+	
 	UPROPERTY(ReplicatedUsing = OnRep_RedTeamScore)
 	float RedTeamScore = 0.f;
+	
 	UPROPERTY(ReplicatedUsing = OnRep_BlueTeamScore)
 	float BlueTeamScore = 0.f;
 
+	
 private:
 	/// <summary>
 	/// 当前最高分

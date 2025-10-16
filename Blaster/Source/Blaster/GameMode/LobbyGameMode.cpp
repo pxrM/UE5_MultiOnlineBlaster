@@ -10,20 +10,18 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	UGameInstance* GameInstance = GetGameInstance();
-	if (GameInstance)
+	if (const UGameInstance* GameInstance = GetGameInstance())
 	{
-		UMultiPlayerSessionSubsystem* SubSystem = GameInstance->GetSubsystem<UMultiPlayerSessionSubsystem>();
+		const UMultiPlayerSessionSubsystem* SubSystem = GameInstance->GetSubsystem<UMultiPlayerSessionSubsystem>();
 		check(SubSystem); // 检查：如果SubSystem为null，程序停止执行
 
 		int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 		if (NumberOfPlayers == SubSystem->DesiredNumPublicConnections)
 		{
-			UWorld* World = GetWorld();
-			if (World)
+			if (UWorld* World = GetWorld())
 			{
 				bUseSeamlessTravel = true;	// 使用无缝travel，蓝图里也要设置
-				FString MatchType = SubSystem->DesiredMatchType;
+				const FString MatchType = SubSystem->DesiredMatchType;
 				if (MatchType == "FreeForAll")
 				{
 					World->ServerTravel(FString("/Game/Maps/BlasterMap?listen"));

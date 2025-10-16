@@ -85,18 +85,17 @@ void ABlasterHUD::AddStateAnnouncement()
 	}
 }
 
-void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
+void ABlasterHUD::AddElimAnnouncement(const FString& AttackerName, const FString& VictimName)
 {
 	OwningPlayerCtr = OwningPlayerCtr ? OwningPlayerCtr : GetOwningPlayerController();
 	if (OwningPlayerCtr && ElimAnnouncementClass)
 	{
-		UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwningPlayerCtr, ElimAnnouncementClass);
-		if (ElimAnnouncementWidget)
+		if (UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwningPlayerCtr, ElimAnnouncementClass))
 		{
 			ElimAnnouncementWidget->SetElimAnnouncementText(AttackerName, VictimName);
 			ElimAnnouncementWidget->AddToViewport();
 
-			for (UElimAnnouncement* Msg : ElimMessages)
+			for (const UElimAnnouncement* Msg : ElimMessages)
 			{
 				if (Msg && Msg->AnnouncementBox)
 				{

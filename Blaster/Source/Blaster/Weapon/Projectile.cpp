@@ -137,11 +137,10 @@ void AProjectile::TrailDestroyTimerFinished()
 void AProjectile::ExplodeDamage()
 {
 	//获取发射玩家的控制器
-	APawn* FiringPawn = GetInstigator(); //SpawnParams.Instigator = InstigatorPawn;
+	const APawn* FiringPawn = GetInstigator(); //SpawnParams.Instigator = InstigatorPawn;
 	if (FiringPawn && HasAuthority()) //服务器执行的代码块
 	{
-		AController* FiringController = FiringPawn->GetController();
-		if (FiringController)
+		if (AController* FiringController = FiringPawn->GetController())
 		{
 			// 带有衰减效果的径向伤害
 			UGameplayStatics::ApplyRadialDamageWithFalloff(

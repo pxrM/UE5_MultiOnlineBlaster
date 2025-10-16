@@ -12,6 +12,7 @@ namespace MatchState
 	extern BLASTER_API const FName Cooldown;	//比赛时间已结束，显示获胜者并开始冷却倒计时
 }
 
+
 /**
  *
  */
@@ -43,11 +44,11 @@ public:
 	/// </summary>
 	/// <param name="ElimmedCharacter">被淘汰的角色</param>
 	/// <param name="ElimmedController">被淘汰的控制器</param>
-	virtual void ResquestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
+	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 	/// <summary>
 	/// 角色请求退出游戏的处理
 	/// </summary>
-	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving);
+	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving) const;
 	/// <summary>
 	/// 计算伤害值
 	/// </summary>
@@ -59,7 +60,7 @@ public:
 
 
 public:
-	FORCEINLINE float GetCountdownTime() { return CountdownTime; }
+	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }
 
 
 public:

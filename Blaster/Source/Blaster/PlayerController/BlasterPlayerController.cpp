@@ -726,8 +726,8 @@ void ABlasterPlayerController::HideTeamSocres()
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlayWidget &&
-		BlasterHUD->CharacterOverlayWidget->RedTeamSocre &&
-		BlasterHUD->CharacterOverlayWidget->BlueTeamSocre &&
+		BlasterHUD->CharacterOverlayWidget->RedTeamScore &&
+		BlasterHUD->CharacterOverlayWidget->BlueTeamScore &&
 		BlasterHUD->CharacterOverlayWidget->TeamHorizontalBox;
 	if (bHUDValid)
 	{
@@ -741,15 +741,15 @@ void ABlasterPlayerController::InitTeamScores()
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlayWidget &&
-		BlasterHUD->CharacterOverlayWidget->RedTeamSocre &&
-		BlasterHUD->CharacterOverlayWidget->BlueTeamSocre &&
+		BlasterHUD->CharacterOverlayWidget->RedTeamScore &&
+		BlasterHUD->CharacterOverlayWidget->BlueTeamScore &&
 		BlasterHUD->CharacterOverlayWidget->TeamHorizontalBox;
 	if (bHUDValid)
 	{
 		FString Zero("0");
 		BlasterHUD->CharacterOverlayWidget->TeamHorizontalBox->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		BlasterHUD->CharacterOverlayWidget->RedTeamSocre->SetText(FText::FromString(Zero));
-		BlasterHUD->CharacterOverlayWidget->BlueTeamSocre->SetText(FText::FromString(Zero));
+		BlasterHUD->CharacterOverlayWidget->RedTeamScore->SetText(FText::FromString(Zero));
+		BlasterHUD->CharacterOverlayWidget->BlueTeamScore->SetText(FText::FromString(Zero));
 	}
 }
 
@@ -759,11 +759,11 @@ void ABlasterPlayerController::SetHUDRedTeamScore(int32 RedScore)
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlayWidget &&
-		BlasterHUD->CharacterOverlayWidget->RedTeamSocre;
+		BlasterHUD->CharacterOverlayWidget->RedTeamScore;
 	if (bHUDValid)
 	{
 		FString ScoreText = FString::Printf(TEXT("%d"), RedScore);
-		BlasterHUD->CharacterOverlayWidget->RedTeamSocre->SetText(FText::FromString(ScoreText));
+		BlasterHUD->CharacterOverlayWidget->RedTeamScore->SetText(FText::FromString(ScoreText));
 	}
 }
 
@@ -773,10 +773,10 @@ void ABlasterPlayerController::SetHUDBlueTeamScore(int32 BlueScore)
 
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlayWidget &&
-		BlasterHUD->CharacterOverlayWidget->BlueTeamSocre;
+		BlasterHUD->CharacterOverlayWidget->BlueTeamScore;
 	if (bHUDValid)
 	{
 		FString ScoreText = FString::Printf(TEXT("%d"), BlueScore);
-		BlasterHUD->CharacterOverlayWidget->BlueTeamSocre->SetText(FText::FromString(ScoreText));
+		BlasterHUD->CharacterOverlayWidget->BlueTeamScore->SetText(FText::FromString(ScoreText));
 	}
 }

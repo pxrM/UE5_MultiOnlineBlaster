@@ -81,7 +81,7 @@ protected:
 	 * 退出重叠
 	 */
 	UFUNCTION()
-	virtual void OnSphereEndOerlap(
+	virtual void OnSphereEndOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
@@ -100,6 +100,7 @@ protected:
 	 * 启用/禁用服务器倒带  当ping太高时，禁用服务器倒带
 	 * @param bPingTooHigh 是否ping太高
 	 */
+	UFUNCTION()
 	void OnPingTooHigh(bool bPingTooHigh);
 
 
@@ -136,7 +137,7 @@ public:
 	 * 是否开启RnderCustomDepth，以显示轮廓
 	 * @param bEnable 是否开启
 	 */
-	void EnableCustomDepth(bool bEnable);
+	void EnableCustomDepth(const bool bEnable) const;
 	/**
 	 * 获取一个扩散后的目标方向
 	 * @param TraceStart 起始点，废弃，改为由该函数自己计算
@@ -155,8 +156,8 @@ public:
 	FORCEINLINE EFireType GetFireType() const { return FireType; }
 	FORCEINLINE int32 GetAmmoNum() const { return AmmoNum; }
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
-	FORCEINLINE float GetDameage() const { return Damage; }
-	FORCEINLINE float GetHeadShotDameage() const { return HeadShotDamage; }
+	FORCEINLINE float GetDamage() const { return Damage; }
+	FORCEINLINE float GetHeadShotDamage() const { return HeadShotDamage; }
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE ETeam GetTeam() const { return Team; }
 

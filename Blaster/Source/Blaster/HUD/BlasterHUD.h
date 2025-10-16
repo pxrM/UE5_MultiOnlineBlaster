@@ -6,6 +6,12 @@
 #include "GameFramework/HUD.h"
 #include "BlasterHUD.generated.h"
 
+class UTexture2D;
+class UUserWidget;
+class APlayerController;
+class UElimAnnouncement;
+class UCharacterOverlayWidget;
+class UAnnouncementWidget;
 
 /// <summary>
 /// 准心结构体
@@ -15,7 +21,7 @@ struct FHUDPackage
 {
 	GENERATED_BODY()
 public:
-	class UTexture2D* CrosshairsCenter;  // 十字瞄准贴图  中
+	UTexture2D* CrosshairsCenter;		 // 十字瞄准贴图  中
 	UTexture2D* CrosshairsLeft;			 // 十字瞄准贴图  左
 	UTexture2D* CrosshairsRight;	     // 十字瞄准贴图  右
 	UTexture2D* CrosshairsTop;			 // 十字瞄准贴图  上
@@ -51,7 +57,7 @@ public:
 	/// </summary>
 	/// <param name="AttackerName"></param>
 	/// <param name="VictimName"></param>
-	void AddElimAnnouncement(FString AttackerName, FString VictimName);
+	void AddElimAnnouncement(const FString& AttackerName, const FString& VictimName);
 
 	/// <summary>
 	/// 淘汰公告item的计时器结束回调
@@ -79,7 +85,7 @@ private:
 	FHUDPackage HUDPackage;
 
 	UPROPERTY()
-	class APlayerController* OwningPlayerCtr;
+	APlayerController* OwningPlayerCtr;
 
 	/// <summary>
 	/// 准心最大张开速度
@@ -91,7 +97,7 @@ private:
 	/// 淘汰公告类
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
+	TSubclassOf<UElimAnnouncement> ElimAnnouncementClass;
 
 	/// <summary>
 	/// 淘汰公告item的持续展示时间
@@ -102,15 +108,15 @@ private:
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-	TSubclassOf<class UUserWidget> CharacterOverlayClass;
+	TSubclassOf<UUserWidget> CharacterOverlayClass;
 	UPROPERTY()
-	class UCharacterOverlayWidget* CharacterOverlayWidget;
+	UCharacterOverlayWidget* CharacterOverlayWidget;
 
 	UPROPERTY(EditAnywhere, Category = "Announcements")
-	TSubclassOf<class UUserWidget> AnnouncementClass;
+	TSubclassOf<UUserWidget> AnnouncementClass;
 
 	UPROPERTY()
-	class UAnnouncementWidget* AnnouncementWidget;
+	UAnnouncementWidget* AnnouncementWidget;
 
 	UPROPERTY()
 	TArray<UElimAnnouncement*> ElimMessages;

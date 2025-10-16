@@ -37,8 +37,7 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 void ABlasterGameState::RedTeamScores()
 {
 	++RedTeamScore;
-	ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
-	if (BPlayer)
+	if (ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		BPlayer->SetHUDRedTeamScore(RedTeamScore);
 	}
@@ -47,8 +46,7 @@ void ABlasterGameState::RedTeamScores()
 void ABlasterGameState::BlueTeamScores()
 {
 	++BlueTeamScore;
-	ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
-	if (BPlayer)
+	if (ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		BPlayer->SetHUDBlueTeamScore(BlueTeamScore);
 	}
@@ -56,8 +54,7 @@ void ABlasterGameState::BlueTeamScores()
 
 void ABlasterGameState::OnRep_RedTeamScore()
 {
-	ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
-	if (BPlayer)
+	if (ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		BPlayer->SetHUDRedTeamScore(RedTeamScore);
 	}
@@ -65,8 +62,7 @@ void ABlasterGameState::OnRep_RedTeamScore()
 
 void ABlasterGameState::OnRep_BlueTeamScore()
 {
-	ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController());
-	if (BPlayer)
+	if (ABlasterPlayerController* BPlayer = Cast<ABlasterPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		BPlayer->SetHUDBlueTeamScore(BlueTeamScore);
 	}

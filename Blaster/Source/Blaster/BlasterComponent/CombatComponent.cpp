@@ -216,7 +216,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
-void UCombatComponent::OnRep_SecsondaryWeapon()
+void UCombatComponent::OnRep_SecondaryWeapon()
 {
 	if (SecondaryWeapon && Character)
 	{
@@ -399,8 +399,7 @@ void UCombatComponent::FireShotgunWeapon()
 {
 	if (EquippedWeapon && Character)
 	{
-		AShotgunWeapon* Shotgun = Cast<AShotgunWeapon>(EquippedWeapon);
-		if (Shotgun)
+		if (AShotgunWeapon* Shotgun = Cast<AShotgunWeapon>(EquippedWeapon))
 		{
 			TArray<FVector_NetQuantize> HitTargets;
 			Shotgun->ShotgunTraceEndWithScatter(HitTarget, HitTargets);
@@ -995,7 +994,7 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingSMGAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Shotgun, StartingShotgunAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SniperRifle, StartingSniperAmmo);
-	CarriedAmmoMap.Emplace(EWeaponType::EWT_GrenadeLacuncher, StartingGrenadeAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_GrenadeLauncher, StartingGrenadeAmmo);
 }
 
 

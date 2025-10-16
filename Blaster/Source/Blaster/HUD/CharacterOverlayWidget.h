@@ -7,7 +7,7 @@
 #include "CharacterOverlayWidget.generated.h"
 
 /**
- *
+ * 角色信息界面
  */
 UCLASS()
 class BLASTER_API UCharacterOverlayWidget : public UUserWidget
@@ -46,10 +46,10 @@ public:
 	UTextBlock* GrenadesText;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* RedTeamSocre;
+	UTextBlock* RedTeamScore;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* BlueTeamSocre;
+	UTextBlock* BlueTeamScore;
 
 	UPROPERTY(meta = (BindWidget))
 	UWidget* TeamHorizontalBox;

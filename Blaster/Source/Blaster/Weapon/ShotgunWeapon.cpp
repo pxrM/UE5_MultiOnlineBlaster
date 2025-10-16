@@ -113,12 +113,10 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 			WeaponTraceHit(Start, HitTargetItem, FireHit);
 
 		 	// 如果击中了玩家角色
-			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-			if (BlasterCharacter)
+			if (ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor()))
 			{
 				// 检查是否爆头（通过骨骼名称判断）
-				const bool bHeadShot = FireHit.BoneName.ToString() == FString("head");
-				if (bHeadShot)
+				if (const bool bHeadShot = FireHit.BoneName.ToString() == FString("head"))
 				{
 					// 如果爆头击中次数统计中包含该角色，则增加其爆头击中次数
 					if (HeadShotHitMap.Contains(BlasterCharacter)) HeadShotHitMap[BlasterCharacter]++;
@@ -175,15 +173,17 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 		{
 			if (HeadShotHitPair.Key)
 			{
-				if (DamageMap.Contains(HeadShotHitPair.Key)) DamageMap[HeadShotHitPair.Key] += HeadShotHitPair.Value * HeadShotDamage;
-				else DamageMap.Emplace(HeadShotHitPair.Key, HeadShotHitPair.Value * HeadShotDamage);
+				if (DamageMap.Contains(HeadShotHitPair.Key))
+					DamageMap[HeadShotHitPair.Key] += HeadShotHitPair.Value * HeadShotDamage;
+				else
+					DamageMap.Emplace(HeadShotHitPair.Key, HeadShotHitPair.Value * HeadShotDamage);
 
 				HitCharacters.AddUnique(HeadShotHitPair.Key);
 			}
 		}
 	
 		// 判断是否应该在此处应用伤害（服务器或本地控制且未启用服务器倒带）
-		bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
+		const bool bCauseAuthDamage = !bUseServerSideRewind || OwnerPawn->IsLocallyControlled();
 		if (HasAuthority() && bCauseAuthDamage)
 		{
 			for (auto& DamagePair : DamageMap)
@@ -217,7 +217,7 @@ void AShotgunWeapon::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 	}
 }
 
-void AShotgunWeapon::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets)
+void AShotgunWeapon::ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets) const
 {
 	// 获取武器枪口的 Socket，用于确定射击起始点
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");

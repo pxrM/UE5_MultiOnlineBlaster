@@ -24,11 +24,11 @@ private:
 	/// 客户端和服务器上使用，会进行网络复制
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<class AProjectile> ProjectileClass;
+	TSubclassOf<class AProjectile> ProjectileClass;
 	/// <summary>
 	/// 服务器倒带使用，不会进行网络复制
 	/// </summary>
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<AProjectile> ServerSideRewindProjectileClass;
+	TSubclassOf<AProjectile> ServerSideRewindProjectileClass;
 
 };

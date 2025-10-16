@@ -6,7 +6,6 @@
 6. 无缝旅行与非无缝旅行
 		无缝 Travel：无缝 Travel 是一种在不中断游戏流程的情况下切换场景或地图的方式。无缝 Travel 通常用于实现游戏中的波次、
 				关卡等级或任何需要玩家移动到新的游戏区域的情景中。无缝 Travel 可以通过在服务器和客户端之间传输数据来实现无缝衔接。
-				
 		非无缝 Travel：非无缝 Travel 是指在切换场景或地图时会中断游戏流程的方式。当执行非无缝 Travel 时，游戏会先停止当前场景的运行，
 				并加载新的场景或地图，然后重新启动游戏并初始化所需的数据和状态。非无缝 Travel 通常会中断客户端和服务器之间的连接，
 				并在加载新地图或场景时重新建立连接，通常，非无缝 Travel 更适用于需要完全重置游戏状态的情况，例如从主菜单进入游戏或重新启动游戏等。
@@ -30,7 +29,7 @@
 
 
 
-滞后补偿：
+1. 滞后补偿：
 	插值法：角色从A点移动到B点，权威位置从服务器复制到客户端，客户端可以存储当前的服务器发来的更新和之前客户端进行的更新，
 			在更新的时候在这两者之间进行差值。这种方法移动会使角色移动更顺畅，但是位置总是会回到过去，总是插值到当前的位置，
 			这种延迟对射击角色很不利，在游戏中，因为向距离过去50毫秒的对手进行射击意味着你要错过
@@ -40,7 +39,7 @@
 	橡皮筋：在虚幻的移动组件中，将这两个方法进行了组合。
 			如果你的ping非常高，你移动角色，角色移动组件将使用你的速度来推断你在其他机器上的位置，让你的角色移动。
 			如果需要进行修正，角色移动组件会平滑地进行插值修正。如果服务器和客户端位置不同步，角色移动组件将使你的角色回到正确的位置
-服务器倒带：
+2. 服务器倒带：
 	服务器跟踪玩家的位置，并以某种形式存储这些历史信息，当你命中目标时，你将命中的详细信息发送到服务器，包括命中的时间，
 	然后服务器会查看你的命中时间，倒带时间，将玩家重新定位到之前的位置，并使用您的命中信息来查看您的子弹或直线是否跟踪，
 	查看是否实际上打到服务器权威玩家，如果击中成功，就会获得分数奖励，然后服务器将所有角色放回到正确的位置并继续游戏。
@@ -60,7 +59,7 @@
 		收到你的射击rpc，时间来到第300毫秒时，对手机器角色位置为（7）70，server为60，你自己机器对手的位置在50，此时server收到之前你机器发的射击
 		rpc，server检查你发的对手位置40，但是在server上对手的角色已经移动到了60，所以这种滞后带来的判断是错误的。假设server能够倒带时间来查看所
 		有角色在特定时间的位置，所以当你发送射击rpc时携带上开枪时间250毫秒，server拿这个时间去回退到250毫秒时，看对手角色是否在这个位置。
-客户端预测：
+3. 客户端预测：
 	假设一次网络消息往返时间时100毫秒（客户端发送消息到服务器50，服务器回消息到客户端50）。在客户端中一旦我们按下输入并移动，
 	客户端将发送该消息到服务器，server验证后将移动复制到client，消息到达client，如果client发现位置与server不匹配，会更正到server的位置，
 	网络抖动例子：一个角色在客户端，有一个它的相同版本在服务器，假设从0位置开始，client角色向前移动10单位，此时client发送rpc10到server，
@@ -80,11 +79,35 @@
 		回复，所以client知道有两次rpc没有处理，时间再次过去50毫秒来到了第100毫秒，server收到了第二次client的rpc，将server的角色前进10来到第20位置，
 		并且进行（2-20回包）给client，client这个时候收到了server的第一次rpc回包（1-10），根据client的缓存client可以知道这个server发送过来的是旧rpc，
 		client知道发送过去的第二次rpc（2-20）还没处理，但是client知道这一次的server发来的rpc对应上client第一次发送过去的rpc，因此可以继续，并且丢弃
-		第一次的rpc缓存。这里首先client告诉server角色位置是10，第二次rpc告诉server角色位置为20，所以clien知道从第一个rpc到第二个rpc我们从10移动到了
+		第一次的rpc缓存。这里首先client告诉server角色位置是10，第二次rpc告诉server角色位置为20，所以client知道从第一个rpc到第二个rpc我们从10移动到了
 		20，收到第一次server回rpc会先匹配到client的缓存10，并且client知道第二次的回包还没收到，所以这里client可以先行移动到20的位置。时间再次过去50
 		毫秒来到了第150毫秒，client收到第二个rpc回包并应用于本地缓存，二次移动后client没有再继续移动，所以没有其它数据需要考虑，这里回包20和client
 		目前位置20相匹配，所以不需要移动。通过缓存client发送到server的rpc，client可以先应用本地移动，同时client知道哪些更新尚未被server处理，以便后
 		续进行更正。
 		这里服务器协调过程：客户端输入后，先移动
-							发送rpc到server，clien缓存这个发送给server的rpc，此时client知道有一个未处理的rpc
+							发送rpc到server，client缓存这个发送给server的rpc，此时client知道有一个未处理的rpc
 							收到server回包，应用更正，丢弃已处理的rpc
+
+
+1. 内存分析：
+   1.1 LLM跟踪器	https://dev.epicgames.com/documentation/zh-cn/unreal-engine/using-the-low-level-memory-tracker-in-unreal-engine
+		*在启动时加上 -LLM 参数 
+			-LLM #启用LLM
+   			-LLMCSV #连续将所有值写入CSV文件。自动启用-LLM。
+   			-llmtagsets=Assets #实验性功能。显示每个资源分配的内存总计。
+   			-llmtagsets=AssetClasses #实验性功能。显示每个UObject类类型的总计。
+   		*直接启动 Standalone Game（独立游戏窗口），需要先在编辑器Edit里配置Additional Launch Parameters，添加-LLM -LLMCSV。
+   		*通过 Visual Studio 调试启动（开发时常用）
+   			在 Visual Studio 中右键你的启动项目（如 MyProject）→ Properties（属性）。
+   			左侧选择：Debugging（调试）
+   			在 Command Arguments（命令参数） 中输入：-LLM -LLMCSV。
+   1.2 常用的 console command:
+	   	stat memory #显示引擎中各个子系统的内存占用
+       	stat MemoryAllocator #显示内存分配信息
+       	stat MemoryPlatform #显示平台内存信息
+       	stat MemoryStaticMesh #显示静态模型的内存信息
+   1.3 Other
+       	memreport
+  		MemoryProfiler
+       	Heapprofd(Android)
+       	Instrument(IOS)

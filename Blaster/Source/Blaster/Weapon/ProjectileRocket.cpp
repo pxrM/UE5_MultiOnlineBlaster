@@ -4,6 +4,7 @@
 #include "ProjectileRocket.h"
 #include "Kismet/GamePlayStatics.h"
 #include "NiagaraComponent.h"
+#include "NiagaraSystemInstanceController.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Sound/SoundCue.h"

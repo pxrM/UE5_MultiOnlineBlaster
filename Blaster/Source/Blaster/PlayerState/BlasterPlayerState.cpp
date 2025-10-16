@@ -14,7 +14,7 @@ void ABlasterPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(ABlasterPlayerState, Team);
 }
 
-#define CHECK_SETHUDTEXT(Func, Num) \
+#define CHECK_SET_HUD_TEXT(Func, Num) \
 Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character; \
 if (Character) \
 { \
@@ -28,7 +28,7 @@ if (Character) \
 void ABlasterPlayerState::AddToScore(float ScoreAmount)
 {
 	SetScore(Score + ScoreAmount);
-	CHECK_SETHUDTEXT(SetHUDScore, Score); //服务器执行
+	CHECK_SET_HUD_TEXT(SetHUDScore, Score); //服务器执行
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
@@ -43,7 +43,7 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 void ABlasterPlayerState::OnRep_Score()
 {
 	Super::OnRep_Score();
-	CHECK_SETHUDTEXT(SetHUDScore, Score);  //客户端执行
+	CHECK_SET_HUD_TEXT(SetHUDScore, Score);  //客户端执行
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
@@ -58,7 +58,7 @@ void ABlasterPlayerState::OnRep_Score()
 void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 {
 	Defeats += DefeatsAmount;
-	CHECK_SETHUDTEXT(SetHUDDefeats, Defeats);
+	CHECK_SET_HUD_TEXT(SetHUDDefeats, Defeats);
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
@@ -72,7 +72,7 @@ void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 
 void ABlasterPlayerState::OnRep_Defeats()
 {
-	CHECK_SETHUDTEXT(SetHUDDefeats, Defeats);
+	CHECK_SET_HUD_TEXT(SetHUDDefeats, Defeats);
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
@@ -86,8 +86,7 @@ void ABlasterPlayerState::OnRep_Defeats()
 
 void ABlasterPlayerState::OnRep_Team()
 {
-	ABlasterCharacter* BCharacter = Cast<ABlasterCharacter>(GetPawn());
-	if (BCharacter)
+	if (ABlasterCharacter* BCharacter = Cast<ABlasterCharacter>(GetPawn()))
 	{
 		BCharacter->SetTeamColor(Team);
 	}
@@ -97,8 +96,7 @@ void ABlasterPlayerState::SetTeam(ETeam TeamToSet)
 {
 	Team = TeamToSet;
 
-	ABlasterCharacter* BCharacter = Cast<ABlasterCharacter>(GetPawn());
-	if (BCharacter)
+	if (ABlasterCharacter* BCharacter = Cast<ABlasterCharacter>(GetPawn()))
 	{
 		BCharacter->SetTeamColor(Team);
 	}

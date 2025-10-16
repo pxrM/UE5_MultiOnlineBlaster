@@ -37,11 +37,9 @@ void AProjectileBullet::PostEditChangeProperty(FPropertyChangedEvent& Event)
 
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()); //Owner在 AProjectileWeapon::Fire =》 UCombatComponent::EquipWeapon中指定为角色
-	if (OwnerCharacter)
+	if (const ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner()))
 	{
-		ABlasterPlayerController* OwnerController = Cast<ABlasterPlayerController>(OwnerCharacter->Controller);
-		if (OwnerController)
+		if (ABlasterPlayerController* OwnerController = Cast<ABlasterPlayerController>(OwnerCharacter->Controller))
 		{
 			// 在服务器上且没有启用倒带
 			if (OwnerCharacter->HasAuthority() && !bUseServerSideRewind) 

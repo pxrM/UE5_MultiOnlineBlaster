@@ -18,9 +18,56 @@ void ATeamGameMode::PostLogin(APlayerController* NewPlayer)
 
 	// 玩家登录・中途加入
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-	if (BGameState)
+	if (BGameState == nullptr) return;
+	
+	ABlasterPlayerState* BPState = NewPlayer->GetPlayerState<ABlasterPlayerState>();
+	if (BPState && BPState->GetTeam() == ETeam::ET_NoTeam)
 	{
-		ABlasterPlayerState* BPState = NewPlayer->GetPlayerState<ABlasterPlayerState>();
+		if (BGameState->BlueTeam.Num() >= BGameState->RedTeam.Num())
+		{
+			BGameState->RedTeam.AddUnique(BPState);
+			BPState->SetTeam(ETeam::ET_RedTeam);
+		}
+		else
+		{
+			BGameState->BlueTeam.AddUnique(BPState);
+			BPState->SetTeam(ETeam::ET_BlueTeam);
+		}
+	}
+}
+
+void ATeamGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	// 玩家退出
+	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+	if (BGameState == nullptr) return;
+
+	if (ABlasterPlayerState* BPState = Exiting->GetPlayerState<ABlasterPlayerState>())
+	{
+		if (BGameState->RedTeam.Contains(BPState))
+		{
+			BGameState->RedTeam.Remove(BPState);
+		}
+		if (BGameState->BlueTeam.Contains(BPState))
+		{
+			BGameState->BlueTeam.Remove(BPState);
+		}
+	}
+}
+
+void ATeamGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	// 比赛开始时
+	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+	if (BGameState == nullptr) return;
+	
+	for (auto PState : BGameState->PlayerArray)
+	{
+		ABlasterPlayerState* BPState = Cast<ABlasterPlayerState>(PState.Get());
 		if (BPState && BPState->GetTeam() == ETeam::ET_NoTeam)
 		{
 			if (BGameState->BlueTeam.Num() >= BGameState->RedTeam.Num())
@@ -37,61 +84,10 @@ void ATeamGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 }
 
-void ATeamGameMode::Logout(AController* Exiting)
-{
-	Super::Logout(Exiting);
-
-	// 玩家退出
-	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-	if (BGameState)
-	{
-		ABlasterPlayerState* BPState = Exiting->GetPlayerState<ABlasterPlayerState>();
-		if (BPState)
-		{
-			if (BGameState->RedTeam.Contains(BPState))
-			{
-				BGameState->RedTeam.Remove(BPState);
-			}
-			if (BGameState->BlueTeam.Contains(BPState))
-			{
-				BGameState->BlueTeam.Remove(BPState);
-			}
-		}
-	}
-}
-
-void ATeamGameMode::HandleMatchHasStarted()
-{
-	Super::HandleMatchHasStarted();
-
-	// 比赛开始时
-	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-	if (BGameState)
-	{
-		for (auto PState : BGameState->PlayerArray)
-		{
-			ABlasterPlayerState* BPState = Cast<ABlasterPlayerState>(PState.Get());
-			if (BPState && BPState->GetTeam() == ETeam::ET_NoTeam)
-			{
-				if (BGameState->BlueTeam.Num() >= BGameState->RedTeam.Num())
-				{
-					BGameState->RedTeam.AddUnique(BPState);
-					BPState->SetTeam(ETeam::ET_RedTeam);
-				}
-				else
-				{
-					BGameState->BlueTeam.AddUnique(BPState);
-					BPState->SetTeam(ETeam::ET_BlueTeam);
-				}
-			}
-		}
-	}
-}
-
 float ATeamGameMode::CalculateDamage(AController* Attacker, AController* Victim, float BaseDamage)
 {
-	ABlasterPlayerState* AttackerPState = Attacker->GetPlayerState<ABlasterPlayerState>();
-	ABlasterPlayerState* VictimPState = Victim->GetPlayerState<ABlasterPlayerState>();
+	const ABlasterPlayerState* AttackerPState = Attacker->GetPlayerState<ABlasterPlayerState>();
+	const ABlasterPlayerState* VictimPState = Victim->GetPlayerState<ABlasterPlayerState>();
 	if (AttackerPState == nullptr || VictimPState == nullptr)
 		return BaseDamage;
 	if (AttackerPState == VictimPState)
@@ -107,7 +103,7 @@ void ATeamGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlast
 
 	// 添加队伍得分
 	ABlasterGameState* BGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
+	const ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	if (BGameState && AttackerPlayerState)
 	{
 		if (AttackerPlayerState->GetTeam() == ETeam::ET_RedTeam)

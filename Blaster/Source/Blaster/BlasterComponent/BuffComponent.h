@@ -97,7 +97,7 @@ private:
 	/// </summary>
 	/// <param name="BaseSpeed"></param>
 	/// <param name="CrouchSpeed"></param>
-	void HandleChangeSpeed(float BaseSpeed, float CrouchSpeed);
+	void HandleChangeSpeed(float BaseSpeed, float CrouchSpeed) const;
 
 	/// <summary>
 	/// 跳跃buff时效结束恢复之前的跳跃高度

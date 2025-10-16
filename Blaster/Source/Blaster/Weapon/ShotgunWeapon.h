@@ -24,12 +24,12 @@ public:
 	/**
  	 * 计算霰弹枪的散射终点位置
  	 * 该函数通过在一个球体空间内随机生成多个点，来模拟霰弹枪的散射效果
-	 *      玩家 -----> 枪口位置 -----> 散射球体 -----> 目标
+	 *      玩家 ------> 枪口位置 ------> 散射球体 -----> 目标
      *		(Player)    (TraceStart)    (Sphere)     (HitTarget)
 	 * @param HitTarget 玩家瞄准的目标点
 	 * @param HitTargets 输出参数，存储所有散射子弹的终点位置
 	 */
-	void ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets);
+	void ShotgunTraceEndWithScatter(const FVector& HitTarget, TArray<FVector_NetQuantize>& HitTargets) const;
 
 private:
 	/**

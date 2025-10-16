@@ -94,9 +94,11 @@ ABlasterCharacter::ABlasterCharacter()
 	NetUpdateFrequency = 66.f;	//Actor 网络同步的最大频率
 	MinNetUpdateFrequency = 33.f;	//网络同步的最小频率
 
-	/*
-		服务器端倒带的方框
-	*/
+	InitialServerBoxData();
+}
+
+void ABlasterCharacter::InitialServerBoxData()
+{
 	head = CreateDefaultSubobject<UBoxComponent>(TEXT("head"));
 	head->SetupAttachment(GetMesh(), FName("head")); //这里第二个参数是骨骼名
 	HitCollisionBoxs.Add(FName("head"), head);
@@ -672,23 +674,23 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 	}
 }
 
-bool ABlasterCharacter::IsWeaponEquipped()
+bool ABlasterCharacter::IsWeaponEquipped() const
 {
 	return (CombatCmp && CombatCmp->EquippedWeapon);
 }
 
-bool ABlasterCharacter::IsAiming()
+bool ABlasterCharacter::IsAiming() const
 {
 	return (CombatCmp && CombatCmp->bAiming);
 }
 
-AWeapon* ABlasterCharacter::GetEquippedWeapon()
+AWeapon* ABlasterCharacter::GetEquippedWeapon() const
 {
 	if (CombatCmp == nullptr)return nullptr;
 	return CombatCmp->EquippedWeapon;
 }
 
-void ABlasterCharacter::PlayFireMontage(bool bAiming)
+void ABlasterCharacter::PlayFireMontage(bool bAiming) const
 {
 	if (CombatCmp == nullptr || CombatCmp->EquippedWeapon == nullptr) return;
 
@@ -696,13 +698,12 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	if (AnimInstance && FireWeaponMontage)
 	{
 		AnimInstance->Montage_Play(FireWeaponMontage);
-		FName SectionName;
-		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		const FName SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
-void ABlasterCharacter::PlayReloadMagMontage()
+void ABlasterCharacter::PlayReloadMagMontage() const
 {
 	if (CombatCmp == nullptr || CombatCmp->EquippedWeapon == nullptr) return;
 
@@ -731,15 +732,15 @@ void ABlasterCharacter::PlayReloadMagMontage()
 		case EWeaponType::EWT_SniperRifle:
 			SectionName = FName("SniperRifle");
 			break;
-		case EWeaponType::EWT_GrenadeLacuncher:
-			SectionName = FName("GrenadeLacuncher");
+		case EWeaponType::EWT_GrenadeLauncher:
+			SectionName = FName("GrenadeLauncher");
 			break;
 		}
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
-void ABlasterCharacter::PlayHitReactMontage()
+void ABlasterCharacter::PlayHitReactMontage() const
 {
 	if (CombatCmp == nullptr || CombatCmp->EquippedWeapon == nullptr) return;
 
@@ -747,12 +748,12 @@ void ABlasterCharacter::PlayHitReactMontage()
 	if (AnimInstance && HitReactMontage)
 	{
 		AnimInstance->Montage_Play(HitReactMontage);
-		FName SectionName("FromFront");
+		const FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
 
-void ABlasterCharacter::PlayElimMontage()
+void ABlasterCharacter::PlayElimMontage() const
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && ElimMontage)
@@ -761,7 +762,7 @@ void ABlasterCharacter::PlayElimMontage()
 	}
 }
 
-void ABlasterCharacter::PlayThrowGrenadeMontage()
+void ABlasterCharacter::PlayThrowGrenadeMontage() const
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && ThrowGrenadeMontage)
@@ -770,7 +771,7 @@ void ABlasterCharacter::PlayThrowGrenadeMontage()
 	}
 }
 
-void ABlasterCharacter::PlaySwapMontage()
+void ABlasterCharacter::PlaySwapMontage() const
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && SwapMontage)
@@ -1077,7 +1078,7 @@ void ABlasterCharacter::ElimTimerFinished()
 	BlasterGameMode = BlasterGameMode ? BlasterGameMode : GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	if (BlasterGameMode && !bLeftGame)
 	{
-		BlasterGameMode->ResquestRespawn(this, Controller);
+		BlasterGameMode->RequestRespawn(this, Controller);
 	}
 
 	if (bLeftGame && IsLocallyControlled())

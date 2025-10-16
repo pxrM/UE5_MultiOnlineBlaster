@@ -109,7 +109,7 @@ void UBuffComponent::MulticastSpeedBuff_Implementation (float BaseSpeed, float C
 	HandleChangeSpeed(BaseSpeed, CrouchSpeed);
 }
 
-void UBuffComponent::HandleChangeSpeed(float BaseSpeed, float CrouchSpeed)
+void UBuffComponent::HandleChangeSpeed(float BaseSpeed, float CrouchSpeed) const
 {
 	if (Character && Character->GetCharacterMovement())
 	{

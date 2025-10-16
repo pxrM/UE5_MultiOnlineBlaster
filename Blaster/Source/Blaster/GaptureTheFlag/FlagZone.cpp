@@ -23,16 +23,15 @@ void AFlagZone::BeginPlay()
 
 void AFlagZone::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AFlag* OverlapingFlag = Cast<AFlag>(OtherActor);
-	if (OverlapingFlag && OverlapingFlag->GetTeam() != Team)
+	AFlag* OverlappingFlag = Cast<AFlag>(OtherActor);
+	if (OverlappingFlag && OverlappingFlag->GetTeam() != Team)
 	{
-		ACaptureTheFlagGameMode* GameMode = GetWorld()->GetAuthGameMode<ACaptureTheFlagGameMode>();
-		if (GameMode)
+		if (const ACaptureTheFlagGameMode* GameMode = GetWorld()->GetAuthGameMode<ACaptureTheFlagGameMode>())
 		{
-			GameMode->FlagCaptured(OverlapingFlag, this);
+			GameMode->FlagCaptured(OverlappingFlag, this);
 		}
 		// 加分后，从角色身上卸掉旗帜并让旗帜回归原点
-		OverlapingFlag->ResetFlag();
+		OverlappingFlag->ResetFlag();
 	}
 }
 

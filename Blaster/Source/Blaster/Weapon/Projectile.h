@@ -6,9 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
-/*
-	射弹物体（子弹）
-*/
+/**
+ * 射弹类物体（子弹）
+ */
 UCLASS()
 class BLASTER_API AProjectile : public AActor
 {

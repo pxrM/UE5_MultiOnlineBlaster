@@ -73,8 +73,7 @@ void AFlag::Dropped()
 
 void AFlag::ResetFlag()
 {
-	ABlasterCharacter* FlagBearer = Cast<ABlasterCharacter>(GetOwner());
-	if (FlagBearer)
+	if (ABlasterCharacter* FlagBearer = Cast<ABlasterCharacter>(GetOwner()))
 	{
 		FlagBearer->SetHoldingTheFlag(false);
 		FlagBearer->SetOverlappingWeapon(nullptr);

@@ -149,7 +149,7 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 	UFUNCTION()
-	void OnRep_SecsondaryWeapon();
+	void OnRep_SecondaryWeapon();
 
 	/**
 	 * 使当前装备的武器掉落
@@ -400,7 +400,7 @@ private:
 	/**
 	 * 第二把武器
 	 */
-	UPROPERTY(ReplicatedUsing = OnRep_SecsondaryWeapon)
+	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
 	AWeapon* SecondaryWeapon;
 
 	/**

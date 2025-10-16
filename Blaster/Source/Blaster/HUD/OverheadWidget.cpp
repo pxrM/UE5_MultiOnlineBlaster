@@ -4,7 +4,7 @@
 #include "OverheadWidget.h"
 #include "Components/TextBlock.h"
 
-void UOverheadWidget::SetDisplayText(FString TextToDisplay)
+void UOverheadWidget::SetDisplayText(const FString& TextToDisplay) const
 {
 	if (DisplayText)
 	{
@@ -15,7 +15,7 @@ void UOverheadWidget::SetDisplayText(FString TextToDisplay)
 void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn)
 {
 	FString Role;
-	ENetRole RemotelRole = InPawn->GetRemoteRole();
+	const ENetRole RemotelRole = InPawn->GetRemoteRole();
 	switch (RemotelRole)
 	{
 	case ROLE_None:	//未定义任何角色
@@ -34,7 +34,7 @@ void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn)
 		Role = FString("None");
 		break;
 	}
-	FString RemoteRoleString = FString::Printf(TEXT("Remote Role: %s"), *Role);
+	const FString RemoteRoleString = FString::Printf(TEXT("Remote Role: %s"), *Role);
 	SetDisplayText(RemoteRoleString);
 }
 
