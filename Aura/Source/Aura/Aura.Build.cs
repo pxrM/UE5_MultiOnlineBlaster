@@ -7,6 +7,8 @@ public class Aura : ModuleRules
 	public Aura(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+		OptimizeCode = CodeOptimization.InShippingBuildsOnly;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "AIModule", "ModelViewViewModel" });
 
