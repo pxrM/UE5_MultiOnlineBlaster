@@ -31,10 +31,12 @@ void FSceneHUDItemTexture::Draw(UCanvas* InCanvas, float InScale, float InAlpha,
 
 FVector2D FSceneHUDItemTexture::GetContentSize() const
 {
+	return FVector2D();
 }
 
 FVector2D FSceneHUDItemTexture::GetRotatePivot() const
 {
+	return FVector2D();
 }
 
 void FSceneHUDItemTexture::SetRotatePivot(const FVector2D& InPivot)
@@ -43,6 +45,7 @@ void FSceneHUDItemTexture::SetRotatePivot(const FVector2D& InPivot)
 
 float FSceneHUDItemTexture::GetAngle() const
 {
+	return 0.f;
 }
 
 void FSceneHUDItemTexture::SetAngle(float InAngle)

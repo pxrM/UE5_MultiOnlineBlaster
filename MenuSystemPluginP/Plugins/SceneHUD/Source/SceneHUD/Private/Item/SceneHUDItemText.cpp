@@ -42,7 +42,7 @@ void FSceneHUDItemText::Draw(UCanvas* InCanvas, float InScale, float InAlpha, fl
 		CanvasItem->SetScale(InScale * Scale);
 		CanvasItem->SetAlpha(InAlpha * Alpha * ColorAlpha);
 		CanvasItem->SetOutlineAlpha(InAlpha * Alpha * OutlineColorAlpha);
-		InCanvas->DrawItem(*Cast<FCanvasItem>(CanvasItem), GetDrawPosition(InScale, FVector2D(InX, InY)));
+		InCanvas->DrawItem(*CanvasItem, GetDrawPosition(InScale, FVector2D(InX, InY)));
 	}
 }
 
