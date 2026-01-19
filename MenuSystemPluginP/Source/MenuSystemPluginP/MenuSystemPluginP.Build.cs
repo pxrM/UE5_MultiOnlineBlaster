@@ -6,6 +6,7 @@ public class MenuSystemPluginP : ModuleRules
 {
 	public MenuSystemPluginP(ReadOnlyTargetRules Target) : base(Target)
 	{
+		PrivateDependencyModuleNames.AddRange(new string[] { "UMGStateConfigurator" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		OptimizeCode = CodeOptimization.InShippingBuildsOnly;
 
