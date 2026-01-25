@@ -18,7 +18,7 @@ struct FUIPropertyOverride
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	FString ValueData; // 以字符串形式序列化存储任何属性值
-};
+}; 
 
 
 USTRUCT(BlueprintType)
@@ -31,6 +31,9 @@ struct FUIStateGroup
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	TArray<FUIPropertyOverride> Overrides;
+
+	UPROPERTY(EditAnywhere, Category = "State|Config")
+	bool bRecordMode = false;
 };
 
 
@@ -74,12 +77,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UMGState")
 	void ResetToInitialState();
 
+	// 供编辑器调用的录制接口
+	void UpdateRecordedPropertyToGroup(FUIStateGroup& TargetGroup, FName TargetWidgetName, FName PropertyName, const FString& ValueStr);
+
 protected:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
-
-protected:
+	
 	// 采集当前涉及的所有属性的快照
 	void TakeInitialSnapshot();
 };

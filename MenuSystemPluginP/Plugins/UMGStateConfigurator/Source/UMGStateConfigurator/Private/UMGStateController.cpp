@@ -103,18 +103,54 @@ void UUMGStateController::TakeInitialSnapshot()
 	}
 }
 
+void UUMGStateController::UpdateRecordedPropertyToGroup(FUIStateGroup& TargetGroup, FName TargetWidgetName, FName PropertyName, const FString& ValueStr)
+{
+	FUIPropertyOverride* FoundOverride = TargetGroup.Overrides.FindByPredicate([&](const FUIPropertyOverride& Item)
+	{
+		return Item.PropertyName == TargetWidgetName && Item.PropertyName == PropertyName.ToString();
+	});
+
+	if (FoundOverride)
+	{
+		if (FoundOverride->ValueData != ValueStr)
+		{
+			FoundOverride->ValueData = ValueStr;
+			MarkPackageDirty();
+		}
+	}
+	else
+	{
+		FUIPropertyOverride NewOverride;
+		NewOverride.TargetWidgetName = TargetWidgetName;
+		NewOverride.PropertyName = PropertyName.ToString();
+		NewOverride.ValueData = ValueStr;
+		TargetGroup.Overrides.Add(NewOverride);
+		MarkPackageDirty();
+	}
+}
+
 void UUMGStateController::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	UObject::PostEditChangeProperty(PropertyChangedEvent);
 
-	if (!PropertyChangedEvent.Property) return;
+	if (!PropertyChangedEvent.Property) return; 
 
-	FName PropertyName = PropertyChangedEvent.Property->GetFName();
+	const FName PropertyName = PropertyChangedEvent.Property->GetFName();
 
-	// 当我们修改 ActiveStateName 或者 StateGroups 数组里的内容时，立即预览
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(UUMGStateController, ActiveStateName) ||
-		PropertyName == GET_MEMBER_NAME_CHECKED(FUIStateGroup, Overrides))
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(FUIStateGroup, bRecordMode))
 	{
-		SetControllerState(ActiveStateName);
+		int32 Index = PropertyChangedEvent.GetArrayIndex(GET_MEMBER_NAME_CHECKED(UUMGStateController, StateGroups).ToString());
+		if (StateGroups.IsValidIndex(Index) && StateGroups[Index].bRecordMode)
+		{
+			ActiveStateName = StateGroups[Index].StateName;
+			SetControllerState(ActiveStateName);
+			UE_LOG(LogTemp, Log, TEXT("Auto-switched preview to recording state: %s"), *ActiveStateName);
+		}
 	}
+	// 当我们修改 ActiveStateName 或者 StateGroups 数组里的内容时，立即预览
+	// if (PropertyName == GET_MEMBER_NAME_CHECKED(UUMGStateController, ActiveStateName) ||
+	// 	PropertyName == GET_MEMBER_NAME_CHECKED(FUIStateGroup, Overrides))
+	// {
+	// 	SetControllerState(ActiveStateName);
+	// }
 }
