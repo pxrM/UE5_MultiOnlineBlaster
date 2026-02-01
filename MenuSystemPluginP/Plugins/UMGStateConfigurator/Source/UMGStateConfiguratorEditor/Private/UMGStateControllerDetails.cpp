@@ -1,148 +1,105 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿#include "UMGStateControllerDetails.h"
 
-#include "UMGStateControllerDetails.h"
-
+#include "UMGStateController.h"
 #include "DetailLayoutBuilder.h"
+#include "DetailCategoryBuilder.h"
 #include "DetailWidgetRow.h"
-#include "IDetailChildrenBuilder.h"
-#include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetTree.h"
-#include "Components/Widget.h"
-#include "UMGStateController.h" // 引用 Runtime 模块的数据结构
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Text/STextBlock.h"
+#include "EditorFontGlyphs.h"
 
-#define LOCTEXT_NAMESPACE "FUIPropertyOverrideCustomization"
+#define LOCTEXT_NAMESPACE "UMGStateControllerDetails"
 
-TSharedRef<IPropertyTypeCustomization> FUIPropertyOverrideCustomization::MakeInstance()
+TSharedRef<IDetailCustomization> FUMGStateControllerDetails::MakeInstance()
 {
-	return MakeShareable(new FUIPropertyOverrideCustomization());
+	return MakeShareable(new FUMGStateControllerDetails);
 }
 
-void FUIPropertyOverrideCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils)
+void FUMGStateControllerDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	// 让 Header 显示默认的结构体名称或内容
-	HeaderRow.NameContent()[PropertyHandle->CreatePropertyNameWidget()];
+	TSharedRef<IPropertyHandle> CategoriesHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UUMGStateController, StateCategories));
+	DetailBuilder.HideProperty(CategoriesHandle);
+	
+	IDetailCategoryBuilder& CustomCategory = DetailBuilder.EditCategory("State Manager", FText::GetEmpty(), ECategoryPriority::Important);
+
+	uint32 NumCategories = 0;
+	CategoriesHandle->GetNumChildren(NumCategories);
+
+	for (uint32 Index = 0; Index < NumCategories; Index++)
+	{
+		TSharedPtr<IPropertyHandle> ElementHandle = CategoriesHandle->GetChildHandle(Index);
+		DrawCategoryUI(ElementHandle, DetailBuilder);
+	}
+	
+	CustomCategory.AddCustomRow(LOCTEXT("AddCategory", "Add Category"))
+	[
+		SNew(SButton)
+		.Text(LOCTEXT("AddCategory", "+ Add New State Category"))
+		.OnClicked_Lambda([CategoriesHandle]()
+		{
+			// 操作 PropertyHandle 来添加元素
+			// 这里需要通过 IPropertyHandleArray 接口操作，稍显复杂，略写
+			return FReply::Handled();
+		})
+	];
 }
 
-void FUIPropertyOverrideCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils)
+void FUMGStateControllerDetails::DrawCategoryUI(TSharedPtr<IPropertyHandle> CategoryHandle, IDetailLayoutBuilder& DetailBuilder)
 {
-	// 1. 获取子属性句柄
-	WidgetNameHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIPropertyOverride, TargetWidgetName));
-	PropNameHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIPropertyOverride, PropertyName));
-	TSharedPtr<IPropertyHandle> ValueDataHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIPropertyOverride, ValueData));
+	// 获取分类名和状态数组的 Handle
+	TSharedPtr<IPropertyHandle> EnumNameHandle = CategoryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateCategory, EnumName));
+	TSharedPtr<IPropertyHandle> StateHandle = CategoryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateCategory, States));
+	TSharedPtr<IPropertyHandle> ActiveStateHandle = CategoryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateCategory, ActiveStateName));
 
-	// 2. 获取当前编辑的 UMG 预览对象
-	UUserWidget* PreviewWidget = nullptr;
-	TArray<UObject*> Outers;
-	PropertyHandle->GetOuterObjects(Outers);
-	if (Outers.Num() > 0 && Outers[0])
-	{
-		// 逻辑：FUIPropertyOverride -> FUIStateGroup -> UUMGStateController -> UserWidget (Outer)
-		if (UUMGStateController* Controller = Cast<UUMGStateController>(Outers[0]))
-		{
-			PreviewWidget = Cast<UUserWidget>(Controller->GetOuter());
-		}
-	}
+	IDetailCategoryBuilder& CustomCategory = DetailBuilder.EditCategory("State Manager");
 
-	// 3. 填充控件名称列表
-	WidgetNameOptions.Empty();
-	if (PreviewWidget && PreviewWidget->WidgetTree)
-	{
-		PreviewWidget->WidgetTree->ForEachWidget([&](UWidget* W)
-		{
-			WidgetNameOptions.Add(MakeShared<FString>(W->GetName()));
-		});
-	}
-
-	// --- 构建 UI ---
-
-	// 第一行：Widget 选择器
-	ChildBuilder.AddCustomRow(LOCTEXT("WidgetPickerRow", "Target Widget"))
-	            .NameContent()[SNew(STextBlock).Text(LOCTEXT("TargetWidget", "Target Widget")).Font(IDetailLayoutBuilder::GetDetailFont())]
-		.ValueContent()
+	// --- 绘制分类标题行 ---
+	CustomCategory.AddCustomRow(LOCTEXT("CategoryHeader", "Category Header"))
+	[
+		SNew(SVerticalBox)
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(0, 10, 0, 5)
 		[
-			SNew(SComboBox<TSharedPtr<FString>>)
-			.OptionsSource(&WidgetNameOptions)
-			.OnGenerateWidget_Lambda([](TSharedPtr<FString> InItem) { return SNew(STextBlock).Text(FText::FromString(*InItem)); })
-			.OnSelectionChanged_Lambda([this, PreviewWidget, PropertyHandle](TSharedPtr<FString> Selection, ESelectInfo::Type)
-			{
-				if (Selection.IsValid())
-				{
-					WidgetNameHandle->SetValue(*Selection);
-					// 联动：当控件改变时，刷新属性列表
-					if (PreviewWidget)
-					{
-						UWidget* SelectedWidget = PreviewWidget->GetWidgetFromName(FName(**Selection));
-						RefreshPropertyOptions(SelectedWidget);
-					}
-					if (Selection.IsValid())
-					{
-						WidgetNameHandle->SetValue(*Selection);
-						// 关键：通知底层对象数据已变动，触发 PostEditChangeProperty
-						PropertyHandle->NotifyFinishedChangingProperties();
-					}
-				}
-			})
+			SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.f)
 			[
-				SNew(STextBlock).Text_Lambda([this]()
-				{
-					FName V;
-					WidgetNameHandle->GetValue(V);
-					return V.IsNone() ? LOCTEXT("SelectWidget", "Select Widget...") : FText::FromName(V);
-				})
+				EnumNameHandle->CreatePropertyValueWidget()
 			]
-		];
-
-	// 第二行：Property 选择器
-	ChildBuilder.AddCustomRow(LOCTEXT("PropertyPickerRow", "Property"))
-	            .NameContent()[SNew(STextBlock).Text(LOCTEXT("Property", "Property (Type)")).Font(IDetailLayoutBuilder::GetDetailFont())]
-		.ValueContent()
-		[
-			SAssignNew(PropertyComboBox, SComboBox<TSharedPtr<FString>>)
-			.OptionsSource(&PropertyNameOptions)
-			.OnGenerateWidget_Lambda([](TSharedPtr<FString> InItem) { return SNew(STextBlock).Text(FText::FromString(*InItem)); })
-			.OnSelectionChanged_Lambda([this](TSharedPtr<FString> Selection, ESelectInfo::Type)
-			{
-				if (Selection.IsValid())
-				{
-					FString PureName, TypePart;
-					Selection->Split(TEXT(" ("), &PureName, &TypePart);
-					PropNameHandle->SetValue(PureName.IsEmpty() ? *Selection : PureName);
-				}
-			})
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(5, 0)
 			[
-				SNew(STextBlock).Text_Lambda([this]()
-				{
-					FString V;
-					PropNameHandle->GetValue(V);
-					return V.IsEmpty() ? LOCTEXT("SelectProp", "Select Property...") : FText::FromString(V);
-				})
+				SNew(SButton)
+				.ContentPadding(2)
+				.ToolTipText(LOCTEXT("DelCat", "Delete this Category"))
+				[
+					SNew(STextBlock)
+					.Font(FAppStyle::Get().GetFontStyle("FontAwesome.11"))
+					.Text(FEditorFontGlyphs::Trash) // 垃圾桶图标
+				]
 			]
-		];
+		]
+	];
 
-	// 第三行：原始数据输入（用于填写具体的值）
-	ChildBuilder.AddProperty(ValueDataHandle.ToSharedRef());
-}
-
-void FUIPropertyOverrideCustomization::RefreshPropertyOptions(UWidget* InWidget)
-{
-	PropertyNameOptions.Empty();
-	if (InWidget)
+	// --- 绘制状态列表 ---
+	uint32 NumStates = 0;
+	StateHandle->GetNumChildren(NumStates);
+	for (uint32 StateIdx = 0; StateIdx < NumStates; StateIdx++)
 	{
-		for (TFieldIterator<FProperty> It(InWidget->GetClass()); It; ++It)
-		{
-			FProperty* Prop = *It;
-			if (Prop->HasAnyPropertyFlags(CPF_Edit | CPF_BlueprintVisible))
-			{
-				FString Display = FString::Printf(TEXT("%s (%s)"), *Prop->GetName(), *Prop->GetCPPType());
-				PropertyNameOptions.Add(MakeShared<FString>(Display));
-			}
-		}
-	}
+		TSharedPtr<IPropertyHandle> StateItemHandel = StateHandle->GetChildHandle(StateIdx);
+		TSharedPtr<IPropertyHandle> NameHandel = StateItemHandel->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, StateName));
+		TSharedPtr<IPropertyHandle> RecordModeHandle = StateItemHandel->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, bRecordMode));
 
-	if (PropertyComboBox.IsValid())
-	{
-		PropertyComboBox->RefreshOptions();
+		// 获取当前的 StateName 字符串（用于显示预览状态）
+		FString CurrentStateName;
+		NameHandel->GetValue(CurrentStateName);
+
+		// 检查当前是否正在录制
+		bool bIsRecording = false;
+		RecordModeHandle->GetValue(bIsRecording);
 	}
 }
-
 #undef LOCTEXT_NAMESPACE

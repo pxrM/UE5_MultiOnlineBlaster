@@ -27,17 +27,9 @@ public class UMGStateConfiguratorEditor : ModuleRules
 			{
 				"Core",
 				// ... add other public dependencies that you statically link with here ...
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-				"UnrealEd",
-				"PropertyEditor",
 				"InputCore", 
 				"UMG",
 				"UMGStateConfigurator",
-				"EditorStyle",
-				"EditorFramework",
 			}
 			);
 			
@@ -50,6 +42,11 @@ public class UMGStateConfiguratorEditor : ModuleRules
 				"Slate",
 				"SlateCore",
 				// ... add private dependencies that you statically link with here ...	
+				"EditorFramework",
+				"EditorStyle",
+				"Kismet",
+				"UnrealEd",
+				"PropertyEditor",
 			}
 			);
 		

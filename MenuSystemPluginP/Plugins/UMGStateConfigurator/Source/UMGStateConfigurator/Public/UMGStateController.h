@@ -9,17 +9,19 @@ USTRUCT(BlueprintType)
 struct FUIPropertyOverride
 {
 	GENERATED_BODY()
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	FName PropertyKey;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	FName TargetWidgetName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
 	FString PropertyName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	FString ValueData; // 以字符串形式序列化存储任何属性值
 }; 
-
 
 USTRUCT(BlueprintType)
 struct FUIStateGroup
@@ -36,6 +38,19 @@ struct FUIStateGroup
 	bool bRecordMode = false;
 };
 
+USTRUCT(BlueprintType)
+struct FUIStateCategory
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	FString EnumName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	FString ActiveStateName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
+	TArray<FUIStateGroup> States;
+};
 
 USTRUCT()
 struct FInitialValueSnapshot
@@ -48,8 +63,6 @@ struct FInitialValueSnapshot
 };
 
 
-
-
 UCLASS(BlueprintType, EditInlineNew, DefaultToInstanced)
 class UMGSTATECONFIGURATOR_API UUMGStateController : public UObject
 {
@@ -57,34 +70,28 @@ class UMGSTATECONFIGURATOR_API UUMGStateController : public UObject
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "States")
-	TArray<FUIStateGroup> StateGroups;
-
-	UPROPERTY(BlueprintReadOnly, Category = "States")
-	FString CurrentState;
-
-	UPROPERTY(EditAnywhere, Category = "Preview")
-	FString ActiveStateName;
-
-	UFUNCTION(BlueprintCallable, Category = "StateControl")
-	void SetControllerState(FString NewStateName);
-
-	void ApplyState(int32 Index);
+	TArray<FUIStateCategory> StateCategories;
 
 	// 缓存初始状态
 	UPROPERTY()
 	FInitialValueSnapshot InitialSnapshot;
+
+	UFUNCTION(BlueprintCallable, Category = "StateControl")
+	void SetState(FString CategoryName, FString NewStateName);
+	void ApplyAllActiveStates();
+	void ApplyStateGroup(const FUIStateGroup& Group) const;
 	
 	UFUNCTION(BlueprintCallable, Category = "UMGState")
 	void ResetToInitialState();
 
 	// 供编辑器调用的录制接口
-	void UpdateRecordedPropertyToGroup(FUIStateGroup& TargetGroup, FName TargetWidgetName, FName PropertyName, const FString& ValueStr);
+	void UpdateRecordedPropertyToCategory(int32 CategoryIndex, int32 StateIndex, FName WidgetName, FName PropName, FString ValueStr);
 
 protected:
 #if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
-	
 	// 采集当前涉及的所有属性的快照
 	void TakeInitialSnapshot();
+	bool HasProperty(const TArray<FUIPropertyOverride>& Overrides, FName Key);
 };
