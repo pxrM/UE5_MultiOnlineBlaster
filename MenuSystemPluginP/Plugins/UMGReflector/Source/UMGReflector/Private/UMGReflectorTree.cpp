@@ -50,7 +50,7 @@ void SUMGReflectorTree::Construct(const FArguments& InArgs)
 			]
 			// 1.3 搜索框
 			+ SHorizontalBox::Slot()
-			.FillWidth(1.f)
+			.AutoWidth()
 			.VAlign(VAlign_Center)
 			[
 				SAssignNew(SearchBox, SSearchBox)
@@ -164,7 +164,7 @@ void SUMGReflectorTree::OnGetChildren(TSharedPtr<FUMGReflectorItem> InItem, TArr
 
 void SUMGReflectorTree::OnSelectionChanged(TSharedPtr<FUMGReflectorItem> InItem, ESelectInfo::Type SelectionType)
 {
-	if (!InItem.IsValid()) return;
+	if (!InItem.IsValid() || InItem->GetWidget() == nullptr) return;
 	UE_LOG(LogTemp, Log, TEXT("OnSelectionChanged: %s"), *InItem->GetTypeName());
 	
 #if WITH_EDITOR
@@ -210,11 +210,23 @@ void SUMGReflectorTree::OnSearchTextChanged(const FText& InText)
 	
 	if (CurrentSearchText.IsEmpty())
 	{
+		FilteredRootItems = UMGRootItems;
+		for (auto& Item : FilteredRootItems)
+		{
+			CollapseItemRecursively(Item);  // 折叠所有
+		}
 		FilteredRootItems = UMGRootItems;	// 没有搜索条件，显示所有项
 	}
 	else
 	{
 		FilterTreeItems(UMGRootItems, FilteredRootItems, CurrentSearchText);		// 应用过滤
+		if (UMGTreeViewSlate.IsValid())
+		{
+			for (auto& Item : FilteredRootItems)
+			{
+				ExpandMatchingItems(Item, CurrentSearchText);	// 递归展开所有包含匹配项的节点
+			}
+		}
 	}
 
 	if (UMGTreeViewSlate.IsValid())
@@ -249,6 +261,45 @@ FReply SUMGReflectorTree::OnClearSearchClicked()
 		SearchBox->SetText(FText::GetEmpty());
 	}
 	return FReply::Handled();
+}
+
+void SUMGReflectorTree::ExpandMatchingItems(const TSharedPtr<FUMGReflectorItem>& Item, const FString& SearchString)
+{
+	if (!Item.IsValid() || !UMGTreeViewSlate.IsValid())
+		return;
+
+	bool bCurrentMatches = FilterWidgetItem(Item, SearchString);
+	bool bHasMatchingChildren = false;
+	for (const TSharedPtr<FUMGReflectorItem>& Child : Item->GetChildrenData())
+	{
+		if (!Child.IsValid()) continue;
+
+		if (FilterWidgetItem(Child, SearchString) || HasMatchingDescendants(Child, SearchString))
+		{
+			bHasMatchingChildren = true;
+			// 递归展开子项
+			ExpandMatchingItems(Child, SearchString);
+		}
+	}
+	if (bCurrentMatches || bHasMatchingChildren)
+	{
+		UMGTreeViewSlate->SetItemExpansion(Item, true);
+	}
+}
+
+void SUMGReflectorTree::CollapseItemRecursively(const TSharedPtr<FUMGReflectorItem>& Item)
+{
+	if (!Item.IsValid() || !UMGTreeViewSlate.IsValid())
+		return;
+
+	// 折叠当前项
+	UMGTreeViewSlate->SetItemExpansion(Item, false);
+    
+	// 递归折叠所有子项
+	for (const TSharedPtr<FUMGReflectorItem>& Child : Item->GetChildrenData())
+	{
+		CollapseItemRecursively(Child);
+	}
 }
 
 bool SUMGReflectorTree::FilterWidgetItem(const TSharedPtr<FUMGReflectorItem>& InItem, const FString& SearchString) const
@@ -366,6 +417,7 @@ void SUMGReflectorTree::UpdateWidgetTree()
 
 	FindAllUserWidget(PIEWorld, UMGRootItems);
 
+	// 应用搜索过滤
 	if (CurrentSearchText.IsEmpty())
 	{
 		FilteredRootItems = UMGRootItems;
@@ -374,7 +426,8 @@ void SUMGReflectorTree::UpdateWidgetTree()
 	{
 		FilterTreeItems(UMGRootItems, FilteredRootItems, CurrentSearchText);
 	}
-	
+
+	// 刷新树视图
 	if (UMGTreeViewSlate.IsValid())
 	{
 		UMGTreeViewSlate->RequestTreeRefresh();

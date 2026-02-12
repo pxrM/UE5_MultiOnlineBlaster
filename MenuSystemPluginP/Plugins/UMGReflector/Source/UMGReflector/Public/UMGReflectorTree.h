@@ -34,7 +34,6 @@ private:
 	void OnAutoRefreshChanged(ECheckBoxState NewState);
 	/** 清空搜索按钮点击 */
 	FReply OnClearSearchClicked();
-	
 
 	// === 核心逻辑函数 ===
 	/** 
@@ -52,7 +51,7 @@ private:
 	 */
 	FString GetUMGWidgetName(const UUserWidget* InWidget, const TSharedPtr<SWidget> InSlateWidget);
 	/** 
-	 * 查找所有在视口中的UserWidget
+	 * 查找所有在视口中的所有UserWidget
 	 * @param InWorld PIE World
 	 * @param OutAllUserWidget 输出所有找到的Widget
 	 */
@@ -72,6 +71,14 @@ private:
 	 * 递归检查节点是否有匹配的后代
 	 */
 	bool HasMatchingDescendants(const TSharedPtr<FUMGReflectorItem>& Item, const FString& SearchString) const;
+	/**
+	 * 递归展开匹配项
+	 */
+	void ExpandMatchingItems(const TSharedPtr<FUMGReflectorItem>& Item, const FString& SearchString);
+	/**
+	 * 递归折叠节点
+	 */
+	void CollapseItemRecursively(const TSharedPtr<FUMGReflectorItem>& Item);
 	
 	// === 编辑器事件回调 ===
 	/** PIE启动回调 */
