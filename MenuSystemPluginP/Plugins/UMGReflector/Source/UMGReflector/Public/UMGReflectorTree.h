@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Layout/WidgetPath.h"
 #include "Widgets/SCompoundWidget.h"
 
 class FUMGReflectorItem;
@@ -14,11 +15,13 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	virtual ~SUMGReflectorTree() override;
-
-	void UpdateWidgetTree();
+	
 
 private:
+	void UpdateWidgetTree();
+	
 	// === UI回调函数 ===
 	/** 生成树视图行 */
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FUMGReflectorItem> InItem, const TSharedRef<STableViewBase>& InOwnerTable);
@@ -26,6 +29,8 @@ private:
 	void OnGetChildren(TSharedPtr<FUMGReflectorItem> InItem, TArray<TSharedPtr<FUMGReflectorItem>>& OutChildren);
 	/** 选中变化回调 */
 	void OnSelectionChanged(TSharedPtr<FUMGReflectorItem> InItem, ESelectInfo::Type SelectionType);
+	/** 双击打开对应蓝图 */
+	void OnItemDoubleClicked(TSharedPtr<FUMGReflectorItem> InItem);
 	/** 刷新按钮点击 */
 	FReply OnRefreshButtonClicked();
 	/** 搜索文本变化 */
@@ -86,6 +91,42 @@ private:
 	/** PIE结束回调 */
 	void OnEndPIE(bool bIsSimulating);
 
+	// === 拾取功能 ===
+	/** 设置拾取模式 */
+	void SetPickingMode(bool bEnable);
+	/** Pick按钮点击回调 */
+	FReply OnPickButtonClicked();
+	/** 是否在PIE中 */
+	bool IsInPIE() const;
+	/** Tick中更新鼠标下方的UMG Widget */
+	void UpdatePickingHover();
+	/** 从FWidgetPath反向映射到树节点 */
+	TSharedPtr<FUMGReflectorItem> FindTreeItemForWidgetPath(const FWidgetPath& InWidgetPath) const;
+	/** 递归查找树中与指定SWidget对应的节点 */
+	TSharedPtr<FUMGReflectorItem> FindTreeItemBySWidget(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const TSharedRef<SWidget>& InSWidget) const;
+	/** 通过几何包含关系查找光标下最深的UMG Widget（绕过HitTest） */
+	TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos) const;
+	/** 选中并展开到目标节点 */
+	void SelectAndExpandToItem(const TSharedPtr<FUMGReflectorItem>& InItem);
+	/** 递归查找从根到目标节点的路径 */
+	bool FindPathToItem(
+		const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
+		const TSharedPtr<FUMGReflectorItem>& InTarget,
+		TArray<TSharedPtr<FUMGReflectorItem>>& OutPath) const;
+	/** 确认拾取 */
+	void ConfirmPick();
+	/** 取消拾取 */
+	void CancelPick();
+	/** 全局鼠标按下回调 */
+	void OnGlobalMouseButtonDown(const FPointerEvent& MouseEvent);
+	/** 全局键盘按下回调 */
+	void OnGlobalKeyDown(const FKeyEvent& InKeyEvent);
+
+#if WITH_SLATE_DEBUGGING
+	/** 绘制高亮覆盖层 */
+	void OnPaintDebugElements(const FPaintArgs& InArgs, const FGeometry& InAllottedGeometry, FSlateWindowElementList& InOutDrawElements, int32& InOutLayerId) const;
+#endif
+
 	// === 初始化函数 ===
 	/** 创建属性详情面板 */
 	void CreateInstanceDetailsView();
@@ -136,4 +177,41 @@ private:
 	
 	/** 自动刷新定时器句柄 */
 	FTimerHandle AutoRefreshTimerHandle;
+
+	// === 拾取状态 ===
+
+	/** 是否处于拾取模式 */
+	bool bPickingMode = false;
+
+	/** 拾取按钮 */
+	TSharedPtr<SButton> PickButton;
+
+	/** 拾取状态提示文本 */
+	TSharedPtr<STextBlock> PickingStatusText;
+
+	/** 当前悬停的树节点 */
+	TSharedPtr<FUMGReflectorItem> HoveredPickItem;
+
+	/** 悬停Widget的几何信息（desktop space） */
+	FGeometry HoveredWidgetGeometry;
+
+	/** 悬停Widget所在的窗口 */
+	TWeakPtr<SWindow> HoveredWidgetWindow;
+
+	/** 是否有有效的悬停高亮目标 */
+	bool bHasValidHoverTarget = false;
+
+	/** 拾取模式下的树刷新计时器 */
+	float PickingTreeRefreshTimer = 0.0f;
+
+	/** 全局鼠标按下委托句柄 */
+	FDelegateHandle GlobalMouseDownHandle;
+
+	/** 全局键盘按下委托句柄 */
+	FDelegateHandle GlobalKeyDownHandle;
+
+#if WITH_SLATE_DEBUGGING
+	/** PaintDebugElements委托句柄 */
+	FDelegateHandle PaintDebugElementsHandle;
+#endif
 };

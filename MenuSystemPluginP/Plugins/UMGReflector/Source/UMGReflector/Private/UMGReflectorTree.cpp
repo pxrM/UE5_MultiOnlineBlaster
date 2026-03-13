@@ -5,7 +5,17 @@
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
 #include "Components/Widget.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Styling/CoreStyle.h"
 #include "Widgets/Input/SSearchBox.h"
+
+#if WITH_SLATE_DEBUGGING
+#include "Debugging/SlateDebugging.h"
+#endif
+
+#if WITH_EDITOR
+#include "Subsystems/AssetEditorSubsystem.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "UMGReflector"
 
@@ -22,6 +32,17 @@ void SUMGReflectorTree::Construct(const FArguments& InArgs)
 		.Padding(5.f)
 		[
 			SNew(SHorizontalBox)
+			// 1.0 拾取按钮
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			.Padding(0.f, 0.f, 5.f, 0.f)
+			[
+				SAssignNew(PickButton, SButton)
+				.Text(LOCTEXT("PickButton", "Pick"))
+				.ToolTipText(LOCTEXT("PickButtonTooltip", "Click to enable widget picking mode.\nThen click on a widget in the game viewport to select it in the tree.\nPress ESC to cancel."))
+				.OnClicked(this, &SUMGReflectorTree::OnPickButtonClicked)
+			]
 			// 1.1 刷新按钮
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
@@ -71,6 +92,15 @@ void SUMGReflectorTree::Construct(const FArguments& InArgs)
 			]
 		]
 
+		// 1.5 拾取状态提示栏
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		.Padding(5.f, 0.f)
+		[
+			SAssignNew(PickingStatusText, STextBlock)
+			.ColorAndOpacity(FLinearColor::Yellow)
+		]
+
 		// 2. === 主内容区域 ===
 		+ SVerticalBox::Slot()
 		.FillHeight(1.f)
@@ -89,6 +119,7 @@ void SUMGReflectorTree::Construct(const FArguments& InArgs)
 					.OnGenerateRow(this, &SUMGReflectorTree::OnGenerateRow)
 					.OnGetChildren(this, &SUMGReflectorTree::OnGetChildren)
 					.OnSelectionChanged(this, &SUMGReflectorTree::OnSelectionChanged)
+					.OnMouseButtonDoubleClick(this, &SUMGReflectorTree::OnItemDoubleClicked)
 					.HeaderRow(
 						SNew(SHeaderRow)
 						// Widget名称列
@@ -140,6 +171,11 @@ void SUMGReflectorTree::Construct(const FArguments& InArgs)
 
 SUMGReflectorTree::~SUMGReflectorTree()
 {
+	if (bPickingMode)
+	{
+		SetPickingMode(false);
+	}
+
 	StopAutoRefreshTimer();
 	FEditorDelegates::PostPIEStarted.RemoveAll(this);
 	FEditorDelegates::EndPIE.RemoveAll(this);
@@ -193,6 +229,53 @@ void SUMGReflectorTree::OnSelectionChanged(TSharedPtr<FUMGReflectorItem> InItem,
 	}
 	PropertyViewPtr->SetObjects(SelectedWidgetObjects);
 	UE_LOG(LogTemp, Log, TEXT("Selected Widget: %s (%s)"), *InItem->GetDisplayName(), *InItem->GetTypeName());
+#endif
+}
+
+void SUMGReflectorTree::OnItemDoubleClicked(TSharedPtr<FUMGReflectorItem> InItem)
+{
+#if WITH_EDITOR
+	if (!InItem.IsValid() || InItem->GetWidget() == nullptr)
+	{
+		return;
+	}
+
+	const UWidget* Widget = InItem->GetWidget().Get();
+	if (!IsValid(Widget))
+	{
+		return;
+	}
+
+	// 沿 Outer 链向上查找所属的 UUserWidget
+	const UUserWidget* OwnerUserWidget = nullptr;
+	if (const UUserWidget* AsUserWidget = Cast<UUserWidget>(Widget))
+	{
+		OwnerUserWidget = AsUserWidget;
+	}
+	else if (const UWidgetTree* WidgetTree = Cast<UWidgetTree>(Widget->GetOuter()))
+	{
+		OwnerUserWidget = Cast<UUserWidget>(WidgetTree->GetOuter());
+	}
+
+	if (!IsValid(OwnerUserWidget))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnItemDoubleClicked: Cannot find owning UserWidget for '%s'"), *InItem->GetDisplayName());
+		return;
+	}
+
+	// 通过 ClassGeneratedBy 获取 Blueprint 资产
+	UBlueprint* Blueprint = Cast<UBlueprint>(OwnerUserWidget->GetClass()->ClassGeneratedBy);
+	if (!IsValid(Blueprint))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnItemDoubleClicked: '%s' is not a Blueprint class"), *OwnerUserWidget->GetClass()->GetName());
+		return;
+	}
+
+	if (UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>())
+	{
+		AssetEditorSubsystem->OpenEditorForAsset(Blueprint);
+		UE_LOG(LogTemp, Log, TEXT("OnItemDoubleClicked: Opened Blueprint '%s'"), *Blueprint->GetName());
+	}
 #endif
 }
 
@@ -353,7 +436,7 @@ bool SUMGReflectorTree::HasMatchingDescendants(const TSharedPtr<FUMGReflectorIte
 		if (FilterWidgetItem(Child, SearchString))
 			return true;
 
-		// 🔑 递归检查子节点的后代
+		// 递归检查子节点的后代
 		if (HasMatchingDescendants(Child, SearchString))
 			return true;
 	}
@@ -447,26 +530,40 @@ void SUMGReflectorTree::FindAllUserWidget(const UWorld* InWorld, TArray<TSharedP
 	for (TObjectIterator<UUserWidget> It; It; ++It)
 	{
 		UUserWidget* RootUserWidget = *It;
-		if (IsValid(RootUserWidget) && RootUserWidget->GetWorld() == InWorld && RootUserWidget->IsInViewport())
+
+		if (!IsValid(RootUserWidget))
 		{
-			FString WidgetName = RootUserWidget->GetName();
-			TSharedPtr<SWidget> CachedWidget = RootUserWidget->GetCachedWidget();
-			if (CachedWidget.IsValid())
-			{
-				TSharedPtr<FUMGReflectorItem> Item = MakeShared<FUMGReflectorItem>(RootUserWidget, WidgetName);
-				OutAllUserWidget.Add(Item);
-				
-				BuildUMGWidgetTree(RootUserWidget, CachedWidget, Item);
-				WidgetCount++;
-			}
-			else
-			{
-				TSharedPtr<FUMGReflectorItem> Item = MakeShared<FUMGReflectorItem>(nullptr, FString::Printf(TEXT("Widget '%s' has no CachedWidget "), *WidgetName));
-				OutAllUserWidget.Add(Item);
-			}
+			continue;
 		}
+
+		// 跳过 CDO 和 WidgetTree 模板实例
+		if (RootUserWidget->HasAnyFlags(RF_ClassDefaultObject | RF_ArchetypeObject))
+		{
+			continue;
+		}
+
+		// 只收集通过 AddToViewport() 添加到视口的根 Widget
+		// 编辑器 UMG 设计器预览不走 AddToViewport()，天然被排除
+		// 子 Widget 由 BuildUMGWidgetTree 递归发现，不在这里重复收集
+		if (!RootUserWidget->IsInViewport())
+		{
+			continue;
+		}
+
+		TSharedPtr<SWidget> CachedWidget = RootUserWidget->GetCachedWidget();
+		if (!CachedWidget.IsValid())
+		{
+			continue;
+		}
+
+		FString WidgetName = RootUserWidget->GetName();
+		TSharedPtr<FUMGReflectorItem> Item = MakeShared<FUMGReflectorItem>(RootUserWidget, WidgetName);
+		OutAllUserWidget.Add(Item);
+
+		BuildUMGWidgetTree(RootUserWidget, CachedWidget, Item);
+		WidgetCount++;
 	}
-	UE_LOG(LogTemp, Log, TEXT("FindAllUserWidget: Found %d widgets in viewport"), WidgetCount);
+	UE_LOG(LogTemp, Log, TEXT("FindAllUserWidget: Found %d root viewport widgets"), WidgetCount);
 }
 
 void SUMGReflectorTree::BuildUMGWidgetTree(const UUserWidget* InWBPWidget, const TSharedPtr<SWidget>& InCurrentWidget, const TSharedPtr<FUMGReflectorItem>& InParent)
@@ -491,7 +588,10 @@ void SUMGReflectorTree::BuildUMGWidgetTree(const UUserWidget* InWBPWidget, const
 		{
 			WidgetName = ChildWidget->GetTypeAsString();
 		}
-
+		if (InWBPWidget->WidgetTree->GetOuter()->GetName().Contains("WBP_TaskPanel_C"))
+		{
+			UE_LOG(LogTemp, Log, TEXT("##BuildUMGWidgetTree: %s"), *ChildWidget->GetTypeAsString());
+		}
 		UE_LOG(LogTemp, Log, TEXT("BuildUMGWidgetTree: %s"), *InWBPWidget->WidgetTree->GetOuter()->GetName());
 		// 获取UWidget实例
 		UWidget* Widget = const_cast<UUserWidget*>(InWBPWidget)->GetWidgetHandle(ChildWidget.ToSharedRef());
@@ -508,7 +608,7 @@ void SUMGReflectorTree::BuildUMGWidgetTree(const UUserWidget* InWBPWidget, const
 			// 递归处理嵌套UserWidget
 			UE_LOG(LogTemp, Log, TEXT("GetWidgetHandle: U%s"), *CurUserWidget->GetClass()->GetName());
 			BuildUMGWidgetTree(CurUserWidget, ChildWidget, ChildItem);
-			
+
 		}
 		else
 		{
@@ -561,12 +661,498 @@ void SUMGReflectorTree::OnPostPIEStarted(bool bIsSimulating)
 
 void SUMGReflectorTree::OnEndPIE(bool bIsSimulating)
 {
+	if (bPickingMode)
+	{
+		SetPickingMode(false);
+	}
+
 	StopAutoRefreshTimer();
 	if (AutoRefreshCheckBox.IsValid())
 	{
 		AutoRefreshCheckBox->SetIsChecked(ECheckBoxState::Unchecked);
 	}
 	UpdateWidgetTree();
+}
+
+// === 拾取功能实现 ===
+
+bool SUMGReflectorTree::IsInPIE() const
+{
+	if (!GEngine)
+	{
+		return false;
+	}
+
+	for (const FWorldContext& Context : GEngine->GetWorldContexts())
+	{
+		if (Context.WorldType == EWorldType::PIE && IsValid(Context.World()) && Context.World()->IsGameWorld())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+FReply SUMGReflectorTree::OnPickButtonClicked()
+{
+	if (!IsInPIE())
+	{
+		return FReply::Handled();
+	}
+
+	SetPickingMode(!bPickingMode);
+	return FReply::Handled();
+}
+
+void SUMGReflectorTree::SetPickingMode(bool bEnable)
+{
+	if (bPickingMode == bEnable)
+	{
+		return;
+	}
+
+	bPickingMode = bEnable;
+	HoveredPickItem.Reset();
+	bHasValidHoverTarget = false;
+	PickingTreeRefreshTimer = 0.0f;
+
+	if (bPickingMode)
+	{
+		// 强制刷新树数据 — 动态UI（如Layer系统的MountPoint子节点）
+		// 可能在上次刷新后被重建，导致TWeakObjectPtr失效
+		UpdateWidgetTree();
+
+		// 注册全局输入监听
+		if (FSlateApplication::IsInitialized())
+		{
+			GlobalMouseDownHandle = FSlateApplication::Get().OnApplicationMousePreInputButtonDownListener().AddSP(
+				this, &SUMGReflectorTree::OnGlobalMouseButtonDown);
+			GlobalKeyDownHandle = FSlateApplication::Get().OnApplicationPreInputKeyDownListener().AddSP(
+				this, &SUMGReflectorTree::OnGlobalKeyDown);
+		}
+
+#if WITH_SLATE_DEBUGGING
+		// 注册绘制高亮回调
+		PaintDebugElementsHandle = FSlateDebugging::PaintDebugElements.AddSP(
+			this, &SUMGReflectorTree::OnPaintDebugElements);
+#endif
+
+		// 更新UI
+		if (PickButton.IsValid())
+		{
+			PickButton->SetContent(
+				SNew(STextBlock)
+				.Text(LOCTEXT("PickButtonActive", "Picking..."))
+			);
+		}
+		if (PickingStatusText.IsValid())
+		{
+			PickingStatusText->SetText(LOCTEXT("PickingStatus", "Move cursor over game viewport and click to pick a widget. Press ESC to cancel."));
+		}
+	}
+	else
+	{
+		// 移除全局输入监听
+		if (FSlateApplication::IsInitialized())
+		{
+			if (GlobalMouseDownHandle.IsValid())
+			{
+				FSlateApplication::Get().OnApplicationMousePreInputButtonDownListener().Remove(GlobalMouseDownHandle);
+				GlobalMouseDownHandle.Reset();
+			}
+			if (GlobalKeyDownHandle.IsValid())
+			{
+				FSlateApplication::Get().OnApplicationPreInputKeyDownListener().Remove(GlobalKeyDownHandle);
+				GlobalKeyDownHandle.Reset();
+			}
+		}
+
+#if WITH_SLATE_DEBUGGING
+		// 移除绘制高亮回调
+		if (PaintDebugElementsHandle.IsValid())
+		{
+			FSlateDebugging::PaintDebugElements.Remove(PaintDebugElementsHandle);
+			PaintDebugElementsHandle.Reset();
+		}
+#endif
+
+		// 更新UI
+		if (PickButton.IsValid())
+		{
+			PickButton->SetContent(
+				SNew(STextBlock)
+				.Text(LOCTEXT("PickButton", "Pick"))
+			);
+		}
+		if (PickingStatusText.IsValid())
+		{
+			PickingStatusText->SetText(FText::GetEmpty());
+		}
+	}
+}
+
+void SUMGReflectorTree::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
+{
+	SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
+
+	if (bPickingMode)
+	{
+		// 定期刷新树数据（每秒一次），防止动态UI重建导致引用失效
+		PickingTreeRefreshTimer += InDeltaTime;
+		if (PickingTreeRefreshTimer >= 1.0f)
+		{
+			PickingTreeRefreshTimer = 0.0f;
+			UpdateWidgetTree();
+		}
+
+		UpdatePickingHover();
+	}
+}
+
+void SUMGReflectorTree::UpdatePickingHover()
+{
+	if (!FSlateApplication::IsInitialized())
+	{
+		return;
+	}
+
+	const FVector2D AbsCursorPos = FSlateApplication::Get().GetCursorPos();
+
+	// 使用几何包含关系（而非HitTest）查找光标下最深的UMG Widget
+	// HitTest 会被 SConstraintCanvas 等容器的 Visibility 设置拦截
+	// 几何方式直接检查 SWidget::GetCachedGeometry().IsUnderLocation()，完全绕过 HitTest
+	TSharedPtr<FUMGReflectorItem> FoundItem = FindDeepestItemUnderCursor(UMGRootItems, AbsCursorPos);
+
+	if (FoundItem.IsValid() && FoundItem != HoveredPickItem)
+	{
+		HoveredPickItem = FoundItem;
+		bHasValidHoverTarget = false;
+
+		TWeakObjectPtr<const UWidget> UWidgetPtr = FoundItem->GetWidget();
+		if (UWidgetPtr.IsValid())
+		{
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			if (CachedSWidget.IsValid())
+			{
+				// 存储几何信息（desktop space）
+				HoveredWidgetGeometry = CachedSWidget->GetCachedGeometry();
+
+				// 通过 FindPathToWidget(EVisibility::All) 获取所在窗口
+				// EVisibility::All 绕过 HitTest/Visibility 过滤
+				FWidgetPath WidgetPath;
+				if (FSlateApplication::Get().FindPathToWidget(CachedSWidget.ToSharedRef(), WidgetPath, EVisibility::All))
+				{
+					HoveredWidgetWindow = WidgetPath.GetWindow();
+					bHasValidHoverTarget = true;
+				}
+			}
+		}
+
+		if (PickingStatusText.IsValid())
+		{
+			PickingStatusText->SetText(FText::Format(
+				LOCTEXT("PickingHover", "Hovering: {0} ({1}) - Click to pick, ESC to cancel"),
+				FText::FromString(HoveredPickItem->GetDisplayName()),
+				FText::FromString(HoveredPickItem->GetTypeName())
+			));
+		}
+	}
+	else if (!FoundItem.IsValid() && HoveredPickItem.IsValid())
+	{
+		HoveredPickItem.Reset();
+		bHasValidHoverTarget = false;
+		if (PickingStatusText.IsValid())
+		{
+			PickingStatusText->SetText(LOCTEXT("PickingNoWidget", "No UMG widget under cursor - Click to pick, ESC to cancel"));
+		}
+	}
+}
+
+TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindTreeItemForWidgetPath(const FWidgetPath& InWidgetPath) const
+{
+	// 从最深节点（叶子）向上遍历，找到第一个匹配的UWidget
+	const FArrangedChildren& Widgets = InWidgetPath.Widgets;
+	for (int32 i = Widgets.Num() - 1; i >= 0; --i)
+	{
+		TSharedRef<SWidget> CurrentSWidget = Widgets[i].Widget;
+
+		TSharedPtr<FUMGReflectorItem> FoundItem = FindTreeItemBySWidget(UMGRootItems, CurrentSWidget);
+		if (FoundItem.IsValid())
+		{
+			return FoundItem;
+		}
+	}
+
+	return nullptr;
+}
+
+TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindTreeItemBySWidget(
+	const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
+	const TSharedRef<SWidget>& InSWidget) const
+{
+	for (const TSharedPtr<FUMGReflectorItem>& Item : InItems)
+	{
+		if (!Item.IsValid())
+		{
+			continue;
+		}
+
+		TWeakObjectPtr<const UWidget> UWidgetPtr = Item->GetWidget();
+		if (UWidgetPtr.IsValid())
+		{
+			// 必须使用 GetCachedWrappedWidget 而非 GetCachedWidget
+			// 与引擎 UWidgetTree::FindWidget 保持一致
+			// GetCachedWrappedWidget 会优先返回 ComponentWrapperWidget/DesignWrapperWidget
+			// 这些包装层在 Slate 树中实际出现，是 FWidgetPath 中会命中的节点
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			if (CachedSWidget.IsValid() && CachedSWidget == InSWidget)
+			{
+				return Item;
+			}
+		}
+
+		// 递归搜索子节点
+		TSharedPtr<FUMGReflectorItem> FoundInChildren = FindTreeItemBySWidget(Item->GetChildrenData(), InSWidget);
+		if (FoundInChildren.IsValid())
+		{
+			return FoundInChildren;
+		}
+	}
+
+	return nullptr;
+}
+
+// SWidgetReflector::SelectLiveWidget(TSharedPtr<const SWidget> InWidget)
+TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
+	const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
+	const FVector2D& AbsCursorPos) const
+{
+	// 反向迭代：后添加的Widget在视觉上层（后渲染），优先选中
+	for (int32 i = InItems.Num() - 1; i >= 0; --i)
+	{
+		const TSharedPtr<FUMGReflectorItem>& Item = InItems[i];
+		if (!Item.IsValid())
+		{
+			continue;
+		}
+
+		TWeakObjectPtr<const UWidget> UWidgetPtr = Item->GetWidget();
+		if (!UWidgetPtr.IsValid())
+		{
+			continue;
+		}
+
+		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+		if (!CachedSWidget.IsValid())
+		{
+			continue;
+		}
+		
+		if (CachedSWidget->GetVisibility() == EVisibility::Collapsed || CachedSWidget->GetVisibility() == EVisibility::Hidden)
+		{
+			continue;
+		}
+
+		const FGeometry& CachedGeometry = CachedSWidget->GetCachedGeometry();
+		const FVector2D AbsPos = CachedGeometry.GetAbsolutePosition();
+		const FVector2D AbsSize = CachedGeometry.GetAbsoluteSize();
+		const bool bUnder = CachedGeometry.IsUnderLocation(AbsCursorPos);
+
+		UE_LOG(LogTemp, Log, TEXT("[Pick] %s (%s) | SWidget=%s | AbsPos=(%.1f,%.1f) AbsSize=(%.1f,%.1f) | Cursor=(%.1f,%.1f) | Under=%d | Children=%d"),
+			*Item->GetDisplayName(), *Item->GetTypeName(),
+			*CachedSWidget->GetTypeAsString(),
+			AbsPos.X, AbsPos.Y, AbsSize.X, AbsSize.Y,
+			AbsCursorPos.X, AbsCursorPos.Y,
+			bUnder ? 1 : 0,
+			Item->GetChildrenData().Num());
+
+		if (bUnder)
+		{
+			// 先检查子节点，返回最深的匹配
+			TSharedPtr<FUMGReflectorItem> ChildResult = FindDeepestItemUnderCursor(Item->GetChildrenData(), AbsCursorPos);
+			if (ChildResult.IsValid())
+			{
+				return ChildResult;
+			}
+			// 没有子节点匹配，返回当前节点
+			UE_LOG(LogTemp, Log, TEXT("[Pick] >> Selected: %s (no child matched)"), *Item->GetDisplayName());
+			return Item;
+		}
+	}
+
+	return nullptr;
+}
+
+void SUMGReflectorTree::OnGlobalMouseButtonDown(const FPointerEvent& MouseEvent)
+{
+	if (!bPickingMode)
+	{
+		return;
+	}
+
+	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		if (HoveredPickItem.IsValid())
+		{
+			ConfirmPick();
+		}
+	}
+}
+
+void SUMGReflectorTree::OnGlobalKeyDown(const FKeyEvent& InKeyEvent)
+{
+	if (!bPickingMode)
+	{
+		return;
+	}
+
+	if (InKeyEvent.GetKey() == EKeys::Escape)
+	{
+		CancelPick();
+	}
+}
+
+void SUMGReflectorTree::ConfirmPick()
+{
+	TSharedPtr<FUMGReflectorItem> PickedItem = HoveredPickItem;
+	SetPickingMode(false);
+
+	if (PickedItem.IsValid())
+	{
+		SelectAndExpandToItem(PickedItem);
+	}
+}
+
+void SUMGReflectorTree::CancelPick()
+{
+	SetPickingMode(false);
+}
+
+#if WITH_SLATE_DEBUGGING
+void SUMGReflectorTree::OnPaintDebugElements(const FPaintArgs& InArgs, const FGeometry& InAllottedGeometry, FSlateWindowElementList& InOutDrawElements, int32& InOutLayerId) const
+{
+	if (!bPickingMode || !bHasValidHoverTarget)
+	{
+		return;
+	}
+
+	// 检查当前绘制的窗口是否是悬停Widget所在的窗口
+	TSharedPtr<SWindow> Window = HoveredWidgetWindow.Pin();
+	if (!Window.IsValid())
+	{
+		return;
+	}
+
+	SWindow* PaintWindow = InOutDrawElements.GetPaintWindow();
+	if (PaintWindow != Window.Get())
+	{
+		return;
+	}
+
+	// 将 desktop space 的几何信息转换为 window space
+	FPaintGeometry WindowSpaceGeometry = HoveredWidgetGeometry.ToPaintGeometry();
+	WindowSpaceGeometry.AppendTransform(TransformCast<FSlateLayoutTransform>(Inverse(Window->GetPositionInScreen())));
+
+	WindowSpaceGeometry.CommitTransformsIfUsingLegacyConstructor();
+	const FVector2D LocalSize = WindowSpaceGeometry.GetLocalSize();
+
+	// 绘制绿色边框高亮
+	const FLinearColor HighlightColor(0.0f, 1.0f, 0.0f, 1.0f);
+
+	if (FMath::IsNearlyZero(LocalSize.X) || FMath::IsNearlyZero(LocalSize.Y))
+	{
+		// 零尺寸Widget绘制一条线
+		TArray<FVector2f> LinePoints;
+		LinePoints.SetNum(2);
+		LinePoints[0] = FVector2f::ZeroVector;
+		LinePoints[1] = FVector2f(static_cast<float>(LocalSize.X), static_cast<float>(LocalSize.Y));
+
+		FSlateDrawElement::MakeLines(
+			InOutDrawElements,
+			++InOutLayerId,
+			WindowSpaceGeometry,
+			LinePoints,
+			ESlateDrawEffect::None,
+			HighlightColor,
+			true,
+			2.0f
+		);
+	}
+	else
+	{
+		// 绘制边框
+		FSlateDrawElement::MakeBox(
+			InOutDrawElements,
+			++InOutLayerId,
+			WindowSpaceGeometry,
+			FCoreStyle::Get().GetBrush(TEXT("Debug.Border")),
+			ESlateDrawEffect::None,
+			HighlightColor
+		);
+	}
+}
+#endif
+
+void SUMGReflectorTree::SelectAndExpandToItem(const TSharedPtr<FUMGReflectorItem>& InItem)
+{
+	if (!InItem.IsValid() || !UMGTreeViewSlate.IsValid())
+	{
+		return;
+	}
+
+	// 清空搜索过滤，确保所有节点可见
+	if (!CurrentSearchText.IsEmpty())
+	{
+		CurrentSearchText.Empty();
+		if (SearchBox.IsValid())
+		{
+			SearchBox->SetText(FText::GetEmpty());
+		}
+		FilteredRootItems = UMGRootItems;
+		UMGTreeViewSlate->RequestTreeRefresh();
+	}
+
+	// 查找从根到目标节点的路径
+	TArray<TSharedPtr<FUMGReflectorItem>> Path;
+	FindPathToItem(FilteredRootItems, InItem, Path);
+
+	// 展开路径上的每个节点
+	for (const TSharedPtr<FUMGReflectorItem>& PathItem : Path)
+	{
+		UMGTreeViewSlate->SetItemExpansion(PathItem, true);
+	}
+
+	// 选中目标节点并滚动到可见
+	UMGTreeViewSlate->SetSelection(InItem);
+	UMGTreeViewSlate->RequestScrollIntoView(InItem);
+}
+
+bool SUMGReflectorTree::FindPathToItem(
+	const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
+	const TSharedPtr<FUMGReflectorItem>& InTarget,
+	TArray<TSharedPtr<FUMGReflectorItem>>& OutPath) const
+{
+	for (const TSharedPtr<FUMGReflectorItem>& Item : InItems)
+	{
+		if (!Item.IsValid())
+		{
+			continue;
+		}
+
+		if (Item == InTarget)
+		{
+			OutPath.Add(Item);
+			return true;
+		}
+
+		if (FindPathToItem(Item->GetChildrenData(), InTarget, OutPath))
+		{
+			OutPath.Insert(Item, 0);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void SUMGReflectorTree::CreateInstanceDetailsView()
