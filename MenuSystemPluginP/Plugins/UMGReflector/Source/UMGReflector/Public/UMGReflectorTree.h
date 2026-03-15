@@ -54,7 +54,7 @@ private:
 	 * @param InSlateWidget Slate Widget
 	 * @return Widget名称
 	 */
-	FString GetUMGWidgetName(const UUserWidget* InWidget, const TSharedPtr<SWidget> InSlateWidget);
+	static FString GetUMGWidgetName(const UUserWidget* InWidget, const TSharedPtr<SWidget> InSlateWidget);
 	/** 
 	 * 查找所有在视口中的所有UserWidget
 	 * @param InWorld PIE World
@@ -97,7 +97,7 @@ private:
 	/** Pick按钮点击回调 */
 	FReply OnPickButtonClicked();
 	/** 是否在PIE中 */
-	bool IsInPIE() const;
+	static bool IsInPIE();
 	/** Tick中更新鼠标下方的UMG Widget */
 	void UpdatePickingHover();
 	/** 从FWidgetPath反向映射到树节点 */
@@ -105,14 +105,14 @@ private:
 	/** 递归查找树中与指定SWidget对应的节点 */
 	TSharedPtr<FUMGReflectorItem> FindTreeItemBySWidget(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const TSharedRef<SWidget>& InSWidget) const;
 	/** 通过几何包含关系查找光标下最深的UMG Widget（绕过HitTest） */
-	TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos) const;
+	static TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos);
 	/** 选中并展开到目标节点 */
 	void SelectAndExpandToItem(const TSharedPtr<FUMGReflectorItem>& InItem);
 	/** 递归查找从根到目标节点的路径 */
-	bool FindPathToItem(
+	static bool FindPathToItem(
 		const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
 		const TSharedPtr<FUMGReflectorItem>& InTarget,
-		TArray<TSharedPtr<FUMGReflectorItem>>& OutPath) const;
+		TArray<TSharedPtr<FUMGReflectorItem>>& OutPath);
 	/** 确认拾取 */
 	void ConfirmPick();
 	/** 取消拾取 */
@@ -198,7 +198,7 @@ private:
 	/** 悬停Widget所在的窗口 */
 	TWeakPtr<SWindow> HoveredWidgetWindow;
 
-	/** 是否有有效的悬停高亮目标 */
+	/** 是否有有效地悬停高亮目标 */
 	bool bHasValidHoverTarget = false;
 
 	/** 拾取模式下的树刷新计时器 */

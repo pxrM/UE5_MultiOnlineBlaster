@@ -676,7 +676,7 @@ void SUMGReflectorTree::OnEndPIE(bool bIsSimulating)
 
 // === 拾取功能实现 ===
 
-bool SUMGReflectorTree::IsInPIE() const
+bool SUMGReflectorTree::IsInPIE()
 {
 	if (!GEngine)
 	{
@@ -784,10 +784,10 @@ void SUMGReflectorTree::SetPickingMode(bool bEnable)
 				.Text(LOCTEXT("PickButton", "Pick"))
 			);
 		}
-		if (PickingStatusText.IsValid())
-		{
-			PickingStatusText->SetText(FText::GetEmpty());
-		}
+		// if (PickingStatusText.IsValid())
+		// {
+		// 	PickingStatusText->SetText(FText::GetEmpty());
+		// }
 	}
 }
 
@@ -831,7 +831,7 @@ void SUMGReflectorTree::UpdatePickingHover()
 		TWeakObjectPtr<const UWidget> UWidgetPtr = FoundItem->GetWidget();
 		if (UWidgetPtr.IsValid())
 		{
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 			if (CachedSWidget.IsValid())
 			{
 				// 存储几何信息（desktop space）
@@ -904,7 +904,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindTreeItemBySWidget(
 			// 与引擎 UWidgetTree::FindWidget 保持一致
 			// GetCachedWrappedWidget 会优先返回 ComponentWrapperWidget/DesignWrapperWidget
 			// 这些包装层在 Slate 树中实际出现，是 FWidgetPath 中会命中的节点
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 			if (CachedSWidget.IsValid() && CachedSWidget == InSWidget)
 			{
 				return Item;
@@ -925,7 +925,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindTreeItemBySWidget(
 // SWidgetReflector::SelectLiveWidget(TSharedPtr<const SWidget> InWidget)
 TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
 	const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
-	const FVector2D& AbsCursorPos) const
+	const FVector2D& AbsCursorPos)
 {
 	// 反向迭代：后添加的Widget在视觉上层（后渲染），优先选中
 	for (int32 i = InItems.Num() - 1; i >= 0; --i)
@@ -942,7 +942,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
 			continue;
 		}
 
-		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 		if (!CachedSWidget.IsValid())
 		{
 			continue;
@@ -1057,7 +1057,7 @@ void SUMGReflectorTree::OnPaintDebugElements(const FPaintArgs& InArgs, const FGe
 	const FVector2D LocalSize = WindowSpaceGeometry.GetLocalSize();
 
 	// 绘制绿色边框高亮
-	const FLinearColor HighlightColor(0.0f, 1.0f, 0.0f, 1.0f);
+	constexpr FLinearColor HighlightColor(0.0f, 1.0f, 0.0f, 1.0f);
 
 	if (FMath::IsNearlyZero(LocalSize.X) || FMath::IsNearlyZero(LocalSize.Y))
 	{
@@ -1130,7 +1130,7 @@ void SUMGReflectorTree::SelectAndExpandToItem(const TSharedPtr<FUMGReflectorItem
 bool SUMGReflectorTree::FindPathToItem(
 	const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
 	const TSharedPtr<FUMGReflectorItem>& InTarget,
-	TArray<TSharedPtr<FUMGReflectorItem>>& OutPath) const
+	TArray<TSharedPtr<FUMGReflectorItem>>& OutPath)
 {
 	for (const TSharedPtr<FUMGReflectorItem>& Item : InItems)
 	{
