@@ -849,7 +849,7 @@ void SUMGReflectorTree::UpdatePickingHover()
 		TWeakObjectPtr<const UWidget> UWidgetPtr = FoundItem->GetWidget();
 		if (UWidgetPtr.IsValid())
 		{
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 			if (CachedSWidget.IsValid())
 			{
 				// 存储几何信息（desktop space）
@@ -926,7 +926,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindTreeItemBySWidget(
 		TWeakObjectPtr<const UWidget> UWidgetPtr = Item->GetWidget();
 		if (UWidgetPtr.IsValid())
 		{
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 			if (CachedSWidget.IsValid() && CachedSWidget == InSWidget)
 			{
 				return Item;
@@ -958,7 +958,7 @@ static bool IsPickIgnoredSWidgetType(const TSharedPtr<SWidget>& InSWidget)
 
 TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
 	const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
-	const FVector2D& AbsCursorPos) const
+	const FVector2D& AbsCursorPos)
 {
 	// 反向迭代：后添加的Widget在视觉上层（后渲染），优先选中
 	for (int32 i = InItems.Num() - 1; i >= 0; --i)
@@ -975,7 +975,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
 			continue;
 		}
 
-		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 		if (!CachedSWidget.IsValid())
 		{
 			continue;

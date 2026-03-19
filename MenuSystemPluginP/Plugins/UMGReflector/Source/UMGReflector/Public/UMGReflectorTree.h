@@ -107,7 +107,7 @@ private:
 	/** 递归查找树中与指定SWidget对应的节点 */
 	TSharedPtr<FUMGReflectorItem> FindTreeItemBySWidget(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const TSharedRef<SWidget>& InSWidget) const;
 	/** 通过几何包含关系查找光标下最深的UMG Widget（绕过HitTest） */
-	TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos) const;
+	static TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos);
 	/** 选中并展开到目标节点 */
 	void SelectAndExpandToItem(const TSharedPtr<FUMGReflectorItem>& InItem);
 	/** 递归查找首个直接匹配搜索文本的节点（深度优先） */
@@ -202,7 +202,7 @@ private:
 	/** 悬停Widget所在的窗口 */
 	TWeakPtr<SWindow> HoveredWidgetWindow;
 
-	/** 是否有有效的悬停高亮目标 */
+	/** 是否有有效地悬停高亮目标 */
 	bool bHasValidHoverTarget = false;
 
 	/** 拾取模式下的树刷新计时器 */
