@@ -12,9 +12,7 @@
 #include "Debugging/SlateDebugging.h"
 #endif
 
-#if WITH_EDITOR
 #include "Subsystems/AssetEditorSubsystem.h"
-#endif
 
 #define LOCTEXT_NAMESPACE "UMGReflector"
 
@@ -142,7 +140,7 @@ void SUMGReflectorTree::Construct(const FArguments& InArgs)
 						.DefaultLabel(LOCTEXT("ColumnPosition", "Position"))
 						.FillWidth(0.15f)
 
-						// size列
+						// 大小列
 						+ SHeaderRow::Column("Size")
 						.DefaultLabel(LOCTEXT("ColumnSize", "Size"))
 						.FillWidth(0.1f)
@@ -153,12 +151,7 @@ void SUMGReflectorTree::Construct(const FArguments& InArgs)
 			+ SHorizontalBox::Slot()
 			.FillWidth(0.4f)
 			[
-#if WITH_EDITOR
 				PropertyViewPtr.ToSharedRef()
-#else
-				SNew(STextBlock)
-				.Text(LOCTEXT("NoPropertyView", "Property view not available"))
-#endif
 			]
 		]
 	];
@@ -205,8 +198,7 @@ void SUMGReflectorTree::OnSelectionChanged(TSharedPtr<FUMGReflectorItem> InItem,
 	{
 		UE_LOG(LogTemp, Log, TEXT("OnSelectionChanged: %s"), *InItem->GetTypeName());
 	}
-	
-#if WITH_EDITOR
+
 	TArray<UObject*> SelectedWidgetObjects;
 	TWeakObjectPtr<const UWidget> CurItem = InItem->GetWidget();
 	TSharedPtr<SWidget> Widget = CurItem->GetCachedWidget();
@@ -235,12 +227,12 @@ void SUMGReflectorTree::OnSelectionChanged(TSharedPtr<FUMGReflectorItem> InItem,
 	{
 		UE_LOG(LogTemp, Log, TEXT("Selected Widget: %s (%s)"), *InItem->GetDisplayName(), *InItem->GetTypeName());
 	}
-#endif
 }
 
 void SUMGReflectorTree::OnItemDoubleClicked(TSharedPtr<FUMGReflectorItem> InItem)
 {
-#if WITH_EDITOR
+	CancelPick();
+
 	if (!InItem.IsValid() || InItem->GetWidget() == nullptr)
 	{
 		return;
@@ -282,7 +274,6 @@ void SUMGReflectorTree::OnItemDoubleClicked(TSharedPtr<FUMGReflectorItem> InItem
 		AssetEditorSubsystem->OpenEditorForAsset(Blueprint);
 		UE_LOG(LogTemp, Log, TEXT("OnItemDoubleClicked: Opened Blueprint '%s'"), *Blueprint->GetName());
 	}
-#endif
 }
 
 FReply SUMGReflectorTree::OnRefreshButtonClicked()
@@ -849,7 +840,7 @@ void SUMGReflectorTree::UpdatePickingHover()
 		TWeakObjectPtr<const UWidget> UWidgetPtr = FoundItem->GetWidget();
 		if (UWidgetPtr.IsValid())
 		{
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
 			if (CachedSWidget.IsValid())
 			{
 				// 存储几何信息（desktop space）
@@ -926,7 +917,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindTreeItemBySWidget(
 		TWeakObjectPtr<const UWidget> UWidgetPtr = Item->GetWidget();
 		if (UWidgetPtr.IsValid())
 		{
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
 			if (CachedSWidget.IsValid() && CachedSWidget == InSWidget)
 			{
 				return Item;
@@ -958,7 +949,7 @@ static bool IsPickIgnoredSWidgetType(const TSharedPtr<SWidget>& InSWidget)
 
 TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
 	const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
-	const FVector2D& AbsCursorPos)
+	const FVector2D& AbsCursorPos) const
 {
 	// 反向迭代：后添加的Widget在视觉上层（后渲染），优先选中
 	for (int32 i = InItems.Num() - 1; i >= 0; --i)
@@ -975,7 +966,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
 			continue;
 		}
 
-		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
+		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
 		if (!CachedSWidget.IsValid())
 		{
 			continue;
@@ -1069,7 +1060,7 @@ void SUMGReflectorTree::ConfirmPick()
 
 void SUMGReflectorTree::CancelPick()
 {
-	SetPickingMode(false);
+	ConfirmPick();
 }
 
 #if WITH_SLATE_DEBUGGING

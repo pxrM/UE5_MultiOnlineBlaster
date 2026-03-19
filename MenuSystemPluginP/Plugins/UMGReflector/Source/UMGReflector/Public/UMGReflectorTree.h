@@ -27,22 +27,14 @@ private:
 	TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<FUMGReflectorItem> InItem, const TSharedRef<STableViewBase>& InOwnerTable);
 	/** 获取子节点 */
 	void OnGetChildren(TSharedPtr<FUMGReflectorItem> InItem, TArray<TSharedPtr<FUMGReflectorItem>>& OutChildren);
-	/** 选中变化回调 */
 	void OnSelectionChanged(TSharedPtr<FUMGReflectorItem> InItem, ESelectInfo::Type SelectionType);
-	/** 双击打开对应蓝图 */
 	void OnItemDoubleClicked(TSharedPtr<FUMGReflectorItem> InItem);
-	/** 刷新按钮点击 */
 	FReply OnRefreshButtonClicked();
-	/** 搜索框文本改变 */
 	void OnSearchTextChanged(const FText& InText);
-	/** 搜索文本提交（回车） */
 	void OnSearchTextCommitted(const FText& InText, ETextCommit::Type CommitType);
-	/** 自动刷新复选框状态变化 */
 	void OnAutoRefreshChanged(ECheckBoxState NewState);
-	/** 清空搜索按钮点击 */
 	FReply OnClearSearchClicked();
-
-	// === 核心逻辑函数 ===
+	
 	/** 
 	 * 递归构建UMG Widget树
 	 * @param InWBPWidget 当前UserWidget
@@ -107,7 +99,7 @@ private:
 	/** 递归查找树中与指定SWidget对应的节点 */
 	TSharedPtr<FUMGReflectorItem> FindTreeItemBySWidget(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const TSharedRef<SWidget>& InSWidget) const;
 	/** 通过几何包含关系查找光标下最深的UMG Widget（绕过HitTest） */
-	static TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos);
+	TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos) const;
 	/** 选中并展开到目标节点 */
 	void SelectAndExpandToItem(const TSharedPtr<FUMGReflectorItem>& InItem);
 	/** 递归查找首个直接匹配搜索文本的节点（深度优先） */
@@ -163,10 +155,8 @@ private:
 	/** Tab管理器 */
 	TSharedPtr<FTabManager> TabManager;
 	
-#if WITH_EDITOR
 	/** 属性详情面板 */
 	TSharedPtr<IDetailsView> PropertyViewPtr;
-#endif
 
 	// === 配置参数 ===
 	
@@ -202,7 +192,7 @@ private:
 	/** 悬停Widget所在的窗口 */
 	TWeakPtr<SWindow> HoveredWidgetWindow;
 
-	/** 是否有有效地悬停高亮目标 */
+	/** 是否有有效的悬停高亮目标 */
 	bool bHasValidHoverTarget = false;
 
 	/** 拾取模式下的树刷新计时器 */
@@ -219,5 +209,5 @@ private:
 	FDelegateHandle PaintDebugElementsHandle;
 #endif
 	
-	bool bIsPrintLog = false;
+	bool bIsPrintLog = true;
 };
