@@ -33,8 +33,10 @@ private:
 	void OnItemDoubleClicked(TSharedPtr<FUMGReflectorItem> InItem);
 	/** 刷新按钮点击 */
 	FReply OnRefreshButtonClicked();
-	/** 搜索文本变化 */
+	/** 搜索框文本改变 */
 	void OnSearchTextChanged(const FText& InText);
+	/** 搜索文本提交（回车） */
+	void OnSearchTextCommitted(const FText& InText, ETextCommit::Type CommitType);
 	/** 自动刷新复选框状态变化 */
 	void OnAutoRefreshChanged(ECheckBoxState NewState);
 	/** 清空搜索按钮点击 */
@@ -54,7 +56,7 @@ private:
 	 * @param InSlateWidget Slate Widget
 	 * @return Widget名称
 	 */
-	FString GetUMGWidgetName(const UUserWidget* InWidget, const TSharedPtr<SWidget> InSlateWidget);
+	static FString GetUMGWidgetName(const UUserWidget* InWidget, const TSharedPtr<SWidget> InSlateWidget);
 	/** 
 	 * 查找所有在视口中的所有UserWidget
 	 * @param InWorld PIE World
@@ -97,7 +99,7 @@ private:
 	/** Pick按钮点击回调 */
 	FReply OnPickButtonClicked();
 	/** 是否在PIE中 */
-	bool IsInPIE() const;
+	static bool IsInPIE();
 	/** Tick中更新鼠标下方的UMG Widget */
 	void UpdatePickingHover();
 	/** 从FWidgetPath反向映射到树节点 */
@@ -108,11 +110,13 @@ private:
 	TSharedPtr<FUMGReflectorItem> FindDeepestItemUnderCursor(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FVector2D& AbsCursorPos) const;
 	/** 选中并展开到目标节点 */
 	void SelectAndExpandToItem(const TSharedPtr<FUMGReflectorItem>& InItem);
+	/** 递归查找首个直接匹配搜索文本的节点（深度优先） */
+	TSharedPtr<FUMGReflectorItem> FindFirstDirectMatch(const TArray<TSharedPtr<FUMGReflectorItem>>& InItems, const FString& SearchString) const;
 	/** 递归查找从根到目标节点的路径 */
-	bool FindPathToItem(
+	static bool FindPathToItem(
 		const TArray<TSharedPtr<FUMGReflectorItem>>& InItems,
 		const TSharedPtr<FUMGReflectorItem>& InTarget,
-		TArray<TSharedPtr<FUMGReflectorItem>>& OutPath) const;
+		TArray<TSharedPtr<FUMGReflectorItem>>& OutPath);
 	/** 确认拾取 */
 	void ConfirmPick();
 	/** 取消拾取 */
@@ -214,4 +218,6 @@ private:
 	/** PaintDebugElements委托句柄 */
 	FDelegateHandle PaintDebugElementsHandle;
 #endif
+	
+	bool bIsPrintLog = false;
 };
