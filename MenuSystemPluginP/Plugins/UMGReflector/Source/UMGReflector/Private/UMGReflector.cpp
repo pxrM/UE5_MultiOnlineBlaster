@@ -2,10 +2,11 @@
 
 #include "UMGReflector.h"
 
-#include "UMGReflectorStyle.h"
 #include "UMGReflectorCommands.h"
-#include "ToolMenus.h"
+#include "UMGReflectorStyle.h"
 #include "UMGReflectorTree.h"
+#include "WorkspaceMenuStructure.h"
+#include "WorkspaceMenuStructureModule.h"
 
 #define LOCTEXT_NAMESPACE "FUMGReflectorModule"
 
@@ -15,6 +16,7 @@ void FUMGReflectorModule::StartupModule()
 {
 	FUMGReflectorStyle::Initialize();
 	FUMGReflectorStyle::ReloadTextureResources();
+
 	FUMGReflectorCommands::Register();
 	PluginCommands = MakeShareable(new FUICommandList());
 	PluginCommands->MapAction(
@@ -22,23 +24,14 @@ void FUMGReflectorModule::StartupModule()
 		FExecuteAction::CreateRaw(this, &FUMGReflectorModule::OnPluginBtnClicked)
 	);
 
-	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FUMGReflectorModule::RegisterMenus));
-
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(UMGReflectorTabName,
-	                                                  FOnSpawnTab::CreateRaw(this, &FUMGReflectorModule::OnSpawnPluginTab))
-	                        .SetDisplayName(LOCTEXT("UMGReflectorTabTitle", "UMGReflector"))
-	                        .SetMenuType(ETabSpawnerMenuType::Hidden);
+	RegisterTabSpawners();
 }
 
 void FUMGReflectorModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
-	UToolMenus::UnRegisterStartupCallback(this);
-	UToolMenus::UnregisterOwner(this);
-	FUMGReflectorStyle::Shutdown();
-	FUMGReflectorCommands::Unregister();
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(UMGReflectorTabName);
+	FUMGReflectorCommands::Unregister();
+	FUMGReflectorStyle::Shutdown();
 }
 
 void FUMGReflectorModule::OnPluginBtnClicked()
@@ -48,29 +41,22 @@ void FUMGReflectorModule::OnPluginBtnClicked()
 
 TSharedRef<SDockTab> FUMGReflectorModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	TSharedRef<SDockTab> DockTab = SNew(SDockTab)
+	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)
 		[
 			SNew(SUMGReflectorTree)
 		];
-
-	return DockTab;
 }
 
-void FUMGReflectorModule::RegisterMenus()
+void FUMGReflectorModule::RegisterTabSpawners()
 {
-	FToolMenuOwnerScoped OwnerScoped(this);
-
-	{
-		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
-		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection(UMGReflectorTabName);
-			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FUMGReflectorCommands::Get().OpenPluginWindow));
-				Entry.SetCommandList(PluginCommands);
-			}
-		}
-	}
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+		UMGReflectorTabName,
+		FOnSpawnTab::CreateRaw(this, &FUMGReflectorModule::OnSpawnPluginTab))
+		.SetGroup(WorkspaceMenu::GetMenuStructure().GetDeveloperToolsDebugCategory())
+		.SetDisplayName(LOCTEXT("UMGReflectorTabDisplayName", "UMG Reflector"))
+		.SetTooltipText(LOCTEXT("UMGReflectorTabTooltip", "Open UMG Reflector window"))
+		.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "WidgetReflector.TabIcon"));
 }
 
 #undef LOCTEXT_NAMESPACE

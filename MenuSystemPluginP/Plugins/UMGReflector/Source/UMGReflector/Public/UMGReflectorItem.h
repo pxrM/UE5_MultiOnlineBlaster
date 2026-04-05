@@ -27,7 +27,7 @@ public:
 	bool MatchesSearchText(const FString& SearchText) const;
 
 	// === Getter函数 ===
-	
+
 	FORCEINLINE FString GetDisplayName()const { return DisplayName; }
 	FORCEINLINE FString GetTypeName() const { return TypeName; }
 	FORCEINLINE FString GetWidgetName() const { return WidgetName; }
@@ -66,7 +66,7 @@ private:
 	
 	/** 大小信息 */
 	FVector2D CachedSize;
-	
+
 	/** 是否启用 */
 	bool bCachedIsEnabled;
 	
