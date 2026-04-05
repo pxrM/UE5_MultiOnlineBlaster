@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
+class IDetailLayoutBuilder;
+
 class FUMGStateControllerDetails : public IDetailCustomization
 {
 public:

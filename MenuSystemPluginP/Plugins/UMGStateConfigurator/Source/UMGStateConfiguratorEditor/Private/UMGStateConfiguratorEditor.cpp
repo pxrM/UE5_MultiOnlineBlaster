@@ -1,23 +1,41 @@
 ﻿#include "UMGStateConfiguratorEditor.h"
-
+#include "SUMGStateEditorWindow.h"
+#include "UIPropertyOverrideCustomization.h"
 #include "UMGStateController.h"
 #include "UMGStateControllerDetails.h"
 #include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintGeneratedClass.h"
 #include "Components/Widget.h"
+#include "WidgetBlueprint.h"
+#include "WorkspaceMenuStructure.h"
+#include "WorkspaceMenuStructureModule.h"
+#include "ToolMenus.h"
+#include "LevelEditor.h"
 #include "Kismet2/BlueprintEditorUtils.h"
+#include "Subsystems/AssetEditorSubsystem.h"
 
 #define LOCTEXT_NAMESPACE "FUMGStateConfiguratorEditorModule"
 
 void FUMGStateConfiguratorEditorModule::StartupModule()
 {
 	IModuleInterface::StartupModule();
+	
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		"UIPropertyOverride", 
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FUIPropertyOverrideCustomization::MakeInstance)
 	);
+	// 这个可能不会触发（如果 UUMGStateController 不是直接选中的对象）
+	// PropertyModule.RegisterCustomClassLayout(
+	// 	UUMGStateController::StaticClass()->GetFName(),
+	// 	FOnGetDetailCustomizationInstance::CreateStatic(&FUMGStateControllerDetails::MakeInstance)
+	// 	);
 
 	FCoreUObjectDelegates::OnObjectPropertyChanged.AddStatic(&FUMGStateConfiguratorEditorModule::OnObjectPropertyChanged);
+	
+	RegisterTabSpawner();
+	ExtendWidgetBlueprintMenu();
+	UE_LOG(LogTemp, Log, TEXT("UMGStateConfiguratorEditor module started"));
 }
 
 void FUMGStateConfiguratorEditorModule::ShutdownModule()
@@ -28,9 +46,126 @@ void FUMGStateConfiguratorEditorModule::ShutdownModule()
 	{
 		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("UIPropertyOverride");
+		PropertyModule.UnregisterCustomClassLayout("UMGStateControllerDetails");
 	}
 	
 	FCoreUObjectDelegates::OnObjectPropertyChanged.RemoveAll(this);
+	
+	UnregisterTabSpawner();
+	UE_LOG(LogTemp, Log, TEXT("UMGStateConfiguratorEditor module shutdown"));
+}
+
+void FUMGStateConfiguratorEditorModule::RegisterTabSpawner()
+{
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
+		StateEditorTabName,
+		FOnSpawnTab::CreateStatic(&FUMGStateConfiguratorEditorModule::SpawnStateEditorTab)
+	)
+	.SetDisplayName(LOCTEXT("StateEditorTabTitle", "UI State Editor"))
+	.SetMenuType(ETabSpawnerMenuType::Enabled)
+	.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Viewports"));
+}
+
+void FUMGStateConfiguratorEditorModule::UnregisterTabSpawner()
+{
+	if (FSlateApplication::IsInitialized())
+	{
+		FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(StateEditorTabName);
+	}
+}
+
+TSharedRef<SDockTab> FUMGStateConfiguratorEditorModule::SpawnStateEditorTab(const FSpawnTabArgs& Args)
+{
+	UUserWidget* EditingWidget = nullptr;
+	UUMGStateController* EditingController = nullptr;
+	GetCurrentEditingContext(EditingWidget, EditingController);
+
+	return SNew(SDockTab)
+		.TabRole(ETabRole::NomadTab)
+		[
+			SNew(SUMGStateEditorWindow)
+			.StateController(EditingController)
+			.PreviewWidget(EditingWidget)
+		];
+}
+
+void FUMGStateConfiguratorEditorModule::ExtendWidgetBlueprintMenu()
+{
+	// 添加到主菜单
+	if (UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.MainMenu.Window"))
+	{
+		FToolMenuSection& Section = Menu->FindOrAddSection("GetStarted");
+		Section.AddMenuEntry("OpenUMGStateEditor",
+		                     LOCTEXT("OpenUMGStateEditor", "UI State Editor"),
+		                     LOCTEXT("OpenUMGStateEditorTooltip", "Open the UI State Configuration window"),
+		                     FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Viewports"),
+		                     FUIAction(FExecuteAction::CreateLambda([]()
+		                     {
+		                     	FGlobalTabmanager::Get()->TryInvokeTab(FUMGStateConfiguratorEditorModule::StateEditorTabName);
+		                     }))
+		);
+	}
+	// 添加到 Widget 蓝图编辑器的工具栏
+	if (UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditor.WidgetBlueprintEditor.ToolBar"))
+	{
+		FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("Settings");
+		Section.AddEntry(FToolMenuEntry::InitToolBarButton(
+			"OpenStateEditor",
+			FUIAction(FExecuteAction::CreateLambda([]()
+			{
+				FGlobalTabmanager::Get()->TryInvokeTab(FUMGStateConfiguratorEditorModule::StateEditorTabName);
+			})),
+			LOCTEXT("OpenStateEditor", "State Editor"),
+			LOCTEXT("OpenStateEditorTooltip", "Open UI State Configuration"),
+			FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Viewports")
+		));
+	}
+}
+
+void FUMGStateConfiguratorEditorModule::OpenStateEditorWindow()
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(StateEditorTabName);
+}
+
+void FUMGStateConfiguratorEditorModule::GetCurrentEditingContext(UUserWidget*& OutWidget,
+	UUMGStateController*& OutController)
+{
+	OutWidget = nullptr;
+	OutController = nullptr;
+
+	// 查找当前正在编辑的 Widget Blueprint 资产
+	UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	if (!AssetEditorSubsystem) return;
+
+	// 遍历所有打开的资产编辑器，找到 UUserWidget
+	for (FAssetData AssetData : AssetEditorSubsystem->GetAllEditedAssets())
+	{
+		UObject* Asset = AssetData.GetAsset();
+		if (!Asset) continue;
+
+		UBlueprint* Blueprint = Cast<UBlueprint>(Asset);
+		if (!Blueprint || !Blueprint->GeneratedClass) continue;
+
+		UUserWidget* DefaultWidget = Cast<UUserWidget>(Blueprint->GeneratedClass->GetDefaultObject());
+		if (!DefaultWidget) continue;
+
+		// 查找 StateController
+		for (TFieldIterator<FObjectProperty> It(DefaultWidget->GetClass()); It; ++It)
+		{
+			FObjectProperty* ObjProp = *It;
+			if (ObjProp->PropertyClass && ObjProp->PropertyClass->IsChildOf(UUMGStateController::StaticClass()))
+			{
+				UObject* ControllerObj = ObjProp->GetObjectPropertyValue(
+					ObjProp->ContainerPtrToValuePtr<void>(DefaultWidget));
+				if (UUMGStateController* Controller = Cast<UUMGStateController>(ControllerObj))
+				{
+					OutWidget = DefaultWidget;
+					OutController = Controller;
+					return;
+				}
+			}
+		}
+	}
 }
 
 // 记录操作
@@ -118,4 +253,7 @@ void FUMGStateConfiguratorEditorModule::SyncToBlueprintAsset(UUserWidget* Previe
 		}
 	}
 }
-IMPLEMENT_MODULE(FUMGStateConfiguratorEditorModule, UMGStateConfigurator)
+
+const FName FUMGStateConfiguratorEditorModule::StateEditorTabName(TEXT("UMGStateEditor"));
+
+IMPLEMENT_MODULE(FUMGStateConfiguratorEditorModule, UMGStateConfiguratorEditor)

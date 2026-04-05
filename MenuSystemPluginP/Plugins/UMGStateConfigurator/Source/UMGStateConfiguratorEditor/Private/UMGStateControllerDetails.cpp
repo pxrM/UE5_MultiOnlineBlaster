@@ -9,15 +9,17 @@
 #include "Widgets/Text/STextBlock.h"
 #include "EditorFontGlyphs.h"
 
-#define LOCTEXT_NAMESPACE "UMGStateControllerDetails"
+#define LOCTEXT_NAMESPACE "FUMGStateControllerDetails"
 
 TSharedRef<IDetailCustomization> FUMGStateControllerDetails::MakeInstance()
 {
+	UE_LOG(LogTemp, Log, TEXT("### FUMGStateControllerDetails::MakeInstance"));
 	return MakeShareable(new FUMGStateControllerDetails);
 }
 
 void FUMGStateControllerDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
+	UE_LOG(LogTemp, Log, TEXT("### FUMGStateControllerDetails::CustomizeDetails called!"));
 	TSharedRef<IPropertyHandle> CategoriesHandle = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UUMGStateController, StateCategories));
 	DetailBuilder.HideProperty(CategoriesHandle);
 	
@@ -32,7 +34,7 @@ void FUMGStateControllerDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBu
 		DrawCategoryUI(ElementHandle, DetailBuilder);
 	}
 	
-	CustomCategory.AddCustomRow(LOCTEXT("AddCategory", "Add Category"))
+	CustomCategory.AddCustomRow(LOCTEXT("AddCategory", "+ Add New State Category"))
 	[
 		SNew(SButton)
 		.Text(LOCTEXT("AddCategory", "+ Add New State Category"))
@@ -40,6 +42,11 @@ void FUMGStateControllerDetails::CustomizeDetails(IDetailLayoutBuilder& DetailBu
 		{
 			// 操作 PropertyHandle 来添加元素
 			// 这里需要通过 IPropertyHandleArray 接口操作，稍显复杂，略写
+			TSharedPtr<IPropertyHandleArray> ArrayHandle = CategoriesHandle->AsArray();
+			if (ArrayHandle.IsValid())
+			{
+				ArrayHandle->AddItem();
+			}
 			return FReply::Handled();
 		})
 	];
@@ -49,7 +56,7 @@ void FUMGStateControllerDetails::DrawCategoryUI(TSharedPtr<IPropertyHandle> Cate
 {
 	// 获取分类名和状态数组的 Handle
 	TSharedPtr<IPropertyHandle> EnumNameHandle = CategoryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateCategory, EnumName));
-	TSharedPtr<IPropertyHandle> StateHandle = CategoryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateCategory, States));
+	TSharedPtr<IPropertyHandle> StatesHandle = CategoryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateCategory, States));
 	TSharedPtr<IPropertyHandle> ActiveStateHandle = CategoryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateCategory, ActiveStateName));
 
 	IDetailCategoryBuilder& CustomCategory = DetailBuilder.EditCategory("State Manager");
@@ -86,10 +93,10 @@ void FUMGStateControllerDetails::DrawCategoryUI(TSharedPtr<IPropertyHandle> Cate
 
 	// --- 绘制状态列表 ---
 	uint32 NumStates = 0;
-	StateHandle->GetNumChildren(NumStates);
+	StatesHandle->GetNumChildren(NumStates);
 	for (uint32 StateIdx = 0; StateIdx < NumStates; StateIdx++)
 	{
-		TSharedPtr<IPropertyHandle> StateItemHandel = StateHandle->GetChildHandle(StateIdx);
+		TSharedPtr<IPropertyHandle> StateItemHandel = StatesHandle->GetChildHandle(StateIdx);
 		TSharedPtr<IPropertyHandle> NameHandel = StateItemHandel->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, StateName));
 		TSharedPtr<IPropertyHandle> RecordModeHandle = StateItemHandel->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, bRecordMode));
 
@@ -100,6 +107,84 @@ void FUMGStateControllerDetails::DrawCategoryUI(TSharedPtr<IPropertyHandle> Cate
 		// 检查当前是否正在录制
 		bool bIsRecording = false;
 		RecordModeHandle->GetValue(bIsRecording);
+		
+		CustomCategory.AddCustomRow(LOCTEXT("StateRow", "State Row"))[
+			SNew(SHorizontalBox)
+			// 1. 状态名称 (可编辑)
+			+SHorizontalBox::Slot()
+			.FillWidth(1.f)
+			.VAlign(VAlign_Center)
+			[
+				NameHandel->CreatePropertyValueWidget()
+			]
+			// 2. 预览按钮 (眼睛图标)
+			+SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(2, 0)
+			[
+				SNew(SButton)
+				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+				.ToolTipText(LOCTEXT("PreviewTip", "Switch Preview to this State"))
+				.OnClicked_Lambda([ActiveStateHandle, CurrentStateName]()
+				{
+					// 点击设置 ActiveStateName，触发 PostEditChangeChainProperty，从而触发预览
+				   ActiveStateHandle->SetValue(CurrentStateName);
+				   return FReply::Handled();
+				})
+				[
+					SNew(STextBlock)
+					.Font(FAppStyle::Get().GetFontStyle("FontAwesome.11"))
+					.Text(FEditorFontGlyphs::Eye)
+					.ColorAndOpacity(FSlateColor::UseForeground())
+				]
+			]
+			// 3. 录制按钮 (圆形图标，录制时变红)
+			+SHorizontalBox::Slot()
+			.AutoWidth()
+			.Padding(2, 0)
+			[
+				SNew(SButton)
+				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+				.ToolTipText(LOCTEXT("RecordTip", "Toggle Record Mode"))
+				.OnClicked_Lambda([RecordModeHandle, bIsRecording]()
+				{
+					// 切换录制状态，这会触发 PostEditChangeChainProperty 写好的互斥逻辑
+				   RecordModeHandle->SetValue(!bIsRecording);
+				   return FReply::Handled();
+				})
+				[
+					SNew(STextBlock)
+					.Font(FAppStyle::Get().GetFontStyle("FontAwesome.11"))
+					.Text(FEditorFontGlyphs::Circle)
+					// 如果正在录制，显示红色，否则显示灰色
+					.ColorAndOpacity(bIsRecording ? FLinearColor::Red : FLinearColor::Gray)
+				]
+			]
+		];
 	}
+
+	// --- 添加 "Add New State" 按钮 ---
+	CustomCategory.AddCustomRow(LOCTEXT("AddState", "Add State"))
+	[
+		SNew(SButton)
+		.Text(LOCTEXT("AddStateBtn", "+ Add State"))
+		.OnClicked_Lambda([StatesHandle]()
+		{
+			// 通过 IPropertyHandleArray 增加一个元素
+			TSharedPtr<IPropertyHandleArray> ArrayHandle = StatesHandle->AsArray();
+			if (ArrayHandle.IsValid())
+			{
+				ArrayHandle->AddItem();
+			}
+			return FReply::Handled();
+		})
+	];
+	
+	// 添加分割线
+	CustomCategory.AddCustomRow(FText::GetEmpty())
+	[
+		SNew(SSeparator)
+		.Orientation(Orient_Horizontal)
+	];
 }
 #undef LOCTEXT_NAMESPACE

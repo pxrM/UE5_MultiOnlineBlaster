@@ -65,7 +65,7 @@ void UUMGStateController::ApplyStateGroup(const FUIStateGroup& Group) const
 			Prop->ImportText_Direct(*Action.ValueData, ValuePtr, TargetChild, PPF_SimpleObjectText);
 			if (UImage* ImageWidget = Cast<UImage>(TargetChild))
 			{
-				if (*Action.PropertyName == FName("Brush"))
+				if (FName(*Action.PropertyName) == FName("Brush"))
 				{
 					// 骗过 Slate 的指针检查机制：先设空，再设回
 					FSlateBrush NewBrush = ImageWidget->GetBrush();
@@ -94,7 +94,7 @@ void UUMGStateController::ResetToInitialState()
 			if (FProperty* Prop = Target->GetClass()->FindPropertyByName(*PropName))
 			{
 				void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(Target);
-				Prop->ImportText_Direct(*Elem.Value, ValuePtr, Target, 0);
+				Prop->ImportText_Direct(*Elem.Value, ValuePtr, Target, PPF_SimpleObjectText);
 				Target->SynchronizeProperties();
 			}
 		}

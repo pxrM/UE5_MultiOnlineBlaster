@@ -47,6 +47,11 @@ public class UMGStateConfiguratorEditor : ModuleRules
 				"Kismet",
 				"UnrealEd",
 				"PropertyEditor",
+				"WorkspaceMenuStructure",
+				"ToolMenus",
+				"AssetTools",
+				"BlueprintGraph", 
+				"UMGEditor",
 			}
 			);
 		
