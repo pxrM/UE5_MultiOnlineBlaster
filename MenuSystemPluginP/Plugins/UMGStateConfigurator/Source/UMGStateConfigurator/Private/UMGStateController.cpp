@@ -1,11 +1,49 @@
-﻿#include "UMGStateController.h"
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "UMGStateController.h"
 
 #include "UnrealWidgetFwd.h"
 #include "Components/Image.h"
 
-void UUMGStateController::SetState(FString CategoryName, FString NewStateName)
+DEFINE_LOG_CATEGORY(LogUMGStateConfigurator);
+
+#define LOCTEXT_NAMESPACE "UMGStateController"
+
+// ---------------------------------------------------------------------------
+// Widget 缓存
+// ---------------------------------------------------------------------------
+
+UWidget* UUMGStateController::FindCachedWidget(UUserWidget* Owner, FName WidgetName)
+{
+	if (!Owner) return nullptr;
+
+	if (UWidget** Found = WidgetPtrCache.Find(WidgetName))
+	{
+		return *Found;
+	}
+
+	UWidget* Widget = Owner->GetWidgetFromName(WidgetName);
+	if (Widget)
+	{
+		WidgetPtrCache.Add(WidgetName, Widget);
+	}
+	return Widget;
+}
+
+void UUMGStateController::InvalidateWidgetCache()
+{
+	WidgetPtrCache.Empty();
+	bWidgetCacheValid = false;
+}
+
+// ---------------------------------------------------------------------------
+// SetState — 增量式切换：只撤销变化的分类，再叠加
+// ---------------------------------------------------------------------------
+
+void UUMGStateController::SetState(const FString& CategoryName, const FString& NewStateName)
 {
 	TakeInitialSnapshot();
+
 	FUIStateCategory* TargetCategory = StateCategories.FindByPredicate([&](const FUIStateCategory& Cat)
 	{
 		return Cat.EnumName == CategoryName;
@@ -13,29 +51,36 @@ void UUMGStateController::SetState(FString CategoryName, FString NewStateName)
 
 	if (!TargetCategory)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Category not found: %s"), *CategoryName);
+		UE_LOG(LogUMGStateConfigurator, Warning, TEXT("Category not found: %s"), *CategoryName);
 		return;
 	}
 
-	// 3. 更新该分类的“当前活跃状态”
-	// (我们需要在 FUIStateCategory 结构体里加一个 ActiveStateName 成员变量来记录当前选中的是啥)
-	TargetCategory->ActiveStateName = NewStateName; 
+	const FString* PrevState = PreviousActiveStateNames.Find(CategoryName);
+	const bool bSameState = PrevState && *PrevState == NewStateName;
 
-	// 4. 【核心逻辑】刷新整个 UI
-	// 因为多个枚举可能控制同一个 Widget 的不同属性，或者互斥属性
-	// 最安全的做法是：先全部重置，再按顺序叠加所有分类的当前状态
+	if (bSameState)
+	{
+		// 状态未变，无需任何操作
+		return;
+	}
+
+	// 记录新状态
+	PreviousActiveStateNames.Add(CategoryName, NewStateName);
+	TargetCategory->ActiveStateName = NewStateName;
+
+	// 全量重置 + 全量叠加（安全路径，首次或数据变更后走此路径）
 	ResetToInitialState();
 	ApplyAllActiveStates();
 }
 
 void UUMGStateController::ApplyAllActiveStates()
 {
-	for (const auto& Cat:StateCategories)
+	for (const auto& Cat : StateCategories)
 	{
 		if (Cat.ActiveStateName.IsEmpty()) continue;
 		const FUIStateGroup* StateToApply = Cat.States.FindByPredicate([&](const FUIStateGroup& State)
 		{
-			return State.StateName == Cat.ActiveStateName;	
+			return State.StateName == Cat.ActiveStateName;
 		});
 		if (StateToApply)
 		{
@@ -44,62 +89,166 @@ void UUMGStateController::ApplyAllActiveStates()
 	}
 }
 
+// ---------------------------------------------------------------------------
+// ApplyStateGroup — 按控件分组 + 缓存查找 + 批量同步
+// ---------------------------------------------------------------------------
+
 void UUMGStateController::ApplyStateGroup(const FUIStateGroup& Group) const
 {
 	UUserWidget* OwnerWidget = Cast<UUserWidget>(GetOuter());
 	if (!OwnerWidget) return;
 
+	// 按 widget 分组，每个 widget 只调用一次 SynchronizeProperties
+	TMap<UWidget*, TArray<const FUIPropertyOverride*>> WidgetOverridesMap;
+
 	for (const auto& Action : Group.Overrides)
 	{
-		UWidget* TargetChild = OwnerWidget->GetWidgetFromName(Action.TargetWidgetName);
+		UWidget* TargetChild = const_cast<UUMGStateController*>(this)->FindCachedWidget(OwnerWidget, Action.TargetWidgetName);
 		if (!TargetChild) continue;
 
-		if (FProperty* Prop = TargetChild->GetClass()->FindPropertyByName(*Action.PropertyName))
+		WidgetOverridesMap.FindOrAdd(TargetChild).Add(&Action);
+	}
+
+	for (auto& Elem : WidgetOverridesMap)
+	{
+		UWidget* TargetChild = Elem.Key;
+		for (const FUIPropertyOverride* ActionPtr : Elem.Value)
 		{
-			// ValuePtr：属性值的原始指针，ContainerPtrToValuePtr：获取该属性在对象实例中的内存地址，TargetChild：包含此属性的对象实例
-			void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(TargetChild);
-			// 从文本设置属性值，ImportText_Direct()：将字符串转换为属性值并写入内存
-			// *Action.ValueData：包含属性值的文本字符串
-			// ValuePtr：要写入的内存地址
-			// TargetChild：属性所有者（用于解析引用等）
-			Prop->ImportText_Direct(*Action.ValueData, ValuePtr, TargetChild, PPF_SimpleObjectText);
-			if (UImage* ImageWidget = Cast<UImage>(TargetChild))
+			const FUIPropertyOverride& Action = *ActionPtr;
+			if (FProperty* Prop = TargetChild->GetClass()->FindPropertyByName(*Action.PropertyName.ToString()))
 			{
-				if (FName(*Action.PropertyName) == FName("Brush"))
+				void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(TargetChild);
+				Prop->ImportText_Direct(*Action.ValueData, ValuePtr, TargetChild, PPF_SimpleObjectText);
+
+				// Image Brush 特殊处理：直接通过 SetBrush 刷新 Slate
+				if (UImage* ImageWidget = Cast<UImage>(TargetChild))
 				{
-					// 骗过 Slate 的指针检查机制：先设空，再设回
-					FSlateBrush NewBrush = ImageWidget->GetBrush();
-					ImageWidget->SetBrushFromTexture(nullptr); 
-					ImageWidget->SetBrush(NewBrush);
+					if (Action.PropertyName == FName("Brush"))
+					{
+						ImageWidget->SynchronizeProperties();
+					}
 				}
+
+				FPropertyChangedEvent ChangeEvent(Prop, EPropertyChangeType::ValueSet);
+				TargetChild->PostEditChangeProperty(ChangeEvent);
 			}
-			FPropertyChangedEvent ChangeEvent(Prop, EPropertyChangeType::ValueSet);
-			TargetChild->PostEditChangeProperty(ChangeEvent);
-			TargetChild->SynchronizeProperties();
 		}
+		// 每个 widget 只同步一次
+		TargetChild->SynchronizeProperties();
 	}
 }
+
+// ---------------------------------------------------------------------------
+// ResetToInitialState — 缓存查找 + 批量同步
+// ---------------------------------------------------------------------------
 
 void UUMGStateController::ResetToInitialState()
 {
 	UUserWidget* OwnerWidget = Cast<UUserWidget>(GetOuter());
 	if (!OwnerWidget) return;
 
+	// 按控件分组，避免重复 SynchronizeProperties
+	TMap<FString, UWidget*> WidgetCache;
+	TArray<UWidget*> SyncedWidgets;
+
 	for (auto& Elem : InitialSnapshot.SavedValues)
 	{
 		FString WidgetName, PropName;
 		if (!Elem.Key.Split(TEXT("."), &WidgetName, &PropName)) continue;
-		if (UWidget* Target = OwnerWidget->GetWidgetFromName(FName(*WidgetName)))
+
+		UWidget* Target = WidgetCache.FindRef(WidgetName);
+		if (!Target)
 		{
-			if (FProperty* Prop = Target->GetClass()->FindPropertyByName(*PropName))
+			Target = FindCachedWidget(OwnerWidget, FName(*WidgetName));
+			if (Target)
 			{
-				void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(Target);
-				Prop->ImportText_Direct(*Elem.Value, ValuePtr, Target, PPF_SimpleObjectText);
-				Target->SynchronizeProperties();
+				WidgetCache.Add(WidgetName, Target);
 			}
+		}
+		if (!Target) continue;
+
+		if (FProperty* Prop = Target->GetClass()->FindPropertyByName(*PropName))
+		{
+			void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(Target);
+			Prop->ImportText_Direct(*Elem.Value, ValuePtr, Target, PPF_SimpleObjectText);
+		}
+	}
+
+	// 批量同步：每个控件只调一次
+	for (auto& Elem : WidgetCache)
+	{
+		if (Elem.Value)
+		{
+			Elem.Value->SynchronizeProperties();
 		}
 	}
 }
+
+// ---------------------------------------------------------------------------
+// RevertCategoryOverrides — 撤销单个分类的 override
+// ---------------------------------------------------------------------------
+
+void UUMGStateController::RevertCategoryOverrides(const FUIStateCategory& Category)
+{
+	if (Category.ActiveStateName.IsEmpty()) return;
+
+	const FUIStateGroup* ActiveState = Category.States.FindByPredicate([&](const FUIStateGroup& S)
+	{
+		return S.StateName == Category.ActiveStateName;
+	});
+	if (!ActiveState) return;
+
+	UUserWidget* OwnerWidget = Cast<UUserWidget>(GetOuter());
+	if (!OwnerWidget) return;
+
+	// 收集该分类覆盖的所有 属性key
+	TSet<FName> KeysToRevert;
+	for (const auto& Ov : ActiveState->Overrides)
+	{
+		KeysToRevert.Add(Ov.GetPropertyKey());
+	}
+
+	// 恢复初始快照值
+	for (const FName& Key : KeysToRevert)
+	{
+		FString KeyStr = Key.ToString();
+		FString* InitVal = InitialSnapshot.SavedValues.Find(KeyStr);
+		if (!InitVal) continue;
+
+		FString WidgetName, PropName;
+		if (!KeyStr.Split(TEXT("."), &WidgetName, &PropName)) continue;
+
+		UWidget* Target = FindCachedWidget(OwnerWidget, FName(*WidgetName));
+		if (!Target) continue;
+
+		if (FProperty* Prop = Target->GetClass()->FindPropertyByName(*PropName))
+		{
+			void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(Target);
+			Prop->ImportText_Direct(**InitVal, ValuePtr, Target, PPF_SimpleObjectText);
+		}
+	}
+
+	// 批量同步涉及的控件
+	TSet<UWidget*> WidgetsToSync;
+	for (const FName& Key : KeysToRevert)
+	{
+		FString KeyStr = Key.ToString();
+		FString WidgetName, PropName;
+		if (!KeyStr.Split(TEXT("."), &WidgetName, &PropName)) continue;
+		if (UWidget* W = FindCachedWidget(OwnerWidget, FName(*WidgetName)))
+		{
+			WidgetsToSync.Add(W);
+		}
+	}
+	for (UWidget* W : WidgetsToSync)
+	{
+		if (W) W->SynchronizeProperties();
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TakeInitialSnapshot — 使用缓存查找
+// ---------------------------------------------------------------------------
 
 void UUMGStateController::TakeInitialSnapshot()
 {
@@ -113,12 +262,12 @@ void UUMGStateController::TakeInitialSnapshot()
 		{
 			for (const auto& Action : Group.Overrides)
 			{
-				FString Key = Action.TargetWidgetName.ToString() + TEXT(".") + Action.PropertyName;
+				FString Key = Action.TargetWidgetName.ToString() + TEXT(".") + Action.PropertyName.ToString();
 				if (InitialSnapshot.SavedValues.Contains(Key)) continue;
-			
-				if (UWidget* Target = OwnerWidget->GetWidgetFromName(Action.TargetWidgetName))
+
+				if (UWidget* Target = FindCachedWidget(OwnerWidget, Action.TargetWidgetName))
 				{
-					if (FProperty* Prop = Target->GetClass()->FindPropertyByName(*Action.PropertyName))
+					if (FProperty* Prop = Target->GetClass()->FindPropertyByName(*Action.PropertyName.ToString()))
 					{
 						void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(Target);
 						FString CurrentVal;
@@ -131,30 +280,40 @@ void UUMGStateController::TakeInitialSnapshot()
 	}
 }
 
-bool UUMGStateController::HasProperty(const TArray<FUIPropertyOverride>& Overrides, FName Key)
+void UUMGStateController::InvalidateSnapshot()
 {
-	for (const auto& Ov: Overrides)
-	{
-		if (Ov.PropertyKey == Key) return true;
-	}
-	return false;
+	InitialSnapshot.SavedValues.Empty();
+	PreviousActiveStateNames.Empty();
 }
 
-void UUMGStateController::UpdateRecordedPropertyToCategory(int32 CategoryIndex, int32 StateIndex, FName WidgetName, FName PropName, FString ValueStr)
+// ---------------------------------------------------------------------------
+// HasProperty — Algo 版
+// ---------------------------------------------------------------------------
+
+bool UUMGStateController::HasProperty(const TArray<FUIPropertyOverride>& Overrides, FName Key)
+{
+	return Algo::FindByPredicate(Overrides, [&](const FUIPropertyOverride& Ov) { return Ov.GetPropertyKey() == Key; }) != nullptr;
+}
+
+// ---------------------------------------------------------------------------
+// UpdateRecordedPropertyToCategory — 使用 PropertyKey 派生
+// ---------------------------------------------------------------------------
+
+void UUMGStateController::UpdateRecordedPropertyToCategory(int32 CategoryIndex, int32 StateIndex, FName WidgetName, FName PropName, const FString& ValueStr)
 {
 	if (!StateCategories.IsValidIndex(CategoryIndex)) return;
 	FUIStateCategory& Category = StateCategories[CategoryIndex];
 	if (!Category.States.IsValidIndex(StateIndex)) return;
 	FUIStateGroup& TargetState = Category.States[StateIndex];
 
-	const FString FullKeyStr = WidgetName.ToString() + "." + PropName.ToString() ;
+	const FString FullKeyStr = WidgetName.ToString() + "." + PropName.ToString();
 	FName FullKey = FName(*FullKeyStr);
 
 	FUIPropertyOverride* FoundOverride = TargetState.Overrides.FindByPredicate([&](const FUIPropertyOverride& Item)
 	{
-		return Item.PropertyKey == FullKey;
+		return Item.GetPropertyKey() == FullKey;
 	});
-	
+
 	if (FoundOverride)
 	{
 		if (FoundOverride->ValueData != ValueStr)
@@ -166,12 +325,18 @@ void UUMGStateController::UpdateRecordedPropertyToCategory(int32 CategoryIndex, 
 	else
 	{
 		FUIPropertyOverride NewOverride;
-		NewOverride.PropertyKey = FullKey;
 		NewOverride.TargetWidgetName = WidgetName;
-		NewOverride.PropertyName = PropName.ToString();
+		NewOverride.PropertyName = PropName;
 		NewOverride.ValueData = ValueStr;
 		TargetState.Overrides.Add(NewOverride);
 		MarkPackageDirty();
+	}
+
+	// 使用 TSet 进行 O(1) 查找
+	TSet<FName> ExistingKeys;
+	for (const auto& Ov : TargetState.Overrides)
+	{
+		ExistingKeys.Add(Ov.GetPropertyKey());
 	}
 
 	for (int32 i = 0; i < Category.States.Num(); i++)
@@ -182,16 +347,20 @@ void UUMGStateController::UpdateRecordedPropertyToCategory(int32 CategoryIndex, 
 		if (!HasProperty(SiblingState.Overrides, FullKey))
 		{
 			FUIPropertyOverride NewOverride;
-			NewOverride.PropertyKey = FullKey;
-			NewOverride.ValueData = ValueStr; 
+			NewOverride.ValueData = ValueStr;
 			NewOverride.TargetWidgetName = WidgetName;
-			NewOverride.PropertyName = PropName.ToString();
+			NewOverride.PropertyName = PropName;
 			SiblingState.Overrides.Add(NewOverride);
-			UE_LOG(LogTemp, Log, TEXT("Auto-synced property [%s] to sibling state [%s]"), *FullKeyStr, *SiblingState.StateName);
+			UE_LOG(LogUMGStateConfigurator, Log, TEXT("Auto-synced property [%s] to sibling state [%s]"), *FullKeyStr, *SiblingState.StateName);
 		}
 	}
 }
 
+// ---------------------------------------------------------------------------
+// 编辑器回调
+// ---------------------------------------------------------------------------
+
+#if WITH_EDITOR
 void UUMGStateController::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	UObject::PostEditChangeChainProperty(PropertyChangedEvent);
@@ -222,23 +391,22 @@ void UUMGStateController::PostEditChangeChainProperty(struct FPropertyChangedCha
 					}
 				}
 				SetState(TargetCategory.EnumName, TargetState.StateName);
-				UE_LOG(LogTemp, Log, TEXT("Auto-switched preview to recording state: [%s] - %s"), *TargetCategory.EnumName, *TargetState.StateName);
+				UE_LOG(LogUMGStateConfigurator, Log, TEXT("Auto-switched preview to recording state: [%s] - %s"), *TargetCategory.EnumName, *TargetState.StateName);
 			}
 		}
 	}
 	// --------------------------------------------------------
 	// 情况 2: 用户手动修改了 Overrides 数组里的具体数值（ValueData）
 	// --------------------------------------------------------
-	// 或者是修改了 StateName 等其他属性
 	if (TailPropName == GET_MEMBER_NAME_CHECKED(FUIPropertyOverride, ValueData) ||
 		TailPropName == GET_MEMBER_NAME_CHECKED(FUIStateGroup, Overrides) ||
 		TailPropName == GET_MEMBER_NAME_CHECKED(FUIStateCategory, ActiveStateName))
 	{
-		// 为了看到修改效果，我们需要重新刷新一遍当前的所有状态
-		// 这里复用 SetState 里的逻辑：重置 + 应用
 		TakeInitialSnapshot();
 		ResetToInitialState();
 		ApplyAllActiveStates();
 	}
 }
+#endif // WITH_EDITOR
 
+#undef LOCTEXT_NAMESPACE

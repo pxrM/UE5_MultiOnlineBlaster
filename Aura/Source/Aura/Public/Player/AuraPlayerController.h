@@ -130,6 +130,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 	
+	/* 范围贴花 */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AMagicCircleActor> MagicCircleClass;
 	UPROPERTY()

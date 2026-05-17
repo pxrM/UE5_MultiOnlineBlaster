@@ -71,6 +71,9 @@ private:
     /** 快速录制当前视图 */
     FReply OnQuickRecordCurrentView();
 
+    /** 刷新 UI 回调 */
+    FReply OnRefreshUI();
+
     /** 检查某个状态是否正在录制 */
     bool IsStateRecording(int32 CategoryIndex, int32 StateIndex) const;
 

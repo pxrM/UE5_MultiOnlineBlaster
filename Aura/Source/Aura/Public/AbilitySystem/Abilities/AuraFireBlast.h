@@ -7,6 +7,7 @@
 #include "AuraFireBlast.generated.h"
 
 class AAuraFireBall;
+
 /**
  * 火焰爆炸技能
  *		火球碰撞伤害

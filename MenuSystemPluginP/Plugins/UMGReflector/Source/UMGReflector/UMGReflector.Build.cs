@@ -44,7 +44,8 @@ public class UMGReflector : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
-                "UMG",
+                "UMG", 
+                "WorkspaceMenuStructure",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -45,8 +45,7 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn);
-	if (BlasterCharacter)
+	if (ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn))
 	{
 		SetHUDHealth(BlasterCharacter->GetCurHealth(), BlasterCharacter->GetMaxHealth());
 	}
@@ -370,14 +369,14 @@ void ABlasterPlayerController::ClientReportServerTime_Implementation(float TimeO
 	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest; //计算客户端请求的往返时间
 	SingleTripTime = RoundTripTime * 0.5f;
 	float CurrentServerTime = TimeServerReceivedRequest + SingleTripTime; //服务器回包的时间+往返时间的一半
-	ClientServerDelte = CurrentServerTime - GetWorld()->GetTimeSeconds();
+	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
 }
 
 float ABlasterPlayerController::GetServerTime()
 {
 	if (HasAuthority())
 		return GetWorld()->GetTimeSeconds();
-	return GetWorld()->GetTimeSeconds() + ClientServerDelte;
+	return GetWorld()->GetTimeSeconds() + ClientServerDelta;
 }
 
 
@@ -446,7 +445,7 @@ void ABlasterPlayerController::OnRep_ShowTeamScores()
 	}
 	else
 	{
-		HideTeamSocres();
+		HideTeamScores();
 	}
 }
 
@@ -473,7 +472,7 @@ void ABlasterPlayerController::HandleMatchHasStarted(bool bTeamsMatch)
 		}
 		else
 		{
-			HideTeamSocres();
+			HideTeamScores();
 		}
 	}
 }
@@ -505,8 +504,7 @@ void ABlasterPlayerController::HandleCooldown()
 		}
 	}
 
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
-	if (BlasterCharacter)
+	if (ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn()))
 	{
 		BlasterCharacter->SetDisableGameplay(true); //关闭部分输入
 		if (BlasterCharacter->GetCombatCmp())
@@ -616,7 +614,7 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		PingAnimRunningTime += DeltaTime;
 		if (PingAnimRunningTime > HighPingDuration)
 		{
-			StopHigtPingWarning();
+			StopHighPingWarning();
 		}
 	}
 }
@@ -636,7 +634,7 @@ void ABlasterPlayerController::HighPingWarning()
 	}
 }
 
-void ABlasterPlayerController::StopHigtPingWarning()
+void ABlasterPlayerController::StopHighPingWarning()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 
@@ -720,7 +718,7 @@ void ABlasterPlayerController::ClientElimAnnouncement_Implementation(APlayerStat
 	}
 }
 
-void ABlasterPlayerController::HideTeamSocres()
+void ABlasterPlayerController::HideTeamScores()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 

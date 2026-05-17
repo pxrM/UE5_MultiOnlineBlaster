@@ -25,6 +25,17 @@ public:
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;
 
+	/**
+	 * @param TargetActor 
+	 * @param InRadialDamageOrigin 伤害中心点
+	 * @param bOverrideKnockbackDirection 
+	 * @param KnockbackDirectionOverride 
+	 * @param bOverrideDeathImpulse 
+	 * @param DeathImpulseDirectionOverride 
+	 * @param bOverridePitch 
+	 * @param PitchOverride 
+	 * @return 给目标应用负面效果的参数结构
+	 */
 	UFUNCTION(BlueprintPure)
 	FDamageEffectParams MakeDamageEffectParamsFromClassDefault(
 		AActor* TargetActor = nullptr,
@@ -36,10 +47,16 @@ public:
 		bool bOverridePitch = false,
 		float PitchOverride = 0.f);
 
+	/**
+	* 获取对应伤害值
+	*/
 	UFUNCTION(BlueprintPure)
 	float GetDamageAtLevel() const;
 
 protected:
+	/*
+	* 根据技能等级和伤害类型来获取对应伤害值
+	*/
 	float GetDamageByDamageType(float InLevel, const FGameplayTag& DamageType);
 
 protected:

@@ -36,7 +36,7 @@ void AAuraPlayerController::BeginPlay()
 	/*
 	 * 绑定增强输入到玩家Controller
 	 */
-	// 从当前本地玩家对象中获取一个 用于增强输入管理的本地玩家子系统 类型的子系统
+	 // 从当前本地玩家对象中获取一个 用于增强输入管理的本地玩家子系统 类型的子系统
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
 		GetLocalPlayer()))
 	{
@@ -110,25 +110,25 @@ void AAuraPlayerController::CursorTrace()
 	 *	D: 两个都有效，但是LastActor!=CurrActor	-取消突出LastActor，并突出CurrActor
 	 *	E: 两个都有效，而且是同一个Actor			-不做任何事情
 	 */
-	// if(LastActor == nullptr)
-	// {
-	// 	if(CurrActor != nullptr)
-	// 	{
-	// 		CurrActor->HighlightActor();
-	// 	}
-	// }
-	// else
-	// {
-	// 	if(CurrActor == nullptr)
-	// 	{
-	// 		LastActor->UnHighlightActor();
-	// 	}
-	// 	else if(LastActor != CurrActor)
-	// 	{
-	// 		LastActor->UnHighlightActor();
-	// 		CurrActor->HighlightActor();
-	// 	}
-	// }
+	 // if(LastActor == nullptr)
+	 // {
+	 // 	if(CurrActor != nullptr)
+	 // 	{
+	 // 		CurrActor->HighlightActor();
+	 // 	}
+	 // }
+	 // else
+	 // {
+	 // 	if(CurrActor == nullptr)
+	 // 	{
+	 // 		LastActor->UnHighlightActor();
+	 // 	}
+	 // 	else if(LastActor != CurrActor)
+	 // 	{
+	 // 		LastActor->UnHighlightActor();
+	 // 		CurrActor->HighlightActor();
+	 // 	}
+	 // }
 	if (LastActor != CurrActor)
 	{
 		UnHighlightActor(LastActor);
@@ -164,8 +164,7 @@ UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()
 {
 	if (AuraAbilitySystemComponent == nullptr)
 	{
-		AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(
-			UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
+		AuraAbilitySystemComponent = Cast<UAuraAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn<APawn>()));
 	}
 	return AuraAbilitySystemComponent;
 }
@@ -192,7 +191,7 @@ void AAuraPlayerController::HideMagicCircle()
 }
 
 void AAuraPlayerController::ShowDamageNumber_Implementation(const float DamageAmount, ACharacter* TargetCharacter,
-                                                            const bool bBlockedHit, const bool bCriticalHit)
+	const bool bBlockedHit, const bool bCriticalHit)
 {
 	if (IsValid(TargetCharacter) && DamageTextComponentClass && IsLocalController())
 	{
@@ -200,7 +199,7 @@ void AAuraPlayerController::ShowDamageNumber_Implementation(const float DamageAm
 		DamageText->RegisterComponent(); // 动态创建的组件需要调用注册
 		// 先附加到角色身上，使用角色位置
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(),
-		                              FAttachmentTransformRules::KeepRelativeTransform);
+			FAttachmentTransformRules::KeepRelativeTransform);
 		// 然后从角色身上分离，保证在一个位置播放完成动画
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
@@ -215,13 +214,18 @@ void AAuraPlayerController::SetupInputComponent()
 
 	// 将 MoveAction 的输入动作绑定到当前玩家控制器对象的 Move 方法上，当该输入动作被触发时，将会执行 Move 方法中的代码逻辑
 	AuraEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
-	AuraEnhancedInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this,
-	                                       &AAuraPlayerController::ShiftPressed);
-	AuraEnhancedInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this,
-	                                       &AAuraPlayerController::ShiftReleased);
-	AuraEnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed,
-	                                               &ThisClass::AbilityInputTagReleased,
-	                                               &ThisClass::AbilityInputTagHeld);
+	// shift按下和抬起
+	AuraEnhancedInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
+	AuraEnhancedInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
+	// 技能输入绑定
+	AuraEnhancedInputComponent->BindAbilityActions
+	(
+		InputConfig,
+		this,
+		&ThisClass::AbilityInputTagPressed,
+		&ThisClass::AbilityInputTagReleased,
+		&ThisClass::AbilityInputTagHeld
+	);
 }
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
@@ -268,7 +272,7 @@ void AAuraPlayerController::AbilityInputTagPressed(const FGameplayTag InputTag)
 		{
 			TargetingStatus = ETargetingStatus::NoTargeting;
 		}
-		bAutoRunning = false; 
+		bAutoRunning = false;
 	}
 
 	if (GetASC())
@@ -281,17 +285,11 @@ void AAuraPlayerController::AbilityInputTagReleased(const FGameplayTag InputTag)
 {
 	// GEngine->AddOnScreenDebugMessage(2, 2.f, FColor::Red, *InputTag.ToString());
 
-	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased))
-	{
-		return;
-	}
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased)) return;
 
 	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag);
 
-	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB) == false)
-	{
-		return;
-	}
+	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB) == false) return;
 
 	if (TargetingStatus != ETargetingStatus::TargetingEnemy && !bShiftKeyDown)
 	{

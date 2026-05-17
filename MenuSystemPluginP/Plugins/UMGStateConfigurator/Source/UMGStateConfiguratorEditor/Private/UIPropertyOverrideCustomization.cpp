@@ -74,12 +74,8 @@ void FUIPropertyOverrideCustomization::CustomizeChildren(TSharedRef<IPropertyHan
 						UWidget* SelectedWidget = PreviewWidget->GetWidgetFromName(FName(**Selection));
 						RefreshPropertyOptions(SelectedWidget);
 					}
-					if (Selection.IsValid())
-					{
-						WidgetNameHandle->SetValue(*Selection);
-						// 关键：通知底层对象数据已变动，触发 PostEditChangeProperty
-						PropertyHandle->NotifyFinishedChangingProperties();
-					}
+					// 关键：通知底层对象数据已变动，触发 PostEditChangeProperty
+					PropertyHandle->NotifyFinishedChangingProperties();
 				}
 			})
 			[

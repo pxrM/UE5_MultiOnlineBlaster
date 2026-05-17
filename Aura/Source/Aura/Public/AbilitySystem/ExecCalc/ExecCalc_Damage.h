@@ -37,9 +37,15 @@ public:
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 
 private:
+	// 添加标签和属性快照对应的数据
 	UFUNCTION()
 	void InitTagsToCaptureDefs();
-	// 判断是否要应用debuff
+	/// <summary>
+	/// 判断是否要应用debuff
+	/// </summary>
+	/// <param name="ExecutionParams">用于调用 AttemptCalculateCapturedAttributeMagnitude 获取被捕获属性（例如抗性）的当前值、并执行其他与执行相关的操作。</param>
+	/// <param name="Spec">GameplayEffect 的规格（Spec），用于读取 SetByCaller Magnitude（按 Tag 设置的数值），并获取 EffectContext。</param>
+	/// <param name="EvaluateParameters">向 AttemptCalculateCapturedAttributeMagnitude 提供的上下文（包含源/目标标签），用于正确评估捕获属性。</param>
 	void DetermineDeBuff(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 	                     const FGameplayEffectSpec& Spec,
 	                     FAggregatorEvaluateParameters EvaluateParameters) const;

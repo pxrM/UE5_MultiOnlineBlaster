@@ -96,13 +96,13 @@ void FUMGStateControllerDetails::DrawCategoryUI(TSharedPtr<IPropertyHandle> Cate
 	StatesHandle->GetNumChildren(NumStates);
 	for (uint32 StateIdx = 0; StateIdx < NumStates; StateIdx++)
 	{
-		TSharedPtr<IPropertyHandle> StateItemHandel = StatesHandle->GetChildHandle(StateIdx);
-		TSharedPtr<IPropertyHandle> NameHandel = StateItemHandel->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, StateName));
-		TSharedPtr<IPropertyHandle> RecordModeHandle = StateItemHandel->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, bRecordMode));
+		TSharedPtr<IPropertyHandle> StateItemHandle = StatesHandle->GetChildHandle(StateIdx);
+		TSharedPtr<IPropertyHandle> NameHandle = StateItemHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, StateName));
+		TSharedPtr<IPropertyHandle> RecordModeHandle = StateItemHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FUIStateGroup, bRecordMode));
 
 		// 获取当前的 StateName 字符串（用于显示预览状态）
 		FString CurrentStateName;
-		NameHandel->GetValue(CurrentStateName);
+		NameHandle->GetValue(CurrentStateName);
 
 		// 检查当前是否正在录制
 		bool bIsRecording = false;
@@ -115,7 +115,7 @@ void FUMGStateControllerDetails::DrawCategoryUI(TSharedPtr<IPropertyHandle> Cate
 			.FillWidth(1.f)
 			.VAlign(VAlign_Center)
 			[
-				NameHandel->CreatePropertyValueWidget()
+				NameHandle->CreatePropertyValueWidget()
 			]
 			// 2. 预览按钮 (眼睛图标)
 			+SHorizontalBox::Slot()
@@ -146,10 +146,12 @@ void FUMGStateControllerDetails::DrawCategoryUI(TSharedPtr<IPropertyHandle> Cate
 				SNew(SButton)
 				.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 				.ToolTipText(LOCTEXT("RecordTip", "Toggle Record Mode"))
-				.OnClicked_Lambda([RecordModeHandle, bIsRecording]()
+				.OnClicked_Lambda([RecordModeHandle]()
 				{
 					// 切换录制状态，这会触发 PostEditChangeChainProperty 写好的互斥逻辑
-				   RecordModeHandle->SetValue(!bIsRecording);
+				   bool bCurrent = false;
+				   RecordModeHandle->GetValue(bCurrent);
+				   RecordModeHandle->SetValue(!bCurrent);
 				   return FReply::Handled();
 				})
 				[

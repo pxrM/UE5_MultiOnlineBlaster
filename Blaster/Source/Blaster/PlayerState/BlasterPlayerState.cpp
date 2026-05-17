@@ -27,8 +27,8 @@ if (Character) \
 
 void ABlasterPlayerState::AddToScore(float ScoreAmount)
 {
-	SetScore(Score + ScoreAmount);
-	CHECK_SET_HUD_TEXT(SetHUDScore, Score); //服务器执行
+	SetScore(GetScore() + ScoreAmount);
+	CHECK_SET_HUD_TEXT(SetHUDScore, GetScore()); //服务器执行
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
@@ -43,7 +43,7 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 void ABlasterPlayerState::OnRep_Score()
 {
 	Super::OnRep_Score();
-	CHECK_SET_HUD_TEXT(SetHUDScore, Score);  //客户端执行
+	CHECK_SET_HUD_TEXT(SetHUDScore, GetScore());  //客户端执行
 	/*Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
 	if (Character)
 	{

@@ -28,7 +28,13 @@ protected:
 	                             const FGameplayAbilityActorInfo* ActorInfo,
 	                             const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;
-	// 生成子弹
+	/**
+	 * 生成子弹
+	 * @param ProjectileTargetLocation 
+	 * @param SocketTag 
+	 * @param bOverridePitch 
+	 * @param OverridePitch 
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
 	void SpawnProjectile(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag, bool bOverridePitch = false, float OverridePitch = 0.f);
 

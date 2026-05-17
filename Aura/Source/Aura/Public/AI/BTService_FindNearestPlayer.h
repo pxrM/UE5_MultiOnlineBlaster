@@ -8,6 +8,13 @@
 
 /**
  * 获取最近的玩家目标的服务
+ * 
+ * UBTService_BlueprintBase 是行为树中服务节点的蓝图基类。服务节点是一种特殊的辅助节点，它附加在复合节点（如Selector、Sequence等）上，在行为树执行过程中提供后台服务功能。
+ * 主要功能
+ *	定时执行：服务节点可以按照设定的时间间隔周期性执行
+ *	数据更新：用于更新黑板数据、检查条件、执行后台计算
+ *	事件监听：可以监听游戏事件并做出响应
+ *	状态监控：持续监控AI的状态变化
  */
 UCLASS()
 class AURA_API UBTService_FindNearestPlayer : public UBTService_BlueprintBase

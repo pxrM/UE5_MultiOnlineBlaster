@@ -840,7 +840,7 @@ void SUMGReflectorTree::UpdatePickingHover()
 		TWeakObjectPtr<const UWidget> UWidgetPtr = FoundItem->GetWidget();
 		if (UWidgetPtr.IsValid())
 		{
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 			if (CachedSWidget.IsValid())
 			{
 				// 存储几何信息（desktop space）
@@ -917,7 +917,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindTreeItemBySWidget(
 		TWeakObjectPtr<const UWidget> UWidgetPtr = Item->GetWidget();
 		if (UWidgetPtr.IsValid())
 		{
-			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+			TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 			if (CachedSWidget.IsValid() && CachedSWidget == InSWidget)
 			{
 				return Item;
@@ -966,7 +966,7 @@ TSharedPtr<FUMGReflectorItem> SUMGReflectorTree::FindDeepestItemUnderCursor(
 			continue;
 		}
 
-		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWrappedWidget();
+		TSharedPtr<SWidget> CachedSWidget = UWidgetPtr->GetCachedWidget();
 		if (!CachedSWidget.IsValid())
 		{
 			continue;

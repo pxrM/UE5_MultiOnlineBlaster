@@ -57,7 +57,7 @@ public:
 	/*
 		队伍hud相关函数
 	*/
-	void HideTeamSocres();
+	void HideTeamScores();
 	void InitTeamScores();
 	void SetHUDRedTeamScore(int32 RedScore);
 	void SetHUDBlueTeamScore(int32 BlueScore);
@@ -129,7 +129,7 @@ protected:
 	*/
 	void CheckPing(float DeltaTime);
 	void HighPingWarning();
-	void StopHigtPingWarning();
+	void StopHighPingWarning();
 	UFUNCTION(Server, Reliable)
 	void ServerReportPingStatus(bool bHighPing); //向server发送报告ping状态
 
@@ -158,7 +158,7 @@ protected:
 	/// <summary>
 	/// 客户端和服务器之间的时间差异
 	/// </summary>
-	float ClientServerDelte = 0.f;
+	float ClientServerDelta = 0.f;
 	/// <summary>
 	/// 时间同步频率
 	/// </summary>

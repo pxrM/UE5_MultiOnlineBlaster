@@ -3,13 +3,12 @@
 #include "SUMGStateEditorWindow.h"
 #include "UMGStateController.h"
 #include "Blueprint/UserWidget.h"
+#include "Misc/MessageDialog.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SEditableTextBox.h"
 #include "Widgets/Text/STextBlock.h"
-#include "Widgets/Images/SImage.h"
-#include "EditorStyleSet.h"
 #include "EditorFontGlyphs.h"
 #include "Styling/AppStyle.h"
 
@@ -44,7 +43,7 @@ void SUMGStateEditorWindow::Construct(const FArguments& InArgs)
                 SNew(SButton)
                 .Text(LOCTEXT("RefreshButton", "🔄 Refresh"))
                 .ToolTipText(LOCTEXT("RefreshTooltip", "Refresh the entire UI"))
-                .OnClicked(this, &SUMGStateEditorWindow::OnQuickRecordCurrentView)
+                .OnClicked(this, &SUMGStateEditorWindow::OnRefreshUI)
             ]
         ]
 
@@ -406,6 +405,7 @@ FReply SUMGStateEditorWindow::OnAddCategory()
     FUIStateCategory NewCategory;
     NewCategory.EnumName = FString::Printf(TEXT("Category_%d"), Controller->StateCategories.Num());
     Controller->StateCategories.Add(NewCategory);
+    Controller->InvalidateSnapshot();
 
     RefreshUI();
     return FReply::Handled();
@@ -414,13 +414,26 @@ FReply SUMGStateEditorWindow::OnAddCategory()
 FReply SUMGStateEditorWindow::OnDeleteCategory(int32 CategoryIndex)
 {
     UUMGStateController* Controller = WeakController.Get();
-    if (!Controller || !Controller->StateCategories.IsValidIndex(CategoryIndex)) 
+    if (!Controller || !Controller->StateCategories.IsValidIndex(CategoryIndex))
         return FReply::Handled();
+
+    // U1: Delete confirmation
+    if (Controller->StateCategories.Num() > 1)
+    {
+        EAppReturnType::Type Result = FMessageDialog::Open(
+            EAppMsgType::YesNo,
+            LOCTEXT("ConfirmDeleteCategory", "Are you sure you want to delete this category and all its states?"));
+        if (Result != EAppReturnType::Yes)
+        {
+            return FReply::Handled();
+        }
+    }
 
     const FScopedTransaction Transaction(LOCTEXT("DeleteCategory", "Delete State Category"));
     Controller->Modify();
 
     Controller->StateCategories.RemoveAt(CategoryIndex);
+    Controller->InvalidateSnapshot();
 
     RefreshUI();
     return FReply::Handled();
@@ -429,16 +442,17 @@ FReply SUMGStateEditorWindow::OnDeleteCategory(int32 CategoryIndex)
 FReply SUMGStateEditorWindow::OnAddState(int32 CategoryIndex)
 {
     UUMGStateController* Controller = WeakController.Get();
-    if (!Controller || !Controller->StateCategories.IsValidIndex(CategoryIndex)) 
+    if (!Controller || !Controller->StateCategories.IsValidIndex(CategoryIndex))
         return FReply::Handled();
 
     const FScopedTransaction Transaction(LOCTEXT("AddState", "Add State"));
     Controller->Modify();
 
     FUIStateGroup NewState;
-    NewState.StateName = FString::Printf(TEXT("State_%d"), 
+    NewState.StateName = FString::Printf(TEXT("State_%d"),
         Controller->StateCategories[CategoryIndex].States.Num());
     Controller->StateCategories[CategoryIndex].States.Add(NewState);
+    Controller->InvalidateSnapshot();
 
     RefreshUI();
     return FReply::Handled();
@@ -454,10 +468,23 @@ FReply SUMGStateEditorWindow::OnDeleteState(int32 CategoryIndex, int32 StateInde
     if (!Category.States.IsValidIndex(StateIndex))
         return FReply::Handled();
 
+    // U1: Delete confirmation
+    if (Category.States.Num() > 1)
+    {
+        EAppReturnType::Type Result = FMessageDialog::Open(
+            EAppMsgType::YesNo,
+            LOCTEXT("ConfirmDeleteState", "Are you sure you want to delete this state?"));
+        if (Result != EAppReturnType::Yes)
+        {
+            return FReply::Handled();
+        }
+    }
+
     const FScopedTransaction Transaction(LOCTEXT("DeleteState", "Delete State"));
     Controller->Modify();
 
     Category.States.RemoveAt(StateIndex);
+    Controller->InvalidateSnapshot();
 
     RefreshUI();
     return FReply::Handled();
@@ -596,6 +623,13 @@ void SUMGStateEditorWindow::OnStateNameCommitted(const FText& NewText, ETextComm
     if (!Category.States.IsValidIndex(StateIndex))
         return;
 
+    // C6: Reject empty names
+    if (NewText.ToString().TrimStartAndEnd().IsEmpty())
+    {
+        RefreshUI();
+        return;
+    }
+
     const FScopedTransaction Transaction(LOCTEXT("RenameState", "Rename State"));
     Controller->Modify();
 
@@ -622,10 +656,23 @@ void SUMGStateEditorWindow::OnCategoryNameCommitted(const FText& NewText, ETextC
     if (!Controller || !Controller->StateCategories.IsValidIndex(CategoryIndex))
         return;
 
+    // C6: Reject empty names
+    if (NewText.ToString().TrimStartAndEnd().IsEmpty())
+    {
+        RefreshUI();
+        return;
+    }
+
     const FScopedTransaction Transaction(LOCTEXT("RenameCategory", "Rename Category"));
     Controller->Modify();
 
     Controller->StateCategories[CategoryIndex].EnumName = NewText.ToString();
+}
+
+FReply SUMGStateEditorWindow::OnRefreshUI()
+{
+    RefreshUI();
+    return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE

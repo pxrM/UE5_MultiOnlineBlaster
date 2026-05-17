@@ -9,7 +9,7 @@
 class ABlasterPlayerState;
 
 /**
- * AGameState用于保存游戏数据，如任务进度、游戏活动等
+ * AGameState用于保存所有玩家都应该知道的游戏数据，如一局游戏的剩余时间、剩余人数、玩家得分等
  */
 UCLASS()
 class BLASTER_API ABlasterGameState : public AGameState

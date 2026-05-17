@@ -21,13 +21,23 @@ public:
 	static  FString GetLockedDescription(int32 Level);
 
 public:
-	// 启动输入能力的tag
+	/// <summary>
+	/// 启动输入该能力的tag
+	/// </summary>
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	FGameplayTag StartupInputTag;
 
 protected:
-	// 获取技能蓝量消耗
+	/// <summary>
+	/// 获取技能蓝量消耗
+	/// </summary>
+	/// <param name="InLevel">技能等级</param>
+	/// <returns></returns>
 	float GetManaCost(float InLevel = 1.f) const;
-	// 获取技能冷却时间
+	/// <summary>
+	/// 获取技能冷却时间
+	/// </summary>
+	/// <param name="InLevel">技能等级</param>
+	/// <returns></returns>
 	float GetCooldown(float InLevel = 1.f) const;
 };
