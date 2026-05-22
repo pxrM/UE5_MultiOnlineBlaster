@@ -31,10 +31,10 @@ struct UMGSTATECONFIGRUNTIME_API FUMGStateConfigPropertyValue
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FText TextValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FLinearColor ColorValue = FLinearColor::White;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FLinearColor SecondaryColorValue = FLinearColor::Transparent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
@@ -43,7 +43,7 @@ struct UMGSTATECONFIGRUNTIME_API FUMGStateConfigPropertyValue
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FSlateFontInfo FontValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	float FloatValue = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
@@ -57,9 +57,6 @@ struct UMGSTATECONFIGRUNTIME_API FUMGStateConfigPropertyValue
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FString SerializedPropertyPath;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
-	FString SerializedPropertyTypeName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FString SerializedPropertyValue;
@@ -78,12 +75,12 @@ struct UMGSTATECONFIGRUNTIME_API FUMGStatePropertyChange
 	TSubclassOf<UWidget> ExpectedWidgetClass;
 
 #if WITH_EDITORONLY_DATA
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
+	UPROPERTY(EditAnywhere, Category = "UMG State Config")
 	FString EditorPath;
 #endif
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
-	EUUsers\userb85bbe4d\projectsGStateConfigPropertyType PropertyType = EUMGStateConfigPropertyType::Visibility;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
+	EUMGStateConfigPropertyType PropertyType = EUMGStateConfigPropertyType::Visibility;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FUMGStateConfigPropertyValue Value;
@@ -100,6 +97,7 @@ struct UMGSTATECONFIGRUNTIME_API FUMGStateConfigState
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FText DisplayName;
 
+	// Widgets registered for state. Auto-synced with PropertyChanges by editor add sites.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	TArray<FName> ConfiguredWidgetNames;
 
@@ -108,32 +106,32 @@ struct UMGSTATECONFIGRUNTIME_API FUMGStateConfigState
 };
 
 USTRUCT(BlueprintType)
-struct UMGSTATECONFIGRUNTIME_API FUUsers\userb85bbe4d\projectsGStateConfigGroup
+struct UMGSTATECONFIGRUNTIME_API FUMGStateConfigGroup
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FName GroupName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FText DisplayName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FName DefaultStateName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	TArray<FUMGStateConfigState> States;
 };
 
 USTRUCT(BlueprintType)
-struct UMGSTATECONFIGRUNTIME_API FUUsers\userb85bbe4d\projectsGStateConfigRuntimeData
+struct UMGSTATECONFIGRUNTIME_API FUMGStateConfigRuntimeData
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
-	TArray<FUUsers\userb85bbe4d\projectsGStateConfigGroup> StateGroups;
+	TArray<FUMGStateConfigGroup> StateGroups;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UUsers\userb85bbe4d\projectsG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FName PreviewStateGroupName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")

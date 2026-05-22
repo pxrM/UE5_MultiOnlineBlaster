@@ -345,23 +345,15 @@ FReply SUIStateConfigPanel::EnsureDefaultConfig()
 	if (Extension->ConfigData.StateGroups.Num() == 0)
 	{
 		FUMGStateConfigGroup Group;
-		Group.GroupName = TEXT("RewardItemState");
-		Group.DisplayName = LOCTEXT("RewardItemStateDisplayName", "奖励道具状态");
+		Group.GroupName = MakeUniqueStateGroupName(Extension->ConfigData.StateGroups);
+		Group.DisplayName = FText::FromName(Group.GroupName);
 		Group.DefaultStateName = TEXT("Normal");
 
 		FUMGStateConfigState Normal;
 		Normal.StateName = TEXT("Normal");
 		Normal.DisplayName = LOCTEXT("NormalStateDisplayName", "普通");
 
-		FUMGStateConfigState CanClaim;
-		CanClaim.StateName = TEXT("CanClaim");
-		CanClaim.DisplayName = LOCTEXT("CanClaimStateDisplayName", "可领取");
-
-		FUMGStateConfigState Claimed;
-		Claimed.StateName = TEXT("Claimed");
-		Claimed.DisplayName = LOCTEXT("ClaimedStateDisplayName", "已领取");
-
-		Group.States = { Normal, CanClaim, Claimed };
+		Group.States = { Normal };
 		Extension->ConfigData.StateGroups.Add(Group);
 		Extension->ConfigData.PreviewStateGroupName = Group.GroupName;
 		Extension->ConfigData.PreviewStateName = Group.DefaultStateName;
@@ -412,7 +404,6 @@ FReply SUIStateConfigPanel::ApplyPreviewState()
 	}
 
 	Editor->InvalidatePreview(true);
-	FSlateApplication::Get().InvalidateAllWidgets(false);
 	return FReply::Handled();
 }
 
@@ -423,7 +414,6 @@ void SUIStateConfigPanel::ResetDesignerPreview() const
 	{
 		Editor->RefreshPreview();
 		Editor->InvalidatePreview(true);
-		FSlateApplication::Get().InvalidateAllWidgets(false);
 	}
 }
 
@@ -1138,10 +1128,22 @@ void SUIStateConfigPanel::RefreshAll()
 {
 	NormalizeRedundantPropertyChanges();
 	RebuildWidgetRows();
+	RefreshWidgetList();
+	RefreshTabs();
+	RefreshConfiguredWidgets();
+	RefreshSummary();
+}
+
+void SUIStateConfigPanel::RefreshWidgetList()
+{
 	if (WidgetListView.IsValid())
 	{
 		WidgetListView->RequestListRefresh();
 	}
+}
+
+void SUIStateConfigPanel::RefreshTabs()
+{
 	if (ParentTabsBox.IsValid())
 	{
 		ParentTabsBox->ClearChildren();
@@ -1152,12 +1154,22 @@ void SUIStateConfigPanel::RefreshAll()
 		ChildTabsBox->ClearChildren();
 		ChildTabsBox->AddSlot().AutoHeight()[BuildChildStateTabs()];
 	}
+}
+
+void SUIStateConfigPanel::RefreshConfiguredWidgets()
+{
 	if (ConfiguredWidgetsBox.IsValid())
 	{
 		ConfiguredWidgetsBox->ClearChildren();
 		AppearanceDetailProxyObjects.Reset();
 		ConfiguredWidgetsBox->AddSlot().AutoHeight()[BuildConfiguredWidgetCards()];
 	}
+}
+
+void SUIStateConfigPanel::RefreshSelectionState()
+{
+	RefreshTabs();
+	RefreshConfiguredWidgets();
 	RefreshSummary();
 }
 
@@ -1274,7 +1286,7 @@ void SUIStateConfigPanel::SelectParentState(FName GroupName)
 		MarkConfigDirty(Extension);
 	}
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshSelectionState();
 }
 
 void SUIStateConfigPanel::SelectChildState(FName StateName)
@@ -1287,7 +1299,7 @@ void SUIStateConfigPanel::SelectChildState(FName StateName)
 		MarkConfigDirty(Extension);
 	}
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshSelectionState();
 }
 
 TSharedRef<ITableRow> SUIStateConfigPanel::GenerateWidgetRow(TSharedPtr<FUMGStateConfigWidgetRow> RowItem, const TSharedRef<STableViewBase>& OwnerTable)
@@ -1517,25 +1529,27 @@ FUMGStatePropertyChange* SUIStateConfigPanel::FindPropertyChange(FName WidgetNam
 	}) : nullptr;
 }
 
-const FUMGStatePropertyChange* SUIStateConfigPanel::FindPropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const
+const FUMGStateConfigGroup* SUIStateConfigPanel::FindGroupByName(FName GroupName) const
 {
 	const UUMGStateConfigBlueprintExtension* Extension = GetExtension();
-	if (!Extension)
-	{
-		return nullptr;
-	}
-	const FUMGStateConfigGroup* Group = Extension->ConfigData.StateGroups.FindByPredicate([this](const FUMGStateConfigGroup& Candidate)
-	{
-		return Candidate.GroupName == SelectedGroupName;
-	});
-	const FUMGStateConfigState* State = Group ? Group->States.FindByPredicate([this](const FUMGStateConfigState& Candidate)
-	{
-		return Candidate.StateName == SelectedStateName;
-	}) : nullptr;
-	return State ? State->PropertyChanges.FindByPredicate([WidgetName, PropertyType](const FUMGStatePropertyChange& Change)
-	{
-		return Change.TargetWidgetName == WidgetName && Change.PropertyType == PropertyType;
-	}) : nullptr;
+	if (!Extension) return nullptr;
+	return Extension->ConfigData.StateGroups.FindByPredicate(
+		[GroupName](const FUMGStateConfigGroup& C){ return C.GroupName == GroupName; });
+}
+
+const FUMGStateConfigState* SUIStateConfigPanel::FindStateByName(const FUMGStateConfigGroup* Group, FName StateName) const
+{
+	if (!Group) return nullptr;
+	return Group->States.FindByPredicate(
+		[StateName](const FUMGStateConfigState& C){ return C.StateName == StateName; });
+}
+
+const FUMGStatePropertyChange* SUIStateConfigPanel::FindPropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const
+{
+	const FUMGStateConfigState* State = FindStateByName(FindGroupByName(SelectedGroupName), SelectedStateName);
+	if (!State) return nullptr;
+	return State->PropertyChanges.FindByPredicate(
+		[WidgetName, PropertyType](const FUMGStatePropertyChange& C){ return C.TargetWidgetName == WidgetName && C.PropertyType == PropertyType; });
 }
 
 bool SUIStateConfigPanel::HasPropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const

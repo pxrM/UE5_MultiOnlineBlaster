@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleInterface.h"
-#include "Modules/ModuleUsers\userb85bbe4d\projectsanager.h"
+#include "Modules/ModuleManager.h"
 
 class FWidgetBlueprintApplicationMode;
 class FWorkflowAllowedTabSet;
@@ -14,7 +14,7 @@ public:
 	virtual void ShutdownModule() override;
 
 private:
-	void RegisterWidgetBlueprintTabs(const FWidgetBlueprintApplicationMode& ApplicationUsers\userb85bbe4d\projectsode, FWorkflowAllowedTabSet& TabFactories);
+	void RegisterWidgetBlueprintTabs(const FWidgetBlueprintApplicationMode& ApplicationMode, FWorkflowAllowedTabSet& TabFactories);
 
 	FDelegateHandle ToolbarExtenderHandle;
 };

@@ -5,10 +5,10 @@
 #include "UMGStateConfigFunctionLibrary.generated.h"
 
 class UUserWidget;
-class UUUsers\userb85bbe4d\projectsGStateConfigUserWidgetExtension;
+class UUMGStateConfigUserWidgetExtension;
 
 UCLASS()
-class UMGSTATECONFIGRUNTIME_API UUUsers\userb85bbe4d\projectsGStateConfigFunctionLibrary : public UBlueprintFunctionLibrary
+class UMGSTATECONFIGRUNTIME_API UUMGStateConfigFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

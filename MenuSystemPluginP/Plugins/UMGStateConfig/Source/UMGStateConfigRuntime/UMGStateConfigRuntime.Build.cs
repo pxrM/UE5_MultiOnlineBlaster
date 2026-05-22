@@ -1,10 +1,10 @@
 using UnrealBuildTool;
 
-public class UUsers\userb85bbe4d\projectsGStateConfigRuntime : ModuleRules
+public class UMGStateConfigRuntime : ModuleRules
 {
 	public UMGStateConfigRuntime(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = Users\userb85bbe4d\projectsoduleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		OptimizeCode = CodeOptimization.InShippingBuildsOnly;
 
 		PublicDependencyModuleNames.AddRange(

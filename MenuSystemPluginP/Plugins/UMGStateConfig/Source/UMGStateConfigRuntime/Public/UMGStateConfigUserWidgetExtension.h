@@ -30,7 +30,7 @@ FORCEINLINE uint32 GetTypeHash(const FUMGStateConfigChangeKey& Key)
 
 struct FUMGStateConfigGroupRestoreData
 {
-	TMap<FUUsers\userb85bbe4d\projectsGStateConfigChangeKey, FUMGStateConfigPropertyValue> RestoreValues;
+	TMap<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue> RestoreValues;
 	TArray<FUMGStateConfigChangeKey> ActiveChangeKeys;
 };
 
@@ -66,6 +66,6 @@ private:
 	TMap<FName, FUMGStateConfigGroupRestoreData> GroupRestoreData;
 	TMap<FName, TWeakObjectPtr<UWidget>> WidgetCache;
 	TMap<FName, int32> StateGroupIndexByName;
-	TUsers\userb85bbe4d\projectsap<FName, TMap<FName, int32>> StateIndexByGroupName;
+	TMap<FName, TMap<FName, int32>> StateIndexByGroupName;
 	bool bLookupCacheBuilt = false;
 };

@@ -1,7 +1,7 @@
 #include "UMGStateConfigUserWidgetExtension.h"
 
 #include "Blueprint/UserWidget.h"
-#include "UUsers\userb85bbe4d\projectsGStateConfigPropertyRuntimeLibrary.h"
+#include "UMGStateConfigPropertyRuntimeLibrary.h"
 
 bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FName StateName)
 {
@@ -23,7 +23,7 @@ bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FNam
 	const FUMGStateConfigState* TargetState = FindState(*TargetGroup, EffectiveStateName);
 	if (!TargetState)
 	{
-		UE_LOG(LogUUsers\userb85bbe4d\projectsGStateConfig, Warning, TEXT("State not found: Group=%s, State=%s"), *StateGroupName.ToString(), *EffectiveStateName.ToString());
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("State not found: Group=%s, State=%s"), *StateGroupName.ToString(), *EffectiveStateName.ToString());
 		return false;
 	}
 
@@ -136,7 +136,7 @@ const FUMGStateConfigGroup* UUMGStateConfigUserWidgetExtension::FindStateGroup(F
 	return &RuntimeData.StateGroups[*GroupIndex];
 }
 
-const FUUsers\userb85bbe4d\projectsGStateConfigState* UUMGStateConfigUserWidgetExtension::FindState(const FUMGStateConfigGroup& Group, FName StateName)
+const FUMGStateConfigState* UUMGStateConfigUserWidgetExtension::FindState(const FUMGStateConfigGroup& Group, FName StateName)
 {
 	BuildLookupCache();
 
@@ -168,12 +168,12 @@ void UUMGStateConfigUserWidgetExtension::BuildLookupCache()
 		const FUMGStateConfigGroup& Group = RuntimeData.StateGroups[GroupIndex];
 		StateGroupIndexByName.Add(Group.GroupName, GroupIndex);
 
-		TUsers\userb85bbe4d\projectsap<FName, int32> StateIndexByName;
+		TMap<FName, int32> StateIndexByName;
 		for (int32 StateIndex = 0; StateIndex < Group.States.Num(); ++StateIndex)
 		{
 			StateIndexByName.Add(Group.States[StateIndex].StateName, StateIndex);
 		}
-		StateIndexByGroupName.Add(Group.GroupName, Users\userb85bbe4d\projectsoveTemp(StateIndexByName));
+		StateIndexByGroupName.Add(Group.GroupName, MoveTemp(StateIndexByName));
 	}
 
 	bLookupCacheBuilt = true;
@@ -193,7 +193,7 @@ void UUMGStateConfigUserWidgetExtension::RestorePreviousValues(UUserWidget* Targ
 		return;
 	}
 
-	FUUsers\userb85bbe4d\projectsGStateConfigGroupRestoreData* Data = GroupRestoreData.Find(StateGroupName);
+	FUMGStateConfigGroupRestoreData* Data = GroupRestoreData.Find(StateGroupName);
 	if (!Data)
 	{
 		return;

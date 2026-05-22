@@ -16,6 +16,29 @@ struct FResolvedSerializedProperty
 	void* ValuePtr = nullptr;
 };
 
+bool ParseSegment(const FString& Segment, FString& OutName, int32& OutIndex)
+{
+	OutIndex = INDEX_NONE;
+	const int32 OpenBracket = Segment.Find(TEXT("["));
+	if (OpenBracket == INDEX_NONE)
+	{
+		OutName = Segment;
+		return true;
+	}
+	if (!Segment.EndsWith(TEXT("]")))
+	{
+		return false;
+	}
+	OutName = Segment.Left(OpenBracket);
+	const FString IndexText = Segment.Mid(OpenBracket + 1, Segment.Len() - OpenBracket - 2);
+	if (IndexText.IsEmpty() || !IndexText.IsNumeric())
+	{
+		return false;
+	}
+	OutIndex = FCString::Atoi(*IndexText);
+	return OutIndex >= 0;
+}
+
 bool ResolveSerializedProperty(UObject* Object, const FString& PropertyPath, FResolvedSerializedProperty& OutResolved)
 {
 	if (!Object || PropertyPath.IsEmpty())
@@ -39,22 +62,46 @@ bool ResolveSerializedProperty(UObject* Object, const FString& PropertyPath, FRe
 			return false;
 		}
 
-		FProperty* Property = CurrentStruct->FindPropertyByName(FName(*PathSegments[SegmentIndex]));
+		FString SegmentName;
+		int32 ArrayIndex = INDEX_NONE;
+		if (!ParseSegment(PathSegments[SegmentIndex], SegmentName, ArrayIndex))
+		{
+			return false;
+		}
 
+		FProperty* Property = CurrentStruct->FindPropertyByName(FName(*SegmentName));
 		if (!Property)
 		{
 			return false;
 		}
 
 		void* ValuePtr = Property->ContainerPtrToValuePtr<void>(CurrentContainer);
+		FProperty* ElementProperty = Property;
+
+		if (ArrayIndex != INDEX_NONE)
+		{
+			FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property);
+			if (!ArrayProperty)
+			{
+				return false;
+			}
+			FScriptArrayHelper Helper(ArrayProperty, ValuePtr);
+			if (!Helper.IsValidIndex(ArrayIndex))
+			{
+				return false;
+			}
+			ValuePtr = Helper.GetRawPtr(ArrayIndex);
+			ElementProperty = ArrayProperty->Inner;
+		}
+
 		if (SegmentIndex == PathSegments.Num() - 1)
 		{
-			OutResolved.Property = Property;
+			OutResolved.Property = ElementProperty;
 			OutResolved.ValuePtr = ValuePtr;
 			return true;
 		}
 
-		FStructProperty* StructProperty = CastField<FStructProperty>(Property);
+		FStructProperty* StructProperty = CastField<FStructProperty>(ElementProperty);
 		if (!StructProperty)
 		{
 			return false;
@@ -78,7 +125,6 @@ bool ExportSerializedPropertyValue(UObject* Object, const FString& PropertyPath,
 	FString ExportedValue;
 	Resolved.Property->ExportTextItem_Direct(ExportedValue, Resolved.ValuePtr, nullptr, Object, PPF_None);
 	OutValue.SerializedPropertyPath = PropertyPath;
-	OutValue.SerializedPropertyTypeName = Resolved.Property->GetCPPType();
 	OutValue.SerializedPropertyValue = ExportedValue;
 	return true;
 }

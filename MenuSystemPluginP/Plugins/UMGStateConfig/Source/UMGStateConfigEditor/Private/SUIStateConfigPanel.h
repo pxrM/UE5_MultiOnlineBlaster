@@ -40,6 +40,8 @@ private:
 	const UUMGStateConfigBlueprintExtension* GetExtension() const;
 	FUMGStateConfigGroup* GetActiveGroup();
 	FUMGStateConfigState* GetActiveState();
+	const FUMGStateConfigGroup* FindGroupByName(FName GroupName) const;
+	const FUMGStateConfigState* FindStateByName(const FUMGStateConfigGroup* Group, FName StateName) const;
 	UWidget* FindWidgetByName(FName WidgetName) const;
 
 	FText GetTitleText() const;
@@ -80,6 +82,10 @@ private:
 	void NormalizeRedundantPropertyChanges();
 	void RefreshSummary();
 	void RebuildWidgetRows();
+	void RefreshTabs();
+	void RefreshConfiguredWidgets();
+	void RefreshWidgetList();
+	void RefreshSelectionState();
 	void SelectParentState(FName GroupName);
 	void SelectChildState(FName StateName);
 
