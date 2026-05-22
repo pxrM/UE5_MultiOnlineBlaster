@@ -1,0 +1,25 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UMG State Config",
+	"Description": "Configure and apply UMG widget visual states from Widget Blueprint editor.",
+	"Category": "Editor",
+	"CreatedBy": "TikiStar",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UMGStateConfigRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "UMGStateConfigEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
