@@ -10,7 +10,8 @@ class UUserWidget;
 struct FUMGStateConfigChangeKey
 {
 	FName TargetWidgetName;
-	EUMGStateConfigPropertyType PropertyType = EUMGStateConfigPropertyType::Visibility;
+	EUMGStateConfigPropertyType PropertyType = EUMGStateConfigPropertyType::SerializedProperty;
+
 	FString SerializedPropertyPath;
 
 	bool operator==(const FUMGStateConfigChangeKey& Other) const
@@ -28,44 +29,52 @@ FORCEINLINE uint32 GetTypeHash(const FUMGStateConfigChangeKey& Key)
 		GetTypeHash(Key.SerializedPropertyPath));
 }
 
-struct FUMGStateConfigGroupRestoreData
+struct FUMGActiveStateGroupRuntime
 {
+	FName ActiveStateName;
 	TMap<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue> RestoreValues;
 	TArray<FUMGStateConfigChangeKey> ActiveChangeKeys;
 };
 
-
 UCLASS(BlueprintType)
+
 class UMGSTATECONFIGRUNTIME_API UUMGStateConfigUserWidgetExtension : public UUserWidgetExtension
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG State Config")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UMG State Config")
 	FUMGStateConfigRuntimeData RuntimeData;
 
 	UFUNCTION(BlueprintCallable, Category = "UMG State Config")
 	bool ApplyUIState(FName StateGroupName, FName StateName);
 
-	UFUNCTION(BlueprintCallable, Category = "UMG State Config")
-	void SetRuntimeData(const FUMGStateConfigRuntimeData& NewData);
-
 	void ResetActiveState();
+	void SetRuntimeData(const FUMGStateConfigRuntimeData& InRuntimeData);
 
 private:
-	bool ApplyPropertyChange(UUserWidget* TargetUserWidget, FName StateGroupName, const FUMGStatePropertyChange& Change);
+	bool ApplyPropertyChange(UUserWidget* TargetUserWidget, const FUMGStatePropertyChange& Change, FUMGActiveStateGroupRuntime& ActiveGroupRuntime);
+	bool ReapplyActiveStates(UUserWidget* TargetUserWidget);
 	UWidget* ResolveWidget(UUserWidget* TargetUserWidget, FName WidgetName);
 	const FUMGStateConfigGroup* FindStateGroup(FName StateGroupName);
 	const FUMGStateConfigState* FindState(const FUMGStateConfigGroup& Group, FName StateName);
 	void BuildLookupCache();
 	void InvalidateLookupCache();
-	void RestorePreviousValues(UUserWidget* TargetUserWidget, FName StateGroupName);
-	void RestoreAllGroups(UUserWidget* TargetUserWidget);
+	void NormalizeRuntimeData();
+	void PreloadReferencedAssets();
+	void RestoreGlobalValues(UUserWidget* TargetUserWidget);
+	void QueueWidgetRefresh(UWidget* Widget);
+	void FlushPendingWidgetRefreshes();
+
 
 private:
-	TMap<FName, FUMGStateConfigGroupRestoreData> GroupRestoreData;
+	TMap<FName, FUMGActiveStateGroupRuntime> ActiveStateGroups;
+	TMap<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue> GlobalRestoreValues;
 	TMap<FName, TWeakObjectPtr<UWidget>> WidgetCache;
+	TArray<TWeakObjectPtr<UWidget>> PendingRefreshWidgets;
+
 	TMap<FName, int32> StateGroupIndexByName;
+
 	TMap<FName, TMap<FName, int32>> StateIndexByGroupName;
 	bool bLookupCacheBuilt = false;
 };

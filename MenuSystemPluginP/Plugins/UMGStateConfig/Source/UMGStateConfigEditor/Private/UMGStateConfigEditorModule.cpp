@@ -9,7 +9,7 @@
 void FUMGStateConfigEditorModule::StartupModule()
 {
 	IUMGEditorModule& UMGEditorModule = FModuleManager::LoadModuleChecked<IUMGEditorModule>(TEXT("UMGEditor"));
-	ToolbarExtenderHandle = UMGEditorModule.AddWidgetEditorToolbarExtender(IUMGEditorModule::FWidgetEditorToolbarExtender::CreateStatic(&FUMGStateConfigToolbar::CreateToolbarExtender));
+	UMGEditorModule.AddWidgetEditorToolbarExtender(IUMGEditorModule::FWidgetEditorToolbarExtender::CreateStatic(&FUMGStateConfigToolbar::CreateToolbarExtender));
 	UMGEditorModule.OnRegisterTabsForEditor().AddRaw(this, &FUMGStateConfigEditorModule::RegisterWidgetBlueprintTabs);
 }
 
@@ -18,7 +18,6 @@ void FUMGStateConfigEditorModule::ShutdownModule()
 	if (FModuleManager::Get().IsModuleLoaded(TEXT("UMGEditor")))
 	{
 		IUMGEditorModule& UMGEditorModule = FModuleManager::GetModuleChecked<IUMGEditorModule>(TEXT("UMGEditor"));
-		UMGEditorModule.RemoveWidgetEditorToolbarExtender(ToolbarExtenderHandle);
 		UMGEditorModule.OnRegisterTabsForEditor().RemoveAll(this);
 	}
 }

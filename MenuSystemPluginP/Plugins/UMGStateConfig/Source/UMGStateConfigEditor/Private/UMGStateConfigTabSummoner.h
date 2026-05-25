@@ -16,5 +16,7 @@ public:
 	virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 
 private:
+	void HandleTabClosed(TSharedRef<SDockTab> ClosedTab) const;
+
 	TWeakPtr<FWidgetBlueprintEditor> WidgetEditor;
 };

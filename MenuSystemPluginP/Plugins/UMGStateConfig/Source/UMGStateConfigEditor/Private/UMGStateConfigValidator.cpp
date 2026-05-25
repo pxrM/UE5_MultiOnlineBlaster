@@ -59,7 +59,10 @@ void FUMGStateConfigValidator::Validate(const UWidgetBlueprint* WidgetBlueprint,
 	}
 
 	TSet<FName> GroupNames;
+	TMap<FString, FName> GlobalChangeGroupByKey;
+	TSet<FString> ReportedGlobalConflictKeys;
 	for (const FUMGStateConfigGroup& Group : Extension->ConfigData.StateGroups)
+
 	{
 		if (Group.GroupName.IsNone())
 		{
@@ -150,7 +153,25 @@ void FUMGStateConfigValidator::Validate(const UWidgetBlueprint* WidgetBlueprint,
 				}
 				ChangeKeys.Add(ChangeKey);
 
+				if (const FName* ExistingGroupName = GlobalChangeGroupByKey.Find(ChangeKey))
+				{
+					if (*ExistingGroupName != Group.GroupName && !ReportedGlobalConflictKeys.Contains(ChangeKey))
+					{
+						OutWarnings.Add(FText::Format(
+							NSLOCTEXT("UMGStateConfigValidator", "CrossGroupPropertyConflict", "多个状态组修改同一控件属性：{0}，已出现在 {1} 和 {2}。运行时会按状态组 Priority 和调用顺序重算，建议确认是否符合预期。"),
+							FText::FromString(ChangeKey),
+							FText::FromName(*ExistingGroupName),
+							FText::FromName(Group.GroupName)));
+						ReportedGlobalConflictKeys.Add(ChangeKey);
+					}
+				}
+				else
+				{
+					GlobalChangeGroupByKey.Add(ChangeKey, Group.GroupName);
+				}
+
 				const UWidget* TargetWidget = WidgetTree->FindWidget(Change.TargetWidgetName);
+
 				if (!TargetWidget)
 				{
 					OutWarnings.Add(FText::Format(
@@ -172,4 +193,36 @@ void FUMGStateConfigValidator::Validate(const UWidgetBlueprint* WidgetBlueprint,
 						FText::FromString(ExpectedClass->GetName()),
 						FText::FromString(TargetWidget->GetClass()->GetName())));
 				}
+
+				if (!State.ConfiguredWidgetNames.Contains(Change.TargetWidgetName))
+				{
+					OutHints.Add(FText::Format(
+						NSLOCTEXT("UMGStateConfigValidator", "ChangeWidgetNotListed", "状态 {0}/{1} 的控件 {2} 有属性配置但不在 ConfiguredWidgetNames 中，保存时建议补齐。"),
+						FText::FromName(Group.GroupName),
+						FText::FromName(State.StateName),
+						FText::FromName(Change.TargetWidgetName)));
+				}
+
+
+				if (Change.PropertyType == EUMGStateConfigPropertyType::SerializedProperty && Change.Value.SerializedPropertyPath.IsEmpty())
+				{
+					OutErrors.Add(FText::Format(
+						NSLOCTEXT("UMGStateConfigValidator", "SerializedPropertyPathEmpty", "状态 {0}/{1} 的控件 {2} Details 属性路径为空。"),
+						FText::FromName(Group.GroupName),
+						FText::FromName(State.StateName),
+						FText::FromName(Change.TargetWidgetName)));
+				}
+
+			}
+		}
+
+		if (!bHasDefaultState)
+		{
+			OutWarnings.Add(FText::Format(
+				NSLOCTEXT("UMGStateConfigValidator", "DefaultStateMissing", "状态组 {0} 的默认状态不存在：{1}"),
+				FText::FromName(Group.GroupName),
+				FText::FromName(Group.DefaultStateName)));
+		}
+	}
+}
 

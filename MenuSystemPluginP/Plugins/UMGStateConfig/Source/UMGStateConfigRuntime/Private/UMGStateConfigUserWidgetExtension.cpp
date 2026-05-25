@@ -3,6 +3,11 @@
 #include "Blueprint/UserWidget.h"
 #include "UMGStateConfigPropertyRuntimeLibrary.h"
 
+namespace
+{
+constexpr int32 GUMGStateConfigCurrentSchemaVersion = 1;
+}
+
 bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FName StateName)
 {
 	UUserWidget* TargetUserWidget = GetUserWidget();
@@ -27,34 +32,45 @@ bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FNam
 		return false;
 	}
 
-	RestorePreviousValues(TargetUserWidget, StateGroupName);
-
-	bool bAllChangesSucceeded = true;
-	for (const FUMGStatePropertyChange& Change : TargetState->PropertyChanges)
+	RestoreGlobalValues(TargetUserWidget);
+	for (TPair<FName, FUMGActiveStateGroupRuntime>& ActiveGroupPair : ActiveStateGroups)
 	{
-		bAllChangesSucceeded &= ApplyPropertyChange(TargetUserWidget, StateGroupName, Change);
+		ActiveGroupPair.Value.ActiveChangeKeys.Empty();
+		ActiveGroupPair.Value.RestoreValues.Empty();
 	}
 
-	return bAllChangesSucceeded;
-}
+	FUMGActiveStateGroupRuntime& ActiveGroupRuntime = ActiveStateGroups.FindOrAdd(TargetGroup->GroupName);
+	ActiveGroupRuntime.ActiveStateName = TargetState->StateName;
 
-void UUMGStateConfigUserWidgetExtension::SetRuntimeData(const FUMGStateConfigRuntimeData& NewData)
-{
-	ResetActiveState();
-	RuntimeData = NewData;
-	InvalidateLookupCache();
+	const bool bResult = ReapplyActiveStates(TargetUserWidget);
+	FlushPendingWidgetRefreshes();
+	return bResult;
 }
 
 void UUMGStateConfigUserWidgetExtension::ResetActiveState()
 {
 	if (UUserWidget* TargetUserWidget = GetUserWidget())
 	{
-		RestoreAllGroups(TargetUserWidget);
+		RestoreGlobalValues(TargetUserWidget);
+		FlushPendingWidgetRefreshes();
+		ActiveStateGroups.Empty();
 	}
 }
 
-bool UUMGStateConfigUserWidgetExtension::ApplyPropertyChange(UUserWidget* TargetUserWidget, FName StateGroupName, const FUMGStatePropertyChange& Change)
+
+void UUMGStateConfigUserWidgetExtension::SetRuntimeData(const FUMGStateConfigRuntimeData& InRuntimeData)
 {
+	ResetActiveState();
+	RuntimeData = InRuntimeData;
+	NormalizeRuntimeData();
+	InvalidateLookupCache();
+	PreloadReferencedAssets();
+}
+
+
+bool UUMGStateConfigUserWidgetExtension::ApplyPropertyChange(UUserWidget* TargetUserWidget, const FUMGStatePropertyChange& Change, FUMGActiveStateGroupRuntime& ActiveGroupRuntime)
+{
+
 	if (!TargetUserWidget || Change.TargetWidgetName.IsNone())
 	{
 		UE_LOG(LogUMGStateConfig, Warning, TEXT("Invalid property change: target widget is empty."));
@@ -80,6 +96,12 @@ bool UUMGStateConfigUserWidgetExtension::ApplyPropertyChange(UUserWidget* Target
 	FUMGStateConfigPropertyValue CurrentValue;
 	CurrentValue.SerializedPropertyPath = Change.Value.SerializedPropertyPath;
 	const bool bHasCurrentValue = FUMGStateConfigPropertyRuntimeLibrary::CaptureCurrentValue(TargetWidget, Change.PropertyType, CurrentValue);
+	if (!bHasCurrentValue)
+	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("Capture property value failed: Widget=%s, PropertyPath=%s"),
+			*Change.TargetWidgetName.ToString(),
+			*Change.Value.SerializedPropertyPath);
+	}
 	if (bHasCurrentValue && FUMGStateConfigPropertyRuntimeLibrary::ArePropertyValuesEqual(Change.PropertyType, CurrentValue, Change.Value))
 	{
 		return true;
@@ -87,14 +109,77 @@ bool UUMGStateConfigUserWidgetExtension::ApplyPropertyChange(UUserWidget* Target
 
 	const FUMGStateConfigChangeKey ChangeKey{ Change.TargetWidgetName, Change.PropertyType, Change.Value.SerializedPropertyPath };
 
-	FUMGStateConfigGroupRestoreData& Data = GroupRestoreData.FindOrAdd(StateGroupName);
-	if (!Data.RestoreValues.Contains(ChangeKey) && bHasCurrentValue)
+	if (!GlobalRestoreValues.Contains(ChangeKey) && bHasCurrentValue)
 	{
-		Data.RestoreValues.Add(ChangeKey, CurrentValue);
-		Data.ActiveChangeKeys.Add(ChangeKey);
+		GlobalRestoreValues.Add(ChangeKey, CurrentValue);
+	}
+	if (!ActiveGroupRuntime.RestoreValues.Contains(ChangeKey) && bHasCurrentValue)
+	{
+		ActiveGroupRuntime.RestoreValues.Add(ChangeKey, CurrentValue);
+	}
+	ActiveGroupRuntime.ActiveChangeKeys.AddUnique(ChangeKey);
+
+	const bool bApplied = FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(TargetWidget, Change.PropertyType, Change.Value, false);
+	if (bApplied)
+	{
+		QueueWidgetRefresh(TargetWidget);
+	}
+	if (!bApplied)
+
+	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("Apply property value failed: Widget=%s, PropertyPath=%s, Value=%s"),
+			*Change.TargetWidgetName.ToString(),
+			*Change.Value.SerializedPropertyPath,
+			*Change.Value.SerializedPropertyValue);
+	}
+	return bApplied;
+}
+
+bool UUMGStateConfigUserWidgetExtension::ReapplyActiveStates(UUserWidget* TargetUserWidget)
+{
+	TArray<const FUMGStateConfigGroup*> ActiveGroups;
+	for (const FUMGStateConfigGroup& Group : RuntimeData.StateGroups)
+	{
+		const FUMGActiveStateGroupRuntime* ActiveGroupRuntime = ActiveStateGroups.Find(Group.GroupName);
+		if (ActiveGroupRuntime && !ActiveGroupRuntime->ActiveStateName.IsNone())
+		{
+			ActiveGroups.Add(&Group);
+		}
 	}
 
-	return FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(TargetWidget, Change.PropertyType, Change.Value);
+	ActiveGroups.Sort([](const FUMGStateConfigGroup& A, const FUMGStateConfigGroup& B)
+	{
+		return A.Priority < B.Priority;
+	});
+
+
+
+
+	bool bAllChangesSucceeded = true;
+	for (const FUMGStateConfigGroup* Group : ActiveGroups)
+	{
+		FUMGActiveStateGroupRuntime* ActiveGroupRuntime = ActiveStateGroups.Find(Group->GroupName);
+		if (!ActiveGroupRuntime)
+		{
+			continue;
+		}
+
+		const FUMGStateConfigState* State = FindState(*Group, ActiveGroupRuntime->ActiveStateName);
+		if (!State)
+		{
+			UE_LOG(LogUMGStateConfig, Warning, TEXT("Active state not found during reapply: Group=%s, State=%s"),
+				*Group->GroupName.ToString(),
+				*ActiveGroupRuntime->ActiveStateName.ToString());
+			bAllChangesSucceeded = false;
+			continue;
+		}
+
+		for (const FUMGStatePropertyChange& Change : State->PropertyChanges)
+		{
+			bAllChangesSucceeded &= ApplyPropertyChange(TargetUserWidget, Change, *ActiveGroupRuntime);
+		}
+	}
+	return bAllChangesSucceeded;
 }
 
 UWidget* UUMGStateConfigUserWidgetExtension::ResolveWidget(UUserWidget* TargetUserWidget, FName WidgetName)
@@ -181,70 +266,91 @@ void UUMGStateConfigUserWidgetExtension::BuildLookupCache()
 
 void UUMGStateConfigUserWidgetExtension::InvalidateLookupCache()
 {
-	bLookupCacheBuilt = false;
 	StateGroupIndexByName.Reset();
 	StateIndexByGroupName.Reset();
+	WidgetCache.Reset();
+	bLookupCacheBuilt = false;
 }
 
-void UUMGStateConfigUserWidgetExtension::RestorePreviousValues(UUserWidget* TargetUserWidget, FName StateGroupName)
+void UUMGStateConfigUserWidgetExtension::NormalizeRuntimeData()
+{
+	if (RuntimeData.SchemaVersion <= 0)
+	{
+		RuntimeData.SchemaVersion = 1;
+	}
+	if (RuntimeData.SchemaVersion < GUMGStateConfigCurrentSchemaVersion)
+	{
+		RuntimeData.SchemaVersion = GUMGStateConfigCurrentSchemaVersion;
+	}
+}
+
+void UUMGStateConfigUserWidgetExtension::PreloadReferencedAssets()
+{
+	for (const FUMGStateConfigGroup& Group : RuntimeData.StateGroups)
+	{
+		for (const FUMGStateConfigState& State : Group.States)
+		{
+			for (const FUMGStatePropertyChange& Change : State.PropertyChanges)
+			{
+				FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(Change.Value.SerializedReferencedAssets);
+			}
+		}
+	}
+}
+
+void UUMGStateConfigUserWidgetExtension::RestoreGlobalValues(UUserWidget* TargetUserWidget)
 {
 	if (!TargetUserWidget)
 	{
 		return;
 	}
 
-	FUMGStateConfigGroupRestoreData* Data = GroupRestoreData.Find(StateGroupName);
-	if (!Data)
+	for (const TPair<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue>& RestorePair : GlobalRestoreValues)
 	{
-		return;
-	}
-
-	for (const FUMGStateConfigChangeKey& ChangeKey : Data->ActiveChangeKeys)
-	{
-		const FUMGStateConfigPropertyValue* RestoreValue = Data->RestoreValues.Find(ChangeKey);
-		if (!RestoreValue)
-		{
-			continue;
-		}
-
-		UWidget* TargetWidget = ResolveWidget(TargetUserWidget, ChangeKey.TargetWidgetName);
+		UWidget* TargetWidget = ResolveWidget(TargetUserWidget, RestorePair.Key.TargetWidgetName);
 		if (!TargetWidget)
 		{
 			continue;
 		}
 
-		FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(TargetWidget, ChangeKey.PropertyType, *RestoreValue);
+		if (FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(TargetWidget, RestorePair.Key.PropertyType, RestorePair.Value, false))
+		{
+			QueueWidgetRefresh(TargetWidget);
+		}
+		else
+		{
+			UE_LOG(LogUMGStateConfig, Warning, TEXT("Restore property value failed: Widget=%s, PropertyPath=%s"),
+				*RestorePair.Key.TargetWidgetName.ToString(),
+				*RestorePair.Key.SerializedPropertyPath);
+		}
+
 	}
 
-	GroupRestoreData.Remove(StateGroupName);
+	GlobalRestoreValues.Empty();
 }
 
-void UUMGStateConfigUserWidgetExtension::RestoreAllGroups(UUserWidget* TargetUserWidget)
+void UUMGStateConfigUserWidgetExtension::QueueWidgetRefresh(UWidget* Widget)
 {
-	if (!TargetUserWidget)
+	if (Widget)
 	{
-		return;
+		PendingRefreshWidgets.AddUnique(Widget);
 	}
+}
 
-	for (auto& Pair : GroupRestoreData)
+void UUMGStateConfigUserWidgetExtension::FlushPendingWidgetRefreshes()
+{
+	for (TWeakObjectPtr<UWidget>& WidgetPtr : PendingRefreshWidgets)
 	{
-		for (const FUMGStateConfigChangeKey& ChangeKey : Pair.Value.ActiveChangeKeys)
+		if (UWidget* Widget = WidgetPtr.Get())
 		{
-			const FUMGStateConfigPropertyValue* RestoreValue = Pair.Value.RestoreValues.Find(ChangeKey);
-			if (!RestoreValue)
-			{
-				continue;
-			}
-
-			UWidget* TargetWidget = ResolveWidget(TargetUserWidget, ChangeKey.TargetWidgetName);
-			if (!TargetWidget)
-			{
-				continue;
-			}
-
-			FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(TargetWidget, ChangeKey.PropertyType, *RestoreValue);
+			Widget->SynchronizeProperties();
+			Widget->InvalidateLayoutAndVolatility();
 		}
 	}
-
-	GroupRestoreData.Empty();
+	PendingRefreshWidgets.Reset();
 }
+
+
+
+
+

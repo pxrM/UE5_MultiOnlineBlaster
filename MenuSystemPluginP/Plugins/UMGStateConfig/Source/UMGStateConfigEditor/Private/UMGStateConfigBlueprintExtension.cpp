@@ -26,6 +26,7 @@ void UUMGStateConfigBlueprintExtension::HandleCopyTermDefaultsToDefaultObject(UO
 	UUMGStateConfigUserWidgetExtension* RuntimeExtension = Cast<UUMGStateConfigUserWidgetExtension>(DefaultWidget->AddExtension(UUMGStateConfigUserWidgetExtension::StaticClass()));
 	if (RuntimeExtension)
 	{
-		RuntimeExtension->RuntimeData = ConfigData;
+		RuntimeExtension->SetRuntimeData(ConfigData);
 	}
+
 }

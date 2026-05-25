@@ -1,137 +1,128 @@
 # UMGStateConfig 插件代码设计文档
 
-> 更新时间：2026-05-16  
-> 适用范围：当前项目内 `Plugins/UMGStateConfig` 插件代码。
+> 更新时间：2026-05-25  
+> 适用范围：`Plugins/UMGStateConfig`  
+> 文档定位：本文解释当前实现结构和关键设计。需求 / 验收口径见 `openspec/specs/cpp-umg-state-config/spec.md`。
 
 ## 1. 插件目标
 
-`UMGStateConfig` 用于在 `Widget Blueprint` 编辑器中为 UMG 控件配置一组 UI 状态，并在运行时通过蓝图函数：
+`UMGStateConfig` 用于在 `Widget Blueprint` 编辑器里为 UMG 控件配置 UI 状态，并在运行时通过：
 
 ```cpp
 UUMGStateConfigFunctionLibrary::ApplyUIState(TargetWidget, StateGroupName, StateName)
 ```
 
-把指定状态应用到目标 `UUserWidget` 实例上。
+把指定状态应用到目标 `UUserWidget` 实例。
 
-当前设计重点：
+当前实现的核心思路：
 
-- 配置数据保存在 `Widget Blueprint Extension` 中，跟随蓝图资产保存。
-- 编译蓝图时把配置复制到 `UserWidget` CDO 的运行时扩展中。
-- 运行时实例调用 `ApplyUIState` 时从 CDO 拷贝配置到实例扩展。
-- 属性编辑 UI 复用 UE 原生 `DetailsView`，通过代理对象承载可编辑字段。
-- 应用状态时会先捕获当前值，用于切换状态前恢复旧状态改动。
-- 应用状态时会比较当前值和目标值，相同则跳过 `Set` 调用。
+- 配置数据保存在 `Widget Blueprint Extension` 中，随蓝图资产保存。
+- 蓝图编译时，把编辑期配置复制到 `UserWidget` CDO 上的运行时扩展。
+- 运行时实例首次调用时，从 CDO 扩展拷贝配置到实例扩展。
+- 属性添加和编辑复用 UE 原生 `DetailsView`。
+- 属性保存统一走 `SerializedProperty`：保存属性路径、属性类型名、导出文本值和资源软引用。
+- 状态切换时先恢复到原始基线，再按活跃状态组重新应用，避免多个状态组互相覆盖后无法恢复。
 
 ## 2. 模块划分
 
-插件由两个模块组成：
-
 | 模块 | 类型 | 主要职责 |
 | --- | --- | --- |
-| `UMGStateConfigRuntime` | Runtime | 数据结构、蓝图函数、运行时扩展、属性捕获/比较/应用 |
-| `UMGStateConfigEditor` | Editor | Widget Blueprint 编辑器入口、状态配置面板、Details 代理对象、蓝图扩展保存 |
+| `UMGStateConfigRuntime` | Runtime | 数据结构、蓝图函数、运行时扩展、属性捕获 / 比较 / 应用、资源预加载 |
+| `UMGStateConfigEditor` | Editor | Widget Blueprint 入口、状态配置面板、Details 属性捕获、配置保存、校验 |
 
-插件描述文件：
+关键文件：
 
-- `UMGStateConfig.uplugin`
+```text
+Plugins/UMGStateConfig/
+├── UMGStateConfig.uplugin
+├── Docs/CodeDesign.md
+└── Source/
+    ├── UMGStateConfigRuntime/
+    │   ├── Public/
+    │   │   ├── UMGStateConfigData.h
+    │   │   ├── UMGStateConfigFunctionLibrary.h
+    │   │   ├── UMGStateConfigPropertyRuntimeLibrary.h
+    │   │   └── UMGStateConfigUserWidgetExtension.h
+    │   └── Private/
+    │       ├── UMGStateConfigFunctionLibrary.cpp
+    │       ├── UMGStateConfigPropertyRuntimeLibrary.cpp
+    │       ├── UMGStateConfigRuntimeModule.cpp
+    │       ├── UMGStateConfigUserWidgetExtension.cpp
+    │       └── Tests/UMGStateConfigRuntimeTests.cpp
+    └── UMGStateConfigEditor/
+        ├── Public/UMGStateConfigEditorModule.h
+        └── Private/
+            ├── SUIStateConfigPanel.h/.cpp
+            ├── UMGStateConfigBlueprintExtension.h/.cpp
+            ├── UMGStateConfigEditorModule.cpp
+            ├── UMGStateConfigTabSummoner.h/.cpp
+            ├── UMGStateConfigToolbar.h/.cpp
+            └── UMGStateConfigValidator.h/.cpp
+```
 
-模块构建文件：
+## 3. 数据模型
 
-- `Source/UMGStateConfigRuntime/UMGStateConfigRuntime.Build.cs`
-- `Source/UMGStateConfigEditor/UMGStateConfigEditor.Build.cs`
-
-## 3. 核心文件职责
-
-### 3.1 Runtime
-
-| 文件 | 职责 |
-| --- | --- |
-| `UMGStateConfigData.h` | 定义状态配置数据结构和属性类型枚举 |
-| `UMGStateConfigFunctionLibrary.h/.cpp` | 暴露蓝图调用入口 `ApplyUIState`，查找或创建运行时扩展 |
-| `UMGStateConfigUserWidgetExtension.h/.cpp` | 挂载到 `UUserWidget` 实例上的运行时状态应用器 |
-| `UMGStateConfigPropertyRuntimeLibrary.h/.cpp` | 统一处理属性当前值捕获、目标值应用、值相等判断 |
-| `UMGStateConfigRuntimeModule.cpp` | Runtime 模块声明 |
-
-### 3.2 Editor
-
-| 文件 | 职责 |
-| --- | --- |
-| `UMGStateConfigEditorModule.cpp` | 注册 Widget Blueprint 编辑器 Tab 和工具栏入口 |
-| `UMGStateConfigToolbar.cpp` | 在 Widget Blueprint 工具栏增加“UI 状态配置”按钮 |
-| `UMGStateConfigTabSummoner.cpp` | 注册并创建“UI 状态配置”面板 Tab |
-| `SUIStateConfigPanel.h/.cpp` | 状态配置主面板，负责状态组、子状态、控件、属性行、预览和保存 |
-| `UMGStateConfigBlueprintExtension.h/.cpp` | 编辑期配置保存对象，编译时复制配置到 Runtime 扩展 |
-| `UMGStateConfigDetailsProxy.h/.cpp` | DetailsView 代理对象，负责编辑 UI 与配置值互转 |
-| `UMGStateConfigValidator.cpp` | 当前只做基础配置检查 |
-
-## 4. 数据模型
-
-核心数据结构定义在：
-
-- `Source/UMGStateConfigRuntime/Public/UMGStateConfigData.h`
-
-### 4.1 属性类型
-
-`EUMGStateConfigPropertyType` 当前包含：
-
-| 类型 | 说明 | 当前状态 |
-| --- | --- | --- |
-| `Visibility` | 控件可见性 | 新编辑入口支持 |
-| `RenderOpacity` | 控件渲染透明度 | 新编辑入口支持 |
-| `Text` | `TextBlock` / `RichTextBlock` 文本内容 | 新编辑入口支持 |
-| `TextColor` | 旧版文本颜色单项 | Runtime 兼容，Editor 不再主动新增 |
-| `BrushImage` | 旧版 Image Brush 资源单项 | Runtime 兼容，Editor 不再主动新增 |
-| `BrushTint` | 旧版 Image Color 单项 | Runtime 兼容，Editor 不再主动新增 |
-| `ImageAppearance` | `Image` 外观聚合属性 | 新编辑入口支持 |
-| `TextAppearance` | `TextBlock` 外观聚合属性 | 新编辑入口支持 |
-
-### 4.2 属性值容器
-
-`FUMGStateConfigPropertyValue` 是一个通用值容器。不同属性类型使用其中不同字段：
-
-| 字段 | 用途 |
-| --- | --- |
-| `TextValue` | 文本内容 |
-| `ColorValue` | 主颜色，例如 Text Color、Image ColorAndOpacity |
-| `SecondaryColorValue` | 辅助颜色，例如 Text ShadowColorAndOpacity |
-| `VectorValue` | 向量值，例如 Text ShadowOffset |
-| `FontValue` | 文本字体 |
-| `FloatValue` | 浮点值，例如 RenderOpacity |
-| `ObjectValue` | 资源对象引用，旧 BrushImage 兼容和 Brush resource 缓存 |
-| `BrushValue` | `ImageAppearance` 的完整 `FSlateBrush` |
-| `VisibilityValue` | 控件可见性 |
-| `SerializedPropertyPath` | 通用 Details 属性路径 |
-| `SerializedPropertyTypeName` | 通用 Details 属性 C++ 类型名 |
-| `SerializedPropertyValue` | 通用 Details 属性导出文本值 |
-
-
-### 4.3 状态层级
+核心数据定义在 `UMGStateConfigData.h`。
 
 ```text
 FUMGStateConfigRuntimeData
-└── StateGroups: TArray<FUMGStateConfigGroup>
-    ├── GroupName
-    ├── DisplayName
-    ├── DefaultStateName
-    └── States: TArray<FUMGStateConfigState>
-        ├── StateName
-        ├── DisplayName
-        ├── ConfiguredWidgetNames
-        └── PropertyChanges: TArray<FUMGStatePropertyChange>
-            ├── TargetWidgetName
-            ├── ExpectedWidgetClass
-            ├── EditorPath
-            ├── PropertyType
-            └── Value: FUMGStateConfigPropertyValue
+├── SchemaVersion
+├── StateGroups: TArray<FUMGStateConfigGroup>
+├── PreviewStateGroupName
+└── PreviewStateName
+
+FUMGStateConfigGroup
+├── GroupName
+├── DisplayName
+├── DefaultStateName
+├── Priority
+├── bExclusiveGroup
+└── States: TArray<FUMGStateConfigState>
+
+FUMGStateConfigState
+├── StateName
+├── DisplayName
+├── ConfiguredWidgetNames
+└── PropertyChanges: TArray<FUMGStatePropertyChange>
+
+FUMGStatePropertyChange
+├── TargetWidgetName
+├── ExpectedWidgetClass
+├── EditorPath
+├── PropertyType = SerializedProperty
+└── Value: FUMGStateConfigPropertyValue
+
+FUMGStateConfigPropertyValue
+├── SerializedPropertyPath
+├── SerializedPropertyTypeName
+├── SerializedPropertyValue
+└── SerializedReferencedAssets
 ```
 
-`PreviewStateGroupName` 和 `PreviewStateName` 保存在 `FUMGStateConfigRuntimeData` 中，用于编辑器面板记录当前预览状态。
+### 3.1 `SerializedProperty`
 
-## 5. 配置保存设计
+当前唯一新增配置入口是 `SerializedProperty`。
 
-### 5.1 编辑期保存位置
+它表示一条从 UE `DetailsView` 捕获的属性修改：
 
-编辑器中所有状态配置保存在：
+| 字段 | 含义 |
+| --- | --- |
+| `SerializedPropertyPath` | 属性路径，例如 `Brush.ResourceObject`、`Font.Size`、`RenderOpacity` |
+| `SerializedPropertyTypeName` | 属性 C++ 类型名，用于排查和后续迁移 |
+| `SerializedPropertyValue` | `FProperty::ExportTextItem_Direct` 导出的文本值 |
+| `SerializedReferencedAssets` | 捕获值中出现的对象 / 软对象资源引用，用于运行时预加载 |
+
+### 3.2 状态组字段
+
+- `Priority`：多个状态组同时活跃时，运行时按数值从低到高重新应用，数值越大越晚覆盖。
+- `bExclusiveGroup`：当前是预留字段，尚未参与运行时互斥逻辑。
+- `SchemaVersion`：当前版本为 `1`，用于后续数据迁移。
+
+## 4. 编辑期保存与编译复制
+
+### 4.1 编辑期保存
+
+编辑器配置保存在：
 
 ```cpp
 UUMGStateConfigBlueprintExtension::ConfigData
@@ -139,461 +130,315 @@ UUMGStateConfigBlueprintExtension::ConfigData
 
 `UUMGStateConfigBlueprintExtension` 继承自 `UWidgetBlueprintExtension`，因此配置跟随 `Widget Blueprint` 资产保存。
 
-### 5.2 写入时机
-
-在 `SUIStateConfigPanel` 中，以下操作会修改 `ConfigData`：
-
-- 新增/删除父状态组。
-- 新增/删除子状态。
-- 选择预览状态。
-- 双击控件加入当前状态组。
-- 右键控件添加属性配置。
-- 在 DetailsView 中修改某个属性值。
-- 删除某个控件或属性配置。
-
-修改后会调用：
+面板中修改配置后统一调用：
 
 ```cpp
 MarkConfigDirty(Extension)
 ```
 
-该函数会：
+该函数负责标记蓝图和扩展对象为已修改、标记包脏，并触发配置面板刷新。
 
-- 调用 `WidgetBlueprint->Modify()`。
-- 调用 `WidgetBlueprint->MarkPackageDirty()`。
-- 调用 `Extension->Modify()`。
+### 4.2 编译复制
 
-这样 UE 会把配置作为蓝图资产的一部分保存。
+`UUMGStateConfigBlueprintExtension::HandleCopyTermDefaultsToDefaultObject` 在 Widget Blueprint 编译复制默认对象时执行：
 
-### 5.3 编译时复制到 Runtime
-
-`UUMGStateConfigBlueprintExtension::HandleCopyTermDefaultsToDefaultObject` 会在 Widget Blueprint 编译复制默认对象时执行：
-
-```cpp
-DefaultWidget->RemoveExtensions(UUMGStateConfigUserWidgetExtension::StaticClass());
-RuntimeExtension = DefaultWidget->AddExtension(UUMGStateConfigUserWidgetExtension::StaticClass());
-RuntimeExtension->RuntimeData = ConfigData;
+```text
+DefaultWidget
+→ RemoveExtensions(UUMGStateConfigUserWidgetExtension)
+→ AddExtension(UUMGStateConfigUserWidgetExtension)
+→ RuntimeExtension.SetRuntimeData(ConfigData)
 ```
 
-也就是说：
+因此运行时数据来源链路是：
 
-1. 编辑期数据在 `BlueprintExtension.ConfigData`。
-2. 编译后数据被复制到 Widget CDO 的 `UUMGStateConfigUserWidgetExtension.RuntimeData`。
-3. 运行时实例从 CDO 上的扩展读取并拷贝配置。
-
-## 6. 编辑器 UI 设计
-
-### 6.1 入口注册
-
-`FUMGStateConfigEditorModule::StartupModule` 做两件事：
-
-- 向 UMG 编辑器注册工具栏扩展。
-- 向 Widget Blueprint 编辑器注册 `UI 状态配置` Tab。
-
-工具栏按钮由 `FUMGStateConfigToolbar` 创建，点击后调用：
-
-```cpp
-WidgetEditorPtr->GetTabManager()->TryInvokeTab(FUMGStateConfigTabSummoner::TabID)
+```text
+Widget Blueprint 编辑期 ConfigData
+→ 编译写入 UserWidget CDO Runtime Extension
+→ 运行时实例首次调用时从 CDO Extension 拷贝 RuntimeData
 ```
 
-Tab 内容由 `FUMGStateConfigTabSummoner::CreateTabBody` 创建：
+## 5. 编辑器 UI 设计
 
-```cpp
-SNew(SUIStateConfigPanel, WidgetEditorPtr)
-```
+### 5.1 入口
 
-### 6.2 主面板结构
+`UMGStateConfigEditor` 在 Widget Blueprint 编辑器里提供：
 
-`SUIStateConfigPanel` 当前 UI 结构：
+- 工具栏按钮：打开 `UI 状态配置` Tab。
+- Tab 面板：由 `SUIStateConfigPanel` 构建。
+
+### 5.2 主面板结构
 
 ```text
 UI 状态配置标题区
-├── 父状态按钮区：+ 父状态 / - 父状态
+├── 父状态按钮区：+ 父状态 / 复制父状态 / - 父状态
 ├── 父状态 Tab 行
-├── 子状态 Tab 行：+ 子状态 / - 子状态
+├── 子状态按钮区：+ 子状态 / 复制子状态 / - 子状态 / 清理无效
+├── 子状态 Tab 行
 ├── 当前状态面包屑
 ├── 左侧：可加入控件列表
-│   └── 右键控件选择可配置属性
+│   └── 右键控件选择属性添加入口
 └── 右侧：当前子状态已配置控件卡片
-    └── 每个控件下展示已插入属性行
+    └── 每个控件下展示已插入的 SerializedProperty 属性行
 ```
 
-### 6.3 支持属性筛选
+### 5.3 属性添加入口
 
-`GetSupportedPropertyTypes` 根据控件类型决定可添加的属性：
+控件右键菜单提供两个入口：
 
-- 所有控件：`Visibility`、`RenderOpacity`
-- `UTextBlock` / `URichTextBlock`：`Text`
-- `UTextBlock`：`TextAppearance`
-- `UImage`：`ImageAppearance`
+| 入口 | 面板显示范围 | 捕获范围 | 定位 |
+| --- | --- | --- | --- |
+| `从常用 Details 添加属性` | 只显示常用 UI 外观属性 | 常用属性子集 | 日常配置入口 |
+| `从全部 Details 添加属性` | 显示完整 Details 面板 | Runtime 白名单允许的属性 | 高级配置入口 |
 
-旧属性 `TextColor`、`BrushImage`、`BrushTint` 保留兼容，但不再从新菜单中主动添加。
+两者底层流程一致，都是“临时 Details 面板 + 快照 Diff + 叶子属性保存 + 噪音过滤”。区别只在可见属性和快照捕获范围。
 
-### 6.4 属性编辑复用 DetailsView
+常用模式当前覆盖：
 
-当前所有新属性编辑都走：
+- `Visibility`
+- `RenderOpacity`
+- `Text`
+- `Brush.ResourceObject`
+- `ColorAndOpacity.*`
+- `Brush.TintColor.*`
+- `Brush.ImageSize.*`
+- `Font.Size`
+- `RenderTransform.*`
 
-```cpp
-SUIStateConfigPanel::BuildAppearanceDetailsValueWidget
+### 5.4 Details 捕获流程
+
+```text
+右键控件选择 Details 入口
+→ DuplicateObject 复制真实 Widget 到 transient proxy
+→ 对 proxy 应用当前状态里已保存的属性
+→ 捕获修改前快照
+→ 创建 IDetailsView 并 SetObject(proxy)
+→ 常用模式时挂 SetIsPropertyVisibleDelegate 隐藏非常用属性
+→ 用户修改 Details 属性
+→ OnFinishedChangingProperties
+→ 捕获修改后快照
+→ Diff 修改前 / 修改后快照
+→ 只保留真实变化的叶子属性
+→ FilterNoisyPropertyChanges 过滤联动噪音
+→ AddOrUpdateSerializedPropertyChange 写入状态配置
+→ ApplyPreviewState 刷新设计器预览
 ```
 
-流程：
+噪音过滤的目标是避免用户只改一个主属性，却保存一批 UE 内部联动字段。例如：
 
-1. 找到当前属性已有配置；没有则从真实 Widget 生成默认值。
-2. 根据 `PropertyType` 创建对应的 `UObject` 代理对象。
-3. 调用代理对象 `FromValue`，把 `FUMGStateConfigPropertyValue` 转成 Details 可编辑属性。
-4. 使用 `PropertyEditorModule.CreateDetailView` 创建 UE 原生 DetailsView。
-5. `DetailsView->SetObject(ProxyObject)` 展示代理对象。
-6. 监听 `OnFinishedChangingProperties`。
-7. 属性修改结束后调用代理对象 `ToValue` 写回 `FUMGStateConfigPropertyValue`。
-8. 调用 `AddOrUpdatePropertyChange` 保存配置并刷新预览。
+- 改 `Brush.ResourceObject` 时，过滤 `Brush.DrawAs`、`Brush.ImageType`、`Brush.ResourceName`。
+- 改 `Font.FontObject` 时，过滤 `Font.TypefaceFontName`。
+- 改 `SpecifiedColor` 时，过滤 `ColorUseRule`。
 
-### 6.5 Details 代理对象
+### 5.5 属性行展示和编辑
 
-代理类定义在 `UMGStateConfigDetailsProxy.h/.cpp`：
+右侧控件卡片只展示已经插入的属性行。每行包含：
 
-| 代理类 | 对应属性类型 | Details 分类 |
-| --- | --- | --- |
-| `UUMGStateConfigVisibilityProxy` | `Visibility` | `Behavior` |
-| `UUMGStateConfigRenderOpacityProxy` | `RenderOpacity` | `Rendering` |
-| `UUMGStateConfigTextContentProxy` | `Text` | `Content` |
-| `UUMGStateConfigImageAppearanceProxy` | `ImageAppearance` | `Appearance` |
-| `UUMGStateConfigTextAppearanceProxy` | `TextAppearance` | `Appearance` |
+- 删除按钮。
+- 属性友好显示名。
+- 当前序列化值文本。
+- `编辑 Details` 按钮。
 
-代理对象设计目的：
+`编辑 Details` 会重新打开完整 Details 模式，便于继续修改该控件属性。
 
-- 不直接编辑真实 Widget，避免污染默认态。
-- 复用 UE 原生 Details 的展开、类型编辑器、资源选择器、颜色选择器、字体编辑器等表现。
-- 让新增属性时只需要新增一个代理对象和一组值转换逻辑。
+## 6. 编辑器预览
 
-### 6.6 冗余属性收敛
+`ApplyPreviewState()` 用于编辑器内实时预览：
 
-`NormalizeRedundantPropertyChanges` 会清理旧冗余配置：
-
-- 同一控件已有 `ImageAppearance` 时，移除 `BrushImage` 和 `BrushTint`。
-- 同一控件已有 `TextAppearance` 时，移除 `TextColor`。
-
-`AddOrUpdatePropertyChange` 也会在添加聚合属性时主动移除对应旧属性。
-
-## 7. 编辑器预览设计
-
-当切换状态、修改属性、删除属性时，会调用：
-
-```cpp
-ApplyPreviewState()
+```text
+读取 PreviewStateGroupName / PreviewStateName
+→ Editor->RefreshPreview()
+→ 遍历当前子状态 PropertyChanges
+→ 在 Preview WidgetTree 中按 TargetWidgetName 找控件
+→ 调用 FUMGStateConfigPropertyRuntimeLibrary::ApplyValue
+→ Editor->InvalidatePreview(true)
+→ FSlateApplication::InvalidateAllWidgets(false)
 ```
 
-当前预览逻辑：
+设计原则：编辑器预览直接复用 Runtime 属性应用库，避免编辑器和运行时维护两套 Set 逻辑。
 
-1. 从 `Extension->ConfigData.PreviewStateGroupName` 找状态组。
-2. 从 `PreviewStateName` 找子状态。
-3. 调用 `Editor->RefreshPreview()` 重建预览 Widget。
-4. 遍历 `State.PropertyChanges`。
-5. 在预览 `WidgetTree` 中按 `TargetWidgetName` 查找控件。
-6. 调用 `ApplyPropertyValueToDesignerWidget` 把配置值应用到预览控件。
-7. 调用 `Editor->InvalidatePreview(true)` 和 `FSlateApplication::InvalidateAllWidgets(false)` 刷新显示。
+## 7. Runtime 调用设计
 
-关闭 Tab 时会调用 `RefreshPreview`，用于重置设计器预览。
-
-## 8. Runtime 调用设计
-
-### 8.1 蓝图入口
-
-运行时入口：
+### 7.1 蓝图入口
 
 ```cpp
 UUMGStateConfigFunctionLibrary::ApplyUIState(UUserWidget* TargetWidget, FName StateGroupName, FName StateName)
 ```
 
-内部先调用：
-
-```cpp
-FindOrCreateStateConfigExtension(TargetWidget)
-```
-
-该函数逻辑：
-
-1. 如果实例上已有 `UUMGStateConfigUserWidgetExtension`，直接返回。
-2. 如果实例没有扩展，从 `TargetWidget->GetClass()->GetDefaultObject()` 获取 CDO。
-3. 从 CDO 上查找编译期写入的默认扩展。
-4. 如果 CDO 扩展存在，则给当前实例 `AddExtension`。
-5. 把 `DefaultExtension->RuntimeData` 拷贝到实例扩展。
-6. 返回实例扩展。
-
-### 8.2 状态应用主流程
-
-`UUMGStateConfigUserWidgetExtension::ApplyUIState` 流程：
+内部通过 `FindOrCreateStateConfigExtension` 获取实例扩展：
 
 ```text
-ApplyUIState(StateGroupName, StateName)
+实例已有 UUMGStateConfigUserWidgetExtension
+→ 直接使用
+
+实例没有扩展
+→ 从 TargetWidget CDO 查找默认 Runtime Extension
+→ 当前实例 AddExtension
+→ SetRuntimeData(DefaultExtension->RuntimeData)
+```
+
+### 7.2 状态应用主流程
+
+```text
+UUMGStateConfigUserWidgetExtension::ApplyUIState(GroupName, StateName)
 ├── 获取所属 UUserWidget
-├── FindStateGroup(StateGroupName)
-│   └── 使用 StateGroupIndexByName 缓存
-├── 计算 EffectiveStateName
-│   └── 如果传入 StateName 为空，使用 Group.DefaultStateName
-├── FindState(Group, EffectiveStateName)
-│   └── 使用 StateIndexByGroupName 缓存
-├── RestorePreviousValues(TargetUserWidget)
-│   └── 恢复上一次状态应用前捕获的旧值
-├── 遍历 TargetState.PropertyChanges
-│   └── ApplyPropertyChange(TargetUserWidget, Change)
-└── 返回是否全部应用成功
+├── 查找状态组和子状态
+├── RestoreGlobalValues：恢复所有已活跃状态组改过的属性到原始基线
+├── 清空各活跃状态组的临时 RestoreValues / ActiveChangeKeys
+├── 更新目标状态组的 ActiveStateName
+├── ReapplyActiveStates：按 Priority 从低到高重新应用全部活跃状态组
+├── FlushPendingWidgetRefreshes：合并刷新被写入的 Widget
+└── 返回是否全部属性应用成功
 ```
 
-### 8.3 单个属性应用流程
-
-`ApplyPropertyChange` 流程：
+### 7.3 单个属性应用流程
 
 ```text
-ApplyPropertyChange(TargetUserWidget, Change)
+ApplyPropertyChange
 ├── 校验 TargetWidgetName
-├── ResolveWidget(TargetUserWidget, TargetWidgetName)
-│   └── 优先使用 WidgetCache，失效再 GetWidgetFromName
+├── ResolveWidget：优先 WidgetCache，失效再 GetWidgetFromName
 ├── 校验 ExpectedWidgetClass
-├── CaptureCurrentValue(TargetWidget, PropertyType, CurrentValue)
-├── ArePropertyValuesEqual(PropertyType, CurrentValue, Change.Value)
-│   └── 如果相同，直接返回 true，不调用 Set
-├── 生成 ChangeKey(TargetWidgetName, PropertyType)
-├── 如果 RestoreValues 中没有该 Key，则保存 CurrentValue
-├── ActiveChangeKeys 记录该 Key
-└── ApplyValue(TargetWidget, PropertyType, Change.Value)
+├── CaptureCurrentValue
+├── 当前值与目标值相同则跳过 ApplyValue
+├── 首次修改该属性时保存 GlobalRestoreValues 原始基线
+├── 记录当前状态组的 ActiveChangeKeys
+├── ApplyValue(..., bRefreshAfterApply=false)
+└── QueueWidgetRefresh
 ```
 
-### 8.4 状态恢复设计
+### 7.4 多状态组重算
 
-每次应用新状态前会先调用 `RestorePreviousValues`。
+运行时不是只恢复当前状态组，而是：
 
-它会遍历上一次状态应用时记录的 `ActiveChangeKeys`，再从 `RestoreValues` 取出应用状态前的原始值，并调用：
-
-```cpp
-FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(TargetWidget, PropertyType, RestoreValue)
+```text
+恢复所有活跃状态组修改过的属性到原始基线
+→ 更新本次调用的状态组活跃状态
+→ 按 Priority 重放全部活跃状态组
 ```
 
-恢复完成后清空：
+这样能避免 A 组切换时把 B 组仍然生效的属性永久清掉。
 
-- `ActiveChangeKeys`
-- `RestoreValues`
+如果多个状态组写同一个 `TargetWidgetName + PropertyType + SerializedPropertyPath`：
 
-这样可以避免状态 A 改过的属性残留到状态 B。
+- 运行时最终结果由 `Priority` 决定，数值大的状态组后应用。
+- 同优先级时当前实现没有显式稳定冲突策略，配置阶段会给出跨组冲突警告，建议避免同优先级冲突。
 
-### 8.5 性能优化点
+## 8. `SerializedProperty` Runtime 处理
 
-当前 Runtime 已做的优化：
-
-1. **状态组查找缓存**  
-   `StateGroupIndexByName: TMap<FName, int32>`，避免每次线性查找状态组。
-
-2. **子状态查找缓存**  
-   `StateIndexByGroupName: TMap<FName, TMap<FName, int32>>`，避免每次线性查找子状态。
-
-3. **控件查找缓存**  
-   `WidgetCache: TMap<FName, TWeakObjectPtr<UWidget>>`，避免重复 `GetWidgetFromName`。
-
-4. **结构化恢复 Key**  
-   `FUMGStateConfigChangeKey` 使用 `TargetWidgetName + PropertyType`，避免字符串拼接 Key。
-
-5. **重复 Set 跳过**  
-   应用属性前先捕获当前值并比较；相同则跳过 `ApplyValue`。
-
-6. **聚合属性子项差异 Set**  
-   `ImageAppearance` 和 `TextAppearance` 内部也会逐子项比较，只对实际变化的子项调用 Set。
-
-## 9. 属性运行时处理库
-
-统一入口在：
+核心类：
 
 ```cpp
 FUMGStateConfigPropertyRuntimeLibrary
 ```
 
-### 9.1 `CaptureCurrentValue`
+### 8.1 捕获
 
-从真实 Widget 捕获当前值，用于：
-
-- 应用前比较是否已经等于目标值。
-- 保存恢复值，便于切换状态时还原。
-
-当前支持：
-
-- `Visibility`
-- `RenderOpacity`
-- `Text`
-- `TextAppearance`
-- `TextColor`
-- `BrushImage`
-- `BrushTint`
-- `ImageAppearance`
-
-### 9.2 `ArePropertyValuesEqual`
-
-按属性类型比较两个 `FUMGStateConfigPropertyValue` 是否等价：
-
-- 浮点使用 `KINDA_SMALL_NUMBER`。
-- 颜色使用 `FLinearColor::Equals`。
-- 文本使用 `FText::EqualTo`。
-- Brush 比较资源对象、尺寸、Margin、DrawAs、Tiling、Mirroring、TintColor。
-
-### 9.3 `ApplyValue`
-
-把配置值应用到真实 Widget：
-
-- 通用控件：`SetVisibility`、`SetRenderOpacity`
-- 文本控件：`SetText`、`SetColorAndOpacity`、`SetFont`、`SetShadowOffset`、`SetShadowColorAndOpacity`
-- 图片控件：`SetBrush`、`SetColorAndOpacity`
-- 旧 BrushImage 兼容：根据资源类型调用 `SetBrushFromTexture`、`SetBrushFromMaterial`、`SetBrushFromAsset` 或 `SetBrushResourceObject`
-
-`ApplyValue` 内部也会做二次差异判断，避免重复调用 Set。
-
-## 10. 当前支持能力
-
-| 控件类型 | 支持配置 |
-| --- | --- |
-| `UWidget` 通用 | `Visibility`、`RenderOpacity` |
-| `UTextBlock` | `Content / Text`、`Appearance` |
-| `URichTextBlock` | `Content / Text` |
-| `UImage` | `Appearance`，包含 `Brush` 和 `Color and Opacity` |
-| 任意 `UWidget` | 从 Details 添加属性，按顶层属性路径序列化保存 |
-
-
-## 11. 新增属性的推荐开发流程
-
-当前代码有两条扩展路线：
+`CaptureCurrentValue`：
 
 ```text
-高频稳定属性：Native PropertyType + Details Proxy + RuntimeLibrary 特化 Apply
-更多 Details 属性：SerializedProperty + 属性路径 + FProperty Export/Import
-```
-
-优先推荐：普通 Details 属性先走“从 Details 添加属性”的序列化路线；只有发现反射写回无法刷新 Slate、需要调用 Setter、或需要更细粒度差异 Set 时，再升级为 Native 特化属性。
-
-Native 特化属性步骤：
-
-
-1. 在 `EUMGStateConfigPropertyType` 增加新枚举。
-2. 判断 `FUMGStateConfigPropertyValue` 是否已有合适字段；没有则增加字段。
-3. 在 `UMGStateConfigDetailsProxy` 新增代理类：
-   - 暴露 `UPROPERTY(EditAnywhere)`。
-   - 实现 `FromValue`。
-   - 实现 `ToValue`。
-4. 在 `SUIStateConfigPanel::GetSupportedPropertyTypes` 中按控件类型添加新属性。
-5. 在 `SUIStateConfigPanel::GetPropertyLabel` 中添加显示名。
-6. 在 `SUIStateConfigPanel::GetExpectedWidgetClass` 中声明期望控件类型。
-7. 在 `SUIStateConfigPanel::BuildAppearanceDetailsValueWidget` 中创建新代理对象。
-8. 在 `SUIStateConfigPanel::OnAppearanceDetailsFinishedChanging` 中把代理对象转回配置值。
-9. 在 `SUIStateConfigPanel::MakeDefaultValueForWidget` 中从真实 Widget 读取默认值。
-10. 在 `FUMGStateConfigPropertyRuntimeLibrary` 中补齐：
-    - `CaptureCurrentValue`
-    - `ArePropertyValuesEqual`
-    - `ApplyValue`
-
-编辑器预览已统一复用 `FUMGStateConfigPropertyRuntimeLibrary::ApplyValue`，不再需要单独维护预览 Set 分支。推荐继续保持“代理对象 + DetailsView”的路线，避免重新手写一套仿 Details 的 Slate 属性面板。
-
-
-## 12. 当前设计限制和后续可优化点
-
-### 12.1 编辑器预览和 Runtime 应用逻辑已复用
-
-编辑器预览现在直接调用：
-
-```cpp
-FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(PreviewChildWidget, Change.PropertyType, Change.Value)
-```
-
-不再维护 `SUIStateConfigPanel` 内部的重复属性 Set 分支。这样新增或调整属性应用逻辑时，只需要维护 RuntimeLibrary，编辑器预览会同步受益。
-
-### 12.2 Details 代理创建逻辑已描述化
-
-`BuildAppearanceDetailsValueWidget` 和 `OnAppearanceDetailsFinishedChanging` 不再逐类型写大量 `if / else` 创建和写回代理对象。
-
-当前抽象为：
-
-```text
-PropertyType → ProxyClass → DefaultExpectedClass → bUseWidgetSpecificExpectedClass
-```
-
-代理对象统一继承 `UUMGStateConfigDetailsProxyBase`，面板通过描述信息创建代理，再调用统一的 `FromValue / ToValue` 完成配置值互转。新增属性时仍需要注册描述项，但改动点更集中。
-
-
-### 12.3 已进入 Details 属性路径序列化方案
-
-当前已增加 `SerializedProperty` 通用属性类型。除 Native 特化属性外，用户可以在控件右键菜单中选择“从 Details 添加属性”，打开该控件的临时 Details 面板并修改属性。
-
-保存数据写入 `FUMGStateConfigPropertyValue`：
-
-- `SerializedPropertyPath`：属性路径。当前实现优先记录 `PropertyChangedEvent.MemberProperty`，也就是嵌套字段按顶层属性保存。
-- `SerializedPropertyTypeName`：属性 C++ 类型名。
-- `SerializedPropertyValue`：通过 `FProperty::ExportTextItem_Direct` 导出的文本值。
-
-运行时通过 `FProperty` 反射执行：
-
-```text
-SerializedPropertyPath
+校验 TargetWidget 和 PropertyType
+→ 校验属性路径白名单
 → ResolveSerializedProperty
-→ ExportTextItem_Direct 捕获当前值
-→ 文本值比较，避免重复写
-→ ImportText_Direct 写回目标值
-→ SynchronizeProperties / InvalidateLayoutAndVolatility 刷新控件
+→ ExportTextItem_Direct
+→ 收集 SerializedReferencedAssets
 ```
 
-`Visibility`、`RenderOpacity`、`Text`、`ImageAppearance`、`TextAppearance` 等高频属性仍保留 Native 特化通道；通用 Details 属性作为扩展覆盖层，用于减少后续新增属性时的手写代理成本。
+### 8.2 比较
 
+`ArePropertyValuesEqual` 当前比较：
 
-### 12.4 配置校验已增强
+- `SerializedPropertyPath`
+- `SerializedPropertyValue`
 
-`FUMGStateConfigValidator` 当前会检查：
+### 8.3 应用
 
-- 当前 Widget Blueprint / WidgetTree 是否有效。
-- 是否存在配置和状态组。
+`ApplyValue`：
+
+```text
+校验 TargetWidget 和 PropertyType
+→ 校验属性路径白名单
+→ ResolveSerializedProperty
+→ PreloadReferencedAssets
+→ ImportText_Direct
+→ 如 bRefreshAfterApply 为 true，则 SynchronizeProperties + InvalidateLayoutAndVolatility
+```
+
+运行时状态应用会传 `bRefreshAfterApply=false`，最后由 `FlushPendingWidgetRefreshes` 统一刷新，避免同一个 Widget 多条属性重复刷新。
+
+### 8.4 属性路径白名单
+
+当前白名单：
+
+| 控件 | 允许路径 |
+| --- | --- |
+| 任意 `UWidget` | `Visibility`、`RenderOpacity`、`RenderTransform.*` |
+| `UImage` | `Brush.*`、`ColorAndOpacity.*` |
+| `UTextBlock` | `Text`、`ColorAndOpacity.*`、`Font.*`、`ShadowOffset.*`、`ShadowColorAndOpacity.*`、`StrikeBrush.*` |
+| `URichTextBlock` | `Text` |
+
+### 8.5 属性黑名单
+
+反射解析过程中会拒绝：
+
+- `Transient`
+- `EditConst`
+- `Deprecated`
+- `DisableEditOnInstance`
+- Delegate / Multicast Delegate
+- Array
+- Map
+- Set
+
+## 9. 配置校验
+
+`FUMGStateConfigValidator` 当前覆盖：
+
+- 当前 `Widget Blueprint` / `WidgetTree` 是否有效。
+- 是否存在状态组。
 - 状态组名称是否为空或重复。
+- 状态组是否没有子状态。
 - 子状态名称是否为空或重复。
 - 默认状态是否存在。
-- `ConfiguredWidgetNames` 中的控件是否仍存在。
-- `PropertyChanges` 的目标控件是否仍存在。
+- `ConfiguredWidgetNames` 是否引用空控件或缺失控件。
+- `PropertyChanges` 的目标控件是否为空或缺失。
 - `ExpectedWidgetClass` 是否匹配真实控件类型。
-- 同一状态内同一控件的同一属性是否重复配置。
-- 旧版 `BrushImage` 配置是否缺少有效资源。
+- 同一状态内同一控件同一属性路径是否重复配置。
+- 跨状态组是否配置了同一控件同一属性路径。
+- `SerializedPropertyPath` 是否为空。
+- 属性配置存在但控件未列入 `ConfiguredWidgetNames` 时给出提示。
 
-面板底部汇总现在会调用该校验器，显示真实错误、警告、提示数量。
+面板底部汇总会展示错误、警告、提示数量，以及最近一次 Details 捕获结果。
 
+## 10. 自动化测试
 
-## 13. 总体调用链总结
-
-### 13.1 编辑保存链路
-
-```text
-用户打开 Widget Blueprint
-→ 点击 UI 状态配置按钮
-→ SUIStateConfigPanel 读取/创建 UUMGStateConfigBlueprintExtension
-→ 用户编辑状态/属性
-→ Details Proxy ToValue 写回 FUMGStateConfigPropertyValue
-→ AddOrUpdatePropertyChange 写入 ConfigData.StateGroups[*].States[*].PropertyChanges
-→ MarkConfigDirty 标记蓝图资产脏
-→ 保存蓝图资产
-```
-
-### 13.2 编译链路
+当前 Runtime 自动化测试文件：
 
 ```text
-Widget Blueprint 编译
-→ UUMGStateConfigBlueprintExtension::HandleCopyTermDefaultsToDefaultObject
-→ 清理 CDO 上旧 Runtime Extension
-→ 添加新的 UUMGStateConfigUserWidgetExtension
-→ RuntimeExtension.RuntimeData = ConfigData
+Source/UMGStateConfigRuntime/Private/Tests/UMGStateConfigRuntimeTests.cpp
 ```
 
-### 13.3 运行时链路
+已覆盖：
 
-```text
-蓝图/代码调用 ApplyUIState(TargetWidget, GroupName, StateName)
-→ FindOrCreateStateConfigExtension(TargetWidget)
-→ 从实例扩展或 CDO 扩展取得 RuntimeData
-→ Extension.ApplyUIState(GroupName, StateName)
-→ 查找状态组和状态
-→ 恢复上次状态改动
-→ 遍历目标状态 PropertyChanges
-→ ResolveWidget
-→ CaptureCurrentValue
-→ 当前值与目标值相同则跳过
-→ 保存恢复值
-→ ApplyValue 应用变化
-```
+- `SerializedProperty` 值比较。
+- 属性路径白名单。
+- `FUMGStateConfigChangeKey` 相等和 hash。
+
+这些测试证明底层纯逻辑可用，但不覆盖真实 Widget Blueprint 面板交互、Details 捕获 UI、设计器预览和运行时视觉效果。
+
+## 11. 当前限制与后续方向
+
+### 11.1 当前限制
+
+- `bExclusiveGroup` 目前只是数据字段，运行时尚未实现互斥组语义。
+- `SerializedProperty` 不支持数组、Map、Set、委托等复杂属性。
+- Slot 属性、对象子属性、数组元素路径等复杂 Details 路径尚未系统验证。
+- 反射写回后并非所有 UE 属性都一定能正确刷新 Slate，因此新增白名单属性需要实际验证。
+- 跨状态组同属性冲突目前只警告，不强制阻止保存。
+
+### 11.2 后续方向
+
+1. 扩展更多控件类型的安全属性白名单。
+2. 为常用属性补充更友好的显示名和分组。
+3. 对 Slot 属性、字体资源、复杂 Brush、材质参数等典型场景补手动验收用例。
+4. 明确 `bExclusiveGroup` 语义：同组互斥、跨组共存、还是按调用覆盖。
+5. 补 Editor 侧自动化或半自动验收：Details 捕获、常用模式隐藏、预览刷新、跨状态组冲突提示。
+6. 增加数据迁移入口：当 `SchemaVersion` 提升时统一迁移旧配置。
