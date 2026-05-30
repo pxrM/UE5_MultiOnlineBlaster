@@ -41,7 +41,8 @@ UUMGStateConfigUserWidgetExtension* UUMGStateConfigFunctionLibrary::FindOrCreate
 	UUMGStateConfigUserWidgetExtension* NewExtension = Cast<UUMGStateConfigUserWidgetExtension>(TargetWidget->AddExtension(UUMGStateConfigUserWidgetExtension::StaticClass()));
 	if (NewExtension)
 	{
-		NewExtension->RuntimeData = DefaultExtension->RuntimeData;
+		NewExtension->SetRuntimeData(DefaultExtension->RuntimeData);
 	}
+
 	return NewExtension;
 }

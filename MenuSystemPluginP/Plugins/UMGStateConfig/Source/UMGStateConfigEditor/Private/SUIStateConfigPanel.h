@@ -5,8 +5,8 @@
 #include "UMGStateConfigData.h"
 #include "Widgets/SCompoundWidget.h"
 
-struct FAssetData;
 struct FPropertyChangedEvent;
+
 class FWidgetBlueprintEditor;
 class SListViewBase;
 class STableViewBase;
@@ -25,7 +25,16 @@ struct FUMGStateConfigWidgetRow
 	TWeakObjectPtr<UWidget> Widget;
 };
 
+struct FUMGStateConfigDetailsProxyContext
+{
+	TWeakObjectPtr<UObject> ProxyObject;
+	TMap<FString, FUMGStateConfigPropertyValue> Snapshot;
+	bool bCommonOnly = true;
+};
+
+
 class SUIStateConfigPanel : public SCompoundWidget
+
 {
 public:
 	SLATE_BEGIN_ARGS(SUIStateConfigPanel) {}
@@ -40,8 +49,6 @@ private:
 	const UUMGStateConfigBlueprintExtension* GetExtension() const;
 	FUMGStateConfigGroup* GetActiveGroup();
 	FUMGStateConfigState* GetActiveState();
-	const FUMGStateConfigGroup* FindGroupByName(FName GroupName) const;
-	const FUMGStateConfigState* FindStateByName(const FUMGStateConfigGroup* Group, FName StateName) const;
 	UWidget* FindWidgetByName(FName WidgetName) const;
 
 	FText GetTitleText() const;
@@ -51,41 +58,43 @@ private:
 	FReply ApplyPreviewState();
 	void ResetDesignerPreview() const;
 	FReply AddParentState();
+	FReply DuplicateParentState();
 	FReply DeleteParentState();
+
 	FReply AddChildState();
+	FReply DuplicateChildState();
 	FReply DeleteChildState();
+	FReply RemoveInvalidChanges();
 	FReply ClearWidgetConfig(FName WidgetName);
+
 
 	TSharedRef<SWidget> BuildParentStateTabs();
 	TSharedRef<SWidget> BuildChildStateTabs();
 	TSharedRef<SWidget> BuildStateTab(FName StateName, bool bSelected, bool bIsParentState);
 	TSharedRef<SWidget> BuildRenameMenu(FName OldName, bool bIsParentState);
 	TSharedRef<SWidget> BuildAvailableWidgetPropertyMenu(FName WidgetName);
-	TArray<EUMGStateConfigPropertyType> GetSupportedPropertyTypes(const UWidget* Widget) const;
-	FText GetPropertyLabel(EUMGStateConfigPropertyType PropertyType) const;
-	TSubclassOf<UWidget> GetExpectedWidgetClass(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const;
+	TSubclassOf<UWidget> GetExpectedWidgetClass(FName WidgetName) const;
 	void RenameParentState(FName OldName, FName NewName);
+
 	void RenameChildState(FName OldName, FName NewName);
 	FReply HandleStateTabMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& MouseEvent, FName StateName, bool bIsParentState);
 	FReply HandleAvailableWidgetRowMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& MouseEvent, TSharedPtr<FUMGStateConfigWidgetRow> RowItem);
 
 	TSharedRef<SWidget> BuildConfiguredWidgetCards();
 	TSharedRef<SWidget> BuildConfiguredWidgetCard(FName WidgetName);
-	TSharedRef<SWidget> BuildPropertyRow(FName WidgetName, EUMGStateConfigPropertyType PropertyType, const FText& Label, TSubclassOf<UWidget> ExpectedClass);
 	TSharedRef<SWidget> BuildSerializedPropertyRow(const FUMGStatePropertyChange& Change);
-	TSharedRef<SWidget> BuildPropertyValueWidget(FName WidgetName, EUMGStateConfigPropertyType PropertyType, TSubclassOf<UWidget> ExpectedClass);
-	TSharedRef<SWidget> BuildAppearanceDetailsValueWidget(FName WidgetName, EUMGStateConfigPropertyType PropertyType);
+
 
 
 
 	void RefreshAll();
+	void RefreshStateTabs();
+	void RefreshWidgetList();
+	void RefreshConfiguredWidgets();
 	void NormalizeRedundantPropertyChanges();
 	void RefreshSummary();
 	void RebuildWidgetRows();
-	void RefreshTabs();
-	void RefreshConfiguredWidgets();
-	void RefreshWidgetList();
-	void RefreshSelectionState();
+
 	void SelectParentState(FName GroupName);
 	void SelectChildState(FName StateName);
 
@@ -93,32 +102,25 @@ private:
 	void OnWidgetSelected(TSharedPtr<FUMGStateConfigWidgetRow> RowItem, ESelectInfo::Type SelectInfo);
 	void OnWidgetDoubleClicked(TSharedPtr<FUMGStateConfigWidgetRow> RowItem);
 	void AddWidgetToActiveGroupStates(FName WidgetName);
-	void AddWidgetPropertyToActiveState(FName WidgetName, EUMGStateConfigPropertyType PropertyType);
-	void OpenWidgetDetailsPropertyPicker(FName WidgetName);
+	void OpenWidgetDetailsPropertyPicker(FName WidgetName, bool bCommonOnly);
 	void OnWidgetDetailsPropertyFinishedChanging(const FPropertyChangedEvent& PropertyChangedEvent, FName WidgetName, TWeakObjectPtr<UObject> ProxyObject);
+	void CaptureEditablePropertySnapshot(UWidget* Widget, bool bCommonOnly, TMap<FString, FUMGStateConfigPropertyValue>& OutSnapshot) const;
+	void CaptureEditablePropertySnapshotRecursive(UWidget* Widget, UStruct* CurrentStruct, void* CurrentContainer, const FString& PathPrefix, bool bCommonOnly, TMap<FString, FUMGStateConfigPropertyValue>& OutSnapshot) const;
+	void DiffPropertySnapshot(const TMap<FString, FUMGStateConfigPropertyValue>& BeforeSnapshot, const TMap<FString, FUMGStateConfigPropertyValue>& AfterSnapshot, TArray<FUMGStateConfigPropertyValue>& OutChangedValues) const;
+	void FilterNoisyPropertyChanges(TArray<FUMGStateConfigPropertyValue>& InOutChangedValues, TArray<FString>& OutFilteredPaths) const;
 
-	FUMGStatePropertyChange* FindPropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType);
+	FUMGStateConfigDetailsProxyContext* FindDetailsProxyContext(UObject* ProxyObject);
 
-	const FUMGStatePropertyChange* FindPropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const;
-	bool HasPropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const;
-	ECheckBoxState GetPropertyCheckState(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const;
-	void OnPropertyCheckChanged(ECheckBoxState NewState, FName WidgetName, EUMGStateConfigPropertyType PropertyType, TSubclassOf<UWidget> ExpectedClass);
-	void AddOrUpdatePropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType, const FUMGStateConfigPropertyValue& Value, TSubclassOf<UWidget> ExpectedClass);
 	void AddOrUpdateSerializedPropertyChange(FName WidgetName, const FUMGStateConfigPropertyValue& Value, TSubclassOf<UWidget> ExpectedClass);
-	void RemovePropertyChange(FName WidgetName, EUMGStateConfigPropertyType PropertyType);
+
 	FReply RemoveSerializedPropertyChange(FName WidgetName, FString SerializedPropertyPath);
-	void OnAppearanceDetailsFinishedChanging(const FPropertyChangedEvent& PropertyChangedEvent, FName WidgetName, EUMGStateConfigPropertyType PropertyType, TWeakObjectPtr<UObject> ProxyObject);
-
-
-	FUMGStateConfigPropertyValue MakeDefaultValueForWidget(FName WidgetName, EUMGStateConfigPropertyType PropertyType) const;
 
 	TArray<FName> GetConfiguredWidgetNames() const;
-	bool IsWidgetText(const UWidget* Widget) const;
 
-	bool IsWidgetImage(const UWidget* Widget) const;
+	FText GetSerializedPropertyDisplayName(const FString& SerializedPropertyPath) const;
 	FString FormatPropertyChange(const FUMGStatePropertyChange& Change) const;
+
 	void MarkConfigDirty(UUMGStateConfigBlueprintExtension* Extension);
-	TUniquePtr<class FScopedTransaction> BeginConfigEdit(const FText& Description, UUMGStateConfigBlueprintExtension* Extension);
 
 private:
 	TWeakPtr<FWidgetBlueprintEditor> WidgetEditor;
@@ -130,9 +132,12 @@ private:
 
 	TArray<TSharedPtr<FUMGStateConfigWidgetRow>> WidgetRows;
 	TArray<TStrongObjectPtr<UObject>> AppearanceDetailProxyObjects;
+	TArray<FUMGStateConfigDetailsProxyContext> DetailsProxyContexts;
 
 	FName SelectedGroupName;
+	FText LastDetailsCaptureMessage;
+
 	FName SelectedStateName;
+
 	FName SelectedWidgetName;
-	FText CachedSummaryText;
 };

@@ -3,10 +3,9 @@
 #include "Components/Image.h"
 #include "Components/RichTextBlock.h"
 #include "Components/TextBlock.h"
-#include "Engine/Texture2D.h"
-#include "Materials/MaterialInterface.h"
-#include "Slate/SlateBrushAsset.h"
+#include "Components/Widget.h"
 #include "UObject/UnrealType.h"
+
 
 namespace
 {
@@ -16,27 +15,122 @@ struct FResolvedSerializedProperty
 	void* ValuePtr = nullptr;
 };
 
-bool ParseSegment(const FString& Segment, FString& OutName, int32& OutIndex)
+TMap<FString, TArray<FName>>& GetSerializedPropertyPathCache()
 {
-	OutIndex = INDEX_NONE;
-	const int32 OpenBracket = Segment.Find(TEXT("["));
-	if (OpenBracket == INDEX_NONE)
+	static TMap<FString, TArray<FName>> PathCache;
+	return PathCache;
+}
+
+TSet<FSoftObjectPath>& GetLoadedSerializedAssetCache()
+{
+	static TSet<FSoftObjectPath> LoadedAssetPaths;
+	return LoadedAssetPaths;
+}
+
+bool PathMatchesOrIsChildOf(const FString& PropertyPath, const TCHAR* AllowedPath)
+{
+	return PropertyPath == AllowedPath || PropertyPath.StartsWith(FString::Printf(TEXT("%s."), AllowedPath));
+}
+
+bool IsSerializedPropertyPathAllowedInternal(const UWidget* TargetWidget, const FString& PropertyPath)
+{
+	if (!TargetWidget || PropertyPath.IsEmpty())
 	{
-		OutName = Segment;
+		return false;
+	}
+
+	if (PropertyPath == TEXT("Visibility")
+		|| PropertyPath == TEXT("RenderOpacity")
+		|| PathMatchesOrIsChildOf(PropertyPath, TEXT("RenderTransform")))
+	{
 		return true;
 	}
-	if (!Segment.EndsWith(TEXT("]")))
+
+	if (TargetWidget->IsA<UImage>())
+	{
+		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Brush"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ColorAndOpacity"));
+	}
+
+	if (TargetWidget->IsA<UTextBlock>())
+	{
+		return PropertyPath == TEXT("Text")
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ColorAndOpacity"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Font"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ShadowOffset"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ShadowColorAndOpacity"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("StrikeBrush"));
+	}
+
+	if (TargetWidget->IsA<URichTextBlock>())
+	{
+		return PropertyPath == TEXT("Text");
+	}
+
+	return false;
+}
+
+bool IsSerializedPropertySupported(const FProperty* Property)
+
+{
+	if (!Property)
 	{
 		return false;
 	}
-	OutName = Segment.Left(OpenBracket);
-	const FString IndexText = Segment.Mid(OpenBracket + 1, Segment.Len() - OpenBracket - 2);
-	if (IndexText.IsEmpty() || !IndexText.IsNumeric())
+
+	const EPropertyFlags UnsupportedFlags = CPF_Transient | CPF_EditConst | CPF_Deprecated | CPF_DisableEditOnInstance;
+	if (Property->HasAnyPropertyFlags(UnsupportedFlags))
 	{
 		return false;
 	}
-	OutIndex = FCString::Atoi(*IndexText);
-	return OutIndex >= 0;
+
+	if (CastField<FDelegateProperty>(Property)
+		|| CastField<FMulticastDelegateProperty>(Property)
+		|| CastField<FArrayProperty>(Property)
+		|| CastField<FMapProperty>(Property)
+		|| CastField<FSetProperty>(Property))
+
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void CollectSerializedPropertyAssetReferences(FProperty* Property, void* ValuePtr, TArray<FSoftObjectPath>& OutReferences)
+{
+	if (!Property || !ValuePtr)
+	{
+		return;
+	}
+
+	if (FObjectPropertyBase* ObjectProperty = CastField<FObjectPropertyBase>(Property))
+	{
+		if (UObject* ObjectValue = ObjectProperty->GetObjectPropertyValue(ValuePtr))
+		{
+			OutReferences.AddUnique(FSoftObjectPath(ObjectValue));
+		}
+		return;
+	}
+
+	if (FSoftObjectProperty* SoftObjectProperty = CastField<FSoftObjectProperty>(Property))
+	{
+		const FSoftObjectPtr SoftObjectValue = SoftObjectProperty->GetPropertyValue(ValuePtr);
+		if (!SoftObjectValue.IsNull())
+		{
+			OutReferences.AddUnique(SoftObjectValue.ToSoftObjectPath());
+		}
+		return;
+	}
+
+	if (FStructProperty* StructProperty = CastField<FStructProperty>(Property))
+	{
+		for (TFieldIterator<FProperty> It(StructProperty->Struct); It; ++It)
+		{
+			FProperty* ChildProperty = *It;
+			CollectSerializedPropertyAssetReferences(ChildProperty, ChildProperty->ContainerPtrToValuePtr<void>(ValuePtr), OutReferences);
+		}
+	}
 }
 
 bool ResolveSerializedProperty(UObject* Object, const FString& PropertyPath, FResolvedSerializedProperty& OutResolved)
@@ -46,13 +140,24 @@ bool ResolveSerializedProperty(UObject* Object, const FString& PropertyPath, FRe
 		return false;
 	}
 
-	TArray<FString> PathSegments;
-	PropertyPath.ParseIntoArray(PathSegments, TEXT("."), true);
-	if (PathSegments.Num() == 0)
+	TArray<FName>* CachedPathSegments = GetSerializedPropertyPathCache().Find(PropertyPath);
+	if (!CachedPathSegments)
+	{
+		TArray<FString> PathSegmentStrings;
+		PropertyPath.ParseIntoArray(PathSegmentStrings, TEXT("."), true);
+		TArray<FName> ParsedPathSegments;
+		for (const FString& PathSegmentString : PathSegmentStrings)
+		{
+			ParsedPathSegments.Add(FName(*PathSegmentString));
+		}
+		CachedPathSegments = &GetSerializedPropertyPathCache().Add(PropertyPath, MoveTemp(ParsedPathSegments));
+	}
+	if (!CachedPathSegments || CachedPathSegments->Num() == 0)
 	{
 		return false;
 	}
 
+	const TArray<FName>& PathSegments = *CachedPathSegments;
 	UStruct* CurrentStruct = Object->GetClass();
 	void* CurrentContainer = Object;
 	for (int32 SegmentIndex = 0; SegmentIndex < PathSegments.Num(); ++SegmentIndex)
@@ -62,46 +167,21 @@ bool ResolveSerializedProperty(UObject* Object, const FString& PropertyPath, FRe
 			return false;
 		}
 
-		FString SegmentName;
-		int32 ArrayIndex = INDEX_NONE;
-		if (!ParseSegment(PathSegments[SegmentIndex], SegmentName, ArrayIndex))
-		{
-			return false;
-		}
-
-		FProperty* Property = CurrentStruct->FindPropertyByName(FName(*SegmentName));
-		if (!Property)
+		FProperty* Property = CurrentStruct->FindPropertyByName(PathSegments[SegmentIndex]);
+		if (!Property || !IsSerializedPropertySupported(Property))
 		{
 			return false;
 		}
 
 		void* ValuePtr = Property->ContainerPtrToValuePtr<void>(CurrentContainer);
-		FProperty* ElementProperty = Property;
-
-		if (ArrayIndex != INDEX_NONE)
-		{
-			FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property);
-			if (!ArrayProperty)
-			{
-				return false;
-			}
-			FScriptArrayHelper Helper(ArrayProperty, ValuePtr);
-			if (!Helper.IsValidIndex(ArrayIndex))
-			{
-				return false;
-			}
-			ValuePtr = Helper.GetRawPtr(ArrayIndex);
-			ElementProperty = ArrayProperty->Inner;
-		}
-
 		if (SegmentIndex == PathSegments.Num() - 1)
 		{
-			OutResolved.Property = ElementProperty;
+			OutResolved.Property = Property;
 			OutResolved.ValuePtr = ValuePtr;
 			return true;
 		}
 
-		FStructProperty* StructProperty = CastField<FStructProperty>(ElementProperty);
+		FStructProperty* StructProperty = CastField<FStructProperty>(Property);
 		if (!StructProperty)
 		{
 			return false;
@@ -125,287 +205,108 @@ bool ExportSerializedPropertyValue(UObject* Object, const FString& PropertyPath,
 	FString ExportedValue;
 	Resolved.Property->ExportTextItem_Direct(ExportedValue, Resolved.ValuePtr, nullptr, Object, PPF_None);
 	OutValue.SerializedPropertyPath = PropertyPath;
+	OutValue.SerializedPropertyTypeName = Resolved.Property->GetCPPType();
 	OutValue.SerializedPropertyValue = ExportedValue;
+	OutValue.SerializedReferencedAssets.Reset();
+	CollectSerializedPropertyAssetReferences(Resolved.Property, Resolved.ValuePtr, OutValue.SerializedReferencedAssets);
 	return true;
 }
 
-bool ImportSerializedPropertyValue(UWidget* TargetWidget, const FUMGStateConfigPropertyValue& Value)
+bool ImportSerializedPropertyValue(UWidget* TargetWidget, const FUMGStateConfigPropertyValue& Value, bool bRefreshAfterApply)
 {
-	FResolvedSerializedProperty Resolved;
-	if (!ResolveSerializedProperty(TargetWidget, Value.SerializedPropertyPath, Resolved) || !Resolved.Property || !Resolved.ValuePtr)
+	if (!IsSerializedPropertyPathAllowedInternal(TargetWidget, Value.SerializedPropertyPath))
 	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("Serialized property path is not allowed: Widget=%s, PropertyPath=%s"),
+			TargetWidget ? *TargetWidget->GetName() : TEXT("None"),
+			*Value.SerializedPropertyPath);
 		return false;
 	}
+
+	FResolvedSerializedProperty Resolved;
+
+	if (!ResolveSerializedProperty(TargetWidget, Value.SerializedPropertyPath, Resolved) || !Resolved.Property || !Resolved.ValuePtr)
+	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("Resolve serialized property failed: Widget=%s, PropertyPath=%s"),
+			TargetWidget ? *TargetWidget->GetName() : TEXT("None"),
+			*Value.SerializedPropertyPath);
+		return false;
+	}
+
+	FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(Value.SerializedReferencedAssets);
+
+
 
 	const TCHAR* ImportResult = Resolved.Property->ImportText_Direct(*Value.SerializedPropertyValue, Resolved.ValuePtr, TargetWidget, PPF_None);
 	if (!ImportResult)
 	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("Import serialized property failed: Widget=%s, PropertyPath=%s, Value=%s"),
+			*TargetWidget->GetName(),
+			*Value.SerializedPropertyPath,
+			*Value.SerializedPropertyValue);
 		return false;
 	}
 
-	TargetWidget->SynchronizeProperties();
-	TargetWidget->InvalidateLayoutAndVolatility();
+	if (bRefreshAfterApply)
+	{
+		TargetWidget->SynchronizeProperties();
+		TargetWidget->InvalidateLayoutAndVolatility();
+	}
 	return true;
 }
 
-bool AreLinearColorsEqual(const FLinearColor& A, const FLinearColor& B)
 
-{
-	return A.Equals(B, KINDA_SMALL_NUMBER);
-}
-
-bool AreSlateColorsEqual(const FSlateColor& A, const FSlateColor& B)
-{
-	return AreLinearColorsEqual(A.GetSpecifiedColor(), B.GetSpecifiedColor());
-}
-
-bool AreBrushesEqual(const FSlateBrush& A, const FSlateBrush& B)
-{
-	return A.GetResourceObject() == B.GetResourceObject()
-		&& A.ImageSize.Equals(B.ImageSize, KINDA_SMALL_NUMBER)
-		&& A.Margin == B.Margin
-		&& A.DrawAs == B.DrawAs
-		&& A.Tiling == B.Tiling
-		&& A.Mirroring == B.Mirroring
-		&& AreSlateColorsEqual(A.TintColor, B.TintColor);
-}
 }
 
 bool FUMGStateConfigPropertyRuntimeLibrary::ArePropertyValuesEqual(EUMGStateConfigPropertyType PropertyType, const FUMGStateConfigPropertyValue& A, const FUMGStateConfigPropertyValue& B)
 {
-	switch (PropertyType)
+	if (PropertyType != EUMGStateConfigPropertyType::SerializedProperty)
 	{
-	case EUMGStateConfigPropertyType::Visibility:
-		return A.VisibilityValue == B.VisibilityValue;
-	case EUMGStateConfigPropertyType::RenderOpacity:
-		return FMath::IsNearlyEqual(A.FloatValue, B.FloatValue, KINDA_SMALL_NUMBER);
-	case EUMGStateConfigPropertyType::Text:
-		return A.TextValue.EqualTo(B.TextValue);
-	case EUMGStateConfigPropertyType::TextAppearance:
-		return AreLinearColorsEqual(A.ColorValue, B.ColorValue)
-			&& A.FontValue == B.FontValue
-			&& A.VectorValue.Equals(B.VectorValue, KINDA_SMALL_NUMBER)
-			&& AreLinearColorsEqual(A.SecondaryColorValue, B.SecondaryColorValue);
-	case EUMGStateConfigPropertyType::TextColor:
-	case EUMGStateConfigPropertyType::BrushTint:
-		return AreLinearColorsEqual(A.ColorValue, B.ColorValue);
-	case EUMGStateConfigPropertyType::BrushImage:
-		return A.ObjectValue == B.ObjectValue;
-	case EUMGStateConfigPropertyType::ImageAppearance:
-		return AreBrushesEqual(A.BrushValue, B.BrushValue)
-			&& AreLinearColorsEqual(A.ColorValue, B.ColorValue);
-	case EUMGStateConfigPropertyType::SerializedProperty:
-		return A.SerializedPropertyPath == B.SerializedPropertyPath
-			&& A.SerializedPropertyValue == B.SerializedPropertyValue;
-	default:
 		return false;
 	}
-}
 
+	return A.SerializedPropertyPath == B.SerializedPropertyPath
+		&& A.SerializedPropertyValue == B.SerializedPropertyValue;
+}
 
 bool FUMGStateConfigPropertyRuntimeLibrary::CaptureCurrentValue(UWidget* TargetWidget, EUMGStateConfigPropertyType PropertyType, FUMGStateConfigPropertyValue& OutValue)
 {
-	if (!TargetWidget)
+	if (!TargetWidget || PropertyType != EUMGStateConfigPropertyType::SerializedProperty)
+	{
+		return false;
+	}
+	if (!IsSerializedPropertyPathAllowed(TargetWidget, OutValue.SerializedPropertyPath))
 	{
 		return false;
 	}
 
-	switch (PropertyType)
-	{
-	case EUMGStateConfigPropertyType::Visibility:
-		OutValue.VisibilityValue = TargetWidget->GetVisibility();
-		return true;
-	case EUMGStateConfigPropertyType::RenderOpacity:
-		OutValue.FloatValue = TargetWidget->GetRenderOpacity();
-		return true;
-	case EUMGStateConfigPropertyType::Text:
-		if (const UTextBlock* TextBlock = Cast<UTextBlock>(TargetWidget))
-		{
-			OutValue.TextValue = TextBlock->GetText();
-			return true;
-		}
-		if (const URichTextBlock* RichTextBlock = Cast<URichTextBlock>(TargetWidget))
-		{
-			OutValue.TextValue = RichTextBlock->GetText();
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::TextAppearance:
-		if (const UTextBlock* TextBlock = Cast<UTextBlock>(TargetWidget))
-		{
-			OutValue.ColorValue = TextBlock->GetColorAndOpacity().GetSpecifiedColor();
-			OutValue.FontValue = TextBlock->GetFont();
-			OutValue.VectorValue = TextBlock->GetShadowOffset();
-			OutValue.SecondaryColorValue = TextBlock->GetShadowColorAndOpacity();
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::TextColor:
-		if (const UTextBlock* TextBlock = Cast<UTextBlock>(TargetWidget))
-		{
-			OutValue.ColorValue = TextBlock->GetColorAndOpacity().GetSpecifiedColor();
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::BrushImage:
-		if (const UImage* Image = Cast<UImage>(TargetWidget))
-		{
-			OutValue.ObjectValue = Image->GetBrush().GetResourceObject();
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::BrushTint:
-		if (const UImage* Image = Cast<UImage>(TargetWidget))
-		{
-			OutValue.ColorValue = Image->GetColorAndOpacity();
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::ImageAppearance:
-		if (const UImage* Image = Cast<UImage>(TargetWidget))
-		{
-			OutValue.BrushValue = Image->GetBrush();
-			OutValue.ColorValue = Image->GetColorAndOpacity();
-			OutValue.ObjectValue = Image->GetBrush().GetResourceObject();
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::SerializedProperty:
-		return ExportSerializedPropertyValue(TargetWidget, OutValue.SerializedPropertyPath, OutValue);
-	default:
-		return false;
-	}
+	return ExportSerializedPropertyValue(TargetWidget, OutValue.SerializedPropertyPath, OutValue);
 }
 
-
-bool FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(UWidget* TargetWidget, EUMGStateConfigPropertyType PropertyType, const FUMGStateConfigPropertyValue& Value)
+bool FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(UWidget* TargetWidget, EUMGStateConfigPropertyType PropertyType, const FUMGStateConfigPropertyValue& Value, bool bRefreshAfterApply)
 {
-	if (!TargetWidget)
+	if (!TargetWidget || PropertyType != EUMGStateConfigPropertyType::SerializedProperty)
 	{
 		return false;
 	}
 
-	switch (PropertyType)
+	return ImportSerializedPropertyValue(TargetWidget, Value, bRefreshAfterApply);
+}
+
+bool FUMGStateConfigPropertyRuntimeLibrary::IsSerializedPropertyPathAllowed(const UWidget* TargetWidget, const FString& PropertyPath)
+{
+	return IsSerializedPropertyPathAllowedInternal(TargetWidget, PropertyPath);
+}
+
+void FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(const TArray<FSoftObjectPath>& ReferencedAssets)
+{
+	for (const FSoftObjectPath& ReferencedAsset : ReferencedAssets)
 	{
-	case EUMGStateConfigPropertyType::Visibility:
-		if (TargetWidget->GetVisibility() != Value.VisibilityValue)
+		if (!ReferencedAsset.IsNull() && !GetLoadedSerializedAssetCache().Contains(ReferencedAsset))
 		{
-			TargetWidget->SetVisibility(Value.VisibilityValue);
+			ReferencedAsset.TryLoad();
+			GetLoadedSerializedAssetCache().Add(ReferencedAsset);
 		}
-		return true;
-	case EUMGStateConfigPropertyType::RenderOpacity:
-	{
-		const float TargetOpacity = FMath::Clamp(Value.FloatValue, 0.0f, 1.0f);
-		if (!FMath::IsNearlyEqual(TargetWidget->GetRenderOpacity(), TargetOpacity, KINDA_SMALL_NUMBER))
-		{
-			TargetWidget->SetRenderOpacity(TargetOpacity);
-		}
-		return true;
-	}
-	case EUMGStateConfigPropertyType::Text:
-		if (UTextBlock* TextBlock = Cast<UTextBlock>(TargetWidget))
-		{
-			if (!TextBlock->GetText().EqualTo(Value.TextValue))
-			{
-				TextBlock->SetText(Value.TextValue);
-			}
-			return true;
-		}
-		if (URichTextBlock* RichTextBlock = Cast<URichTextBlock>(TargetWidget))
-		{
-			if (!RichTextBlock->GetText().EqualTo(Value.TextValue))
-			{
-				RichTextBlock->SetText(Value.TextValue);
-			}
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::TextAppearance:
-		if (UTextBlock* TextBlock = Cast<UTextBlock>(TargetWidget))
-		{
-			if (!AreLinearColorsEqual(TextBlock->GetColorAndOpacity().GetSpecifiedColor(), Value.ColorValue))
-			{
-				TextBlock->SetColorAndOpacity(FSlateColor(Value.ColorValue));
-			}
-			if (!(TextBlock->GetFont() == Value.FontValue))
-			{
-				TextBlock->SetFont(Value.FontValue);
-			}
-			if (!TextBlock->GetShadowOffset().Equals(Value.VectorValue, KINDA_SMALL_NUMBER))
-			{
-				TextBlock->SetShadowOffset(Value.VectorValue);
-			}
-			if (!AreLinearColorsEqual(TextBlock->GetShadowColorAndOpacity(), Value.SecondaryColorValue))
-			{
-				TextBlock->SetShadowColorAndOpacity(Value.SecondaryColorValue);
-			}
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::TextColor:
-		if (UTextBlock* TextBlock = Cast<UTextBlock>(TargetWidget))
-		{
-			if (!AreLinearColorsEqual(TextBlock->GetColorAndOpacity().GetSpecifiedColor(), Value.ColorValue))
-			{
-				TextBlock->SetColorAndOpacity(FSlateColor(Value.ColorValue));
-			}
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::BrushImage:
-		if (UImage* Image = Cast<UImage>(TargetWidget))
-		{
-			if (Image->GetBrush().GetResourceObject() == Value.ObjectValue.Get())
-			{
-				return true;
-			}
-			if (UTexture2D* Texture = Cast<UTexture2D>(Value.ObjectValue.Get()))
-			{
-				Image->SetBrushFromTexture(Texture, false);
-				return true;
-			}
-			if (UMaterialInterface* Material = Cast<UMaterialInterface>(Value.ObjectValue.Get()))
-			{
-				Image->SetBrushFromMaterial(Material);
-				return true;
-			}
-			if (USlateBrushAsset* BrushAsset = Cast<USlateBrushAsset>(Value.ObjectValue.Get()))
-			{
-				Image->SetBrushFromAsset(BrushAsset);
-				return true;
-			}
-			Image->SetBrushResourceObject(Value.ObjectValue.Get());
-			return Value.ObjectValue != nullptr;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::BrushTint:
-		if (UImage* Image = Cast<UImage>(TargetWidget))
-		{
-			if (!AreLinearColorsEqual(Image->GetColorAndOpacity(), Value.ColorValue))
-			{
-				Image->SetColorAndOpacity(Value.ColorValue);
-			}
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::ImageAppearance:
-		if (UImage* Image = Cast<UImage>(TargetWidget))
-		{
-			if (!AreBrushesEqual(Image->GetBrush(), Value.BrushValue))
-			{
-				Image->SetBrush(Value.BrushValue);
-			}
-			if (!AreLinearColorsEqual(Image->GetColorAndOpacity(), Value.ColorValue))
-			{
-				Image->SetColorAndOpacity(Value.ColorValue);
-			}
-			return true;
-		}
-		return false;
-	case EUMGStateConfigPropertyType::SerializedProperty:
-		return ImportSerializedPropertyValue(TargetWidget, Value);
-	default:
-		return false;
 	}
 }
+
 

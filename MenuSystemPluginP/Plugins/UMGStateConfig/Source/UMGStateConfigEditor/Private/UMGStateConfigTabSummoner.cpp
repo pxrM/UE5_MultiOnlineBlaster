@@ -24,17 +24,7 @@ FUMGStateConfigTabSummoner::FUMGStateConfigTabSummoner(TSharedPtr<FWidgetBluepri
 TSharedRef<SDockTab> FUMGStateConfigTabSummoner::SpawnTab(const FWorkflowTabSpawnInfo& Info) const
 {
 	TSharedRef<SDockTab> Tab = FWorkflowTabFactory::SpawnTab(Info);
-	TWeakPtr<FWidgetBlueprintEditor> WeakEditor = WidgetEditor;
-	Tab->SetOnTabClosed(SDockTab::FOnTabClosedCallback::CreateLambda([WeakEditor](TSharedRef<SDockTab>)
-	{
-		TSharedPtr<FWidgetBlueprintEditor> WidgetEditorPtr = WeakEditor.Pin();
-		if (WidgetEditorPtr.IsValid())
-		{
-			WidgetEditorPtr->RefreshPreview();
-			WidgetEditorPtr->InvalidatePreview(true);
-			FSlateApplication::Get().InvalidateAllWidgets(false);
-		}
-	}));
+	Tab->SetOnTabClosed(SDockTab::FOnTabClosedCallback::CreateRaw(this, &FUMGStateConfigTabSummoner::HandleTabClosed));
 	return Tab;
 }
 
@@ -42,6 +32,17 @@ TSharedRef<SWidget> FUMGStateConfigTabSummoner::CreateTabBody(const FWorkflowTab
 {
 	TSharedPtr<FWidgetBlueprintEditor> WidgetEditorPtr = WidgetEditor.Pin();
 	return SNew(SUIStateConfigPanel, WidgetEditorPtr);
+}
+
+void FUMGStateConfigTabSummoner::HandleTabClosed(TSharedRef<SDockTab> ClosedTab) const
+{
+	TSharedPtr<FWidgetBlueprintEditor> WidgetEditorPtr = WidgetEditor.Pin();
+	if (WidgetEditorPtr.IsValid())
+	{
+		WidgetEditorPtr->RefreshPreview();
+		WidgetEditorPtr->InvalidatePreview(true);
+		FSlateApplication::Get().InvalidateAllWidgets(false);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

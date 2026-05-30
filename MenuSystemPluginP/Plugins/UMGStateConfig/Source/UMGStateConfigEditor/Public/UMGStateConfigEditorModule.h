@@ -15,6 +15,4 @@ public:
 
 private:
 	void RegisterWidgetBlueprintTabs(const FWidgetBlueprintApplicationMode& ApplicationMode, FWorkflowAllowedTabSet& TabFactories);
-
-	FDelegateHandle ToolbarExtenderHandle;
 };
