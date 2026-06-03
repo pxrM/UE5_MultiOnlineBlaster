@@ -13,6 +13,6 @@ public:
 	static bool ArePropertyValuesEqual(EUMGStateConfigPropertyType PropertyType, const FUMGStateConfigPropertyValue& A, const FUMGStateConfigPropertyValue& B);
 	static bool IsSerializedPropertyPathAllowed(const UWidget* TargetWidget, const FString& PropertyPath);
 	static void PreloadReferencedAssets(const TArray<FSoftObjectPath>& ReferencedAssets, bool bAsync = false);
-
+	static void ResetCaches();
 
 };

@@ -370,6 +370,12 @@ bool FUMGStateConfigPropertyRuntimeLibrary::IsSerializedPropertyPathAllowed(cons
 	return IsSerializedPropertyPathAllowedInternal(TargetWidget, PropertyPath);
 }
 
+void FUMGStateConfigPropertyRuntimeLibrary::ResetCaches()
+{
+	GetSerializedPropertyPathCache().Reset();
+	GetLoadedSerializedAssetCache().Reset();
+}
+
 void FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(const TArray<FSoftObjectPath>& ReferencedAssets, bool bAsync)
 {
 	TArray<FSoftObjectPath> AssetsToLoad;

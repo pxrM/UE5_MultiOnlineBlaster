@@ -32,11 +32,22 @@ bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FNam
 		return false;
 	}
 
-	// 只恢复目标组之前应用的属性值（而非所有组）
+	// 收集新状态将要覆盖的 ChangeKey，避免先恢复再覆盖的无效操作
+	TSet<FUMGStateConfigChangeKey> NewStateChangeKeys;
+	for (const FUMGStatePropertyChange& Change : TargetState->PropertyChanges)
+	{
+		NewStateChangeKeys.Add(FUMGStateConfigChangeKey{ Change.TargetWidgetName, Change.PropertyType, Change.Value.SerializedPropertyPath });
+	}
+
+	// 只恢复目标组中不会被新状态覆盖的属性值
 	if (FUMGActiveStateGroupRuntime* ExistingActiveGroup = ActiveStateGroups.Find(TargetGroup->GroupName))
 	{
 		for (const TPair<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue>& RestorePair : ExistingActiveGroup->RestoreValues)
 		{
+			if (NewStateChangeKeys.Contains(RestorePair.Key))
+			{
+				continue;
+			}
 			UWidget* RestoreTargetWidget = ResolveWidget(TargetUserWidget, RestorePair.Key.TargetWidgetName);
 			if (RestoreTargetWidget)
 			{
@@ -73,6 +84,7 @@ void UUMGStateConfigUserWidgetExtension::SetRuntimeData(const FUMGStateConfigRun
 	RuntimeData = InRuntimeData;
 	NormalizeRuntimeData();
 	InvalidateLookupCache();
+	FUMGStateConfigPropertyRuntimeLibrary::ResetCaches();
 	PreloadReferencedAssets(/*bAsync=*/ true);
 }
 
