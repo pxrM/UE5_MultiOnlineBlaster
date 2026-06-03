@@ -100,7 +100,7 @@ struct FSceneHUDLayoutData : public FSceneHUDWidgetData
 	float LayoutInterval = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<EHUDLayoutType> LayoutType;
+	EHUDLayoutType LayoutType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<EHorizontalAlignment> HorizontalAlignment;

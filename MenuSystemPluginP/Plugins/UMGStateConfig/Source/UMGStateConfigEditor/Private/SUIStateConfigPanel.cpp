@@ -1510,7 +1510,10 @@ void SUIStateConfigPanel::OnWidgetDetailsPropertyFinishedChanging(const FPropert
 			LOCTEXT("DetailsCaptureSaved", "最近 Details 捕获：保存 {0} 条属性，过滤 {1} 条联动属性。"),
 			FText::AsNumber(SavedCount),
 			FText::AsNumber(FilteredCount));
-		RefreshAll();
+		NormalizeRedundantPropertyChanges();
+		RefreshWidgetList();
+		RefreshStateTabs();
+		RefreshSummary();
 	}
 	else
 	{

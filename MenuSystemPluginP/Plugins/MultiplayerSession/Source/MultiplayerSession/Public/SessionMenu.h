@@ -25,7 +25,7 @@ protected:
 	virtual void NativeConstruct()override;
 	virtual void NativeDestruct()override;
 
-	//自定义委托的回调
+	//鑷畾涔夊鎵樼殑鍥炶皟
 	UFUNCTION()
 		void OnCreateSession(bool bWasSuessionful);
 	void OnFindSession(const TArray<FOnlineSessionSearchResult>& SessionSearch, bool bWasSuccessful);

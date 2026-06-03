@@ -26,12 +26,12 @@ public:
 	FString URL;
 	FString MD5Str;
 	FString CurFilePath;
-	FString Range;	//ÏÂÔØ·¶Î§
-	bool bFinished;	//ÏÂÔØÊÇ·ñÍê³É
-	bool bWaitRreponse; //ÊÇ·ñĞèÒªµÈ´ı
-	int32 StarPos;  //ÎÄ¼şÏÂÔØµÄ×Ö½ÚÎ»ÖÃ
-	int32 Size; //×ÓÈÎÎñµÄ×Ö½Ú´óĞ¡
-	TArray<uint8> RawData; //ÏÂÔØºóµÄÊı¾İ
-	double RequestTime; //ÇëÇóÊ±¼ä
-	TSharedPtr<IHttpRequest> RequestPtr; //ÇëÇóÖ¸Õë
+	FString Range;	//ä¸‹è½½èŒƒå›´
+	bool bFinished;	//ä¸‹è½½æ˜¯å¦å®Œæˆ
+	bool bWaitRreponse; //æ˜¯å¦éœ€è¦ç­‰å¾…
+	int32 StarPos;  //æ–‡ä»¶ä¸‹è½½çš„å­—èŠ‚ä½ç½®
+	int32 Size; //å­ä»»åŠ¡çš„å­—èŠ‚å¤§å°
+	TArray<uint8> RawData; //ä¸‹è½½åçš„æ•°æ®
+	double RequestTime; //è¯·æ±‚æ—¶é—´
+	TSharedPtr<IHttpRequest> RequestPtr; //è¯·æ±‚æŒ‡é’ˆ
 };

@@ -38,7 +38,7 @@ void SSidebarLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 	TSharedRef<SVerticalBox> VerticalBox = SNew(SVerticalBox);
 	if (LayoutSettings.bIsLoadingWidgetAtTop)
 	{
-		// 在顶部添加loading widget
+		// 鍦ㄩ《閮ㄦ坊鍔爈oading widget
 		VerticalBox.Get().AddSlot()
 			.AutoHeight()
 			.HAlign(LayoutSettings.LoadingWidgetAlignment.HorizontalAlignment)
@@ -47,7 +47,7 @@ void SSidebarLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 				LoadingWidget
 			];
 
-		// 在中间添加SSpacer
+		// 鍦ㄤ腑闂存坊鍔燬Spacer
 		VerticalBox.Get().AddSlot()
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
@@ -57,7 +57,7 @@ void SSidebarLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 					.Size(FVector2D(0.0f, LayoutSettings.Space))
 			];
 
-		// 在底部添加Tip widget
+		// 鍦ㄥ簳閮ㄦ坊鍔燭ip widget
 		VerticalBox.Get().AddSlot()
 			.AutoHeight()
 			.HAlign(LayoutSettings.TipAlignment.HorizontalAlignment)
@@ -68,7 +68,7 @@ void SSidebarLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 	}
 	else
 	{
-		// 在顶部添加loading widget
+		// 鍦ㄩ《閮ㄦ坊鍔爈oading widget
 		VerticalBox.Get().AddSlot()
 			.AutoHeight()
 			.HAlign(LayoutSettings.TipAlignment.HorizontalAlignment)
@@ -77,7 +77,7 @@ void SSidebarLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 				SNew(STipWidget, Settings.TipWidget)
 			];
 
-		// 在中间添加SSpacer
+		// 鍦ㄤ腑闂存坊鍔燬Spacer
 		VerticalBox.Get().AddSlot()
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
@@ -87,7 +87,7 @@ void SSidebarLayout::Construct(const FArguments& InArgs, const FALoadingScreenSe
 					.Size(FVector2D(0.0f, LayoutSettings.Space))
 			];
 
-		// 在底部添加loading widget
+		// 鍦ㄥ簳閮ㄦ坊鍔爈oading widget
 		VerticalBox.Get().AddSlot()
 			.AutoHeight()
 			.HAlign(LayoutSettings.LoadingWidgetAlignment.HorizontalAlignment)

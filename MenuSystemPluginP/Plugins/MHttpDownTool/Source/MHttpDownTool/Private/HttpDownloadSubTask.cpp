@@ -24,9 +24,9 @@ TSharedPtr<IHttpRequest> FHttpDownloadSubTask::CreateRequest()
 	RequestPtr = FHttpModule::Get().CreateRequest();
 	RequestPtr->SetURL(URL);
 	RequestPtr->SetVerb(TEXT("GET"));
-	RequestPtr->SetHeader(TEXT("Range"), Range);	//ÏÂÔØ¸ÃÎÄ¼şµÄÒ»¸ö·¶Î§
+	RequestPtr->SetHeader(TEXT("Range"), Range);	//ä¸‹è½½è¯¥æ–‡ä»¶çš„ä¸€ä¸ªèŒƒå›´
 	bWaitRreponse = true;
-	RequestTime = FApp::GetCurrentTime(); //µ±Ç°ÔËĞĞÊ±¼ä
+	RequestTime = FApp::GetCurrentTime(); //å½“å‰è¿è¡Œæ—¶é—´
 
 	return RequestPtr;
 }

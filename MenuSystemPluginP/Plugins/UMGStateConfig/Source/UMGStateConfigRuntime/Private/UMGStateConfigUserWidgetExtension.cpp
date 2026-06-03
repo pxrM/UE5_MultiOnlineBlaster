@@ -32,11 +32,20 @@ bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FNam
 		return false;
 	}
 
-	RestoreGlobalValues(TargetUserWidget);
-	for (TPair<FName, FUMGActiveStateGroupRuntime>& ActiveGroupPair : ActiveStateGroups)
+	// 只恢复目标组之前应用的属性值（而非所有组）
+	if (FUMGActiveStateGroupRuntime* ExistingActiveGroup = ActiveStateGroups.Find(TargetGroup->GroupName))
 	{
-		ActiveGroupPair.Value.ActiveChangeKeys.Empty();
-		ActiveGroupPair.Value.RestoreValues.Empty();
+		for (const TPair<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue>& RestorePair : ExistingActiveGroup->RestoreValues)
+		{
+			UWidget* RestoreTargetWidget = ResolveWidget(TargetUserWidget, RestorePair.Key.TargetWidgetName);
+			if (RestoreTargetWidget)
+			{
+				FUMGStateConfigPropertyRuntimeLibrary::ApplyValue(RestoreTargetWidget, RestorePair.Key.PropertyType, RestorePair.Value, false);
+				QueueWidgetRefresh(RestoreTargetWidget);
+			}
+		}
+		ExistingActiveGroup->ActiveChangeKeys.Empty();
+		ExistingActiveGroup->RestoreValues.Empty();
 	}
 
 	FUMGActiveStateGroupRuntime& ActiveGroupRuntime = ActiveStateGroups.FindOrAdd(TargetGroup->GroupName);

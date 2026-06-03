@@ -4,7 +4,7 @@
 
 
 /**
- * ÈÎÎñÊÂ¼şid
+ * ä»»åŠ¡äº‹ä»¶id
  */
 UENUM(BlueprintType)
 enum class EMTaskEvent : uint8
@@ -23,7 +23,7 @@ enum class EMTaskEvent : uint8
 
 
 /// <summary>
-/// ÈÎÎñµÄÏÂÔØ×´Ì¬
+/// ä»»åŠ¡çš„ä¸‹è½½çŠ¶æ€
 /// </summary>
 UENUM(BlueprintType)
 enum class EMTaskState : uint8
