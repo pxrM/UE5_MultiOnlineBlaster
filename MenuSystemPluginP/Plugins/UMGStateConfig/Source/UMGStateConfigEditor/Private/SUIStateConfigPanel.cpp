@@ -94,12 +94,23 @@ bool IsCommonSerializedPropertyPath(const FString& PropertyPath)
 	return PropertyPath == TEXT("Visibility")
 		|| PropertyPath == TEXT("RenderOpacity")
 		|| PropertyPath == TEXT("Text")
+		|| PropertyPath == TEXT("HintText")
 		|| PropertyPath == TEXT("Brush.ResourceObject")
 		|| PropertyPath.StartsWith(TEXT("ColorAndOpacity"))
 		|| PropertyPath.StartsWith(TEXT("Brush.TintColor"))
 		|| PropertyPath.StartsWith(TEXT("Brush.ImageSize"))
 		|| PropertyPath == TEXT("Font.Size")
-		|| PropertyPath.StartsWith(TEXT("RenderTransform"));
+		|| PropertyPath.StartsWith(TEXT("RenderTransform"))
+		|| PropertyPath.StartsWith(TEXT("Style"))
+		|| PropertyPath == TEXT("Percent")
+		|| PropertyPath == TEXT("Value")
+		|| PropertyPath.StartsWith(TEXT("FillColorAndOpacity"))
+		|| PropertyPath.StartsWith(TEXT("SliderBarColor"))
+		|| PropertyPath.StartsWith(TEXT("SliderHandleColor"))
+		|| PropertyPath.StartsWith(TEXT("BackgroundColor"))
+		|| PropertyPath.StartsWith(TEXT("ContentColorAndOpacity"))
+		|| PropertyPath.StartsWith(TEXT("Padding"))
+		|| PropertyPath.StartsWith(TEXT("ForegroundColor"));
 }
 
 FString BuildDetailsPropertyPath(const FPropertyAndParent& PropertyAndParent)
@@ -131,12 +142,23 @@ bool IsCommonSerializedPropertyPathOrParent(const FString& PropertyPath)
 		TEXT("Visibility"),
 		TEXT("RenderOpacity"),
 		TEXT("Text"),
+		TEXT("HintText"),
 		TEXT("Brush.ResourceObject"),
 		TEXT("ColorAndOpacity"),
 		TEXT("Brush.TintColor"),
 		TEXT("Brush.ImageSize"),
 		TEXT("Font.Size"),
-		TEXT("RenderTransform")
+		TEXT("RenderTransform"),
+		TEXT("Style"),
+		TEXT("Percent"),
+		TEXT("Value"),
+		TEXT("FillColorAndOpacity"),
+		TEXT("SliderBarColor"),
+		TEXT("SliderHandleColor"),
+		TEXT("BackgroundColor"),
+		TEXT("ContentColorAndOpacity"),
+		TEXT("Padding"),
+		TEXT("ForegroundColor")
 	};
 
 	if (IsCommonSerializedPropertyPath(PropertyPath))

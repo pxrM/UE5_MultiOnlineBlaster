@@ -73,7 +73,7 @@ void UUMGStateConfigUserWidgetExtension::SetRuntimeData(const FUMGStateConfigRun
 	RuntimeData = InRuntimeData;
 	NormalizeRuntimeData();
 	InvalidateLookupCache();
-	PreloadReferencedAssets();
+	PreloadReferencedAssets(/*bAsync=*/ true);
 }
 
 
@@ -293,18 +293,21 @@ void UUMGStateConfigUserWidgetExtension::NormalizeRuntimeData()
 	}
 }
 
-void UUMGStateConfigUserWidgetExtension::PreloadReferencedAssets()
+void UUMGStateConfigUserWidgetExtension::PreloadReferencedAssets(bool bAsync)
 {
+	// 收集所有引用资产，一次性批量加载
+	TArray<FSoftObjectPath> AllAssets;
 	for (const FUMGStateConfigGroup& Group : RuntimeData.StateGroups)
 	{
 		for (const FUMGStateConfigState& State : Group.States)
 		{
 			for (const FUMGStatePropertyChange& Change : State.PropertyChanges)
 			{
-				FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(Change.Value.SerializedReferencedAssets);
+				AllAssets.Append(Change.Value.SerializedReferencedAssets);
 			}
 		}
 	}
+	FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(AllAssets, bAsync);
 }
 
 void UUMGStateConfigUserWidgetExtension::RestoreGlobalValues(UUserWidget* TargetUserWidget)

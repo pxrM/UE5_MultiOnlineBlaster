@@ -1,9 +1,18 @@
 #include "UMGStateConfigPropertyRuntimeLibrary.h"
 
+#include "Components/Border.h"
+#include "Components/Button.h"
+#include "Components/CheckBox.h"
+#include "Components/EditableTextBox.h"
 #include "Components/Image.h"
+#include "Components/ProgressBar.h"
 #include "Components/RichTextBlock.h"
+#include "Components/Slider.h"
+#include "Components/SpinBox.h"
 #include "Components/TextBlock.h"
 #include "Components/Widget.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 #include "UObject/UnrealType.h"
 
 
@@ -65,6 +74,70 @@ bool IsSerializedPropertyPathAllowedInternal(const UWidget* TargetWidget, const 
 	if (TargetWidget->IsA<URichTextBlock>())
 	{
 		return PropertyPath == TEXT("Text");
+	}
+
+	if (TargetWidget->IsA<UButton>())
+	{
+		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Style"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ColorAndOpacity"))
+			|| PropertyPath == TEXT("IsEnabled");
+	}
+
+	if (TargetWidget->IsA<UBorder>())
+	{
+		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Brush"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ContentColorAndOpacity"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Padding"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BackgroundColor"))
+			|| PropertyPath == TEXT("BrushColor");
+	}
+
+	if (TargetWidget->IsA<UProgressBar>())
+	{
+		return PathMatchesOrIsChildOf(PropertyPath, TEXT("FillColorAndOpacity"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BackgroundImage"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("FillImage"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BorderImage"))
+			|| PropertyPath == TEXT("Percent")
+			|| PropertyPath == TEXT("BarFillType")
+			|| PropertyPath == TEXT("bIsMarquee");
+	}
+
+	if (TargetWidget->IsA<USlider>())
+	{
+		return PathMatchesOrIsChildOf(PropertyPath, TEXT("SliderBarColor"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("SliderHandleColor"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("IndentHandle"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Locked"))
+			|| PropertyPath == TEXT("StepSize")
+			|| PropertyPath == TEXT("Value");
+	}
+
+	if (TargetWidget->IsA<UCheckBox>())
+	{
+		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Style"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("CheckedState"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ForegroundColor"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Padding"));
+	}
+
+	if (TargetWidget->IsA<UEditableTextBox>())
+	{
+		return PropertyPath == TEXT("Text")
+			|| PropertyPath == TEXT("HintText")
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ForegroundColor"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BackgroundColor"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Padding"));
+	}
+
+	if (TargetWidget->IsA<USpinBox>())
+	{
+		return PropertyPath == TEXT("Value")
+			|| PropertyPath == TEXT("MinValue")
+			|| PropertyPath == TEXT("MaxValue")
+			|| PropertyPath == TEXT("Delta")
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ForegroundColor"))
+			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BrushColor"));
 	}
 
 	return false;
@@ -297,14 +370,41 @@ bool FUMGStateConfigPropertyRuntimeLibrary::IsSerializedPropertyPathAllowed(cons
 	return IsSerializedPropertyPathAllowedInternal(TargetWidget, PropertyPath);
 }
 
-void FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(const TArray<FSoftObjectPath>& ReferencedAssets)
+void FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(const TArray<FSoftObjectPath>& ReferencedAssets, bool bAsync)
 {
+	TArray<FSoftObjectPath> AssetsToLoad;
 	for (const FSoftObjectPath& ReferencedAsset : ReferencedAssets)
 	{
 		if (!ReferencedAsset.IsNull() && !GetLoadedSerializedAssetCache().Contains(ReferencedAsset))
 		{
-			ReferencedAsset.TryLoad();
-			GetLoadedSerializedAssetCache().Add(ReferencedAsset);
+			AssetsToLoad.Add(ReferencedAsset);
+		}
+	}
+
+	if (AssetsToLoad.Num() == 0)
+	{
+		return;
+	}
+
+	if (bAsync)
+	{
+		// 异步加载，完成后才更新缓存
+		FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
+		StreamableManager.RequestAsyncLoad(AssetsToLoad, FStreamableDelegate::CreateLambda([AssetsToLoad]()
+		{
+			TSet<FSoftObjectPath>& LoadedCache = GetLoadedSerializedAssetCache();
+			for (const FSoftObjectPath& LoadedAsset : AssetsToLoad)
+			{
+				LoadedCache.Add(LoadedAsset);
+			}
+		}));
+	}
+	else
+	{
+		for (const FSoftObjectPath& Asset : AssetsToLoad)
+		{
+			Asset.TryLoad();
+			GetLoadedSerializedAssetCache().Add(Asset);
 		}
 	}
 }

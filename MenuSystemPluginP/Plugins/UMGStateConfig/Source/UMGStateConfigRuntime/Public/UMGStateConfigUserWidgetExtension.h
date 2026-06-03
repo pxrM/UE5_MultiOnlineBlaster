@@ -61,7 +61,7 @@ private:
 	void BuildLookupCache();
 	void InvalidateLookupCache();
 	void NormalizeRuntimeData();
-	void PreloadReferencedAssets();
+	void PreloadReferencedAssets(bool bAsync = false);
 	void RestoreGlobalValues(UUserWidget* TargetUserWidget);
 	void QueueWidgetRefresh(UWidget* Widget);
 	void FlushPendingWidgetRefreshes();
