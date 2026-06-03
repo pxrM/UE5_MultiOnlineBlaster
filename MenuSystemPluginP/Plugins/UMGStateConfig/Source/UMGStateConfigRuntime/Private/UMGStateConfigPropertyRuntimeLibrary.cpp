@@ -13,6 +13,7 @@
 #include "Components/Widget.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
+#include "Misc/DefaultValueHelper.h"
 #include "UObject/UnrealType.h"
 
 
@@ -330,6 +331,24 @@ bool ImportSerializedPropertyValue(UWidget* TargetWidget, const FUMGStateConfigP
 
 }
 
+static bool AreSerializedPropertyValuesEquivalent(const FString& A, const FString& B)
+{
+	if (A == B)
+	{
+		return true;
+	}
+
+	// 浮点精度容差比较：解析为 double 后比较
+	double DoubleA, DoubleB;
+	if (A.IsNumeric() && B.IsNumeric() && FDefaultValueHelper::ParseDouble(A, DoubleA) && FDefaultValueHelper::ParseDouble(B, DoubleB))
+	{
+		return FMath::IsNearlyEqual(DoubleA, DoubleB, KINDA_SMALL_NUMBER);
+	}
+
+	// 归一化空白后比较（处理尾部空格等差异）
+	return A.TrimStartAndEnd().Compare(B.TrimStartAndEnd(), ESearchCase::IgnoreCase) == 0;
+}
+
 bool FUMGStateConfigPropertyRuntimeLibrary::ArePropertyValuesEqual(EUMGStateConfigPropertyType PropertyType, const FUMGStateConfigPropertyValue& A, const FUMGStateConfigPropertyValue& B)
 {
 	if (PropertyType != EUMGStateConfigPropertyType::SerializedProperty)
@@ -338,7 +357,7 @@ bool FUMGStateConfigPropertyRuntimeLibrary::ArePropertyValuesEqual(EUMGStateConf
 	}
 
 	return A.SerializedPropertyPath == B.SerializedPropertyPath
-		&& A.SerializedPropertyValue == B.SerializedPropertyValue;
+		&& AreSerializedPropertyValuesEquivalent(A.SerializedPropertyValue, B.SerializedPropertyValue);
 }
 
 bool FUMGStateConfigPropertyRuntimeLibrary::CaptureCurrentValue(UWidget* TargetWidget, EUMGStateConfigPropertyType PropertyType, FUMGStateConfigPropertyValue& OutValue)

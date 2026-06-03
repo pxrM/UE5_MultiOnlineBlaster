@@ -355,15 +355,24 @@ void UUMGStateConfigUserWidgetExtension::RestoreGlobalValues(UUserWidget* Target
 
 void UUMGStateConfigUserWidgetExtension::QueueWidgetRefresh(UWidget* Widget)
 {
-	if (Widget)
+	if (!Widget)
 	{
-		PendingRefreshWidgets.AddUnique(Widget);
+		return;
 	}
+
+	for (const TWeakObjectPtr<UWidget>& Existing : PendingRefreshWidgets)
+	{
+		if (Existing.Get() == Widget)
+		{
+			return;
+		}
+	}
+	PendingRefreshWidgets.Add(Widget);
 }
 
 void UUMGStateConfigUserWidgetExtension::FlushPendingWidgetRefreshes()
 {
-	for (TWeakObjectPtr<UWidget>& WidgetPtr : PendingRefreshWidgets)
+	for (const TWeakObjectPtr<UWidget>& WidgetPtr : PendingRefreshWidgets)
 	{
 		if (UWidget* Widget = WidgetPtr.Get())
 		{
