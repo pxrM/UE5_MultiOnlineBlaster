@@ -268,8 +268,6 @@ void FMDownloadTask::InitializeRequestPtr()
 	if (RequestPtr.IsValid() == false)
 	{
 		RequestPtr = FHttpModule::Get().CreateRequest();
-		// HttpManager负责管理请求的发送、接收和处理等操作，以及处理请求的回调和错误处理。
-		FHttpModule::Get().GetHttpManager().AddRequest(RequestPtr.ToSharedRef());
 	}
 #endif // PLATFORM_IOS
 }

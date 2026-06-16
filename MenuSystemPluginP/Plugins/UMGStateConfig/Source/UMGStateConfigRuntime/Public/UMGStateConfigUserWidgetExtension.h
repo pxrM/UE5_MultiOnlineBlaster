@@ -6,6 +6,7 @@
 #include "UMGStateConfigUserWidgetExtension.generated.h"
 
 class UUserWidget;
+struct FStreamableHandle;
 
 struct FUMGStateConfigChangeKey
 {
@@ -53,8 +54,9 @@ public:
 	void SetRuntimeData(const FUMGStateConfigRuntimeData& InRuntimeData);
 
 private:
+	bool ApplyResolvedState(FName StateGroupName, FName StateName);
 	bool ApplyPropertyChange(UUserWidget* TargetUserWidget, const FUMGStatePropertyChange& Change, FUMGActiveStateGroupRuntime& ActiveGroupRuntime);
-	bool ReapplyActiveStates(UUserWidget* TargetUserWidget);
+	bool ReapplyActiveStates(UUserWidget* TargetUserWidget, const FUMGStateConfigGroup* ChangedGroup, const TSet<FUMGStateConfigChangeKey>& TargetTouchedKeys);
 	UWidget* ResolveWidget(UUserWidget* TargetUserWidget, FName WidgetName);
 	const FUMGStateConfigGroup* FindStateGroup(FName StateGroupName);
 	const FUMGStateConfigState* FindState(const FUMGStateConfigGroup& Group, FName StateName);
@@ -72,6 +74,7 @@ private:
 	TMap<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue> GlobalRestoreValues;
 	TMap<FName, TWeakObjectPtr<UWidget>> WidgetCache;
 	TArray<TWeakObjectPtr<UWidget>> PendingRefreshWidgets;
+	TMap<FName, TSharedPtr<FStreamableHandle>> PendingApplyHandles;
 
 	TMap<FName, int32> StateGroupIndexByName;
 

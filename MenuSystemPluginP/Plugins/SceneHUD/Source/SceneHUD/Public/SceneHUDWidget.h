@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "HUDAsset.h"
 
+class FSceneHUDPanel;
+
 
 enum ESceneHUDType : uint8
 {

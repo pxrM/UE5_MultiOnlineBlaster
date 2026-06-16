@@ -34,6 +34,7 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/SListView.h"
 #include "Widgets/Views/STableRow.h"
+#include "Widgets/SOverlay.h"
 
 #define LOCTEXT_NAMESPACE "UMGStateConfigPanel"
 
@@ -352,10 +353,22 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 				+ SHorizontalBox::Slot()
 				.FillWidth(0.72f)
 				[
-					SNew(SScrollBox)
-					+ SScrollBox::Slot()
+					SNew(SOverlay)
+					+ SOverlay::Slot()
 					[
-						SAssignNew(ConfiguredWidgetsBox, SVerticalBox)
+						SAssignNew(ConfiguredWidgetsListView, SListView<TSharedPtr<FName>>)
+						.ListItemsSource(&ConfiguredWidgetItems)
+						.OnGenerateRow(this, &SUIStateConfigPanel::GenerateConfiguredWidgetRow)
+						.SelectionMode(ESelectionMode::None)
+					]
+					+ SOverlay::Slot()
+					.HAlign(HAlign_Fill).VAlign(VAlign_Top)
+					.Padding(0.0f, 4.0f)
+					[
+						SNew(STextBlock)
+						.AutoWrapText(true)
+						.Text(LOCTEXT("NoConfiguredWidget", "当前子状态还没有控件配置。请双击左侧控件加入当前父状态的所有子状态。"))
+						.Visibility(this, &SUIStateConfigPanel::GetConfiguredEmptyVisibility)
 					]
 				]
 			]
@@ -587,7 +600,6 @@ FReply SUIStateConfigPanel::ApplyPreviewState()
 	}
 
 	Editor->InvalidatePreview(true);
-	FSlateApplication::Get().InvalidateAllWidgets(false);
 	return FReply::Handled();
 }
 
@@ -598,7 +610,6 @@ void SUIStateConfigPanel::ResetDesignerPreview() const
 	{
 		Editor->RefreshPreview();
 		Editor->InvalidatePreview(true);
-		FSlateApplication::Get().InvalidateAllWidgets(false);
 	}
 }
 
@@ -626,7 +637,7 @@ FReply SUIStateConfigPanel::AddParentState()
 	Extension->ConfigData.PreviewStateGroupName = SelectedGroupName;
 	Extension->ConfigData.PreviewStateName = SelectedStateName;
 	MarkConfigDirty(Extension);
-	RefreshAll();
+	RefreshStatesAndConfig();
 	return FReply::Handled();
 }
 
@@ -651,7 +662,7 @@ FReply SUIStateConfigPanel::DuplicateParentState()
 	Extension->ConfigData.PreviewStateName = SelectedStateName;
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshStatesAndConfig();
 	return FReply::Handled();
 }
 
@@ -690,7 +701,7 @@ FReply SUIStateConfigPanel::DeleteParentState()
 	Extension->ConfigData.PreviewStateName = SelectedStateName;
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshStatesAndConfig();
 	return FReply::Handled();
 }
 
@@ -718,7 +729,7 @@ FReply SUIStateConfigPanel::AddChildState()
 	Extension->ConfigData.PreviewStateGroupName = Group->GroupName;
 	Extension->ConfigData.PreviewStateName = SelectedStateName;
 	MarkConfigDirty(Extension);
-	RefreshAll();
+	RefreshStatesAndConfig();
 	return FReply::Handled();
 }
 
@@ -741,7 +752,7 @@ FReply SUIStateConfigPanel::DuplicateChildState()
 	Extension->ConfigData.PreviewStateName = SelectedStateName;
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshStatesAndConfig();
 	return FReply::Handled();
 }
 
@@ -783,7 +794,7 @@ FReply SUIStateConfigPanel::DeleteChildState()
 	Extension->ConfigData.PreviewStateName = SelectedStateName;
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshStatesAndConfig();
 	return FReply::Handled();
 }
 
@@ -807,7 +818,7 @@ FReply SUIStateConfigPanel::RemoveInvalidChanges()
 	});
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshConfigOnly();
 	return FReply::Handled();
 }
 
@@ -828,7 +839,7 @@ FReply SUIStateConfigPanel::ClearWidgetConfig(FName WidgetName)
 	});
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshConfigOnly();
 	return FReply::Handled();
 }
 
@@ -1003,7 +1014,7 @@ void SUIStateConfigPanel::RenameParentState(FName OldName, FName NewName)
 		}
 		SelectedGroupName = NewName;
 		MarkConfigDirty(Extension);
-		RefreshAll();
+		RefreshStatesAndConfig();
 	}
 }
 
@@ -1032,7 +1043,7 @@ void SUIStateConfigPanel::RenameChildState(FName OldName, FName NewName)
 		}
 		SelectedStateName = NewName;
 		MarkConfigDirty(Extension);
-		RefreshAll();
+		RefreshStatesAndConfig();
 	}
 }
 
@@ -1211,6 +1222,21 @@ void SUIStateConfigPanel::RefreshAll()
 	RefreshSummary();
 }
 
+void SUIStateConfigPanel::RefreshStatesAndConfig()
+{
+	NormalizeRedundantPropertyChanges();
+	RefreshStateTabs();
+	RefreshConfiguredWidgets();
+	RefreshSummary();
+}
+
+void SUIStateConfigPanel::RefreshConfigOnly()
+{
+	NormalizeRedundantPropertyChanges();
+	RefreshConfiguredWidgets();
+	RefreshSummary();
+}
+
 void SUIStateConfigPanel::RefreshStateTabs()
 {
 	if (ParentTabsBox.IsValid())
@@ -1236,14 +1262,32 @@ void SUIStateConfigPanel::RefreshWidgetList()
 
 void SUIStateConfigPanel::RefreshConfiguredWidgets()
 {
-	if (ConfiguredWidgetsBox.IsValid())
+	AppearanceDetailProxyObjects.Reset();
+	DetailsProxyContexts.Reset();
+	ConfiguredWidgetItems.Reset();
+	for (const FName& WidgetName : GetConfiguredWidgetNames())
 	{
-		ConfiguredWidgetsBox->ClearChildren();
-		AppearanceDetailProxyObjects.Reset();
-		DetailsProxyContexts.Reset();
-		ConfiguredWidgetsBox->AddSlot().AutoHeight()[BuildConfiguredWidgetCards()];
-
+		ConfiguredWidgetItems.Add(MakeShared<FName>(WidgetName));
 	}
+	if (ConfiguredWidgetsListView.IsValid())
+	{
+		ConfiguredWidgetsListView->RequestListRefresh();
+	}
+}
+
+TSharedRef<ITableRow> SUIStateConfigPanel::GenerateConfiguredWidgetRow(TSharedPtr<FName> Item, const TSharedRef<STableViewBase>& OwnerTable)
+{
+	const FName WidgetName = Item.IsValid() ? *Item : NAME_None;
+	return SNew(STableRow<TSharedPtr<FName>>, OwnerTable)
+		.Padding(FMargin(0.0f, 0.0f, 0.0f, 8.0f))
+		[
+			BuildConfiguredWidgetCard(WidgetName)
+		];
+}
+
+EVisibility SUIStateConfigPanel::GetConfiguredEmptyVisibility() const
+{
+	return ConfiguredWidgetItems.Num() == 0 ? EVisibility::Visible : EVisibility::Collapsed;
 }
 
 
@@ -1289,14 +1333,14 @@ void SUIStateConfigPanel::SelectParentState(FName GroupName)
 	FUMGStateConfigGroup* Group = GetActiveGroup();
 	SelectedStateName = Group && Group->States.Num() > 0 ? (Group->DefaultStateName.IsNone() ? Group->States[0].StateName : Group->DefaultStateName) : NAME_None;
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshStatesAndConfig();
 }
 
 void SUIStateConfigPanel::SelectChildState(FName StateName)
 {
 	SelectedStateName = StateName;
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshStatesAndConfig();
 }
 
 
@@ -1403,7 +1447,7 @@ void SUIStateConfigPanel::AddWidgetToActiveGroupStates(FName WidgetName)
 		State.ConfiguredWidgetNames.AddUnique(WidgetName);
 	}
 	MarkConfigDirty(Extension);
-	RefreshAll();
+	RefreshConfigOnly();
 }
 
 
@@ -1532,10 +1576,7 @@ void SUIStateConfigPanel::OnWidgetDetailsPropertyFinishedChanging(const FPropert
 			LOCTEXT("DetailsCaptureSaved", "最近 Details 捕获：保存 {0} 条属性，过滤 {1} 条联动属性。"),
 			FText::AsNumber(SavedCount),
 			FText::AsNumber(FilteredCount));
-		NormalizeRedundantPropertyChanges();
-		RefreshWidgetList();
-		RefreshStateTabs();
-		RefreshSummary();
+		RefreshStatesAndConfig();
 	}
 	else
 	{
@@ -1705,7 +1746,7 @@ FReply SUIStateConfigPanel::RemoveSerializedPropertyChange(FName WidgetName, FSt
 	});
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();
-	RefreshAll();
+	RefreshConfigOnly();
 	return FReply::Handled();
 }
 

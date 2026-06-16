@@ -32,6 +32,61 @@ bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FNam
 		return false;
 	}
 
+	// 收集目标状态引用的资产；未加载完先异步加载，避免应用时同步加载导致卡帧
+	TArray<FSoftObjectPath> StateReferencedAssets;
+	for (const FUMGStatePropertyChange& Change : TargetState->PropertyChanges)
+	{
+		StateReferencedAssets.Append(Change.Value.SerializedReferencedAssets);
+	}
+
+	const FName ResolvedGroupName = TargetGroup->GroupName;
+
+	// 资产已全部就绪：直接同步应用，保留真实返回值
+	if (FUMGStateConfigPropertyRuntimeLibrary::AreReferencedAssetsLoaded(StateReferencedAssets))
+	{
+		PendingApplyHandles.Remove(ResolvedGroupName);
+		return ApplyResolvedState(ResolvedGroupName, EffectiveStateName);
+	}
+
+	// 有未加载资产：异步加载完成后再应用，避免阻塞主线程
+	TWeakObjectPtr<UUMGStateConfigUserWidgetExtension> WeakThis(this);
+	PendingApplyHandles.Add(ResolvedGroupName, FUMGStateConfigPropertyRuntimeLibrary::RequestPreloadReferencedAssetsAsync(
+		StateReferencedAssets,
+		[WeakThis, ResolvedGroupName, EffectiveStateName]()
+		{
+			if (UUMGStateConfigUserWidgetExtension* StrongThis = WeakThis.Get())
+			{
+				StrongThis->ApplyResolvedState(ResolvedGroupName, EffectiveStateName);
+			}
+		}));
+
+	// 资产异步加载中，应用已派发
+	return true;
+}
+
+bool UUMGStateConfigUserWidgetExtension::ApplyResolvedState(FName StateGroupName, FName StateName)
+{
+	UUserWidget* TargetUserWidget = GetUserWidget();
+	if (!TargetUserWidget)
+	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("ApplyUIState failed: owner widget is null."));
+		return false;
+	}
+
+	const FUMGStateConfigGroup* TargetGroup = FindStateGroup(StateGroupName);
+	if (!TargetGroup)
+	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("State group not found: %s"), *StateGroupName.ToString());
+		return false;
+	}
+
+	const FUMGStateConfigState* TargetState = FindState(*TargetGroup, StateName);
+	if (!TargetState)
+	{
+		UE_LOG(LogUMGStateConfig, Warning, TEXT("State not found: Group=%s, State=%s"), *StateGroupName.ToString(), *StateName.ToString());
+		return false;
+	}
+
 	// 收集新状态将要覆盖的 ChangeKey，避免先恢复再覆盖的无效操作
 	TSet<FUMGStateConfigChangeKey> NewStateChangeKeys;
 	for (const FUMGStatePropertyChange& Change : TargetState->PropertyChanges)
@@ -40,10 +95,13 @@ bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FNam
 	}
 
 	// 只恢复目标组中不会被新状态覆盖的属性值
+	TSet<FUMGStateConfigChangeKey> TargetTouchedKeys = NewStateChangeKeys;
+
 	if (FUMGActiveStateGroupRuntime* ExistingActiveGroup = ActiveStateGroups.Find(TargetGroup->GroupName))
 	{
 		for (const TPair<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue>& RestorePair : ExistingActiveGroup->RestoreValues)
 		{
+			TargetTouchedKeys.Add(RestorePair.Key);
 			if (NewStateChangeKeys.Contains(RestorePair.Key))
 			{
 				continue;
@@ -62,7 +120,7 @@ bool UUMGStateConfigUserWidgetExtension::ApplyUIState(FName StateGroupName, FNam
 	FUMGActiveStateGroupRuntime& ActiveGroupRuntime = ActiveStateGroups.FindOrAdd(TargetGroup->GroupName);
 	ActiveGroupRuntime.ActiveStateName = TargetState->StateName;
 
-	const bool bResult = ReapplyActiveStates(TargetUserWidget);
+	const bool bResult = ReapplyActiveStates(TargetUserWidget, TargetGroup, TargetTouchedKeys);
 	FlushPendingWidgetRefreshes();
 	return bResult;
 }
@@ -74,6 +132,7 @@ void UUMGStateConfigUserWidgetExtension::ResetActiveState()
 		RestoreGlobalValues(TargetUserWidget);
 		FlushPendingWidgetRefreshes();
 		ActiveStateGroups.Empty();
+		PendingApplyHandles.Empty();
 	}
 }
 
@@ -84,7 +143,6 @@ void UUMGStateConfigUserWidgetExtension::SetRuntimeData(const FUMGStateConfigRun
 	RuntimeData = InRuntimeData;
 	NormalizeRuntimeData();
 	InvalidateLookupCache();
-	FUMGStateConfigPropertyRuntimeLibrary::ResetCaches();
 	PreloadReferencedAssets(/*bAsync=*/ true);
 }
 
@@ -156,28 +214,55 @@ bool UUMGStateConfigUserWidgetExtension::ApplyPropertyChange(UUserWidget* Target
 	return bApplied;
 }
 
-bool UUMGStateConfigUserWidgetExtension::ReapplyActiveStates(UUserWidget* TargetUserWidget)
+bool UUMGStateConfigUserWidgetExtension::ReapplyActiveStates(UUserWidget* TargetUserWidget, const FUMGStateConfigGroup* ChangedGroup, const TSet<FUMGStateConfigChangeKey>& TargetTouchedKeys)
 {
-	TArray<const FUMGStateConfigGroup*> ActiveGroups;
+	// Only reapply groups affected by this change: the changed group itself,
+	// plus any active group sharing a ChangeKey with it. Disjoint groups keep
+	// their applied values untouched, avoiding full-replay Export/Import cost.
+	TArray<const FUMGStateConfigGroup*> AffectedGroups;
 	for (const FUMGStateConfigGroup& Group : RuntimeData.StateGroups)
 	{
 		const FUMGActiveStateGroupRuntime* ActiveGroupRuntime = ActiveStateGroups.Find(Group.GroupName);
-		if (ActiveGroupRuntime && !ActiveGroupRuntime->ActiveStateName.IsNone())
+		if (!ActiveGroupRuntime || ActiveGroupRuntime->ActiveStateName.IsNone())
 		{
-			ActiveGroups.Add(&Group);
+			continue;
+		}
+
+		if (ChangedGroup && Group.GroupName == ChangedGroup->GroupName)
+		{
+			AffectedGroups.Add(&Group);
+			continue;
+		}
+
+		const FUMGStateConfigState* State = FindState(Group, ActiveGroupRuntime->ActiveStateName);
+		if (!State)
+		{
+			continue;
+		}
+
+		bool bConflicts = false;
+		for (const FUMGStatePropertyChange& Change : State->PropertyChanges)
+		{
+			const FUMGStateConfigChangeKey ChangeKey{ Change.TargetWidgetName, Change.PropertyType, Change.Value.SerializedPropertyPath };
+			if (TargetTouchedKeys.Contains(ChangeKey))
+			{
+				bConflicts = true;
+				break;
+			}
+		}
+		if (bConflicts)
+		{
+			AffectedGroups.Add(&Group);
 		}
 	}
 
-	ActiveGroups.Sort([](const FUMGStateConfigGroup& A, const FUMGStateConfigGroup& B)
+	AffectedGroups.Sort([](const FUMGStateConfigGroup& A, const FUMGStateConfigGroup& B)
 	{
 		return A.Priority < B.Priority;
 	});
 
-
-
-
 	bool bAllChangesSucceeded = true;
-	for (const FUMGStateConfigGroup* Group : ActiveGroups)
+	for (const FUMGStateConfigGroup* Group : AffectedGroups)
 	{
 		FUMGActiveStateGroupRuntime* ActiveGroupRuntime = ActiveStateGroups.Find(Group->GroupName);
 		if (!ActiveGroupRuntime)

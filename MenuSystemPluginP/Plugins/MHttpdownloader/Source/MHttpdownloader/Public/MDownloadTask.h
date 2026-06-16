@@ -22,7 +22,7 @@ public:
 
 	FMDownloadTask(const FMTaskInformation& InTaskInfo);
 
-	~FMDownloadTask();
+	virtual ~FMDownloadTask();
 
 
 protected:

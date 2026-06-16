@@ -15,6 +15,7 @@
 #include "Engine/StreamableManager.h"
 #include "Misc/DefaultValueHelper.h"
 #include "UObject/UnrealType.h"
+#include "UMGStateConfigSettings.h"
 
 
 namespace
@@ -31,16 +32,9 @@ TMap<FString, TArray<FName>>& GetSerializedPropertyPathCache()
 	return PathCache;
 }
 
-TSet<FSoftObjectPath>& GetLoadedSerializedAssetCache()
-{
-	static TSet<FSoftObjectPath> LoadedAssetPaths;
-	return LoadedAssetPaths;
-}
 
-bool PathMatchesOrIsChildOf(const FString& PropertyPath, const TCHAR* AllowedPath)
-{
-	return PropertyPath == AllowedPath || PropertyPath.StartsWith(FString::Printf(TEXT("%s."), AllowedPath));
-}
+bool IsSerializedPropertySupported(const FProperty* Property);
+bool IsSerializedPropertyPathAllowedByPolicy(const UStruct* RootStruct, const FString& PropertyPath);
 
 bool IsSerializedPropertyPathAllowedInternal(const UWidget* TargetWidget, const FString& PropertyPath)
 {
@@ -48,100 +42,7 @@ bool IsSerializedPropertyPathAllowedInternal(const UWidget* TargetWidget, const 
 	{
 		return false;
 	}
-
-	if (PropertyPath == TEXT("Visibility")
-		|| PropertyPath == TEXT("RenderOpacity")
-		|| PathMatchesOrIsChildOf(PropertyPath, TEXT("RenderTransform")))
-	{
-		return true;
-	}
-
-	if (TargetWidget->IsA<UImage>())
-	{
-		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Brush"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ColorAndOpacity"));
-	}
-
-	if (TargetWidget->IsA<UTextBlock>())
-	{
-		return PropertyPath == TEXT("Text")
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ColorAndOpacity"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Font"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ShadowOffset"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ShadowColorAndOpacity"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("StrikeBrush"));
-	}
-
-	if (TargetWidget->IsA<URichTextBlock>())
-	{
-		return PropertyPath == TEXT("Text");
-	}
-
-	if (TargetWidget->IsA<UButton>())
-	{
-		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Style"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ColorAndOpacity"))
-			|| PropertyPath == TEXT("IsEnabled");
-	}
-
-	if (TargetWidget->IsA<UBorder>())
-	{
-		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Brush"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ContentColorAndOpacity"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Padding"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BackgroundColor"))
-			|| PropertyPath == TEXT("BrushColor");
-	}
-
-	if (TargetWidget->IsA<UProgressBar>())
-	{
-		return PathMatchesOrIsChildOf(PropertyPath, TEXT("FillColorAndOpacity"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BackgroundImage"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("FillImage"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BorderImage"))
-			|| PropertyPath == TEXT("Percent")
-			|| PropertyPath == TEXT("BarFillType")
-			|| PropertyPath == TEXT("bIsMarquee");
-	}
-
-	if (TargetWidget->IsA<USlider>())
-	{
-		return PathMatchesOrIsChildOf(PropertyPath, TEXT("SliderBarColor"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("SliderHandleColor"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("IndentHandle"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Locked"))
-			|| PropertyPath == TEXT("StepSize")
-			|| PropertyPath == TEXT("Value");
-	}
-
-	if (TargetWidget->IsA<UCheckBox>())
-	{
-		return PathMatchesOrIsChildOf(PropertyPath, TEXT("Style"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("CheckedState"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ForegroundColor"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Padding"));
-	}
-
-	if (TargetWidget->IsA<UEditableTextBox>())
-	{
-		return PropertyPath == TEXT("Text")
-			|| PropertyPath == TEXT("HintText")
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ForegroundColor"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BackgroundColor"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("Padding"));
-	}
-
-	if (TargetWidget->IsA<USpinBox>())
-	{
-		return PropertyPath == TEXT("Value")
-			|| PropertyPath == TEXT("MinValue")
-			|| PropertyPath == TEXT("MaxValue")
-			|| PropertyPath == TEXT("Delta")
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("ForegroundColor"))
-			|| PathMatchesOrIsChildOf(PropertyPath, TEXT("BrushColor"));
-	}
-
-	return false;
+	return IsSerializedPropertyPathAllowedByPolicy(TargetWidget->GetClass(), PropertyPath);
 }
 
 bool IsSerializedPropertySupported(const FProperty* Property)
@@ -169,6 +70,90 @@ bool IsSerializedPropertySupported(const FProperty* Property)
 	}
 
 	return true;
+}
+
+bool IsDangerousTopLevelProperty(const FProperty* Property)
+{
+	// L3 blacklist: structural / identity / navigation properties are never configurable,
+	// even when marked EditAnywhere.
+	static const TSet<FName> BlockedNames = {
+		FName(TEXT("Slot")),
+		FName(TEXT("Navigation")),
+		FName(TEXT("bIsVariable")),
+		FName(TEXT("bIsVariableOnSpawn")),
+		FName(TEXT("bIsEnabledInHierarchy"))
+	};
+	return Property && BlockedNames.Contains(Property->GetFName());
+}
+
+bool IsSerializedPropertyPathAllowedByPolicy(const UStruct* RootStruct, const FString& PropertyPath)
+{
+	// L2: allow any reflected, editor-exposed property instead of a hardcoded per-class list.
+	// Every path segment must pass the L1 safety floor (IsSerializedPropertySupported);
+	// the top-level property must be editor-editable (CPF_Edit) and not blacklisted (L3).
+	if (!RootStruct || PropertyPath.IsEmpty())
+	{
+		return false;
+	}
+
+	TArray<FString> Segments;
+	PropertyPath.ParseIntoArray(Segments, TEXT("."), true);
+	if (Segments.Num() == 0)
+	{
+		return false;
+	}
+
+	const UStruct* CurrentStruct = RootStruct;
+	const UUMGStateConfigSettings* Settings = GetDefault<UUMGStateConfigSettings>();
+	for (int32 SegmentIndex = 0; SegmentIndex < Segments.Num(); ++SegmentIndex)
+	{
+		if (!CurrentStruct)
+		{
+			return false;
+		}
+
+		const FProperty* Property = CurrentStruct->FindPropertyByName(FName(*Segments[SegmentIndex]));
+		if (!Property || !IsSerializedPropertySupported(Property))
+		{
+			return false;
+		}
+
+		if (Settings && Settings->BlockedPropertyNames.Contains(Property->GetFName()))
+		{
+			return false;
+		}
+
+		if (SegmentIndex == 0)
+		{
+			const bool bExplicitlyAllowed = Settings
+				&& (Settings->AdditionalAllowedPropertyNames.Contains(Property->GetFName())
+					|| Settings->AdditionalAllowedPropertyPaths.Contains(PropertyPath));
+			if (!bExplicitlyAllowed)
+			{
+				const bool bAllowEditable = !Settings || Settings->bAllowAllEditableProperties;
+				if (!bAllowEditable
+					|| !Property->HasAnyPropertyFlags(CPF_Edit)
+					|| IsDangerousTopLevelProperty(Property))
+				{
+					return false;
+				}
+			}
+		}
+
+		if (SegmentIndex == Segments.Num() - 1)
+		{
+			return true;
+		}
+
+		const FStructProperty* StructProperty = CastField<FStructProperty>(Property);
+		if (!StructProperty)
+		{
+			return false;
+		}
+		CurrentStruct = StructProperty->Struct;
+	}
+
+	return false;
 }
 
 void CollectSerializedPropertyAssetReferences(FProperty* Property, void* ValuePtr, TArray<FSoftObjectPath>& OutReferences)
@@ -392,7 +377,6 @@ bool FUMGStateConfigPropertyRuntimeLibrary::IsSerializedPropertyPathAllowed(cons
 void FUMGStateConfigPropertyRuntimeLibrary::ResetCaches()
 {
 	GetSerializedPropertyPathCache().Reset();
-	GetLoadedSerializedAssetCache().Reset();
 }
 
 void FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(const TArray<FSoftObjectPath>& ReferencedAssets, bool bAsync)
@@ -400,7 +384,7 @@ void FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(const TArray
 	TArray<FSoftObjectPath> AssetsToLoad;
 	for (const FSoftObjectPath& ReferencedAsset : ReferencedAssets)
 	{
-		if (!ReferencedAsset.IsNull() && !GetLoadedSerializedAssetCache().Contains(ReferencedAsset))
+		if (!ReferencedAsset.IsNull() && ReferencedAsset.ResolveObject() == nullptr)
 		{
 			AssetsToLoad.Add(ReferencedAsset);
 		}
@@ -413,25 +397,57 @@ void FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(const TArray
 
 	if (bAsync)
 	{
-		// 异步加载，完成后才更新缓存
+		// 异步预热加载，不阻塞主线程
 		FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
-		StreamableManager.RequestAsyncLoad(AssetsToLoad, FStreamableDelegate::CreateLambda([AssetsToLoad]()
-		{
-			TSet<FSoftObjectPath>& LoadedCache = GetLoadedSerializedAssetCache();
-			for (const FSoftObjectPath& LoadedAsset : AssetsToLoad)
-			{
-				LoadedCache.Add(LoadedAsset);
-			}
-		}));
+		StreamableManager.RequestAsyncLoad(AssetsToLoad);
 	}
 	else
 	{
 		for (const FSoftObjectPath& Asset : AssetsToLoad)
 		{
 			Asset.TryLoad();
-			GetLoadedSerializedAssetCache().Add(Asset);
 		}
 	}
 }
 
+bool FUMGStateConfigPropertyRuntimeLibrary::AreReferencedAssetsLoaded(const TArray<FSoftObjectPath>& ReferencedAssets)
+{
+	for (const FSoftObjectPath& ReferencedAsset : ReferencedAssets)
+	{
+		if (!ReferencedAsset.IsNull() && ReferencedAsset.ResolveObject() == nullptr)
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
+TSharedPtr<FStreamableHandle> FUMGStateConfigPropertyRuntimeLibrary::RequestPreloadReferencedAssetsAsync(const TArray<FSoftObjectPath>& ReferencedAssets, TFunction<void()> OnComplete)
+{
+	TArray<FSoftObjectPath> AssetsToLoad;
+	for (const FSoftObjectPath& ReferencedAsset : ReferencedAssets)
+	{
+		if (!ReferencedAsset.IsNull() && ReferencedAsset.ResolveObject() == nullptr)
+		{
+			AssetsToLoad.Add(ReferencedAsset);
+		}
+	}
+
+	if (AssetsToLoad.Num() == 0)
+	{
+		if (OnComplete)
+		{
+			OnComplete();
+		}
+		return nullptr;
+	}
+
+	FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
+	return StreamableManager.RequestAsyncLoad(AssetsToLoad, FStreamableDelegate::CreateLambda([OnComplete = MoveTemp(OnComplete)]()
+	{
+		if (OnComplete)
+		{
+			OnComplete();
+		}
+	}));
+}

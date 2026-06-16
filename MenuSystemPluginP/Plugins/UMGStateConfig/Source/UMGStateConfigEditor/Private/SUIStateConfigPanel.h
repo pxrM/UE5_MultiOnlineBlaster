@@ -88,6 +88,8 @@ private:
 
 
 	void RefreshAll();
+	void RefreshStatesAndConfig();
+	void RefreshConfigOnly();
 	void RefreshStateTabs();
 	void RefreshWidgetList();
 	void RefreshConfiguredWidgets();
@@ -99,6 +101,8 @@ private:
 	void SelectChildState(FName StateName);
 
 	TSharedRef<ITableRow> GenerateWidgetRow(TSharedPtr<FUMGStateConfigWidgetRow> RowItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedRef<ITableRow> GenerateConfiguredWidgetRow(TSharedPtr<FName> Item, const TSharedRef<STableViewBase>& OwnerTable);
+	EVisibility GetConfiguredEmptyVisibility() const;
 	void OnWidgetSelected(TSharedPtr<FUMGStateConfigWidgetRow> RowItem, ESelectInfo::Type SelectInfo);
 	void OnWidgetDoubleClicked(TSharedPtr<FUMGStateConfigWidgetRow> RowItem);
 	void AddWidgetToActiveGroupStates(FName WidgetName);
@@ -127,7 +131,8 @@ private:
 	TSharedPtr<class STextBlock> SummaryTextBlock;
 	TSharedPtr<class SVerticalBox> ParentTabsBox;
 	TSharedPtr<class SVerticalBox> ChildTabsBox;
-	TSharedPtr<class SVerticalBox> ConfiguredWidgetsBox;
+	TSharedPtr<SListView<TSharedPtr<FName>>> ConfiguredWidgetsListView;
+	TArray<TSharedPtr<FName>> ConfiguredWidgetItems;
 	TSharedPtr<SListView<TSharedPtr<FUMGStateConfigWidgetRow>>> WidgetListView;
 
 	TArray<TSharedPtr<FUMGStateConfigWidgetRow>> WidgetRows;

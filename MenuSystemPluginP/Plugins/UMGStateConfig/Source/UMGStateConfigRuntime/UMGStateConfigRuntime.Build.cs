@@ -15,6 +15,7 @@ public class UMGStateConfigRuntime : ModuleRules
 				"Engine",
 				"SlateCore",
 				"UMG",
+				"DeveloperSettings",
 			}
 		);
 
