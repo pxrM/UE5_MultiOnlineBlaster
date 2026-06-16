@@ -90,6 +90,10 @@ private:
 	void RefreshAll();
 	void RefreshStatesAndConfig();
 	void RefreshConfigOnly();
+	void RequestPreviewRefresh();
+	void RequestConfigRefresh();
+	void EnsureDeferredTimer();
+	EActiveTimerReturnType HandleDeferredRefresh(double InCurrentTime, float InDeltaTime);
 	void RefreshStateTabs();
 	void RefreshWidgetList();
 	void RefreshConfiguredWidgets();
@@ -145,4 +149,8 @@ private:
 	FName SelectedStateName;
 
 	FName SelectedWidgetName;
+
+	bool bPreviewRefreshPending = false;
+	bool bConfigRefreshPending = false;
+	bool bDeferredTimerRegistered = false;
 };

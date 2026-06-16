@@ -1237,6 +1237,44 @@ void SUIStateConfigPanel::RefreshConfigOnly()
 	RefreshSummary();
 }
 
+void SUIStateConfigPanel::RequestPreviewRefresh()
+{
+	bPreviewRefreshPending = true;
+	EnsureDeferredTimer();
+}
+
+void SUIStateConfigPanel::RequestConfigRefresh()
+{
+	bConfigRefreshPending = true;
+	EnsureDeferredTimer();
+}
+
+void SUIStateConfigPanel::EnsureDeferredTimer()
+{
+	if (bDeferredTimerRegistered)
+	{
+		return;
+	}
+	bDeferredTimerRegistered = true;
+	RegisterActiveTimer(0.0f, FWidgetActiveTimerDelegate::CreateSP(this, &SUIStateConfigPanel::HandleDeferredRefresh));
+}
+
+EActiveTimerReturnType SUIStateConfigPanel::HandleDeferredRefresh(double InCurrentTime, float InDeltaTime)
+{
+	bDeferredTimerRegistered = false;
+	if (bConfigRefreshPending)
+	{
+		bConfigRefreshPending = false;
+		RefreshStatesAndConfig();
+	}
+	if (bPreviewRefreshPending)
+	{
+		bPreviewRefreshPending = false;
+		ApplyPreviewState();
+	}
+	return EActiveTimerReturnType::Stop;
+}
+
 void SUIStateConfigPanel::RefreshStateTabs()
 {
 	if (ParentTabsBox.IsValid())
@@ -1576,7 +1614,7 @@ void SUIStateConfigPanel::OnWidgetDetailsPropertyFinishedChanging(const FPropert
 			LOCTEXT("DetailsCaptureSaved", "最近 Details 捕获：保存 {0} 条属性，过滤 {1} 条联动属性。"),
 			FText::AsNumber(SavedCount),
 			FText::AsNumber(FilteredCount));
-		RefreshStatesAndConfig();
+		RequestConfigRefresh();
 	}
 	else
 	{
@@ -1724,7 +1762,7 @@ void SUIStateConfigPanel::AddOrUpdateSerializedPropertyChange(FName WidgetName, 
 	}
 
 	MarkConfigDirty(Extension);
-	ApplyPreviewState();
+	RequestPreviewRefresh();
 }
 
 
