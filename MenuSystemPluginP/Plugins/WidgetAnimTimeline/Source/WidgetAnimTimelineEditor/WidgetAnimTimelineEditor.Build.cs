@@ -25,6 +25,8 @@ public class WidgetAnimTimelineEditor : ModuleRules
 				"UMG",
 				"UMGEditor",
 				"UnrealEd",
+				"ToolMenus",
+				"Kismet",
 				"PropertyEditor",
 				"EditorSubsystem",
 				"InputCore",

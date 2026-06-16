@@ -14,6 +14,7 @@ class FWidgetAnimTimelineDesignerPreviewController : public TSharedFromThis<FWid
 {
 public:
 	static bool Play(TSharedPtr<IPropertyHandle> PhaseHandle);
+	static bool Play(UWidgetBlueprint* WidgetBlueprint, int32 PhaseIndex);
 	static void Stop(TSharedPtr<IPropertyHandle> PhaseHandle);
 	static void StopActive();
 
@@ -30,6 +31,7 @@ private:
 
 	static UWidgetBlueprint* GetWidgetBlueprint(TSharedPtr<IPropertyHandle> PhaseHandle);
 	static bool ReadRootPhase(TSharedPtr<IPropertyHandle> PhaseHandle, FWidgetAnimTimelinePhase& OutPhase);
+	static bool ReadRootPhase(UWidgetBlueprint* WidgetBlueprint, int32 PhaseIndex, FWidgetAnimTimelinePhase& OutPhase);
 
 	FWidgetAnimTimelineDesignerPreviewController(UWidgetBlueprint* InWidgetBlueprint, const FWidgetAnimTimelinePhase& InRootPhase);
 

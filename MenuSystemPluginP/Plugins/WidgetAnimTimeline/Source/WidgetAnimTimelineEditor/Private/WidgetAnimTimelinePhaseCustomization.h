@@ -12,8 +12,5 @@ public:
 	virtual void CustomizeChildren(TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
 
 private:
-	FReply OpenTimeline();
-	FReply PlayDesignerPreview();
-
 	TSharedPtr<IPropertyHandle> PhaseHandle;
 };

@@ -41,6 +41,25 @@ bool FWidgetAnimTimelineDesignerPreviewController::Play(TSharedPtr<IPropertyHand
 	return true;
 }
 
+bool FWidgetAnimTimelineDesignerPreviewController::Play(UWidgetBlueprint* WidgetBlueprint, int32 PhaseIndex)
+{
+	FWidgetAnimTimelinePhase RootPhase;
+	if (WidgetBlueprint == nullptr || !ReadRootPhase(WidgetBlueprint, PhaseIndex, RootPhase))
+	{
+		return false;
+	}
+
+	StopActive();
+	WidgetAnimTimelineDesignerPreviewController::ActiveController = MakeShareable(new FWidgetAnimTimelineDesignerPreviewController(WidgetBlueprint, RootPhase));
+	if (!WidgetAnimTimelineDesignerPreviewController::ActiveController->Start())
+	{
+		WidgetAnimTimelineDesignerPreviewController::ActiveController.Reset();
+		return false;
+	}
+
+	return true;
+}
+
 void FWidgetAnimTimelineDesignerPreviewController::Stop(TSharedPtr<IPropertyHandle> PhaseHandle)
 {
 	UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint(PhaseHandle);
@@ -166,6 +185,37 @@ bool FWidgetAnimTimelineDesignerPreviewController::ReadRootPhase(TSharedPtr<IPro
 	}
 
 	return true;
+}
+
+bool FWidgetAnimTimelineDesignerPreviewController::ReadRootPhase(UWidgetBlueprint* WidgetBlueprint, int32 PhaseIndex, FWidgetAnimTimelinePhase& OutPhase)
+{
+	if (WidgetBlueprint == nullptr || WidgetBlueprint->GeneratedClass == nullptr)
+	{
+		return false;
+	}
+
+	UObject* DefaultObject = WidgetBlueprint->GeneratedClass->GetDefaultObject();
+	if (DefaultObject == nullptr)
+	{
+		return false;
+	}
+
+	for (TFieldIterator<FStructProperty> It(WidgetBlueprint->GeneratedClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+	{
+		if (It->Struct != FWidgetAnimTimelineConfig::StaticStruct())
+		{
+			continue;
+		}
+
+		const FWidgetAnimTimelineConfig* Config = It->ContainerPtrToValuePtr<FWidgetAnimTimelineConfig>(DefaultObject);
+		if (Config != nullptr && Config->Phases.IsValidIndex(PhaseIndex))
+		{
+			OutPhase = Config->Phases[PhaseIndex];
+			return true;
+		}
+	}
+
+	return false;
 }
 
 FWidgetAnimTimelineDesignerPreviewController::FWidgetAnimTimelineDesignerPreviewController(UWidgetBlueprint* InWidgetBlueprint, const FWidgetAnimTimelinePhase& InRootPhase)
