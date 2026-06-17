@@ -28,7 +28,7 @@
 
 namespace
 {
-	IAssetRegistry& GetAssetRegistry()
+	IAssetRegistry& GetPanelAssetRegistry()
 	{
 		FAssetRegistryModule& Module =
 			FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
@@ -766,7 +766,7 @@ void SAssetCookManagerPanel::OnViolationDoubleClick(TSharedPtr<FCookViolation> I
 		return;
 	}
 
-	IAssetRegistry& Registry = GetAssetRegistry();
+	IAssetRegistry& Registry = GetPanelAssetRegistry();
 	TArray<FAssetData> Assets;
 	Registry.GetAssetsByPackageName(FName(*Item->SourcePackage), Assets);
 	if (Assets.Num() == 0)
