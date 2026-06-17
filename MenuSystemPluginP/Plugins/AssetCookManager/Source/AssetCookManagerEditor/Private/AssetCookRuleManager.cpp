@@ -40,6 +40,49 @@ namespace
 			return ToRelativeForm(Dir.Path) == Relative;
 		});
 	}
+
+	bool TryGetCanonicalPackagePath(const FString& StoredPath, FString& OutPackagePath)
+	{
+		const FString Relative = ToRelativeForm(StoredPath);
+		OutPackagePath = FAssetCookRuleManager::ToPackagePath(Relative);
+		return OutPackagePath == TEXT("/Game") || OutPackagePath.StartsWith(GGameContentRoot);
+	}
+
+	FResolvedCookRule ResolveRuleFromMap(const FString& PackagePath, const TMap<FString, ECookRuleType>& Ruled)
+	{
+		FResolvedCookRule Result;
+
+		FString Current = PackagePath;
+		while (!Current.IsEmpty())
+		{
+			if (const ECookRuleType* Found = Ruled.Find(Current))
+			{
+				Result.Rule = *Found;
+				Result.bInherited = (Current != PackagePath);
+				Result.SourceDir = Current;
+				return Result;
+			}
+
+			if (Current == TEXT("/Game"))
+			{
+				break;
+			}
+
+			FString Parent;
+			FString Leaf;
+			if (Current.Split(TEXT("/"), &Parent, &Leaf, ESearchCase::IgnoreCase, ESearchDir::FromEnd)
+				&& !Parent.IsEmpty())
+			{
+				Current = Parent;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		return Result;
+	}
 }
 
 UProjectPackagingSettings* FAssetCookRuleManager::GetSettings()
@@ -111,38 +154,8 @@ FResolvedCookRule FAssetCookRuleManager::ResolveRule(const FString& PackagePath)
 	}
 
 	// Walk from the directory itself up toward /Game, taking the first ruled hit.
-	FString Current = PackagePath;
-	while (!Current.IsEmpty())
-	{
-		if (const ECookRuleType* Found = Ruled.Find(Current))
-		{
-			Result.Rule = *Found;
-			Result.bInherited = (Current != PackagePath);
-			Result.SourceDir = Current;
-			return Result;
-		}
-
-		if (Current == TEXT("/Game"))
-		{
-			break;
-		}
-
-		FString Parent;
-		FString Leaf;
-		if (Current.Split(TEXT("/"), &Parent, &Leaf, ESearchCase::IgnoreCase, ESearchDir::FromEnd)
-			&& !Parent.IsEmpty())
-		{
-			Current = Parent;
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	return Result; // Default — no rule on this directory or any ancestor.
+	return ResolveRuleFromMap(PackagePath, Ruled);
 }
-
 void FAssetCookRuleManager::GetAllRuledDirectories(TMap<FString, ECookRuleType>& OutRules)
 {
 	OutRules.Reset();
@@ -150,12 +163,20 @@ void FAssetCookRuleManager::GetAllRuledDirectories(TMap<FString, ECookRuleType>&
 
 	for (const FDirectoryPath& Dir : Settings->DirectoriesToAlwaysCook)
 	{
-		OutRules.Add(ToPackagePath(Dir.Path), ECookRuleType::AlwaysCook);
+		FString PackagePath;
+		if (TryGetCanonicalPackagePath(Dir.Path, PackagePath))
+		{
+			OutRules.Add(PackagePath, ECookRuleType::AlwaysCook);
+		}
 	}
 	for (const FDirectoryPath& Dir : Settings->DirectoriesToNeverCook)
 	{
 		// NeverCook wins if a directory somehow appears in both lists.
-		OutRules.Add(ToPackagePath(Dir.Path), ECookRuleType::NeverCook);
+		FString PackagePath;
+		if (TryGetCanonicalPackagePath(Dir.Path, PackagePath))
+		{
+			OutRules.Add(PackagePath, ECookRuleType::NeverCook);
+		}
 	}
 }
 
@@ -168,17 +189,11 @@ void FAssetCookRuleManager::GetRedundantDirectories(TArray<FString>& OutDirs)
 
 	for (const TPair<FString, ECookRuleType>& Pair : Ruled)
 	{
-		FString Parent;
-		FString Leaf;
-		if (!Pair.Key.Split(TEXT("/"), &Parent, &Leaf, ESearchCase::IgnoreCase, ESearchDir::FromEnd)
-			|| Parent.IsEmpty())
-		{
-			continue; // Top-level (e.g. "/Game") has no parent to inherit from.
-		}
+		TMap<FString, ECookRuleType> WithoutSelf = Ruled;
+		WithoutSelf.Remove(Pair.Key);
 
-		// Rule this directory would inherit if its own entry were removed.
-		const FResolvedCookRule Inherited = ResolveRule(Parent);
-		if (Inherited.Rule != ECookRuleType::Default && Inherited.Rule == Pair.Value)
+		const FResolvedCookRule WithoutSelfRule = ResolveRuleFromMap(Pair.Key, WithoutSelf);
+		if (WithoutSelfRule.Rule != ECookRuleType::Default && WithoutSelfRule.Rule == Pair.Value)
 		{
 			OutDirs.Add(Pair.Key);
 		}

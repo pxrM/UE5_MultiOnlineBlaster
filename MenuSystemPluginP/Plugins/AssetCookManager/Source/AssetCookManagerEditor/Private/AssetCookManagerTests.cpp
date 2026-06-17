@@ -92,9 +92,15 @@ bool FAssetCookInheritTest::RunTest(const FString& Parameters)
 
 	// Legacy absolute-form entry ("/Game/C") must also be recognized.
 	Rules.AddAlways(TEXT("/Game/C"));
+	Rules.AddAlways(TEXT("/Engine/EditorOnly"));
 	TestEqual(TEXT("absolute C recognized"),
 		static_cast<int32>(FAssetCookRuleManager::GetRule(TEXT("/Game/C"))),
 		static_cast<int32>(ECookRuleType::AlwaysCook));
+
+	TMap<FString, ECookRuleType> Ruled;
+	FAssetCookRuleManager::GetAllRuledDirectories(Ruled);
+	TestTrue(TEXT("absolute C canonicalized"), Ruled.Contains(TEXT("/Game/C")));
+	TestFalse(TEXT("non-Game roots ignored"), Ruled.Contains(TEXT("/Engine/EditorOnly")));
 
 	return true;
 }
@@ -114,6 +120,17 @@ bool FAssetCookRedundancyTest::RunTest(const FString& Parameters)
 
 	TestTrue(TEXT("A/B is redundant"), Redundant.Contains(TEXT("/Game/A/B")));
 	TestFalse(TEXT("A is not redundant"), Redundant.Contains(TEXT("/Game/A")));
+
+	FScopedCookRules ConflictRules;
+	ConflictRules.AddNever(TEXT("A"));
+	ConflictRules.AddAlways(TEXT("A/B"));
+	ConflictRules.AddAlways(TEXT("A/B/C"));
+
+	Redundant.Reset();
+	FAssetCookRuleManager::GetRedundantDirectories(Redundant);
+
+	TestFalse(TEXT("A/B override is not redundant"), Redundant.Contains(TEXT("/Game/A/B")));
+	TestTrue(TEXT("A/B/C inherits same override"), Redundant.Contains(TEXT("/Game/A/B/C")));
 
 	return true;
 }
