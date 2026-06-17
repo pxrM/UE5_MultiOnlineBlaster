@@ -813,6 +813,15 @@ TSharedPtr<SWidget> SAssetCookManagerPanel::OnTreeContextMenu()
 	}
 	MenuBuilder.EndSection();
 
+	MenuBuilder.BeginSection(NAME_None, LOCTEXT("AnalyzeSection", "Analyze"));
+	{
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("FindRefs", "Find Referencers"),
+			LOCTEXT("FindRefsTip", "List packaged assets that reference the first selected directory."),
+			FSlateIcon(),
+			FUIAction(FExecuteAction::CreateSP(this, &SAssetCookManagerPanel::RunFindReferencers)));
+	}
+	MenuBuilder.EndSection();
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("NavSection", "Navigate"));
 	{
 		MenuBuilder.AddMenuEntry(
@@ -857,5 +866,42 @@ TSharedPtr<SWidget> SAssetCookManagerPanel::OnTreeContextMenu()
 	return MenuBuilder.MakeWidget();
 }
 
+
+void SAssetCookManagerPanel::RunFindReferencers()
+{
+	if (!TreeView.IsValid())
+	{
+		return;
+	}
+
+	const TArray<TSharedPtr<FCookDirNode>> Selected = TreeView->GetSelectedItems();
+	if (Selected.Num() == 0 || !Selected[0].IsValid())
+	{
+		return;
+	}
+
+	const FString Dir = Selected[0]->PackagePath;
+
+	FScopedSlowTask Task(0.0f, LOCTEXT("FindingRefs", "Finding referencers..."));
+	Task.MakeDialog();
+
+	const TArray<FCookViolation> Found = FAssetCookScanner::FindReferencers(Dir);
+
+	ValidationResults.Reset();
+	for (const FCookViolation& V : Found)
+	{
+		ValidationResults.Add(MakeShared<FCookViolation>(V));
+	}
+
+	ValidationSummary = Found.Num() == 0
+		? FText::Format(LOCTEXT("NoRefs", "Nothing references {0}."), FText::FromString(Dir))
+		: FText::Format(LOCTEXT("RefsFound", "{0} reference(s) to {1} (red = hard, amber = soft)."),
+			FText::AsNumber(Found.Num()), FText::FromString(Dir));
+
+	if (ResultsView.IsValid())
+	{
+		ResultsView->RequestListRefresh();
+	}
+}
 
 #undef LOCTEXT_NAMESPACE

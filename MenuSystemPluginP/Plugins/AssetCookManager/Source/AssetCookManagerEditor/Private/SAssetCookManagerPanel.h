@@ -39,6 +39,8 @@ private:
 	void SetRuleForSelection(ECookRuleType NewRule);
 	/** Right-click menu for the directory tree: batch rule edits + navigation. */
 	TSharedPtr<SWidget> OnTreeContextMenu();
+	/** Find assets referencing the first selected directory; show in results list. */
+	void RunFindReferencers();
 
 	// --- Buttons ---
 	FReply OnApplyClicked();

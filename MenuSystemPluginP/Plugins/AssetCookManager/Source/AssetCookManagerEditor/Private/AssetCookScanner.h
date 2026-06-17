@@ -50,4 +50,13 @@ public:
 	 * it cancels the scan and yields the partial result.
 	 */
 	static TArray<FCookViolation> ValidateNeverCookReferences(FCookScanProgress Progress);
+
+	/**
+	 * Find packaged assets that reference anything under TargetDir (hard or soft),
+	 * regardless of cook rules — a targeted "who depends on this folder?" query,
+	 * useful to preview impact before marking a directory NeverCook. Sources that
+	 * live under TargetDir themselves are excluded. The NeverCookDir field of each
+	 * result carries TargetDir for display.
+	 */
+	static TArray<FCookViolation> FindReferencers(const FString& TargetDir);
 };

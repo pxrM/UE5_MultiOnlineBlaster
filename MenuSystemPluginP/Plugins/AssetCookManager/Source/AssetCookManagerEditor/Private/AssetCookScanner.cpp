@@ -234,3 +234,78 @@ TArray<FCookViolation> FAssetCookScanner::ValidateNeverCookReferences(FCookScanP
 
 	return Violations;
 }
+
+TArray<FCookViolation> FAssetCookScanner::FindReferencers(const FString& TargetDir)
+{
+	TArray<FCookViolation> Results;
+	if (TargetDir.IsEmpty())
+	{
+		return Results;
+	}
+
+	IAssetRegistry& Registry = GetAssetRegistry();
+
+	// Every asset package under the target directory.
+	FARFilter Filter;
+	Filter.bRecursivePaths = true;
+	Filter.PackagePaths.Add(FName(*TargetDir));
+
+	TArray<FAssetData> Assets;
+	Registry.GetAssets(Filter, Assets);
+
+	TSet<FName> TargetPackages;
+	for (const FAssetData& Asset : Assets)
+	{
+		TargetPackages.Add(Asset.PackageName);
+	}
+	if (TargetPackages.IsEmpty())
+	{
+		return Results;
+	}
+
+	TSet<FString> Seen; // dedup on "source->target"
+	for (const FName& TargetPkg : TargetPackages)
+	{
+		const FString TargetStr = TargetPkg.ToString();
+
+		// Hard pass first so a referencer reachable both ways is reported as hard.
+		for (int32 Pass = 0; Pass < 2; ++Pass)
+		{
+			const bool bHard = (Pass == 0);
+			TArray<FName> Referencers;
+			Registry.GetReferencers(
+				TargetPkg,
+				Referencers,
+				UE::AssetRegistry::EDependencyCategory::Package,
+				bHard ? UE::AssetRegistry::EDependencyQuery::Hard
+				      : UE::AssetRegistry::EDependencyQuery::Soft);
+
+			for (const FName& Ref : Referencers)
+			{
+				const FString RefStr = Ref.ToString();
+
+				// Skip referencers inside the target directory itself.
+				if (IsUnderDir(RefStr, TargetDir))
+				{
+					continue;
+				}
+
+				const FString Key = RefStr + TEXT("->") + TargetStr;
+				if (Seen.Contains(Key))
+				{
+					continue;
+				}
+				Seen.Add(Key);
+
+				FCookViolation V;
+				V.SourcePackage = RefStr;
+				V.ReferencedPackage = TargetStr;
+				V.NeverCookDir = TargetDir;
+				V.bHardRef = bHard;
+				Results.Add(V);
+			}
+		}
+	}
+
+	return Results;
+}
