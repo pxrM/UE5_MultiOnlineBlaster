@@ -47,7 +47,10 @@ TArray<TSharedPtr<FCookDirNode>> FAssetCookScanner::BuildContentTree()
 
 	// PackagePath -> node, for O(1) parent lookup while building.
 	TMap<FString, TSharedPtr<FCookDirNode>> NodeByPath;
-	TArray<TSharedPtr<FCookDirNode>> Roots;
+	TSharedPtr<FCookDirNode> Root = MakeShared<FCookDirNode>();
+	Root->PackagePath = TEXT("/Game");
+	Root->DisplayName = TEXT("Game");
+	NodeByPath.Add(Root->PackagePath, Root);
 
 	for (const FString& Path : SubPaths)
 	{
@@ -74,10 +77,12 @@ TArray<TSharedPtr<FCookDirNode>> FAssetCookScanner::BuildContentTree()
 		else
 		{
 			// Parent is "/Game" (not in SubPaths) or otherwise absent — treat as root.
-			Roots.Add(Node);
+			Root->Children.Add(Node);
 		}
 	}
 
+	TArray<TSharedPtr<FCookDirNode>> Roots;
+	Roots.Add(Root);
 	return Roots;
 }
 

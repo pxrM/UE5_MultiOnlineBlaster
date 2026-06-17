@@ -485,7 +485,7 @@ void SAssetCookManagerPanel::OnRuleChanged(TSharedPtr<ECookRuleType> NewValue, E
 
 void SAssetCookManagerPanel::SetPendingRule(const FString& PackagePath, ECookRuleType NewRule)
 {
-	const ECookRuleType Saved = FAssetCookRuleManager::GetRule(PackagePath);
+	const ECookRuleType Saved = SavedRules.FindRef(PackagePath);
 	if (NewRule == Saved)
 	{
 		// Back to the saved value — drop the pending edit.
@@ -584,6 +584,12 @@ FReply SAssetCookManagerPanel::OnValidateClicked()
 		});
 
 	const bool bCancelled = Task.ShouldCancel();
+	if (!bCancelled && LastFrac < 1.0f)
+	{
+		Task.EnterProgressFrame(
+			1.0f - LastFrac,
+			LOCTEXT("ValidatingDone", "Validation complete."));
+	}
 
 	ValidationResults.Reset();
 	int32 HardCount = 0;
