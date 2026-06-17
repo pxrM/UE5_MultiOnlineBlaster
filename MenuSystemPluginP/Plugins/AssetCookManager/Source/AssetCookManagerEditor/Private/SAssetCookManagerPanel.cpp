@@ -48,6 +48,20 @@ namespace
 		return PackagePath;
 	}
 
+	FString EscapeCsvField(const FString& Field)
+	{
+		FString Escaped = Field;
+		Escaped.ReplaceInline(TEXT("\""), TEXT("\"\""));
+
+		if (Escaped.Contains(TEXT(",")) || Escaped.Contains(TEXT("\""))
+			|| Escaped.Contains(TEXT("\r")) || Escaped.Contains(TEXT("\n")))
+		{
+			return FString::Printf(TEXT("\"%s\""), *Escaped);
+		}
+
+		return Escaped;
+	}
+
 	/**
 	 * Deep-copy a node keeping only the subtree that matches LowerFilter (by leaf
 	 * name or package path). Returns null when neither the node nor any descendant
@@ -133,7 +147,8 @@ void SAssetCookManagerPanel::Construct(const FArguments& InArgs)
 			[
 				SNew(SButton)
 				.Text(LOCTEXT("Clean", "Clean"))
-				.ToolTipText(LOCTEXT("CleanTip", "Remove rules already implied by a parent directory, keeping DefaultGame.ini lean."))
+				.ToolTipText(LOCTEXT("CleanTip", "Remove saved rules already implied by a parent directory. Apply or refresh pending edits first."))
+				.IsEnabled_Lambda([this]() { return !HasPendingChanges(); })
 				.OnClicked(this, &SAssetCookManagerPanel::OnCleanClicked)
 			]
 
@@ -654,9 +669,9 @@ FReply SAssetCookManagerPanel::OnExportClicked()
 			continue;
 		}
 		Csv += FString::Printf(TEXT("%s,%s,%s,%s\n"),
-			*Item->SourcePackage,
-			*Item->ReferencedPackage,
-			*Item->NeverCookDir,
+			*EscapeCsvField(Item->SourcePackage),
+			*EscapeCsvField(Item->ReferencedPackage),
+			*EscapeCsvField(Item->NeverCookDir),
 			Item->bHardRef ? TEXT("Hard") : TEXT("Soft"));
 	}
 
@@ -700,6 +715,13 @@ bool SAssetCookManagerPanel::IsRedundant(const FString& PackagePath) const
 
 FReply SAssetCookManagerPanel::OnCleanClicked()
 {
+	if (HasPendingChanges())
+	{
+		FMessageDialog::Open(EAppMsgType::Ok,
+			LOCTEXT("CleanPending", "Apply or refresh pending rule changes before cleaning redundant saved rules."));
+		return FReply::Handled();
+	}
+
 	TArray<FString> Redundant;
 	FAssetCookRuleManager::GetRedundantDirectories(Redundant);
 

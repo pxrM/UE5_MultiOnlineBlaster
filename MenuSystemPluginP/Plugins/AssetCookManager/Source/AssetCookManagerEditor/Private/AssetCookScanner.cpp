@@ -27,17 +27,11 @@ namespace
 		return PackageName.StartsWith(Dir + TEXT("/"));
 	}
 
-	/** Returns the NeverCook dir containing PackageName, or empty. */
-	FString FindContainingNeverCookDir(const FString& PackageName, const TArray<FString>& NeverCookDirs)
+	/** Returns the effective NeverCook dir for PackageName, or empty. */
+	FString ResolveNeverCookDir(const FString& PackageName)
 	{
-		for (const FString& Dir : NeverCookDirs)
-		{
-			if (IsUnderDir(PackageName, Dir))
-			{
-				return Dir;
-			}
-		}
-		return FString();
+		const FResolvedCookRule Rule = FAssetCookRuleManager::ResolveRule(PackageName);
+		return Rule.Rule == ECookRuleType::NeverCook ? Rule.SourceDir : FString();
 	}
 }
 
@@ -118,7 +112,6 @@ namespace
 		IAssetRegistry& Registry,
 		const FName PackageName,
 		const FString& PackageNameStr,
-		const TArray<FString>& NeverCookDirs,
 		const bool bHard,
 		TSet<FString>& AlreadyFlagged,
 		TArray<FCookViolation>& OutViolations)
@@ -141,7 +134,7 @@ namespace
 				continue;
 			}
 
-			const FString HitDir = FindContainingNeverCookDir(DepStr, NeverCookDirs);
+			const FString HitDir = ResolveNeverCookDir(DepStr);
 			if (!HitDir.IsEmpty())
 			{
 				FCookViolation Violation;
@@ -220,7 +213,7 @@ TArray<FCookViolation> FAssetCookScanner::ValidateNeverCookReferences(FCookScanP
 
 		// A NeverCook asset referencing another NeverCook asset is fine — skip sources
 		// that are themselves excluded.
-		if (!FindContainingNeverCookDir(PackageNameStr, NeverCookDirs).IsEmpty())
+		if (!ResolveNeverCookDir(PackageNameStr).IsEmpty())
 		{
 			continue;
 		}
@@ -228,8 +221,8 @@ TArray<FCookViolation> FAssetCookScanner::ValidateNeverCookReferences(FCookScanP
 		// Hard references break the cook; soft references only risk a runtime null.
 		// Run hard first so a dependency reachable both ways is reported as hard.
 		TSet<FString> Flagged;
-		CollectDeps(Registry, PackageName, PackageNameStr, NeverCookDirs, /*bHard=*/true, Flagged, Violations);
-		CollectDeps(Registry, PackageName, PackageNameStr, NeverCookDirs, /*bHard=*/false, Flagged, Violations);
+		CollectDeps(Registry, PackageName, PackageNameStr, /*bHard=*/true, Flagged, Violations);
+		CollectDeps(Registry, PackageName, PackageNameStr, /*bHard=*/false, Flagged, Violations);
 	}
 
 	return Violations;
