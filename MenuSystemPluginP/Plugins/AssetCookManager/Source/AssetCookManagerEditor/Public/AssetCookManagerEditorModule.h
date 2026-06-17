@@ -14,6 +14,7 @@ public:
 
 private:
 	void RegisterMenus();
+	void RegisterContentBrowserMenus();
 	TSharedRef<SDockTab> SpawnPanelTab(const FSpawnTabArgs& Args);
 
 	static const FName PanelTabId;

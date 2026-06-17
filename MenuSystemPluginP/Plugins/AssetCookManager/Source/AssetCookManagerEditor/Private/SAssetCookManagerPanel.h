@@ -41,6 +41,8 @@ private:
 	TSharedPtr<SWidget> OnTreeContextMenu();
 	/** Find assets referencing the first selected directory; show in results list. */
 	void RunFindReferencers();
+	/** Export cooked assets under selected directories into a debug pak. */
+	void RunExportPakForSelection();
 
 	// --- Buttons ---
 	FReply OnApplyClicked();

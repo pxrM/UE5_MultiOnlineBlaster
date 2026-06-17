@@ -1,5 +1,7 @@
 #include "SAssetCookManagerPanel.h"
 
+#include "AssetCookPakExporter.h"
+
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetRegistry/IAssetRegistry.h"
 #include "ContentBrowserModule.h"
@@ -848,6 +850,12 @@ TSharedPtr<SWidget> SAssetCookManagerPanel::OnTreeContextMenu()
 			LOCTEXT("FindRefsTip", "List packaged assets that reference the first selected directory."),
 			FSlateIcon(),
 			FUIAction(FExecuteAction::CreateSP(this, &SAssetCookManagerPanel::RunFindReferencers)));
+
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("ExportPak", "Export Debug Pak"),
+			LOCTEXT("ExportPakTip", "Create a pak from already-cooked assets under the selected directories."),
+			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Package"),
+			FUIAction(FExecuteAction::CreateSP(this, &SAssetCookManagerPanel::RunExportPakForSelection)));
 	}
 	MenuBuilder.EndSection();
 	MenuBuilder.BeginSection(NAME_None, LOCTEXT("NavSection", "Navigate"));
@@ -930,6 +938,25 @@ void SAssetCookManagerPanel::RunFindReferencers()
 	{
 		ResultsView->RequestListRefresh();
 	}
+}
+
+void SAssetCookManagerPanel::RunExportPakForSelection()
+{
+	if (!TreeView.IsValid())
+	{
+		return;
+	}
+
+	TArray<FString> Dirs;
+	for (const TSharedPtr<FCookDirNode>& Node : TreeView->GetSelectedItems())
+	{
+		if (Node.IsValid())
+		{
+			Dirs.AddUnique(Node->PackagePath);
+		}
+	}
+
+	FAssetCookPakExporter::ExportDirectoriesInteractive(Dirs, TEXT("Debug_SelectedDirs"));
 }
 
 #undef LOCTEXT_NAMESPACE
