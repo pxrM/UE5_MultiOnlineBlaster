@@ -73,7 +73,7 @@ private:
 	TMap<FName, FUMGActiveStateGroupRuntime> ActiveStateGroups;
 	TMap<FUMGStateConfigChangeKey, FUMGStateConfigPropertyValue> GlobalRestoreValues;
 	TMap<FName, TWeakObjectPtr<UWidget>> WidgetCache;
-	TArray<TWeakObjectPtr<UWidget>> PendingRefreshWidgets;
+	TSet<TWeakObjectPtr<UWidget>> PendingRefreshWidgets;
 	TMap<FName, TSharedPtr<FStreamableHandle>> PendingApplyHandles;
 
 	TMap<FName, int32> StateGroupIndexByName;

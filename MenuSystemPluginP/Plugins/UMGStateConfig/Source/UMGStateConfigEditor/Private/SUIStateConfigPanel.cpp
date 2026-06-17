@@ -15,6 +15,7 @@
 #include "PropertyEditorModule.h"
 
 #include "Styling/AppStyle.h"
+#include "Styling/SlateIconFinder.h"
 #include "UMGStateConfigBlueprintExtension.h"
 #include "UMGStateConfigPropertyRuntimeLibrary.h"
 
@@ -35,6 +36,12 @@
 #include "Widgets/Views/SListView.h"
 #include "Widgets/Views/STableRow.h"
 #include "Widgets/SOverlay.h"
+#include "Widgets/Layout/SSplitter.h"
+#include "Widgets/Layout/SWrapBox.h"
+#include "Widgets/Input/SSearchBox.h"
+#include "Widgets/Input/SCheckBox.h"
+#include "Widgets/Images/SImage.h"
+#include "Misc/MessageDialog.h"
 
 #define LOCTEXT_NAMESPACE "UMGStateConfigPanel"
 
@@ -210,6 +217,19 @@ bool IsNoisyPropertySuppressedByPrimary(const FString& CandidatePath, const FStr
 	return false;
 }
 
+TSharedRef<SWidget> MakeIconTextButtonContent(const FName& IconName, const FText& Label)
+{
+	return SNew(SHorizontalBox)
+	+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 4.0f, 0.0f)
+	[
+		SNew(SImage).Image(FAppStyle::GetBrush(IconName))
+	]
+	+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+	[
+		SNew(STextBlock).Text(Label)
+	];
+}
+
 }
 
 
@@ -245,6 +265,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					SNew(SButton)
 					.Text(LOCTEXT("AddParentState", "+ 父状态"))
 					.OnClicked(this, &SUIStateConfigPanel::AddParentState)
+						[
+							MakeIconTextButtonContent("Icons.Plus", LOCTEXT("AddParentStateBtn", "父状态"))
+						]
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
@@ -254,6 +277,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					.Text(LOCTEXT("DuplicateParentState", "复制父状态"))
 					.ToolTipText(LOCTEXT("DuplicateParentStateTip", "复制当前父状态组及其全部子状态和控件属性配置。"))
 					.OnClicked(this, &SUIStateConfigPanel::DuplicateParentState)
+						[
+							MakeIconTextButtonContent("Icons.Duplicate", LOCTEXT("DuplicateParentStateBtn", "复制父状态"))
+						]
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
@@ -262,6 +288,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					.Text(LOCTEXT("DeleteParentState", "- 父状态"))
 					.ToolTipText(LOCTEXT("DeleteParentStateTip", "删除当前选中的父状态配置。"))
 					.OnClicked(this, &SUIStateConfigPanel::DeleteParentState)
+						[
+							MakeIconTextButtonContent("Icons.Delete", LOCTEXT("DeleteParentStateBtn", "删除父状态"))
+						]
 				]
 
 			]
@@ -288,6 +317,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					SNew(SButton)
 					.Text(LOCTEXT("AddChildState", "+ 子状态"))
 					.OnClicked(this, &SUIStateConfigPanel::AddChildState)
+						[
+							MakeIconTextButtonContent("Icons.Plus", LOCTEXT("AddChildStateBtn", "子状态"))
+						]
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
@@ -297,6 +329,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					.Text(LOCTEXT("DuplicateChildState", "复制子状态"))
 					.ToolTipText(LOCTEXT("DuplicateChildStateTip", "复制当前子状态及其全部控件属性配置。"))
 					.OnClicked(this, &SUIStateConfigPanel::DuplicateChildState)
+						[
+							MakeIconTextButtonContent("Icons.Duplicate", LOCTEXT("DuplicateChildStateBtn", "复制子状态"))
+						]
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
@@ -306,6 +341,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					.Text(LOCTEXT("RemoveInvalidChanges", "清理无效"))
 					.ToolTipText(LOCTEXT("RemoveInvalidChangesTip", "移除当前子状态中目标控件已不存在的配置。"))
 					.OnClicked(this, &SUIStateConfigPanel::RemoveInvalidChanges)
+						[
+							MakeIconTextButtonContent("Icons.Refresh", LOCTEXT("RemoveInvalidChangesBtn", "清理无效"))
+						]
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
@@ -314,6 +352,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					.Text(LOCTEXT("DeleteChildState", "- 子状态"))
 					.ToolTipText(LOCTEXT("DeleteChildStateTip", "删除当前选中的子状态配置。"))
 					.OnClicked(this, &SUIStateConfigPanel::DeleteChildState)
+						[
+							MakeIconTextButtonContent("Icons.Delete", LOCTEXT("DeleteChildStateBtn", "删除子状态"))
+						]
 				]
 
 			]
@@ -327,10 +368,11 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 			+ SVerticalBox::Slot()
 			.FillHeight(1.0f)
 			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.FillWidth(0.28f)
-				.Padding(0.0f, 0.0f, 8.0f, 0.0f)
+				SNew(SSplitter)
+				.Orientation(Orient_Horizontal)
+				.PhysicalSplitterHandleSize(4.0f)
+				+ SSplitter::Slot()
+				.Value(0.28f)
 				[
 					SNew(SVerticalBox)
 					+ SVerticalBox::Slot()
@@ -338,7 +380,14 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					[
 						SNew(STextBlock).Text(LOCTEXT("AvailableWidgets", "可加入控件（右键从 Details 添加属性）"))
 					]
-
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					.Padding(0.0f, 2.0f, 0.0f, 2.0f)
+					[
+						SNew(SSearchBox)
+						.HintText(LOCTEXT("FilterWidgetsHint", "筛选控件…"))
+						.OnTextChanged(this, &SUIStateConfigPanel::OnWidgetFilterChanged)
+					]
 					+ SVerticalBox::Slot()
 					.FillHeight(1.0f)
 					[
@@ -348,10 +397,9 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 						.OnSelectionChanged(this, &SUIStateConfigPanel::OnWidgetSelected)
 						.OnMouseButtonDoubleClick(this, &SUIStateConfigPanel::OnWidgetDoubleClicked)
 					]
-
 				]
-				+ SHorizontalBox::Slot()
-				.FillWidth(0.72f)
+				+ SSplitter::Slot()
+				.Value(0.72f)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -385,6 +433,22 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 				SAssignNew(SummaryTextBlock, STextBlock)
 				.AutoWrapText(true)
 				.Text(this, &SUIStateConfigPanel::GetSummaryText)
+				.ColorAndOpacity_Lambda([this]() -> FSlateColor
+				{
+					TArray<FText> Errors;
+					TArray<FText> Warnings;
+					TArray<FText> Hints;
+					FUMGStateConfigValidator::Validate(GetWidgetBlueprint(), Errors, Warnings, Hints);
+					if (Errors.Num() > 0)
+					{
+						return FSlateColor(FLinearColor(0.90f, 0.25f, 0.25f));
+					}
+					if (Warnings.Num() > 0)
+					{
+						return FSlateColor(FLinearColor(0.95f, 0.75f, 0.20f));
+					}
+					return FSlateColor::UseForeground();
+				})
 			]
 		]
 	];
@@ -675,6 +739,11 @@ FReply SUIStateConfigPanel::DeleteParentState()
 		return FReply::Handled();
 	}
 
+	if (FMessageDialog::Open(EAppMsgType::YesNo, LOCTEXT("ConfirmDeleteParentState", "确定删除当前父状态组及其全部子状态和属性配置？")) != EAppReturnType::Yes)
+	{
+		return FReply::Handled();
+	}
+
 	const int32 RemovedIndex = Extension->ConfigData.StateGroups.IndexOfByPredicate([this](const FUMGStateConfigGroup& Group)
 	{
 		return Group.GroupName == SelectedGroupName;
@@ -766,6 +835,11 @@ FReply SUIStateConfigPanel::DeleteChildState()
 		return FReply::Handled();
 	}
 
+	if (FMessageDialog::Open(EAppMsgType::YesNo, LOCTEXT("ConfirmDeleteChildState", "确定删除当前子状态及其全部属性配置？")) != EAppReturnType::Yes)
+	{
+		return FReply::Handled();
+	}
+
 	const int32 RemovedIndex = Group->States.IndexOfByPredicate([this](const FUMGStateConfigState& State)
 	{
 		return State.StateName == SelectedStateName;
@@ -832,6 +906,11 @@ FReply SUIStateConfigPanel::ClearWidgetConfig(FName WidgetName)
 		return FReply::Handled();
 	}
 
+	if (FMessageDialog::Open(EAppMsgType::YesNo, LOCTEXT("ConfirmClearWidgetConfig", "确定清除该控件在当前子状态的全部属性配置？")) != EAppReturnType::Yes)
+	{
+		return FReply::Handled();
+	}
+
 	State->ConfiguredWidgetNames.Remove(WidgetName);
 	State->PropertyChanges.RemoveAll([WidgetName](const FUMGStatePropertyChange& Change)
 	{
@@ -845,7 +924,7 @@ FReply SUIStateConfigPanel::ClearWidgetConfig(FName WidgetName)
 
 TSharedRef<SWidget> SUIStateConfigPanel::BuildParentStateTabs()
 {
-	TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+	TSharedRef<SWrapBox> Row = SNew(SWrapBox).UseAllottedSize(true);
 	const UUMGStateConfigBlueprintExtension* Extension = GetExtension();
 	if (!Extension)
 	{
@@ -854,7 +933,7 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildParentStateTabs()
 
 	for (const FUMGStateConfigGroup& Group : Extension->ConfigData.StateGroups)
 	{
-		Row->AddSlot().AutoWidth().Padding(0.0f, 0.0f, 4.0f, 0.0f)
+		Row->AddSlot().Padding(0.0f, 0.0f, 4.0f, 4.0f)
 		[
 			BuildStateTab(Group.GroupName, Group.GroupName == SelectedGroupName, true)
 		];
@@ -864,7 +943,7 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildParentStateTabs()
 
 TSharedRef<SWidget> SUIStateConfigPanel::BuildChildStateTabs()
 {
-	TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+	TSharedRef<SWrapBox> Row = SNew(SWrapBox).UseAllottedSize(true);
 	FUMGStateConfigGroup* Group = GetActiveGroup();
 	if (!Group)
 	{
@@ -873,7 +952,7 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildChildStateTabs()
 
 	for (const FUMGStateConfigState& State : Group->States)
 	{
-		Row->AddSlot().AutoWidth().Padding(0.0f, 0.0f, 4.0f, 0.0f)
+		Row->AddSlot().Padding(0.0f, 0.0f, 4.0f, 4.0f)
 		[
 			BuildStateTab(State.StateName, State.StateName == SelectedStateName, false)
 		];
@@ -884,13 +963,20 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildChildStateTabs()
 TSharedRef<SWidget> SUIStateConfigPanel::BuildStateTab(FName StateName, bool bSelected, bool bIsParentState)
 {
 	return SNew(SBorder)
-	.Padding(FMargin(10.0f, 3.0f))
+	.Padding(FMargin(12.0f, 4.0f))
 	.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
-	.BorderBackgroundColor(bSelected ? FLinearColor(0.25f, 0.45f, 0.9f, 1.0f) : FLinearColor(0.08f, 0.08f, 0.08f, 1.0f))
+	.BorderBackgroundColor(bSelected
+		? FAppStyle::Get().GetSlateColor("SelectionColor").GetSpecifiedColor()
+		: FLinearColor(0.10f, 0.10f, 0.10f, 1.0f))
 	.OnMouseButtonDown(this, &SUIStateConfigPanel::HandleStateTabMouseButtonDown, StateName, bIsParentState)
+	.ToolTipText(bIsParentState
+		? LOCTEXT("StateTabParentTip", "左键切换父状态 · 右键重命名")
+		: LOCTEXT("StateTabChildTip", "左键切换子状态 · 右键重命名"))
 	[
 		SNew(STextBlock)
 		.Text(FText::FromName(StateName))
+		.ColorAndOpacity(bSelected ? FLinearColor::White : FLinearColor(0.72f, 0.72f, 0.72f, 1.0f))
+		.Font(bSelected ? FAppStyle::GetFontStyle("BoldFont") : FAppStyle::GetFontStyle("NormalFont"))
 	];
 }
 
@@ -1140,15 +1226,70 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildConfiguredWidgetCard(FName WidgetN
 		}
 	}
 
-	int32 RowIndex = 0;
-
+	TArray<FString> GroupOrder;
+	TMap<FString, TArray<const FUMGStatePropertyChange*>> GroupedChanges;
 	for (const FUMGStatePropertyChange* SerializedChange : SerializedPropertyChanges)
 	{
-		if (SerializedChange)
+		if (!SerializedChange)
+		{
+			continue;
+		}
+		FString TopSegment = SerializedChange->Value.SerializedPropertyPath;
+		int32 DotIndex = INDEX_NONE;
+		if (TopSegment.FindChar(TEXT('.'), DotIndex))
+		{
+			TopSegment = TopSegment.Left(DotIndex);
+		}
+		if (!GroupedChanges.Contains(TopSegment))
+		{
+			GroupOrder.Add(TopSegment);
+		}
+		GroupedChanges.FindOrAdd(TopSegment).Add(SerializedChange);
+	}
+
+	int32 RowIndex = 0;
+	for (const FString& TopSegment : GroupOrder)
+	{
+		const TArray<const FUMGStatePropertyChange*>& GroupChanges = GroupedChanges[TopSegment];
+		const bool bSingleLeaf = GroupChanges.Num() == 1 && !GroupChanges[0]->Value.SerializedPropertyPath.Contains(TEXT("."));
+		if (bSingleLeaf)
 		{
 			Rows->AddSlot().AutoHeight().Padding(0.0f, RowIndex++ == 0 ? 4.0f : 2.0f, 0.0f, 0.0f)
 			[
-				BuildSerializedPropertyRow(*SerializedChange)
+				BuildSerializedPropertyRow(*GroupChanges[0])
+			];
+			continue;
+		}
+
+		Rows->AddSlot().AutoHeight().Padding(0.0f, RowIndex++ == 0 ? 4.0f : 8.0f, 0.0f, 0.0f)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().Padding(0.0f, 0.0f, 6.0f, 0.0f).VAlign(VAlign_Center)
+			[
+				SNew(SButton)
+				.Text(LOCTEXT("RemoveSerializedPropertyGroup", "移除整组"))
+				.ToolTipText(LOCTEXT("RemoveSerializedPropertyGroupTip", "移除该控件此顶层属性下的全部配置。"))
+				.OnClicked(this, &SUIStateConfigPanel::RemoveSerializedPropertyGroup, WidgetName, TopSegment)
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(TopSegment))
+				.Font(FAppStyle::GetFontStyle("BoldFont"))
+			]
+		];
+
+		for (const FUMGStatePropertyChange* SerializedChange : GroupChanges)
+		{
+			FString RelativePath = SerializedChange->Value.SerializedPropertyPath;
+			const FString Prefix = TopSegment + TEXT(".");
+			if (RelativePath.StartsWith(Prefix))
+			{
+				RelativePath = RelativePath.RightChop(Prefix.Len());
+			}
+			Rows->AddSlot().AutoHeight().Padding(16.0f, 2.0f, 0.0f, 0.0f)
+			[
+				BuildSerializedPropertyRow(*SerializedChange, FText::FromString(RelativePath))
 			];
 		}
 	}
@@ -1172,21 +1313,26 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildConfiguredWidgetCard(FName WidgetN
 
 
 
-TSharedRef<SWidget> SUIStateConfigPanel::BuildSerializedPropertyRow(const FUMGStatePropertyChange& Change)
+TSharedRef<SWidget> SUIStateConfigPanel::BuildSerializedPropertyRow(const FUMGStatePropertyChange& Change, TOptional<FText> LabelOverride)
 {
+	const FText Label = LabelOverride.IsSet() ? LabelOverride.GetValue() : GetSerializedPropertyDisplayName(Change.Value.SerializedPropertyPath);
 	return SNew(SHorizontalBox)
 	+ SHorizontalBox::Slot().AutoWidth().Padding(0.0f, 0.0f, 6.0f, 0.0f).VAlign(VAlign_Center)
 	[
 		SNew(SButton)
 		.Text(LOCTEXT("RemoveSerializedProperty", "移除"))
 		.OnClicked(this, &SUIStateConfigPanel::RemoveSerializedPropertyChange, Change.TargetWidgetName, Change.Value.SerializedPropertyPath)
+		.ToolTipText(LOCTEXT("RemoveSerializedPropertyTip", "移除该属性配置"))
+		[
+			SNew(SImage).Image(FAppStyle::GetBrush("Icons.Delete"))
+		]
 	]
 	+ SHorizontalBox::Slot().AutoWidth().Padding(6.0f, 0.0f).VAlign(VAlign_Center)
 	[
 		SNew(SBox)
 		.WidthOverride(160.0f)
 		[
-			SNew(STextBlock).Text(GetSerializedPropertyDisplayName(Change.Value.SerializedPropertyPath))
+			SNew(STextBlock).Text(Label)
 		]
 
 	]
@@ -1334,6 +1480,16 @@ void SUIStateConfigPanel::NormalizeRedundantPropertyChanges()
 }
 
 
+void SUIStateConfigPanel::OnWidgetFilterChanged(const FText& InText)
+{
+	WidgetFilterText = InText.ToString();
+	RebuildWidgetRows();
+	if (WidgetListView.IsValid())
+	{
+		WidgetListView->RequestListRefresh();
+	}
+}
+
 void SUIStateConfigPanel::RefreshSummary()
 {
 	if (SummaryTextBlock.IsValid())
@@ -1356,6 +1512,10 @@ void SUIStateConfigPanel::RebuildWidgetRows()
 	for (UWidget* Widget : Widgets)
 	{
 		if (!Widget || (Widget->IsGeneratedName() && !Widget->bIsVariable))
+		{
+			continue;
+		}
+		if (!WidgetFilterText.IsEmpty() && !Widget->GetName().Contains(WidgetFilterText))
 		{
 			continue;
 		}
@@ -1386,12 +1546,14 @@ TSharedRef<ITableRow> SUIStateConfigPanel::GenerateWidgetRow(TSharedPtr<FUMGStat
 {
 	FString WidgetName = TEXT("Invalid");
 	FString WidgetType = TEXT("-");
+	const FSlateBrush* WidgetIcon = FSlateIconFinder::FindIconForClass(UWidget::StaticClass()).GetIcon();
 	if (RowItem.IsValid())
 	{
 		if (UWidget* Widget = RowItem->Widget.Get())
 		{
 			WidgetName = Widget->GetFName().ToString();
 			WidgetType = Widget->GetClass()->GetName();
+			WidgetIcon = FSlateIconFinder::FindIconForClass(Widget->GetClass()).GetIcon();
 		}
 	}
 	return SNew(STableRow<TSharedPtr<FUMGStateConfigWidgetRow>>, OwnerTable)
@@ -1402,7 +1564,11 @@ TSharedRef<ITableRow> SUIStateConfigPanel::GenerateWidgetRow(TSharedPtr<FUMGStat
 		.OnMouseButtonDown(this, &SUIStateConfigPanel::HandleAvailableWidgetRowMouseButtonDown, RowItem)
 		[
 			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().AutoWidth()
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 6.0f, 0.0f)
+			[
+				SNew(SImage).Image(WidgetIcon)
+			]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 			[
 				SNew(SBox)
 				.WidthOverride(180.0f)
@@ -1781,6 +1947,29 @@ FReply SUIStateConfigPanel::RemoveSerializedPropertyChange(FName WidgetName, FSt
 		return Change.TargetWidgetName == WidgetName
 			&& Change.PropertyType == EUMGStateConfigPropertyType::SerializedProperty
 			&& Change.Value.SerializedPropertyPath == SerializedPropertyPath;
+	});
+	MarkConfigDirty(Extension);
+	ApplyPreviewState();
+	RefreshConfigOnly();
+	return FReply::Handled();
+}
+
+FReply SUIStateConfigPanel::RemoveSerializedPropertyGroup(FName WidgetName, FString TopLevelSegment)
+{
+	UUMGStateConfigBlueprintExtension* Extension = GetOrCreateExtension();
+	FUMGStateConfigState* State = GetActiveState();
+	if (!Extension || !State)
+	{
+		return FReply::Handled();
+	}
+
+	const FString Prefix = TopLevelSegment + TEXT(".");
+	State->PropertyChanges.RemoveAll([&WidgetName, &TopLevelSegment, &Prefix](const FUMGStatePropertyChange& Change)
+	{
+		return Change.TargetWidgetName == WidgetName
+			&& Change.PropertyType == EUMGStateConfigPropertyType::SerializedProperty
+			&& (Change.Value.SerializedPropertyPath == TopLevelSegment
+				|| Change.Value.SerializedPropertyPath.StartsWith(Prefix));
 	});
 	MarkConfigDirty(Extension);
 	ApplyPreviewState();

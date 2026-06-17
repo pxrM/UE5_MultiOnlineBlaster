@@ -82,7 +82,7 @@ private:
 
 	TSharedRef<SWidget> BuildConfiguredWidgetCards();
 	TSharedRef<SWidget> BuildConfiguredWidgetCard(FName WidgetName);
-	TSharedRef<SWidget> BuildSerializedPropertyRow(const FUMGStatePropertyChange& Change);
+	TSharedRef<SWidget> BuildSerializedPropertyRow(const FUMGStatePropertyChange& Change, TOptional<FText> LabelOverride = TOptional<FText>());
 
 
 
@@ -100,6 +100,7 @@ private:
 	void NormalizeRedundantPropertyChanges();
 	void RefreshSummary();
 	void RebuildWidgetRows();
+	void OnWidgetFilterChanged(const FText& InText);
 
 	void SelectParentState(FName GroupName);
 	void SelectChildState(FName StateName);
@@ -122,6 +123,7 @@ private:
 	void AddOrUpdateSerializedPropertyChange(FName WidgetName, const FUMGStateConfigPropertyValue& Value, TSubclassOf<UWidget> ExpectedClass);
 
 	FReply RemoveSerializedPropertyChange(FName WidgetName, FString SerializedPropertyPath);
+	FReply RemoveSerializedPropertyGroup(FName WidgetName, FString TopLevelSegment);
 
 	TArray<FName> GetConfiguredWidgetNames() const;
 
@@ -149,6 +151,7 @@ private:
 	FName SelectedStateName;
 
 	FName SelectedWidgetName;
+	FString WidgetFilterText;
 
 	bool bPreviewRefreshPending = false;
 	bool bConfigRefreshPending = false;

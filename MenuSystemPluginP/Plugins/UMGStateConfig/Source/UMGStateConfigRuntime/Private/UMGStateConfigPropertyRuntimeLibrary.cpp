@@ -291,10 +291,7 @@ bool ImportSerializedPropertyValue(UWidget* TargetWidget, const FUMGStateConfigP
 		return false;
 	}
 
-	FUMGStateConfigPropertyRuntimeLibrary::PreloadReferencedAssets(Value.SerializedReferencedAssets);
-
-
-
+	// 引用资产由 ApplyUIState 上游异步预加载并等待完成，此处不再同步加载，避免主线程卡帧
 	const TCHAR* ImportResult = Resolved.Property->ImportText_Direct(*Value.SerializedPropertyValue, Resolved.ValuePtr, TargetWidget, PPF_None);
 	if (!ImportResult)
 	{

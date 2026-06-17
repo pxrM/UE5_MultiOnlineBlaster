@@ -445,13 +445,7 @@ void UUMGStateConfigUserWidgetExtension::QueueWidgetRefresh(UWidget* Widget)
 		return;
 	}
 
-	for (const TWeakObjectPtr<UWidget>& Existing : PendingRefreshWidgets)
-	{
-		if (Existing.Get() == Widget)
-		{
-			return;
-		}
-	}
+	// TSet 自动去重，避免 TArray 线性扫描的 O(n^2)
 	PendingRefreshWidgets.Add(Widget);
 }
 
