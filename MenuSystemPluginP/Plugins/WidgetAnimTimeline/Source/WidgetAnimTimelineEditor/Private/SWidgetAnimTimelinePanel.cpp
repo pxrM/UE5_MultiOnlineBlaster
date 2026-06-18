@@ -222,11 +222,19 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
+				.Padding(8.0f, 0.0f, 0.0f, 0.0f)
+				[
+					SNew(SButton)
+					.Text(FText::FromString(TEXT("Fit")))
+					.OnClicked(this, &SWidgetAnimTimelinePanel::FitTimelineToContent)
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
 				.VAlign(VAlign_Center)
 				.Padding(12.0f, 0.0f, 0.0f, 0.0f)
 				[
 					SNew(STextBlock)
-					.Text(FText::FromString(TEXT("Drag: edit StartTime    MouseWheel: zoom    Shift: 0.01s snap")))
+					.Text(FText::FromString(TEXT("Drag: edit StartTime    Right-drag: pan    MouseWheel: zoom    Shift: 0.01s snap")))
 					.ColorAndOpacity(FLinearColor(0.52f, 0.52f, 0.52f, 1.0f))
 				]
 			]
@@ -573,6 +581,7 @@ int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry&
 	const float Duration = GetTimelineDuration();
 	const int32 LaneCount = LaneNames.Num();
 	const float TimelineWidth = GetTimelineWidth(AllottedGeometry);
+	LastTimelineWidth = TimelineWidth;
 	const float TimelineRight = HeaderWidth + TimelineWidth;
 	const float LaneAreaBottom = FMath::Max(Size.Y - 8.0f, TimelineTop + LaneCount * LaneHeight);
 
@@ -584,7 +593,9 @@ int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry&
 	const float MinorStep = PixelsPerSecond >= 180.0f ? 0.1f : 0.25f;
 	// Labels become denser after zooming so sub-second edits still show concrete ruler time.
 	const float LabelStep = PixelsPerSecond >= 300.0f ? 0.1f : PixelsPerSecond >= 180.0f ? 0.25f : PixelsPerSecond >= 100.0f ? 0.5f : 1.0f;
-	for (float Time = 0.0f; Time <= Duration + KINDA_SMALL_NUMBER; Time += MinorStep)
+	const float VisibleEndTime = ViewStartTime + (TimelineWidth / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER));
+	const float FirstTickTime = FMath::Max(0.0f, FMath::GridSnap(ViewStartTime, MinorStep) - MinorStep);
+	for (float Time = FirstTickTime; Time <= FMath::Min(Duration, VisibleEndTime + MinorStep) + KINDA_SMALL_NUMBER; Time += MinorStep)
 	{
 		const bool bIsMajor = FMath::IsNearlyZero(FMath::Fmod(Time, 1.0f), 0.001f);
 		const bool bIsHalf = !bIsMajor && FMath::IsNearlyZero(FMath::Fmod(Time, 0.5f), 0.001f);
@@ -1047,12 +1058,23 @@ FString SWidgetAnimTimelinePanel::BuildEntryValidationError(FName TargetWidgetNa
 
 FReply SWidgetAnimTimelinePanel::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+	const FVector2D LocalPosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+	if ((MouseEvent.GetEffectingButton() == EKeys::RightMouseButton || MouseEvent.GetEffectingButton() == EKeys::MiddleMouseButton)
+		&& IsInTimelineArea(MyGeometry, LocalPosition))
+	{
+		bPanningTimeline = true;
+		PanMouseStartX = LocalPosition.X;
+		PanViewStartTime = ViewStartTime;
+		return FReply::Handled()
+			.CaptureMouse(SharedThis(this))
+			.SetUserFocus(SharedThis(this), EFocusCause::Mouse);
+	}
+
 	if (MouseEvent.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
 		return FReply::Unhandled();
 	}
 
-	const FVector2D LocalPosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
 	const int32 HitEntryIndex = HitTestEntry(MyGeometry, LocalPosition);
 	if (HitEntryIndex == INDEX_NONE)
 	{
@@ -1088,6 +1110,12 @@ FReply SWidgetAnimTimelinePanel::OnMouseButtonDown(const FGeometry& MyGeometry, 
 
 FReply SWidgetAnimTimelinePanel::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+	if (bPanningTimeline)
+	{
+		bPanningTimeline = false;
+		return FReply::Handled().ReleaseMouseCapture();
+	}
+
 	if (DraggingEntryIndex == INDEX_NONE)
 	{
 		return FReply::Unhandled();
@@ -1100,6 +1128,15 @@ FReply SWidgetAnimTimelinePanel::OnMouseButtonUp(const FGeometry& MyGeometry, co
 
 FReply SWidgetAnimTimelinePanel::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+	if (bPanningTimeline && HasMouseCapture())
+	{
+		const FVector2D LocalPosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+		ViewStartTime = PanViewStartTime - (LocalPosition.X - PanMouseStartX) / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
+		ClampViewStartTime(GetTimelineWidth(MyGeometry));
+		Invalidate(EInvalidateWidgetReason::Paint);
+		return FReply::Handled();
+	}
+
 	if (DraggingEntryIndex == INDEX_NONE || !HasMouseCapture())
 	{
 		return FReply::Unhandled();
@@ -1117,8 +1154,14 @@ FReply SWidgetAnimTimelinePanel::OnMouseMove(const FGeometry& MyGeometry, const 
 
 FReply SWidgetAnimTimelinePanel::OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+	const FVector2D LocalPosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+	const float AnchorTime = XToTime(LocalPosition.X, MyGeometry);
+	const float AnchorScreenOffset = LocalPosition.X - HeaderWidth;
 	const float ZoomFactor = MouseEvent.GetWheelDelta() > 0.0f ? 1.12f : 1.0f / 1.12f;
 	PixelsPerSecond = FMath::Clamp(PixelsPerSecond * ZoomFactor, WidgetAnimTimelinePanelConstants::MinPixelsPerSecond, WidgetAnimTimelinePanelConstants::MaxPixelsPerSecond);
+	ViewStartTime = AnchorTime - AnchorScreenOffset / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
+	ClampViewStartTime(GetTimelineWidth(MyGeometry));
+	Invalidate(EInvalidateWidgetReason::Paint);
 	return FReply::Handled();
 }
 
@@ -1137,6 +1180,10 @@ FCursorReply SWidgetAnimTimelinePanel::OnCursorQuery(const FGeometry& MyGeometry
 {
 	const FVector2D LocalPosition = MyGeometry.AbsoluteToLocal(CursorEvent.GetScreenSpacePosition());
 	HoveredEntryIndex = HitTestEntry(MyGeometry, LocalPosition);
+	if (bPanningTimeline)
+	{
+		return FCursorReply::Cursor(EMouseCursor::GrabHand);
+	}
 	return HoveredEntryIndex != INDEX_NONE ? FCursorReply::Cursor(EMouseCursor::GrabHand) : FCursorReply::Unhandled();
 }
 
@@ -1503,10 +1550,15 @@ void SWidgetAnimTimelinePanel::DeleteEntry(int32 EntryIndex)
 
 float SWidgetAnimTimelinePanel::GetTimelineDuration() const
 {
-	float Duration = 3.0f;
+	return FMath::Max(3.0f, GetTimelineContentEndTime() + 0.5f);
+}
+
+float SWidgetAnimTimelinePanel::GetTimelineContentEndTime() const
+{
+	float Duration = 0.0f;
 	for (const FEntryViewModel& Entry : Entries)
 	{
-		Duration = FMath::Max(Duration, Entry.StartTime + Entry.Duration + 0.5f);
+		Duration = FMath::Max(Duration, Entry.StartTime + Entry.Duration);
 	}
 	return Duration;
 }
@@ -1521,14 +1573,33 @@ float SWidgetAnimTimelinePanel::GetInspectorWidth() const
 	return SelectedEntryIndex == INDEX_NONE ? 0.0f : InspectorWidth;
 }
 
+float SWidgetAnimTimelinePanel::GetMaxViewStartTime(float TimelineWidth) const
+{
+	const float VisibleDuration = TimelineWidth / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
+	return FMath::Max(0.0f, GetTimelineDuration() - VisibleDuration);
+}
+
+void SWidgetAnimTimelinePanel::ClampViewStartTime(float TimelineWidth)
+{
+	ViewStartTime = FMath::Clamp(ViewStartTime, 0.0f, GetMaxViewStartTime(TimelineWidth));
+}
+
 float SWidgetAnimTimelinePanel::TimeToX(float Time, const FGeometry& Geometry) const
 {
-	return HeaderWidth + Time * PixelsPerSecond;
+	return HeaderWidth + (Time - ViewStartTime) * PixelsPerSecond;
 }
 
 float SWidgetAnimTimelinePanel::XToTime(float X, const FGeometry& Geometry) const
 {
-	return FMath::Max(0.0f, (X - HeaderWidth) / PixelsPerSecond);
+	return FMath::Max(0.0f, ViewStartTime + (X - HeaderWidth) / PixelsPerSecond);
+}
+
+bool SWidgetAnimTimelinePanel::IsInTimelineArea(const FGeometry& Geometry, FVector2D LocalPosition) const
+{
+	const float TimelineWidth = GetTimelineWidth(Geometry);
+	return LocalPosition.X >= HeaderWidth
+		&& LocalPosition.X <= HeaderWidth + TimelineWidth
+		&& LocalPosition.Y >= TimelineTop - RulerHeight;
 }
 
 int32 SWidgetAnimTimelinePanel::HitTestEntry(const FGeometry& Geometry, FVector2D LocalPosition) const
@@ -1921,6 +1992,19 @@ FReply SWidgetAnimTimelinePanel::PlayDesignerPreview()
 	}
 
 	FWidgetAnimTimelineDesignerPreviewController::Play(GetWidgetBlueprint(), PhaseIndex);
+	return FReply::Handled();
+}
+
+FReply SWidgetAnimTimelinePanel::FitTimelineToContent()
+{
+	const float AvailableWidth = LastTimelineWidth > 0.0f ? LastTimelineWidth : 540.0f;
+	const float ContentDuration = FMath::Max(GetTimelineContentEndTime() + 0.5f, 1.0f);
+	PixelsPerSecond = FMath::Clamp(
+		AvailableWidth / ContentDuration,
+		WidgetAnimTimelinePanelConstants::MinPixelsPerSecond,
+		WidgetAnimTimelinePanelConstants::MaxPixelsPerSecond);
+	ViewStartTime = 0.0f;
+	Invalidate(EInvalidateWidgetReason::Paint);
 	return FReply::Handled();
 }
 
