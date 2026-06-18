@@ -23,7 +23,7 @@ namespace
 		IoStore,
 	};
 
-	IAssetRegistry& GetAssetRegistry()
+	IAssetRegistry& GetPakExporterAssetRegistry()
 	{
 		FAssetRegistryModule& Module = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		return Module.Get();
@@ -137,7 +137,7 @@ namespace
 		}
 
 		TArray<FAssetData> Assets;
-		GetAssetRegistry().GetAssets(Filter, Assets);
+		GetPakExporterAssetRegistry().GetAssets(Filter, Assets);
 
 		TSet<FName> Seen;
 		for (const FAssetData& Asset : Assets)

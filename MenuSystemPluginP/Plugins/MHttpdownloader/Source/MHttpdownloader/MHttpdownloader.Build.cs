@@ -39,7 +39,7 @@ public class MHttpdownloader : ModuleRules
 				"Slate",
 				"SlateCore",
 				// ... add private dependencies that you statically link with here ...	
-				"Http",
+				"HTTP",
 				"JsonUtilities",
 				"Json",
 			}

@@ -11,7 +11,7 @@
 
 namespace
 {
-	IAssetRegistry& GetAssetRegistry()
+	IAssetRegistry& GetScannerAssetRegistry()
 	{
 		FAssetRegistryModule& Module = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 		return Module.Get();
@@ -37,7 +37,7 @@ namespace
 
 TArray<TSharedPtr<FCookDirNode>> FAssetCookScanner::BuildContentTree()
 {
-	IAssetRegistry& Registry = GetAssetRegistry();
+	IAssetRegistry& Registry = GetScannerAssetRegistry();
 
 	TArray<FString> SubPaths;
 	Registry.GetSubPaths(TEXT("/Game"), SubPaths, /*bInRecurse=*/true);
@@ -176,7 +176,7 @@ TArray<FCookViolation> FAssetCookScanner::ValidateNeverCookReferences(FCookScanP
 		return Violations;
 	}
 
-	IAssetRegistry& Registry = GetAssetRegistry();
+	IAssetRegistry& Registry = GetScannerAssetRegistry();
 
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
@@ -241,7 +241,7 @@ TArray<FCookViolation> FAssetCookScanner::FindReferencers(const FString& TargetD
 		return Results;
 	}
 
-	IAssetRegistry& Registry = GetAssetRegistry();
+	IAssetRegistry& Registry = GetScannerAssetRegistry();
 
 	// Every asset package under the target directory.
 	FARFilter Filter;
