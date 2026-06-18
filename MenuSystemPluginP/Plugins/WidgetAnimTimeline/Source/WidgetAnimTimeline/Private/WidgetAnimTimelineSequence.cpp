@@ -12,18 +12,34 @@ void UWidgetAnimTimelinePlayer::Initialize(UUserWidget* InOwnerWidget, const FWi
 
 bool UWidgetAnimTimelinePlayer::PlayPhase(FName PhaseName)
 {
+	TSet<FString> PhaseStack;
+	return PlayPhaseInternal(PhaseName, PhaseStack);
+}
+
+bool UWidgetAnimTimelinePlayer::PlayPhaseInternal(FName PhaseName, TSet<FString>& PhaseStack)
+{
 	const FWidgetAnimTimelinePhase* Phase = FindPhase(PhaseName);
 	if (Phase == nullptr || OwnerWidget == nullptr)
 	{
 		return false;
 	}
 
+	const FString PhaseStackKey = MakePhaseStackKey(PhaseName);
+	if (PhaseStack.Contains(PhaseStackKey))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WidgetAnimTimeline blocked recursive phase playback: %s"), *PhaseStackKey);
+		return false;
+	}
+
+	PhaseStack.Add(PhaseStackKey);
+
 	Stop();
 	for (const FWidgetAnimTimelineEntry& Entry : Phase->Entries)
 	{
-		ScheduleEntry(Entry);
+		ScheduleEntry(Entry, PhaseStack);
 	}
 
+	PhaseStack.Remove(PhaseStackKey);
 	return true;
 }
 
@@ -51,10 +67,17 @@ void UWidgetAnimTimelinePlayer::Stop()
 	}
 	ActiveChildPlayers.Reset();
 
-	for (const FActiveTimelineAnimation& ActiveAnimation : ActiveAnimations)
+	for (FActiveTimelineAnimation& ActiveAnimation : ActiveAnimations)
 	{
 		UUserWidget* TargetWidget = ActiveAnimation.TargetWidget.Get();
 		UWidgetAnimation* Animation = ActiveAnimation.Animation.Get();
+		if (OwnerWidget != nullptr)
+		{
+			if (UWorld* World = OwnerWidget->GetWorld())
+			{
+				World->GetTimerManager().ClearTimer(ActiveAnimation.CleanupTimer);
+			}
+		}
 		if (TargetWidget != nullptr && Animation != nullptr)
 		{
 			ApplyInterruptMode(TargetWidget, Animation, ActiveAnimation.InterruptMode);
@@ -63,7 +86,7 @@ void UWidgetAnimTimelinePlayer::Stop()
 	ActiveAnimations.Reset();
 }
 
-void UWidgetAnimTimelinePlayer::ScheduleEntry(const FWidgetAnimTimelineEntry& Entry)
+void UWidgetAnimTimelinePlayer::ScheduleEntry(const FWidgetAnimTimelineEntry& Entry, const TSet<FString>& PhaseStack)
 {
 	if (OwnerWidget == nullptr)
 	{
@@ -78,16 +101,16 @@ void UWidgetAnimTimelinePlayer::ScheduleEntry(const FWidgetAnimTimelineEntry& En
 
 	if (Entry.StartTime <= 0.0f)
 	{
-		ExecuteEntry(Entry);
+		ExecuteEntry(Entry, PhaseStack);
 		return;
 	}
 
 	FTimerHandle TimerHandle;
-	World->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateUObject(this, &ThisClass::ExecuteEntry, Entry), Entry.StartTime, false);
+	World->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateUObject(this, &ThisClass::ExecuteEntry, Entry, PhaseStack), Entry.StartTime, false);
 	ActiveTimers.Add(TimerHandle);
 }
 
-void UWidgetAnimTimelinePlayer::ExecuteEntry(FWidgetAnimTimelineEntry Entry)
+void UWidgetAnimTimelinePlayer::ExecuteEntry(FWidgetAnimTimelineEntry Entry, TSet<FString> PhaseStack)
 {
 	UUserWidget* TargetWidget = ResolveTargetWidget(Entry.TargetWidgetName);
 	if (TargetWidget == nullptr)
@@ -102,7 +125,7 @@ void UWidgetAnimTimelinePlayer::ExecuteEntry(FWidgetAnimTimelineEntry Entry)
 		{
 			if (UWidgetAnimTimelinePlayer* ChildPlayer = ChildHost->GetAnimTimelinePlayer())
 			{
-				if (ChildPlayer->PlayPhase(Entry.ChildPhaseName))
+				if (ChildPlayer->PlayPhaseInternal(Entry.ChildPhaseName, PhaseStack))
 				{
 					ActiveChildPlayers.Add(ChildPlayer);
 				}
@@ -120,7 +143,7 @@ void UWidgetAnimTimelinePlayer::ExecuteEntry(FWidgetAnimTimelineEntry Entry)
 	ApplyInterruptMode(TargetWidget, Animation, Entry.InterruptMode);
 
 	TargetWidget->PlayAnimation(Animation, 0.0f, Entry.NumLoopsToPlay, EUMGSequencePlayMode::Forward, Entry.PlaybackRate);
-	TrackActiveAnimation(TargetWidget, Animation, Entry.InterruptMode);
+	TrackActiveAnimation(TargetWidget, Animation, Entry);
 }
 
 void UWidgetAnimTimelinePlayer::ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode) const
@@ -146,23 +169,72 @@ void UWidgetAnimTimelinePlayer::ApplyInterruptMode(UUserWidget* TargetWidget, UW
 	}
 }
 
-void UWidgetAnimTimelinePlayer::TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode)
+void UWidgetAnimTimelinePlayer::TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, const FWidgetAnimTimelineEntry& Entry)
 {
 	if (TargetWidget == nullptr || Animation == nullptr)
 	{
 		return;
 	}
 
-	ActiveAnimations.RemoveAll([TargetWidget, Animation](const FActiveTimelineAnimation& ActiveAnimation)
-	{
-		return ActiveAnimation.TargetWidget.Get() == TargetWidget && ActiveAnimation.Animation.Get() == Animation;
-	});
+	RemoveActiveAnimation(TargetWidget, Animation);
 
 	FActiveTimelineAnimation ActiveAnimation;
 	ActiveAnimation.TargetWidget = TargetWidget;
 	ActiveAnimation.Animation = Animation;
-	ActiveAnimation.InterruptMode = InterruptMode;
+	ActiveAnimation.InterruptMode = Entry.InterruptMode;
+
+	if (Entry.NumLoopsToPlay > 0 && OwnerWidget != nullptr)
+	{
+		if (UWorld* World = OwnerWidget->GetWorld())
+		{
+			const float Duration = Animation->GetEndTime() * Entry.NumLoopsToPlay / FMath::Max(Entry.PlaybackRate, KINDA_SMALL_NUMBER);
+			if (Duration > 0.0f)
+			{
+				World->GetTimerManager().SetTimer(
+					ActiveAnimation.CleanupTimer,
+					FTimerDelegate::CreateUObject(
+						this,
+						&ThisClass::CleanupFinishedAnimation,
+						TWeakObjectPtr<UUserWidget>(TargetWidget),
+						TWeakObjectPtr<UWidgetAnimation>(Animation)),
+					Duration,
+					false);
+			}
+		}
+	}
+
 	ActiveAnimations.Add(ActiveAnimation);
+}
+
+void UWidgetAnimTimelinePlayer::RemoveActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation)
+{
+	if (OwnerWidget == nullptr)
+	{
+		ActiveAnimations.RemoveAll([TargetWidget, Animation](const FActiveTimelineAnimation& ActiveAnimation)
+		{
+			return ActiveAnimation.TargetWidget.Get() == TargetWidget && ActiveAnimation.Animation.Get() == Animation;
+		});
+		return;
+	}
+
+	UWorld* World = OwnerWidget->GetWorld();
+	for (int32 Index = ActiveAnimations.Num() - 1; Index >= 0; --Index)
+	{
+		FActiveTimelineAnimation& ActiveAnimation = ActiveAnimations[Index];
+		if (ActiveAnimation.TargetWidget.Get() == TargetWidget && ActiveAnimation.Animation.Get() == Animation)
+		{
+			if (World != nullptr)
+			{
+				World->GetTimerManager().ClearTimer(ActiveAnimation.CleanupTimer);
+			}
+			ActiveAnimations.RemoveAtSwap(Index);
+		}
+	}
+}
+
+void UWidgetAnimTimelinePlayer::CleanupFinishedAnimation(TWeakObjectPtr<UUserWidget> TargetWidget, TWeakObjectPtr<UWidgetAnimation> Animation)
+{
+	RemoveActiveAnimation(TargetWidget.Get(), Animation.Get());
 }
 
 UUserWidget* UWidgetAnimTimelinePlayer::ResolveTargetWidget(FName TargetWidgetName) const
@@ -219,6 +291,11 @@ const FWidgetAnimTimelinePhase* UWidgetAnimTimelinePlayer::FindPhase(FName Phase
 	{
 		return Phase.PhaseName == PhaseName;
 	});
+}
+
+FString UWidgetAnimTimelinePlayer::MakePhaseStackKey(FName PhaseName) const
+{
+	return FString::Printf(TEXT("%s:%s"), *GetPathNameSafe(OwnerWidget), *PhaseName.ToString());
 }
 
 UWidgetAnimTimelinePlayer* UWidgetAnimTimelineHostWidget::GetAnimTimelinePlayer() const

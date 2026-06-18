@@ -100,15 +100,20 @@ private:
 		TWeakObjectPtr<UUserWidget> TargetWidget;
 		TWeakObjectPtr<UWidgetAnimation> Animation;
 		EWidgetAnimTimelineInterruptMode InterruptMode = EWidgetAnimTimelineInterruptMode::StopActiveAnimations;
+		FTimerHandle CleanupTimer;
 	};
 
-	void ScheduleEntry(const FWidgetAnimTimelineEntry& Entry);
-	void ExecuteEntry(FWidgetAnimTimelineEntry Entry);
+	bool PlayPhaseInternal(FName PhaseName, TSet<FString>& PhaseStack);
+	void ScheduleEntry(const FWidgetAnimTimelineEntry& Entry, const TSet<FString>& PhaseStack);
+	void ExecuteEntry(FWidgetAnimTimelineEntry Entry, TSet<FString> PhaseStack);
 	void ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode) const;
-	void TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode);
+	void TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, const FWidgetAnimTimelineEntry& Entry);
+	void RemoveActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation);
+	void CleanupFinishedAnimation(TWeakObjectPtr<UUserWidget> TargetWidget, TWeakObjectPtr<UWidgetAnimation> Animation);
 	UUserWidget* ResolveTargetWidget(FName TargetWidgetName) const;
 	UWidgetAnimation* ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName) const;
 	const FWidgetAnimTimelinePhase* FindPhase(FName PhaseName) const;
+	FString MakePhaseStackKey(FName PhaseName) const;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UUserWidget> OwnerWidget;
