@@ -414,7 +414,7 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			ViewModel.EntryIndex = EntryIndex;
 			ViewModel.LaneName = Entry.TargetWidgetName.IsNone() ? TEXT("Self") : Entry.TargetWidgetName.ToString();
 			ViewModel.StartTime = Entry.StartTime;
-			ViewModel.Duration = 0.5f / FMath::Max(Entry.PlaybackRate, KINDA_SMALL_NUMBER);
+			ViewModel.Duration = GetEntryDuration(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.PlaybackRate);
 			ViewModel.ValidationError = BuildEntryValidationError(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.ChildPhaseName);
 			if (Entry.EntryType == EWidgetAnimTimelineEntryType::DirectAnimation)
 			{
@@ -488,9 +488,9 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 		ViewModel.EntryIndex = static_cast<int32>(EntryIndex);
 		ViewModel.LaneName = TargetName.IsNone() ? TEXT("Self") : TargetName.ToString();
 		ViewModel.StartTime = StartTime;
-		ViewModel.Duration = 0.5f / FMath::Max(PlaybackRate, KINDA_SMALL_NUMBER);
 
 		const EWidgetAnimTimelineEntryType EntryType = static_cast<EWidgetAnimTimelineEntryType>(TypeValue);
+		ViewModel.Duration = GetEntryDuration(TargetName, EntryType, AnimationName, PlaybackRate);
 		ViewModel.ValidationError = BuildEntryValidationError(TargetName, EntryType, AnimationName, ChildPhaseName);
 		if (EntryType == EWidgetAnimTimelineEntryType::DirectAnimation)
 		{
@@ -965,6 +965,50 @@ bool SWidgetAnimTimelinePanel::HasChildPhase(UClass* TargetClass, FName TargetWi
 	}
 
 	return false;
+}
+
+float SWidgetAnimTimelinePanel::GetEntryDuration(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, float PlaybackRate) const
+{
+	static constexpr float FallbackDuration = 0.5f;
+	const float SafePlaybackRate = FMath::Max(PlaybackRate, KINDA_SMALL_NUMBER);
+	if (EntryType != EWidgetAnimTimelineEntryType::DirectAnimation)
+	{
+		return FallbackDuration / SafePlaybackRate;
+	}
+
+	UClass* TargetClass = ResolveTargetWidgetClass(GetWidgetBlueprint(), TargetWidgetName);
+	if (TargetClass == nullptr || AnimationName.IsNone())
+	{
+		return FallbackDuration / SafePlaybackRate;
+	}
+
+	UObject* DefaultObject = TargetClass->GetDefaultObject();
+	if (DefaultObject == nullptr)
+	{
+		return FallbackDuration / SafePlaybackRate;
+	}
+
+	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+	{
+		if (It->PropertyClass != UWidgetAnimation::StaticClass())
+		{
+			continue;
+		}
+
+		FString PropertyName = It->GetName();
+		PropertyName.RemoveFromEnd(TEXT("_INST"));
+		if (PropertyName != AnimationName.ToString())
+		{
+			continue;
+		}
+
+		if (const UWidgetAnimation* Animation = Cast<UWidgetAnimation>(It->GetObjectPropertyValue_InContainer(DefaultObject)))
+		{
+			return FMath::Max(Animation->GetEndTime(), FallbackDuration) / SafePlaybackRate;
+		}
+	}
+
+	return FallbackDuration / SafePlaybackRate;
 }
 
 FString SWidgetAnimTimelinePanel::BuildEntryValidationError(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, FName ChildPhaseName) const

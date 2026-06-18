@@ -95,8 +95,17 @@ public:
 	void Stop();
 
 private:
+	struct FActiveTimelineAnimation
+	{
+		TWeakObjectPtr<UUserWidget> TargetWidget;
+		TWeakObjectPtr<UWidgetAnimation> Animation;
+		EWidgetAnimTimelineInterruptMode InterruptMode = EWidgetAnimTimelineInterruptMode::StopActiveAnimations;
+	};
+
 	void ScheduleEntry(const FWidgetAnimTimelineEntry& Entry);
 	void ExecuteEntry(FWidgetAnimTimelineEntry Entry);
+	void ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode) const;
+	void TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode);
 	UUserWidget* ResolveTargetWidget(FName TargetWidgetName) const;
 	UWidgetAnimation* ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName) const;
 	const FWidgetAnimTimelinePhase* FindPhase(FName PhaseName) const;
@@ -109,6 +118,9 @@ private:
 
 	UPROPERTY(Transient)
 	TArray<FTimerHandle> ActiveTimers;
+
+	TArray<FActiveTimelineAnimation> ActiveAnimations;
+	TArray<TWeakObjectPtr<UWidgetAnimTimelinePlayer>> ActiveChildPlayers;
 };
 
 UCLASS(Abstract, Blueprintable)
