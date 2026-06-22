@@ -13,6 +13,7 @@
 #include "UObject/UnrealType.h"
 #include "WidgetBlueprint.h"
 #include "WidgetAnimTimelineDesignerPreviewController.h"
+#include "WidgetAnimTimelineEditorUtils.h"
 #include "WidgetAnimTimelineSequence.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -804,102 +805,17 @@ UWidgetBlueprint* SWidgetAnimTimelinePanel::GetWidgetBlueprint() const
 		return SourceWidgetBlueprint.Get();
 	}
 
-	if (!PhaseHandle.IsValid())
-	{
-		return nullptr;
-	}
-
-	TArray<UObject*> OuterObjects;
-	PhaseHandle->GetOuterObjects(OuterObjects);
-	for (UObject* OuterObject : OuterObjects)
-	{
-		for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-		{
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object))
-			{
-				return WidgetBlueprint;
-			}
-
-			if (UClass* Class = Cast<UClass>(Object))
-			{
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Class->ClassGeneratedBy))
-				{
-					return WidgetBlueprint;
-				}
-			}
-
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object->GetClass()->ClassGeneratedBy))
-			{
-				return WidgetBlueprint;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(PhaseHandle);
 }
 
 UClass* SWidgetAnimTimelinePanel::ResolveOwnerWidgetClass() const
 {
-	if (UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint())
-	{
-		return WidgetBlueprint->GeneratedClass;
-	}
-
-	if (!PhaseHandle.IsValid())
-	{
-		return nullptr;
-	}
-
-	TArray<UObject*> OuterObjects;
-	PhaseHandle->GetOuterObjects(OuterObjects);
-	for (UObject* OuterObject : OuterObjects)
-	{
-		for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-		{
-			if (UClass* Class = Cast<UClass>(Object))
-			{
-				return Class;
-			}
-
-			UClass* ObjectClass = Object->GetClass();
-			if (ObjectClass != nullptr && ObjectClass->ClassGeneratedBy != nullptr)
-			{
-				return ObjectClass;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveOwnerWidgetClass(PhaseHandle, GetWidgetBlueprint());
 }
 
 UClass* SWidgetAnimTimelinePanel::ResolveTargetWidgetClass(UWidgetBlueprint* WidgetBlueprint, FName TargetWidgetName) const
 {
-	if (TargetWidgetName.IsNone())
-	{
-		return ResolveOwnerWidgetClass();
-	}
-
-	if (WidgetBlueprint != nullptr && WidgetBlueprint->WidgetTree != nullptr)
-	{
-		UWidget* TargetWidget = WidgetBlueprint->WidgetTree->FindWidget(TargetWidgetName);
-		if (TargetWidget != nullptr && TargetWidget->GetClass()->IsChildOf(UUserWidget::StaticClass()))
-		{
-			return TargetWidget->GetClass();
-		}
-	}
-
-	if (UClass* OwnerClass = ResolveOwnerWidgetClass())
-	{
-		for (TFieldIterator<FObjectProperty> It(OwnerClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-		{
-			if (It->GetFName() == TargetWidgetName && It->PropertyClass != nullptr && It->PropertyClass->IsChildOf(UUserWidget::StaticClass()))
-			{
-				return It->PropertyClass;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveTargetWidgetClass(WidgetBlueprint, ResolveOwnerWidgetClass(), TargetWidgetName);
 }
 
 FName SWidgetAnimTimelinePanel::GetCurrentPhaseName() const
@@ -925,27 +841,7 @@ FName SWidgetAnimTimelinePanel::GetCurrentPhaseName() const
 
 bool SWidgetAnimTimelinePanel::HasAnimation(UClass* TargetClass, FName AnimationName) const
 {
-	if (TargetClass == nullptr || AnimationName.IsNone())
-	{
-		return false;
-	}
-
-	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-	{
-		if (It->PropertyClass != UWidgetAnimation::StaticClass())
-		{
-			continue;
-		}
-
-		FString PropertyName = It->GetName();
-		PropertyName.RemoveFromEnd(TEXT("_INST"));
-		if (PropertyName == AnimationName.ToString())
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return FWidgetAnimTimelineEditorUtils::HasAnimation(TargetClass, AnimationName);
 }
 
 bool SWidgetAnimTimelinePanel::HasChildPhase(UClass* TargetClass, FName TargetWidgetName, FName ChildPhaseName) const
@@ -1007,30 +903,9 @@ float SWidgetAnimTimelinePanel::GetEntryDuration(FName TargetWidgetName, EWidget
 		return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 	}
 
-	UObject* DefaultObject = TargetClass->GetDefaultObject();
-	if (DefaultObject == nullptr)
+	if (const UWidgetAnimation* Animation = FWidgetAnimTimelineEditorUtils::ResolveAnimationFromClassDefaultObject(TargetClass, AnimationName))
 	{
-		return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
-	}
-
-	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-	{
-		if (It->PropertyClass != UWidgetAnimation::StaticClass())
-		{
-			continue;
-		}
-
-		FString PropertyName = It->GetName();
-		PropertyName.RemoveFromEnd(TEXT("_INST"));
-		if (PropertyName != AnimationName.ToString())
-		{
-			continue;
-		}
-
-		if (const UWidgetAnimation* Animation = Cast<UWidgetAnimation>(It->GetObjectPropertyValue_InContainer(DefaultObject)))
-		{
-			return FMath::Max(Animation->GetEndTime(), FallbackDuration) * PreviewLoopCount / SafePlaybackRate;
-		}
+		return FMath::Max(Animation->GetEndTime(), FallbackDuration) * PreviewLoopCount / SafePlaybackRate;
 	}
 
 	return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
@@ -2178,16 +2053,10 @@ void SWidgetAnimTimelinePanel::RefreshAnimationOptions()
 	AddedNames.Add(NAME_None);
 	if (UClass* TargetClass = ResolveTargetWidgetClass(GetWidgetBlueprint(), Entry.TargetWidgetName))
 	{
-		for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+		TArray<FName> AnimationNames;
+		FWidgetAnimTimelineEditorUtils::CollectAnimationNames(TargetClass, AnimationNames);
+		for (const FName AnimationName : AnimationNames)
 		{
-			if (It->PropertyClass != UWidgetAnimation::StaticClass())
-			{
-				continue;
-			}
-
-			FString PropertyName = It->GetName();
-			PropertyName.RemoveFromEnd(TEXT("_INST"));
-			const FName AnimationName(*PropertyName);
 			if (!AddedNames.Contains(AnimationName))
 			{
 				AddedNames.Add(AnimationName);

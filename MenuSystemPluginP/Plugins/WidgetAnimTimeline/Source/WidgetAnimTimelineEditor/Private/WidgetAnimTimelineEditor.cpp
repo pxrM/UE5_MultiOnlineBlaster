@@ -10,6 +10,7 @@
 #include "ToolMenus.h"
 #include "WidgetBlueprint.h"
 #include "WidgetBlueprintEditor.h"
+#include "WidgetAnimTimelineEditorUtils.h"
 #include "WidgetAnimTimelineEntryCustomization.h"
 #include "WidgetAnimTimelinePhaseCustomization.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -26,42 +27,6 @@ namespace WidgetAnimTimelineEditor
 	static TSharedPtr<IPropertyHandle> PendingPhaseHandle;
 	static TWeakPtr<SDockTab> ActiveTimelineTab;
 	static int32 PendingPhaseIndex = 0;
-
-	static UWidgetBlueprint* ResolveWidgetBlueprint(TSharedPtr<IPropertyHandle> PhaseHandle)
-	{
-		if (!PhaseHandle.IsValid())
-		{
-			return nullptr;
-		}
-
-		TArray<UObject*> OuterObjects;
-		PhaseHandle->GetOuterObjects(OuterObjects);
-		for (UObject* OuterObject : OuterObjects)
-		{
-			for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-			{
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object))
-				{
-					return WidgetBlueprint;
-				}
-
-				if (UClass* Class = Cast<UClass>(Object))
-				{
-					if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Class->ClassGeneratedBy))
-					{
-						return WidgetBlueprint;
-					}
-				}
-
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object->GetClass()->ClassGeneratedBy))
-				{
-					return WidgetBlueprint;
-				}
-			}
-		}
-
-		return nullptr;
-	}
 
 	static TSharedRef<SWidget> CreateTimelineContent()
 	{
@@ -202,7 +167,7 @@ void FWidgetAnimTimelineEditorModule::OpenTimelineForPhaseHandle(TSharedPtr<IPro
 	}
 
 	WidgetAnimTimelineEditor::PendingPhaseHandle = PhaseHandle;
-	WidgetAnimTimelineEditor::PendingWidgetBlueprint = WidgetAnimTimelineEditor::ResolveWidgetBlueprint(PhaseHandle);
+	WidgetAnimTimelineEditor::PendingWidgetBlueprint = FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(PhaseHandle);
 	WidgetAnimTimelineEditor::PendingPhaseIndex = PhaseHandle->GetIndexInArray();
 	if (WidgetAnimTimelineEditor::PendingPhaseIndex == INDEX_NONE)
 	{

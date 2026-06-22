@@ -9,6 +9,7 @@
 #include "PropertyHandle.h"
 #include "UObject/UnrealType.h"
 #include "WidgetBlueprint.h"
+#include "WidgetAnimTimelineEditorUtils.h"
 #include "WidgetAnimTimelineSequence.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -179,108 +180,17 @@ void FWidgetAnimTimelineEntryCustomization::CustomizeChildren(TSharedRef<IProper
 
 UWidgetBlueprint* FWidgetAnimTimelineEntryCustomization::GetWidgetBlueprint() const
 {
-	if (!StructHandle.IsValid())
-	{
-		return nullptr;
-	}
-
-	TArray<UObject*> OuterObjects;
-	StructHandle->GetOuterObjects(OuterObjects);
-	for (UObject* OuterObject : OuterObjects)
-	{
-		for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-		{
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object))
-			{
-				return WidgetBlueprint;
-			}
-
-			if (UClass* Class = Cast<UClass>(Object))
-			{
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Class->ClassGeneratedBy))
-				{
-					return WidgetBlueprint;
-				}
-			}
-
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object->GetClass()->ClassGeneratedBy))
-			{
-				return WidgetBlueprint;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(StructHandle);
 }
 
 UClass* FWidgetAnimTimelineEntryCustomization::ResolveOwnerWidgetClass() const
 {
-	if (UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint())
-	{
-		return WidgetBlueprint->GeneratedClass;
-	}
-
-	if (!StructHandle.IsValid())
-	{
-		return nullptr;
-	}
-
-	TArray<UObject*> OuterObjects;
-	StructHandle->GetOuterObjects(OuterObjects);
-	for (UObject* OuterObject : OuterObjects)
-	{
-		for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-		{
-			if (UClass* Class = Cast<UClass>(Object))
-			{
-				return Class;
-			}
-
-			UClass* ObjectClass = Object->GetClass();
-			if (ObjectClass != nullptr && ObjectClass->ClassGeneratedBy != nullptr)
-			{
-				return ObjectClass;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveOwnerWidgetClass(StructHandle, GetWidgetBlueprint());
 }
 
 UClass* FWidgetAnimTimelineEntryCustomization::ResolveTargetWidgetClass(FName TargetWidgetName) const
 {
-	UClass* OwnerClass = ResolveOwnerWidgetClass();
-	if (TargetWidgetName.IsNone())
-	{
-		return OwnerClass;
-	}
-
-	if (UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint())
-	{
-		if (WidgetBlueprint->WidgetTree != nullptr)
-		{
-			if (UWidget* Widget = WidgetBlueprint->WidgetTree->FindWidget(TargetWidgetName))
-			{
-				if (Widget->GetClass()->IsChildOf(UUserWidget::StaticClass()))
-				{
-					return Widget->GetClass();
-				}
-			}
-		}
-	}
-
-	if (OwnerClass != nullptr)
-	{
-		for (TFieldIterator<FObjectProperty> It(OwnerClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-		{
-			if (It->GetFName() == TargetWidgetName && It->PropertyClass != nullptr && It->PropertyClass->IsChildOf(UUserWidget::StaticClass()))
-			{
-				return It->PropertyClass;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveTargetWidgetClass(GetWidgetBlueprint(), ResolveOwnerWidgetClass(), TargetWidgetName);
 }
 
 void FWidgetAnimTimelineEntryCustomization::AddTargetWidgetOption(FName TargetWidgetName)
@@ -444,8 +354,7 @@ bool FWidgetAnimTimelineEntryCustomization::HasOption(const TArray<TSharedPtr<FS
 
 FString FWidgetAnimTimelineEntryCustomization::StripInstSuffix(const FString& AnimationName)
 {
-	const FString InstSuffix = TEXT("_INST");
-	return AnimationName.EndsWith(InstSuffix) ? AnimationName.LeftChop(InstSuffix.Len()) : AnimationName;
+	return FWidgetAnimTimelineEditorUtils::StripInstSuffix(AnimationName);
 }
 
 void FWidgetAnimTimelineEntryCustomization::OnTargetWidgetSelected(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)

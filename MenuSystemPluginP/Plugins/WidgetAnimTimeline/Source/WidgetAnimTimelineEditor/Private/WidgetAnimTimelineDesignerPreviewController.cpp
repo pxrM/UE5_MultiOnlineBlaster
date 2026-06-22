@@ -13,6 +13,7 @@
 #include "UObject/UnrealType.h"
 #include "WidgetBlueprint.h"
 #include "WidgetBlueprintEditor.h"
+#include "WidgetAnimTimelineEditorUtils.h"
 
 namespace WidgetAnimTimelineDesignerPreviewController
 {
@@ -87,38 +88,7 @@ void FWidgetAnimTimelineDesignerPreviewController::StopActive()
 
 UWidgetBlueprint* FWidgetAnimTimelineDesignerPreviewController::GetWidgetBlueprint(TSharedPtr<IPropertyHandle> PhaseHandle)
 {
-	if (!PhaseHandle.IsValid())
-	{
-		return nullptr;
-	}
-
-	TArray<UObject*> OuterObjects;
-	PhaseHandle->GetOuterObjects(OuterObjects);
-	for (UObject* OuterObject : OuterObjects)
-	{
-		for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-		{
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object))
-			{
-				return WidgetBlueprint;
-			}
-
-			if (UClass* Class = Cast<UClass>(Object))
-			{
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Class->ClassGeneratedBy))
-				{
-					return WidgetBlueprint;
-				}
-			}
-
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object->GetClass()->ClassGeneratedBy))
-			{
-				return WidgetBlueprint;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(PhaseHandle);
 }
 
 bool FWidgetAnimTimelineDesignerPreviewController::ReadRootPhase(TSharedPtr<IPropertyHandle> PhaseHandle, FWidgetAnimTimelinePhase& OutPhase)
@@ -680,27 +650,7 @@ UUserWidget* FWidgetAnimTimelineDesignerPreviewController::ResolveTargetWidget(U
 
 UWidgetAnimation* FWidgetAnimTimelineDesignerPreviewController::ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName) const
 {
-	if (TargetWidget == nullptr || AnimationName.IsNone())
-	{
-		return nullptr;
-	}
-
-	for (TFieldIterator<FObjectProperty> It(TargetWidget->GetClass(), EFieldIteratorFlags::IncludeSuper); It; ++It)
-	{
-		if (It->PropertyClass != UWidgetAnimation::StaticClass())
-		{
-			continue;
-		}
-
-		FString PropertyName = It->GetName();
-		PropertyName.RemoveFromEnd(TEXT("_INST"));
-		if (PropertyName == AnimationName.ToString())
-		{
-			return Cast<UWidgetAnimation>(It->GetObjectPropertyValue_InContainer(TargetWidget));
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveAnimation(TargetWidget, AnimationName);
 }
 
 FString FWidgetAnimTimelineDesignerPreviewController::MakePhaseStackKey(UUserWidget* Widget, FName PhaseName) const
