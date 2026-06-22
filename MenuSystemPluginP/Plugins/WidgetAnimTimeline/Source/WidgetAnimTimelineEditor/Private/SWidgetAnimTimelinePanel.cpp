@@ -123,6 +123,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("New")))
+					.ToolTipText(FText::FromString(TEXT("新建一个动画时间轴阶段。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanEditPhases)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::AddPhase)
 				]
@@ -132,6 +133,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Duplicate")))
+					.ToolTipText(FText::FromString(TEXT("复制当前选中的阶段及其所有时间轴条目。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanDuplicatePhase)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::DuplicatePhase)
 				]
@@ -141,6 +143,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Delete Phase")))
+					.ToolTipText(FText::FromString(TEXT("删除当前选中的阶段，并清理引用该阶段的自动播放设置。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanDeletePhase)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::DeletePhase)
 				]
@@ -178,6 +181,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 					SNew(SButton)
 					.HAlign(HAlign_Center)
 					.Text(FText::FromString(TEXT("Preview In Designer")))
+					.ToolTipText(FText::FromString(TEXT("在当前 UMG 设计器预览中播放所选阶段。需要蓝图已编译。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::PlayDesignerPreview)
 				]
 				+ SHorizontalBox::Slot()
@@ -200,6 +204,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Add Direct")))
+					.ToolTipText(FText::FromString(TEXT("添加一个直接播放 WidgetAnimation 的时间轴条目。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::AddDirectAnimationEntry)
 				]
 				+ SHorizontalBox::Slot()
@@ -208,6 +213,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Add Child")))
+					.ToolTipText(FText::FromString(TEXT("添加一个触发子控件时间轴阶段的条目。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::AddChildSequenceEntry)
 				]
 				+ SHorizontalBox::Slot()
@@ -216,6 +222,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Delete Entry")))
+					.ToolTipText(FText::FromString(TEXT("删除当前选中的时间轴条目。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanDeleteSelectedEntry)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::DeleteSelectedEntry)
 				]
@@ -225,6 +232,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Fit")))
+					.ToolTipText(FText::FromString(TEXT("缩放并平移视图，使所有时间轴条目尽量显示在当前面板内。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::FitTimelineToContent)
 				]
 				+ SHorizontalBox::Slot()

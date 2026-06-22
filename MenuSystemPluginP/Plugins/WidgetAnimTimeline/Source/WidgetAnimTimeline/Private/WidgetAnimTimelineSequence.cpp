@@ -163,7 +163,7 @@ void UWidgetAnimTimelinePlayer::ExecuteEntry(FWidgetAnimTimelineEntry Entry, TSe
 	TrackActiveAnimation(TargetWidget, Animation, Entry, SafePlaybackRate, SafeNumLoopsToPlay);
 }
 
-void UWidgetAnimTimelinePlayer::ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode) const
+void UWidgetAnimTimelinePlayer::ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode)
 {
 	if (TargetWidget == nullptr || Animation == nullptr)
 	{
@@ -274,7 +274,7 @@ UUserWidget* UWidgetAnimTimelinePlayer::ResolveTargetWidget(FName TargetWidgetNa
 	return Cast<UUserWidget>(OwnerWidget->WidgetTree->FindWidget(TargetWidgetName));
 }
 
-UWidgetAnimation* UWidgetAnimTimelinePlayer::ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName) const
+UWidgetAnimation* UWidgetAnimTimelinePlayer::ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName)
 {
 	if (TargetWidget == nullptr || AnimationName.IsNone())
 	{

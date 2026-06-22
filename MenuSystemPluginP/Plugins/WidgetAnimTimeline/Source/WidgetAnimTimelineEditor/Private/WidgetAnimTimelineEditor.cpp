@@ -63,7 +63,7 @@ namespace WidgetAnimTimelineEditor
 	{
 		FGlobalTabmanager::Get()->RegisterNomadTabSpawner(TimelineTabId, FOnSpawnTab::CreateStatic(&SpawnTimelineTab))
 			.SetDisplayName(LOCTEXT("WidgetAnimTimelineTabSpawner", "Widget Anim Timeline"))
-			.SetTooltipText(LOCTEXT("WidgetAnimTimelineTabSpawnerTooltip", "Open the Widget Anim Timeline editor."))
+			.SetTooltipText(LOCTEXT("WidgetAnimTimelineTabSpawnerTooltip", "打开 Widget Anim Timeline 编辑器。"))
 			.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "Sequencer.TabIcon"))
 			.SetMenuType(ETabSpawnerMenuType::Hidden);
 	}
@@ -110,7 +110,7 @@ namespace WidgetAnimTimelineEditor
 					}
 				})),
 				LOCTEXT("OpenWidgetAnimTimeline", "Widget Timeline"),
-				LOCTEXT("OpenWidgetAnimTimelineToolTip", "Open the Widget Anim Timeline editor for this Widget Blueprint."),
+				LOCTEXT("OpenWidgetAnimTimelineToolTip", "为当前 Widget Blueprint 打开 Widget Anim Timeline 编辑器。"),
 				FSlateIcon(FAppStyle::GetAppStyleSetName(), "Sequencer.TabIcon")
 			));
 			Entry.InsertPosition = FToolMenuInsert("OpenWidgetReflector", EToolMenuInsertType::After);
