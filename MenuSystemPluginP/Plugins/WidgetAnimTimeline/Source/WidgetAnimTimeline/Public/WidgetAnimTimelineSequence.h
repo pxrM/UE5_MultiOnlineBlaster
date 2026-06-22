@@ -108,7 +108,7 @@ private:
 	void ScheduleEntry(const FWidgetAnimTimelineEntry& Entry, const TSet<FString>& PhaseStack);
 	void ExecuteEntry(FWidgetAnimTimelineEntry Entry, TSet<FString> PhaseStack);
 	void ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode) const;
-	void TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, const FWidgetAnimTimelineEntry& Entry);
+	void TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, const FWidgetAnimTimelineEntry& Entry, float PlaybackRate, int32 NumLoopsToPlay);
 	void RemoveActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation);
 	void CleanupFinishedAnimation(TWeakObjectPtr<UUserWidget> TargetWidget, TWeakObjectPtr<UWidgetAnimation> Animation);
 	UUserWidget* ResolveTargetWidget(FName TargetWidgetName) const;
