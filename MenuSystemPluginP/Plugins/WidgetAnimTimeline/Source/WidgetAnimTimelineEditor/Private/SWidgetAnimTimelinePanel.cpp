@@ -1,8 +1,6 @@
 #include "SWidgetAnimTimelinePanel.h"
 
 #include "Animation/WidgetAnimation.h"
-#include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetTree.h"
 #include "Framework/Application/SlateApplication.h"
 #include "InputCoreTypes.h"
 #include "Kismet2/BlueprintEditorUtils.h"
@@ -2010,31 +2008,11 @@ void SWidgetAnimTimelinePanel::RefreshTargetOptions()
 	TargetOptions.Reset();
 	TargetOptions.Add(MakeShared<FName>(NAME_None));
 
-	TSet<FName> AddedNames;
-	AddedNames.Add(NAME_None);
-	UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint();
-	if (WidgetBlueprint != nullptr && WidgetBlueprint->WidgetTree != nullptr)
+	TArray<FName> TargetNames;
+	FWidgetAnimTimelineEditorUtils::CollectTargetWidgetNames(GetWidgetBlueprint(), ResolveOwnerWidgetClass(), TargetNames);
+	for (const FName TargetName : TargetNames)
 	{
-		WidgetBlueprint->WidgetTree->ForEachWidget([this, &AddedNames](UWidget* Widget)
-		{
-			if (Widget != nullptr && Widget->GetClass()->IsChildOf(UUserWidget::StaticClass()) && !AddedNames.Contains(Widget->GetFName()))
-			{
-				AddedNames.Add(Widget->GetFName());
-				TargetOptions.Add(MakeShared<FName>(Widget->GetFName()));
-			}
-		});
-	}
-
-	if (UClass* OwnerClass = ResolveOwnerWidgetClass())
-	{
-		for (TFieldIterator<FObjectProperty> It(OwnerClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-		{
-			if (It->PropertyClass != nullptr && It->PropertyClass->IsChildOf(UUserWidget::StaticClass()) && !AddedNames.Contains(It->GetFName()))
-			{
-				AddedNames.Add(It->GetFName());
-				TargetOptions.Add(MakeShared<FName>(It->GetFName()));
-			}
-		}
+		TargetOptions.Add(MakeShared<FName>(TargetName));
 	}
 }
 
@@ -2083,41 +2061,12 @@ void SWidgetAnimTimelinePanel::RefreshChildPhaseOptions()
 		return;
 	}
 
-	UObject* DefaultObject = TargetClass->GetDefaultObject();
-	if (DefaultObject == nullptr)
+	TArray<FName> PhaseNames;
+	const FName ExcludedPhaseName = Entry.TargetWidgetName.IsNone() ? GetCurrentPhaseName() : NAME_None;
+	FWidgetAnimTimelineEditorUtils::CollectChildPhaseNames(TargetClass, ExcludedPhaseName, PhaseNames);
+	for (const FName PhaseName : PhaseNames)
 	{
-		return;
-	}
-
-	TSet<FName> AddedNames;
-	AddedNames.Add(NAME_None);
-	for (TFieldIterator<FStructProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-	{
-		if (It->Struct != FWidgetAnimTimelineConfig::StaticStruct())
-		{
-			continue;
-		}
-
-		const FWidgetAnimTimelineConfig* Config = It->ContainerPtrToValuePtr<FWidgetAnimTimelineConfig>(DefaultObject);
-		if (Config == nullptr)
-		{
-			continue;
-		}
-
-		for (const FWidgetAnimTimelinePhase& Phase : Config->Phases)
-		{
-			if (Phase.PhaseName.IsNone() || AddedNames.Contains(Phase.PhaseName))
-			{
-				continue;
-			}
-			if (Entry.TargetWidgetName.IsNone() && Phase.PhaseName == GetCurrentPhaseName())
-			{
-				continue;
-			}
-
-			AddedNames.Add(Phase.PhaseName);
-			ChildPhaseOptions.Add(MakeShared<FName>(Phase.PhaseName));
-		}
+		ChildPhaseOptions.Add(MakeShared<FName>(PhaseName));
 	}
 }
 

@@ -6,6 +6,19 @@
 #include "PropertyHandle.h"
 #include "UObject/UnrealType.h"
 #include "WidgetBlueprint.h"
+#include "WidgetAnimTimelineSequence.h"
+
+namespace
+{
+	void AddUniqueName(TArray<FName>& Names, TSet<FName>& AddedNames, FName Name)
+	{
+		if (!Name.IsNone() && !AddedNames.Contains(Name))
+		{
+			AddedNames.Add(Name);
+			Names.Add(Name);
+		}
+	}
+}
 
 UWidgetBlueprint* FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(TSharedPtr<IPropertyHandle> PropertyHandle)
 {
@@ -143,6 +156,33 @@ UWidgetAnimation* FWidgetAnimTimelineEditorUtils::ResolveAnimationFromClassDefau
 	return nullptr;
 }
 
+void FWidgetAnimTimelineEditorUtils::CollectTargetWidgetNames(UWidgetBlueprint* WidgetBlueprint, UClass* OwnerClass, TArray<FName>& OutTargetWidgetNames)
+{
+	TSet<FName> AddedNames(OutTargetWidgetNames);
+
+	if (WidgetBlueprint != nullptr && WidgetBlueprint->WidgetTree != nullptr)
+	{
+		WidgetBlueprint->WidgetTree->ForEachWidget([&OutTargetWidgetNames, &AddedNames](UWidget* Widget)
+		{
+			if (Widget != nullptr && Widget->GetClass()->IsChildOf(UUserWidget::StaticClass()))
+			{
+				AddUniqueName(OutTargetWidgetNames, AddedNames, Widget->GetFName());
+			}
+		});
+	}
+
+	if (OwnerClass != nullptr)
+	{
+		for (TFieldIterator<FObjectProperty> It(OwnerClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+		{
+			if (It->PropertyClass != nullptr && It->PropertyClass->IsChildOf(UUserWidget::StaticClass()))
+			{
+				AddUniqueName(OutTargetWidgetNames, AddedNames, It->GetFName());
+			}
+		}
+	}
+}
+
 void FWidgetAnimTimelineEditorUtils::CollectAnimationNames(UClass* TargetClass, TArray<FName>& OutAnimationNames)
 {
 	if (TargetClass == nullptr)
@@ -155,6 +195,43 @@ void FWidgetAnimTimelineEditorUtils::CollectAnimationNames(UClass* TargetClass, 
 		if (It->PropertyClass == UWidgetAnimation::StaticClass())
 		{
 			OutAnimationNames.Add(FName(*StripInstSuffix(It->GetName())));
+		}
+	}
+}
+
+void FWidgetAnimTimelineEditorUtils::CollectChildPhaseNames(UClass* TargetClass, FName ExcludedPhaseName, TArray<FName>& OutPhaseNames)
+{
+	if (TargetClass == nullptr)
+	{
+		return;
+	}
+
+	UObject* DefaultObject = TargetClass->GetDefaultObject();
+	if (DefaultObject == nullptr)
+	{
+		return;
+	}
+
+	TSet<FName> AddedNames(OutPhaseNames);
+	for (TFieldIterator<FStructProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+	{
+		if (It->Struct != FWidgetAnimTimelineConfig::StaticStruct())
+		{
+			continue;
+		}
+
+		const FWidgetAnimTimelineConfig* Config = It->ContainerPtrToValuePtr<FWidgetAnimTimelineConfig>(DefaultObject);
+		if (Config == nullptr)
+		{
+			continue;
+		}
+
+		for (const FWidgetAnimTimelinePhase& Phase : Config->Phases)
+		{
+			if (Phase.PhaseName != ExcludedPhaseName)
+			{
+				AddUniqueName(OutPhaseNames, AddedNames, Phase.PhaseName);
+			}
 		}
 	}
 }

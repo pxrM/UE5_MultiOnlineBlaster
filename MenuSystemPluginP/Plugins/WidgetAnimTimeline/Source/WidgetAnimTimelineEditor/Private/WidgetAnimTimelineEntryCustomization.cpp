@@ -1,13 +1,9 @@
 #include "WidgetAnimTimelineEntryCustomization.h"
 
-#include "Animation/WidgetAnimation.h"
-#include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetTree.h"
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
 #include "IPropertyUtilities.h"
 #include "PropertyHandle.h"
-#include "UObject/UnrealType.h"
 #include "WidgetBlueprint.h"
 #include "WidgetAnimTimelineEditorUtils.h"
 #include "WidgetAnimTimelineSequence.h"
@@ -212,27 +208,11 @@ void FWidgetAnimTimelineEntryCustomization::RefreshTargetWidgetOptions()
 	TargetWidgetOptions.Reset();
 	TargetWidgetOptions.Add(MakeShared<FString>(TEXT("Self (Owner)")));
 
-	UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint();
-	if (WidgetBlueprint != nullptr && WidgetBlueprint->WidgetTree != nullptr)
+	TArray<FName> TargetWidgetNames;
+	FWidgetAnimTimelineEditorUtils::CollectTargetWidgetNames(GetWidgetBlueprint(), ResolveOwnerWidgetClass(), TargetWidgetNames);
+	for (const FName TargetWidgetName : TargetWidgetNames)
 	{
-		WidgetBlueprint->WidgetTree->ForEachWidget([this](UWidget* Widget)
-		{
-			if (Widget != nullptr && Widget->GetClass()->IsChildOf(UUserWidget::StaticClass()))
-			{
-				AddTargetWidgetOption(Widget->GetFName());
-			}
-		});
-	}
-
-	if (UClass* OwnerClass = ResolveOwnerWidgetClass())
-	{
-		for (TFieldIterator<FObjectProperty> It(OwnerClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-		{
-			if (It->PropertyClass != nullptr && It->PropertyClass->IsChildOf(UUserWidget::StaticClass()))
-			{
-				AddTargetWidgetOption(It->GetFName());
-			}
-		}
+		AddTargetWidgetOption(TargetWidgetName);
 	}
 }
 
@@ -253,12 +233,11 @@ void FWidgetAnimTimelineEntryCustomization::RefreshAnimationOptions()
 		return;
 	}
 
-	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+	TArray<FName> AnimationNames;
+	FWidgetAnimTimelineEditorUtils::CollectAnimationNames(TargetClass, AnimationNames);
+	for (const FName AnimationName : AnimationNames)
 	{
-		if (It->PropertyClass == UWidgetAnimation::StaticClass())
-		{
-			AnimationOptions.Add(MakeShared<FString>(StripInstSuffix(It->GetName())));
-		}
+		AnimationOptions.Add(MakeShared<FString>(AnimationName.ToString()));
 	}
 }
 
@@ -279,32 +258,12 @@ void FWidgetAnimTimelineEntryCustomization::RefreshChildPhaseOptions()
 		return;
 	}
 
-	const FName OwnerPhaseName = GetOwnerPhaseName();
-	for (TFieldIterator<FStructProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+	TArray<FName> PhaseNames;
+	const FName ExcludedPhaseName = TargetName.IsNone() ? GetOwnerPhaseName() : NAME_None;
+	FWidgetAnimTimelineEditorUtils::CollectChildPhaseNames(TargetClass, ExcludedPhaseName, PhaseNames);
+	for (const FName PhaseName : PhaseNames)
 	{
-		if (It->Struct != FWidgetAnimTimelineConfig::StaticStruct())
-		{
-			continue;
-		}
-
-		if (UObject* DefaultObject = TargetClass->GetDefaultObject())
-		{
-			const FWidgetAnimTimelineConfig* Config = It->ContainerPtrToValuePtr<FWidgetAnimTimelineConfig>(DefaultObject);
-			if (Config == nullptr)
-			{
-				continue;
-			}
-
-			for (const FWidgetAnimTimelinePhase& Phase : Config->Phases)
-			{
-				if (TargetName.IsNone() && !OwnerPhaseName.IsNone() && Phase.PhaseName == OwnerPhaseName)
-				{
-					continue;
-				}
-
-				ChildPhaseOptions.Add(MakeShared<FString>(Phase.PhaseName.ToString()));
-			}
-		}
+		ChildPhaseOptions.Add(MakeShared<FString>(PhaseName.ToString()));
 	}
 }
 
@@ -350,11 +309,6 @@ bool FWidgetAnimTimelineEntryCustomization::HasOption(const TArray<TSharedPtr<FS
 	}
 
 	return false;
-}
-
-FString FWidgetAnimTimelineEntryCustomization::StripInstSuffix(const FString& AnimationName)
-{
-	return FWidgetAnimTimelineEditorUtils::StripInstSuffix(AnimationName);
 }
 
 void FWidgetAnimTimelineEntryCustomization::OnTargetWidgetSelected(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo)
