@@ -47,7 +47,8 @@ struct WIDGETANIMTIMELINE_API FWidgetAnimTimelineEntry
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline", meta = (ClampMin = "0.001", UIMin = "0.1"))
 	float PlaybackRate = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	// Matches UUserWidget::PlayAnimation semantics: 0 loops indefinitely. Editor preview shows one loop for bounded playback.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline", meta = (ClampMin = "0", UIMin = "0"))
 	int32 NumLoopsToPlay = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")

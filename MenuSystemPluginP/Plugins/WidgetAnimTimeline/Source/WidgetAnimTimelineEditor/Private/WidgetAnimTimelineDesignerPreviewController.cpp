@@ -19,6 +19,12 @@ namespace WidgetAnimTimelineDesignerPreviewController
 	static constexpr float FallbackEntryDuration = 0.5f;
 	static constexpr float EndPadding = 0.2f;
 	static TSharedPtr<FWidgetAnimTimelineDesignerPreviewController> ActiveController;
+
+	static int32 GetPreviewLoopCount(int32 NumLoopsToPlay)
+	{
+		// Runtime forwards 0 to UUserWidget::PlayAnimation as infinite loop. Designer preview uses one loop so preview playback can finish.
+		return NumLoopsToPlay == 0 ? 1 : FMath::Max(NumLoopsToPlay, 1);
+	}
 }
 
 bool FWidgetAnimTimelineDesignerPreviewController::Play(TSharedPtr<IPropertyHandle> PhaseHandle)
@@ -481,7 +487,7 @@ void FWidgetAnimTimelineDesignerPreviewController::StartEntry(FPendingEntry& Pen
 		// DesignerPreview 下正常的 UUMGSequenceTickManager 不会像运行时那样自动 tick/flush，因为 IsDesignTime() 会跳过很多 animation tick。
 		PendingEntry.AnimHandle = TargetWidget->PlayAnimation(
 			Animation, 0.0f,
-			PendingEntry.Entry.NumLoopsToPlay == 0 ? 1 : PendingEntry.Entry.NumLoopsToPlay,
+			WidgetAnimTimelineDesignerPreviewController::GetPreviewLoopCount(PendingEntry.Entry.NumLoopsToPlay),
 			EUMGSequencePlayMode::Forward,
 			FMath::Max(PendingEntry.Entry.PlaybackRate, KINDA_SMALL_NUMBER),
 			false);
@@ -625,7 +631,7 @@ float FWidgetAnimTimelineDesignerPreviewController::GetEntryDuration(UUserWidget
 		return WidgetAnimTimelineDesignerPreviewController::FallbackEntryDuration;
 	}
 
-	const int32 LoopCount = Entry.NumLoopsToPlay == 0 ? 1 : FMath::Max(Entry.NumLoopsToPlay, 1);
+	const int32 LoopCount = WidgetAnimTimelineDesignerPreviewController::GetPreviewLoopCount(Entry.NumLoopsToPlay);
 	return Animation->GetEndTime() * LoopCount / FMath::Max(Entry.PlaybackRate, KINDA_SMALL_NUMBER);
 }
 

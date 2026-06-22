@@ -387,7 +387,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 						.Label()
 						[
 							SNew(STextBlock)
-							.Text(FText::FromString(TEXT("NumLoopsToPlay")))
+							.Text(FText::FromString(TEXT("Loops (0=Inf)")))
 						]
 						.MinValue(0)
 						.MinSliderValue(0)
@@ -422,11 +422,15 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			ViewModel.EntryIndex = EntryIndex;
 			ViewModel.LaneName = Entry.TargetWidgetName.IsNone() ? TEXT("Self") : Entry.TargetWidgetName.ToString();
 			ViewModel.StartTime = Entry.StartTime;
-			ViewModel.Duration = GetEntryDuration(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.PlaybackRate);
+			ViewModel.Duration = GetEntryDuration(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.PlaybackRate, Entry.NumLoopsToPlay);
 			ViewModel.ValidationError = BuildEntryValidationError(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.ChildPhaseName);
 			if (Entry.EntryType == EWidgetAnimTimelineEntryType::DirectAnimation)
 			{
 				ViewModel.Label = Entry.AnimationName.IsNone() ? TEXT("Animation") : Entry.AnimationName.ToString();
+				if (Entry.NumLoopsToPlay == 0)
+				{
+					ViewModel.Label += TEXT(" (Infinite)");
+				}
 				ViewModel.Color = FLinearColor(0.12f, 0.48f, 0.95f, 1.0f);
 			}
 			else
@@ -491,6 +495,11 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 		{
 			RateHandle->GetValue(PlaybackRate);
 		}
+		int32 NumLoopsToPlay = 1;
+		if (TSharedPtr<IPropertyHandle> LoopsHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, NumLoopsToPlay)))
+		{
+			LoopsHandle->GetValue(NumLoopsToPlay);
+		}
 
 		FEntryViewModel ViewModel;
 		ViewModel.EntryIndex = static_cast<int32>(EntryIndex);
@@ -498,11 +507,15 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 		ViewModel.StartTime = StartTime;
 
 		const EWidgetAnimTimelineEntryType EntryType = static_cast<EWidgetAnimTimelineEntryType>(TypeValue);
-		ViewModel.Duration = GetEntryDuration(TargetName, EntryType, AnimationName, PlaybackRate);
+		ViewModel.Duration = GetEntryDuration(TargetName, EntryType, AnimationName, PlaybackRate, NumLoopsToPlay);
 		ViewModel.ValidationError = BuildEntryValidationError(TargetName, EntryType, AnimationName, ChildPhaseName);
 		if (EntryType == EWidgetAnimTimelineEntryType::DirectAnimation)
 		{
 			ViewModel.Label = AnimationName.IsNone() ? TEXT("Animation") : AnimationName.ToString();
+			if (NumLoopsToPlay == 0)
+			{
+				ViewModel.Label += TEXT(" (Infinite)");
+			}
 			ViewModel.Color = FLinearColor(0.12f, 0.48f, 0.95f, 1.0f);
 		}
 		else
@@ -978,25 +991,26 @@ bool SWidgetAnimTimelinePanel::HasChildPhase(UClass* TargetClass, FName TargetWi
 	return false;
 }
 
-float SWidgetAnimTimelinePanel::GetEntryDuration(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, float PlaybackRate) const
+float SWidgetAnimTimelinePanel::GetEntryDuration(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, float PlaybackRate, int32 NumLoopsToPlay) const
 {
 	static constexpr float FallbackDuration = 0.5f;
 	const float SafePlaybackRate = FMath::Max(PlaybackRate, KINDA_SMALL_NUMBER);
+	const int32 PreviewLoopCount = NumLoopsToPlay == 0 ? 1 : FMath::Max(NumLoopsToPlay, 1);
 	if (EntryType != EWidgetAnimTimelineEntryType::DirectAnimation)
 	{
-		return FallbackDuration / SafePlaybackRate;
+		return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 	}
 
 	UClass* TargetClass = ResolveTargetWidgetClass(GetWidgetBlueprint(), TargetWidgetName);
 	if (TargetClass == nullptr || AnimationName.IsNone())
 	{
-		return FallbackDuration / SafePlaybackRate;
+		return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 	}
 
 	UObject* DefaultObject = TargetClass->GetDefaultObject();
 	if (DefaultObject == nullptr)
 	{
-		return FallbackDuration / SafePlaybackRate;
+		return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 	}
 
 	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
@@ -1015,11 +1029,11 @@ float SWidgetAnimTimelinePanel::GetEntryDuration(FName TargetWidgetName, EWidget
 
 		if (const UWidgetAnimation* Animation = Cast<UWidgetAnimation>(It->GetObjectPropertyValue_InContainer(DefaultObject)))
 		{
-			return FMath::Max(Animation->GetEndTime(), FallbackDuration) / SafePlaybackRate;
+			return FMath::Max(Animation->GetEndTime(), FallbackDuration) * PreviewLoopCount / SafePlaybackRate;
 		}
 	}
 
-	return FallbackDuration / SafePlaybackRate;
+	return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 }
 
 FString SWidgetAnimTimelinePanel::BuildEntryValidationError(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, FName ChildPhaseName) const
