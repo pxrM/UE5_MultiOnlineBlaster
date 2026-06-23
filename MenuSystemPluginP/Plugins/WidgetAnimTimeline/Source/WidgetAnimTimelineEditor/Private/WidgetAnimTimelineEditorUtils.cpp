@@ -20,7 +20,7 @@ namespace
 	}
 }
 
-UWidgetBlueprint* FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(TSharedPtr<IPropertyHandle> PropertyHandle)
+UWidgetBlueprint* FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(const TSharedPtr<IPropertyHandle>& PropertyHandle)
 {
 	if (!PropertyHandle.IsValid())
 	{
@@ -40,7 +40,7 @@ UWidgetBlueprint* FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(TShared
 	return nullptr;
 }
 
-UClass* FWidgetAnimTimelineEditorUtils::ResolveOwnerWidgetClass(TSharedPtr<IPropertyHandle> PropertyHandle, UWidgetBlueprint* WidgetBlueprint)
+UClass* FWidgetAnimTimelineEditorUtils::ResolveOwnerWidgetClass(const TSharedPtr<IPropertyHandle>& PropertyHandle, UWidgetBlueprint* WidgetBlueprint)
 {
 	if (WidgetBlueprint != nullptr)
 	{
@@ -74,7 +74,7 @@ UClass* FWidgetAnimTimelineEditorUtils::ResolveOwnerWidgetClass(TSharedPtr<IProp
 	return nullptr;
 }
 
-UClass* FWidgetAnimTimelineEditorUtils::ResolveTargetWidgetClass(UWidgetBlueprint* WidgetBlueprint, UClass* OwnerClass, FName TargetWidgetName)
+UClass* FWidgetAnimTimelineEditorUtils::ResolveTargetWidgetClass(const UWidgetBlueprint* WidgetBlueprint, UClass* OwnerClass, FName TargetWidgetName)
 {
 	if (TargetWidgetName.IsNone())
 	{
@@ -104,7 +104,7 @@ UClass* FWidgetAnimTimelineEditorUtils::ResolveTargetWidgetClass(UWidgetBlueprin
 	return nullptr;
 }
 
-UWidgetAnimation* FWidgetAnimTimelineEditorUtils::ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName)
+UWidgetAnimation* FWidgetAnimTimelineEditorUtils::ResolveAnimation(const UUserWidget* TargetWidget, FName AnimationName)
 {
 	if (TargetWidget == nullptr || AnimationName.IsNone())
 	{
@@ -127,7 +127,7 @@ UWidgetAnimation* FWidgetAnimTimelineEditorUtils::ResolveAnimation(UUserWidget* 
 	return nullptr;
 }
 
-UWidgetAnimation* FWidgetAnimTimelineEditorUtils::ResolveAnimationFromClassDefaultObject(UClass* TargetClass, FName AnimationName)
+UWidgetAnimation* FWidgetAnimTimelineEditorUtils::ResolveAnimationFromClassDefaultObject(const UClass* TargetClass, FName AnimationName)
 {
 	if (TargetClass == nullptr || AnimationName.IsNone())
 	{
@@ -156,13 +156,13 @@ UWidgetAnimation* FWidgetAnimTimelineEditorUtils::ResolveAnimationFromClassDefau
 	return nullptr;
 }
 
-void FWidgetAnimTimelineEditorUtils::CollectTargetWidgetNames(UWidgetBlueprint* WidgetBlueprint, UClass* OwnerClass, TArray<FName>& OutTargetWidgetNames)
+void FWidgetAnimTimelineEditorUtils::CollectTargetWidgetNames(const UWidgetBlueprint* WidgetBlueprint, const UClass* OwnerClass, TArray<FName>& OutTargetWidgetNames)
 {
 	TSet<FName> AddedNames(OutTargetWidgetNames);
 
 	if (WidgetBlueprint != nullptr && WidgetBlueprint->WidgetTree != nullptr)
 	{
-		WidgetBlueprint->WidgetTree->ForEachWidget([&OutTargetWidgetNames, &AddedNames](UWidget* Widget)
+		WidgetBlueprint->WidgetTree->ForEachWidget([&OutTargetWidgetNames, &AddedNames](const UWidget* Widget)
 		{
 			if (Widget != nullptr && Widget->GetClass()->IsChildOf(UUserWidget::StaticClass()))
 			{
@@ -183,7 +183,7 @@ void FWidgetAnimTimelineEditorUtils::CollectTargetWidgetNames(UWidgetBlueprint* 
 	}
 }
 
-void FWidgetAnimTimelineEditorUtils::CollectAnimationNames(UClass* TargetClass, TArray<FName>& OutAnimationNames)
+void FWidgetAnimTimelineEditorUtils::CollectAnimationNames(const UClass* TargetClass, TArray<FName>& OutAnimationNames)
 {
 	if (TargetClass == nullptr)
 	{
@@ -199,7 +199,7 @@ void FWidgetAnimTimelineEditorUtils::CollectAnimationNames(UClass* TargetClass, 
 	}
 }
 
-void FWidgetAnimTimelineEditorUtils::CollectChildPhaseNames(UClass* TargetClass, FName ExcludedPhaseName, TArray<FName>& OutPhaseNames)
+void FWidgetAnimTimelineEditorUtils::CollectChildPhaseNames(const UClass* TargetClass, FName ExcludedPhaseName, TArray<FName>& OutPhaseNames)
 {
 	if (TargetClass == nullptr)
 	{
@@ -236,9 +236,22 @@ void FWidgetAnimTimelineEditorUtils::CollectChildPhaseNames(UClass* TargetClass,
 	}
 }
 
-bool FWidgetAnimTimelineEditorUtils::HasAnimation(UClass* TargetClass, FName AnimationName)
+bool FWidgetAnimTimelineEditorUtils::HasAnimation(const UClass* TargetClass, FName AnimationName)
 {
-	return ResolveAnimationFromClassDefaultObject(TargetClass, AnimationName) != nullptr;
+	if (TargetClass == nullptr || AnimationName.IsNone())
+	{
+		return false;
+	}
+
+	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+	{
+		if (It->PropertyClass == UWidgetAnimation::StaticClass() && StripInstSuffix(It->GetName()) == AnimationName.ToString())
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 FString FWidgetAnimTimelineEditorUtils::StripInstSuffix(const FString& AnimationName)

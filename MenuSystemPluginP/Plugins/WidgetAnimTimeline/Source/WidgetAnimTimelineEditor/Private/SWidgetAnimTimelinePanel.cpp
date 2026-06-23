@@ -4,6 +4,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "InputCoreTypes.h"
 #include "Kismet2/BlueprintEditorUtils.h"
+#include "Layout/Clipping.h"
 #include "PropertyHandle.h"
 #include "Rendering/DrawElements.h"
 #include "ScopedTransaction.h"
@@ -412,12 +413,21 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 	Entries.Reset();
 	LaneNames.Reset();
 
+	const auto ClampToKnownTimelineWidth = [this]()
+	{
+		if (LastTimelineWidth > 0.0f)
+		{
+			ClampViewStartTime(LastTimelineWidth);
+		}
+	};
+
 	TSharedPtr<IPropertyHandle> EntriesHandle = GetEntriesHandle();
 	if (!EntriesHandle.IsValid())
 	{
 		FWidgetAnimTimelinePhase* Phase = GetTimelinePhase();
 		if (Phase == nullptr)
 		{
+			ClampToKnownTimelineWidth();
 			return;
 		}
 
@@ -450,6 +460,7 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			LaneNames.AddUnique(ViewModel.LaneName);
 		}
 
+		ClampToKnownTimelineWidth();
 		return;
 	}
 
@@ -534,6 +545,8 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 		Entries.Add(ViewModel);
 		LaneNames.AddUnique(ViewModel.LaneName);
 	}
+
+	ClampToKnownTimelineWidth();
 }
 
 void SWidgetAnimTimelinePanel::RefreshPhaseOptions()
@@ -654,6 +667,10 @@ int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry&
 		FSlateDrawElement::MakeText(OutDrawElements, CurrentLayer + 10, AllottedGeometry.ToPaintGeometry(FVector2f(HeaderWidth - 16.0f, 18.0f), FSlateLayoutTransform(FVector2f(10.0f, Y + 9.0f))), FText::FromString(LaneNames[LaneIndex]), SmallFont, ESlateDrawEffect::None, FLinearColor(0.82f, 0.82f, 0.82f, 1.0f));
 	}
 
+	const FVector2D ClipTopLeft = AllottedGeometry.LocalToAbsolute(FVector2D(HeaderWidth, TimelineTop - RulerHeight));
+	const FVector2D ClipBottomRight = AllottedGeometry.LocalToAbsolute(FVector2D(TimelineRight, LaneAreaBottom));
+	const FSlateRect TimelineClipRect(ClipTopLeft.X, ClipTopLeft.Y, ClipBottomRight.X, ClipBottomRight.Y);
+	OutDrawElements.PushClip(FSlateClippingZone(TimelineClipRect));
 	for (const FEntryViewModel& Entry : Entries)
 	{
 		const int32 LaneIndex = GetLaneIndex(Entry.LaneName);
@@ -682,6 +699,7 @@ int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry&
 		FSlateDrawElement::MakeText(OutDrawElements, CurrentLayer + 14, AllottedGeometry.ToPaintGeometry(FVector2f(Width - 10.0f, 18.0f), FSlateLayoutTransform(FVector2f(X + 7.0f, Y + 7.0f))), FText::FromString(Entry.Label), SmallFont, ESlateDrawEffect::None, FLinearColor::White);
 		FSlateDrawElement::MakeText(OutDrawElements, CurrentLayer + 14, AllottedGeometry.ToPaintGeometry(FVector2f(Width - 10.0f, 14.0f), FSlateLayoutTransform(FVector2f(X + 7.0f, Y + 21.0f))), FText::FromString(bHasValidationError ? Entry.ValidationError : FormatTime(Entry.StartTime)), SmallFont, ESlateDrawEffect::None, bHasValidationError ? FLinearColor(1.0f, 0.82f, 0.76f, 1.0f) : FLinearColor(0.82f, 0.9f, 1.0f, 0.82f));
 	}
+	OutDrawElements.PopClip();
 
 	const int32 ChildLayer = SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, CurrentLayer + 15, InWidgetStyle, bParentEnabled);
 	return FMath::Max(CurrentLayer + 15, ChildLayer);
@@ -1050,12 +1068,26 @@ FReply SWidgetAnimTimelinePanel::OnMouseMove(const FGeometry& MyGeometry, const 
 FReply SWidgetAnimTimelinePanel::OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	const FVector2D LocalPosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+	if (!IsInTimelineArea(MyGeometry, LocalPosition))
+	{
+		return FReply::Unhandled();
+	}
+
 	const float AnchorTime = XToTime(LocalPosition.X, MyGeometry);
 	const float AnchorScreenOffset = LocalPosition.X - HeaderWidth;
 	const float ZoomFactor = MouseEvent.GetWheelDelta() > 0.0f ? 1.12f : 1.0f / 1.12f;
 	PixelsPerSecond = FMath::Clamp(PixelsPerSecond * ZoomFactor, WidgetAnimTimelinePanelConstants::MinPixelsPerSecond, WidgetAnimTimelinePanelConstants::MaxPixelsPerSecond);
 	ViewStartTime = AnchorTime - AnchorScreenOffset / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
-	ClampViewStartTime(GetTimelineWidth(MyGeometry));
+	const float TimelineWidth = GetTimelineWidth(MyGeometry);
+	const float VisibleDuration = TimelineWidth / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
+	if (GetTimelineContentEndTime() + 0.5f <= VisibleDuration)
+	{
+		ViewStartTime = 0.0f;
+	}
+	else
+	{
+		ClampViewStartTime(TimelineWidth);
+	}
 	Invalidate(EInvalidateWidgetReason::Paint);
 	return FReply::Handled();
 }
@@ -1471,7 +1503,8 @@ float SWidgetAnimTimelinePanel::GetInspectorWidth() const
 float SWidgetAnimTimelinePanel::GetMaxViewStartTime(float TimelineWidth) const
 {
 	const float VisibleDuration = TimelineWidth / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
-	return FMath::Max(0.0f, GetTimelineDuration() - VisibleDuration);
+	const float ScrollableDuration = GetTimelineContentEndTime() + 0.5f;
+	return FMath::Max(0.0f, ScrollableDuration - VisibleDuration);
 }
 
 void SWidgetAnimTimelinePanel::ClampViewStartTime(float TimelineWidth)
@@ -1492,13 +1525,20 @@ float SWidgetAnimTimelinePanel::XToTime(float X, const FGeometry& Geometry) cons
 bool SWidgetAnimTimelinePanel::IsInTimelineArea(const FGeometry& Geometry, FVector2D LocalPosition) const
 {
 	const float TimelineWidth = GetTimelineWidth(Geometry);
+	const float TimelineBottom = Geometry.GetLocalSize().Y;
 	return LocalPosition.X >= HeaderWidth
 		&& LocalPosition.X <= HeaderWidth + TimelineWidth
-		&& LocalPosition.Y >= TimelineTop - RulerHeight;
+		&& LocalPosition.Y >= TimelineTop - RulerHeight
+		&& LocalPosition.Y <= TimelineBottom;
 }
 
 int32 SWidgetAnimTimelinePanel::HitTestEntry(const FGeometry& Geometry, FVector2D LocalPosition) const
 {
+	if (!IsInTimelineArea(Geometry, LocalPosition))
+	{
+		return INDEX_NONE;
+	}
+
 	for (const FEntryViewModel& Entry : Entries)
 	{
 		const int32 LaneIndex = GetLaneIndex(Entry.LaneName);

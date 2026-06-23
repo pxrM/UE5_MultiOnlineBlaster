@@ -13,6 +13,7 @@
 #include "WidgetAnimTimelineEditorUtils.h"
 #include "WidgetAnimTimelineEntryCustomization.h"
 #include "WidgetAnimTimelinePhaseCustomization.h"
+#include "WidgetAnimTimelineSequence.h"
 #include "Widgets/Docking/SDockTab.h"
 
 #define LOCTEXT_NAMESPACE "FWidgetAnimTimelineEditorModule"
@@ -27,6 +28,13 @@ namespace WidgetAnimTimelineEditor
 	static TSharedPtr<IPropertyHandle> PendingPhaseHandle;
 	static TWeakPtr<SDockTab> ActiveTimelineTab;
 	static int32 PendingPhaseIndex = 0;
+
+	static bool SupportsWidgetAnimTimeline(const UWidgetBlueprint* WidgetBlueprint)
+	{
+		return WidgetBlueprint != nullptr &&
+			WidgetBlueprint->ParentClass != nullptr &&
+			WidgetBlueprint->ParentClass->IsChildOf(UWidgetAnimTimelineHostWidget::StaticClass());
+	}
 
 	static TSharedRef<SWidget> CreateTimelineContent()
 	{
@@ -93,7 +101,7 @@ namespace WidgetAnimTimelineEditor
 			}
 
 			TSharedPtr<FWidgetBlueprintEditor> WidgetBlueprintEditor = StaticCastSharedPtr<FWidgetBlueprintEditor>(Context->BlueprintEditor.Pin());
-			if (!WidgetBlueprintEditor.IsValid() || WidgetBlueprintEditor->GetWidgetBlueprintObj() == nullptr)
+			if (!WidgetBlueprintEditor.IsValid() || !SupportsWidgetAnimTimeline(WidgetBlueprintEditor->GetWidgetBlueprintObj()))
 			{
 				return;
 			}
@@ -104,7 +112,7 @@ namespace WidgetAnimTimelineEditor
 				FUIAction(FExecuteAction::CreateLambda([WeakWidgetBlueprintEditor]()
 				{
 					TSharedPtr<FWidgetBlueprintEditor> WidgetBlueprintEditor = WeakWidgetBlueprintEditor.Pin();
-					if (WidgetBlueprintEditor.IsValid())
+					if (WidgetBlueprintEditor.IsValid() && SupportsWidgetAnimTimeline(WidgetBlueprintEditor->GetWidgetBlueprintObj()))
 					{
 						FWidgetAnimTimelineEditorModule::OpenTimelineForWidgetBlueprint(WidgetBlueprintEditor->GetWidgetBlueprintObj(), 0);
 					}
@@ -140,7 +148,7 @@ namespace WidgetAnimTimelineEditor
 
 void FWidgetAnimTimelineEditorModule::OpenTimelineForWidgetBlueprint(UWidgetBlueprint* WidgetBlueprint, int32 PhaseIndex)
 {
-	if (WidgetBlueprint == nullptr)
+	if (!WidgetAnimTimelineEditor::SupportsWidgetAnimTimeline(WidgetBlueprint))
 	{
 		return;
 	}
