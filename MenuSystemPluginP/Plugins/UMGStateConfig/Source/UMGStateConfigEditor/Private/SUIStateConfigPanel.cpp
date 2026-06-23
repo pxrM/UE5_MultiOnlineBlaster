@@ -230,6 +230,25 @@ TSharedRef<SWidget> MakeIconTextButtonContent(const FName& IconName, const FText
 	];
 }
 
+FString MakeCompactValueText(const FString& Value)
+{
+	FString Compact = Value;
+	Compact.ReplaceInline(TEXT("\r"), TEXT(" "));
+	Compact.ReplaceInline(TEXT("\n"), TEXT(" "));
+	Compact.TrimStartAndEndInline();
+	constexpr int32 MaxPreviewChars = 96;
+	if (Compact.Len() > MaxPreviewChars)
+	{
+		Compact = Compact.Left(MaxPreviewChars) + TEXT("...");
+	}
+	return Compact;
+}
+
+FText MakeCountBadgeText(int32 Count)
+{
+	return FText::Format(LOCTEXT("CountBadge", "{0} 项"), FText::AsNumber(Count));
+}
+
 }
 
 
@@ -257,6 +276,41 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 					SNew(STextBlock)
 					.Text(this, &SUIStateConfigPanel::GetTitleText)
 					.Font(FAppStyle::GetFontStyle("HeadingExtraSmall"))
+				]
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(this, &SUIStateConfigPanel::GetBreadcrumbText)
+					.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+				]
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(0.0f, 8.0f, 0.0f, 4.0f)
+			[
+				SNew(SSeparator)
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(0.0f, 4.0f)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.VAlign(VAlign_Center)
+				.Padding(0.0f, 0.0f, 8.0f, 0.0f)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ParentStatesLabel", "父状态"))
+					.Font(FAppStyle::GetFontStyle("BoldFont"))
+				]
+				+ SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				.VAlign(VAlign_Center)
+				[
+					SAssignNew(ParentTabsBox, SVerticalBox)
 				]
 				+ SHorizontalBox::Slot()
 				.AutoWidth()
@@ -296,17 +350,21 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
-			.Padding(0.0f, 6.0f)
-			[
-				SAssignNew(ParentTabsBox, SVerticalBox)
-			]
-			+ SVerticalBox::Slot()
-			.AutoHeight()
-			.Padding(0.0f, 2.0f, 0.0f, 6.0f)
+			.Padding(0.0f, 4.0f, 0.0f, 8.0f)
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.VAlign(VAlign_Center)
+				.Padding(0.0f, 0.0f, 8.0f, 0.0f)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("ChildStatesLabel", "子状态"))
+					.Font(FAppStyle::GetFontStyle("BoldFont"))
+				]
+				+ SHorizontalBox::Slot()
 				.FillWidth(1.0f)
+				.VAlign(VAlign_Center)
 				[
 					SAssignNew(ChildTabsBox, SVerticalBox)
 				]
@@ -357,13 +415,6 @@ void SUIStateConfigPanel::Construct(const FArguments& InArgs, TSharedPtr<FWidget
 						]
 				]
 
-			]
-			+ SVerticalBox::Slot()
-			.AutoHeight()
-			.Padding(0.0f, 0.0f, 0.0f, 6.0f)
-			[
-				SNew(STextBlock)
-				.Text(this, &SUIStateConfigPanel::GetBreadcrumbText)
 			]
 			+ SVerticalBox::Slot()
 			.FillHeight(1.0f)
@@ -962,21 +1013,71 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildChildStateTabs()
 
 TSharedRef<SWidget> SUIStateConfigPanel::BuildStateTab(FName StateName, bool bSelected, bool bIsParentState)
 {
+	int32 ChangeCount = 0;
+	bool bIsDefaultState = false;
+	FText DisplayText = FText::FromName(StateName);
+	const UUMGStateConfigBlueprintExtension* Extension = GetExtension();
+	if (bIsParentState && Extension)
+	{
+		if (const FUMGStateConfigGroup* Group = Extension->ConfigData.StateGroups.FindByPredicate([StateName](const FUMGStateConfigGroup& Candidate)
+		{
+			return Candidate.GroupName == StateName;
+		}))
+		{
+			DisplayText = Group->DisplayName.IsEmpty() ? FText::FromName(Group->GroupName) : Group->DisplayName;
+			for (const FUMGStateConfigState& State : Group->States)
+			{
+				ChangeCount += State.PropertyChanges.Num();
+			}
+		}
+	}
+	else if (const FUMGStateConfigGroup* Group = GetActiveGroup())
+	{
+		bIsDefaultState = Group->DefaultStateName == StateName;
+		if (const FUMGStateConfigState* State = Group->States.FindByPredicate([StateName](const FUMGStateConfigState& Candidate)
+		{
+			return Candidate.StateName == StateName;
+		}))
+		{
+			DisplayText = State->DisplayName.IsEmpty() ? FText::FromName(State->StateName) : State->DisplayName;
+			ChangeCount = State->PropertyChanges.Num();
+		}
+	}
+
 	return SNew(SBorder)
-	.Padding(FMargin(12.0f, 4.0f))
+	.Padding(FMargin(10.0f, 4.0f))
 	.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
 	.BorderBackgroundColor(bSelected
 		? FAppStyle::Get().GetSlateColor("SelectionColor").GetSpecifiedColor()
-		: FLinearColor(0.10f, 0.10f, 0.10f, 1.0f))
+		: FLinearColor(0.08f, 0.08f, 0.08f, 0.45f))
 	.OnMouseButtonDown(this, &SUIStateConfigPanel::HandleStateTabMouseButtonDown, StateName, bIsParentState)
 	.ToolTipText(bIsParentState
 		? LOCTEXT("StateTabParentTip", "左键切换父状态 · 右键重命名")
 		: LOCTEXT("StateTabChildTip", "左键切换子状态 · 右键重命名"))
 	[
-		SNew(STextBlock)
-		.Text(FText::FromName(StateName))
-		.ColorAndOpacity(bSelected ? FLinearColor::White : FLinearColor(0.72f, 0.72f, 0.72f, 1.0f))
-		.Font(bSelected ? FAppStyle::GetFontStyle("BoldFont") : FAppStyle::GetFontStyle("NormalFont"))
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.Text(DisplayText)
+			.ColorAndOpacity(bSelected ? FLinearColor::White : FLinearColor(0.82f, 0.82f, 0.82f, 1.0f))
+			.Font(bSelected ? FAppStyle::GetFontStyle("BoldFont") : FAppStyle::GetFontStyle("NormalFont"))
+		]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(6.0f, 0.0f, 0.0f, 0.0f)
+		[
+			SNew(STextBlock)
+			.Text(MakeCountBadgeText(ChangeCount))
+			.ColorAndOpacity(bSelected ? FSlateColor(FLinearColor::White) : FSlateColor::UseSubduedForeground())
+			.Font(FAppStyle::GetFontStyle("SmallFont"))
+		]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(6.0f, 0.0f, 0.0f, 0.0f)
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("DefaultStateBadge", "默认"))
+			.Visibility(bIsDefaultState ? EVisibility::Visible : EVisibility::Collapsed)
+			.ColorAndOpacity(FLinearColor(1.0f, 0.82f, 0.32f, 1.0f))
+			.Font(FAppStyle::GetFontStyle("SmallFont"))
+		]
 	];
 }
 
@@ -1195,25 +1296,6 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildConfiguredWidgetCards()
 TSharedRef<SWidget> SUIStateConfigPanel::BuildConfiguredWidgetCard(FName WidgetName)
 {
 	UWidget* Widget = FindWidgetByName(WidgetName);
-	TSharedRef<SVerticalBox> Rows = SNew(SVerticalBox);
-	Rows->AddSlot().AutoHeight()
-	[
-		SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
-		[
-			SNew(STextBlock)
-			.Text(FText::FromString(FString::Printf(TEXT("%s    %s"), *WidgetName.ToString(), Widget ? *Widget->GetClass()->GetName() : TEXT("Missing"))))
-			.Font(FAppStyle::GetFontStyle("BoldFont"))
-		]
-		+ SHorizontalBox::Slot().AutoWidth()
-		[
-			SNew(SButton)
-			.Text(LOCTEXT("ClearWidgetConfig", "清除"))
-			.ToolTipText(LOCTEXT("ClearWidgetConfigTip", "清除当前子状态中该控件的全部配置。"))
-			.OnClicked(this, &SUIStateConfigPanel::ClearWidgetConfig, WidgetName)
-		]
-	];
-
 	TArray<const FUMGStatePropertyChange*> SerializedPropertyChanges;
 	if (const FUMGStateConfigState* State = GetActiveState())
 	{
@@ -1225,6 +1307,71 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildConfiguredWidgetCard(FName WidgetN
 			}
 		}
 	}
+
+	const FSlateBrush* WidgetIcon = FSlateIconFinder::FindIconForClass(Widget ? Widget->GetClass() : UWidget::StaticClass()).GetIcon();
+	const FText WidgetTypeText = Widget ? FText::FromString(Widget->GetClass()->GetName()) : LOCTEXT("MissingWidgetType", "Missing Widget");
+	TSharedRef<SVerticalBox> Rows = SNew(SVerticalBox);
+	Rows->AddSlot().AutoHeight()
+	[
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 8.0f, 0.0f)
+		[
+			SNew(SImage).Image(WidgetIcon)
+		]
+		+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
+		[
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromName(WidgetName))
+				.Font(FAppStyle::GetFontStyle("BoldFont"))
+				.ColorAndOpacity(Widget ? FSlateColor::UseForeground() : FSlateColor(FLinearColor(0.95f, 0.45f, 0.25f, 1.0f)))
+			]
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(STextBlock)
+				.Text(FText::Format(LOCTEXT("ConfiguredWidgetSubtitle", "{0} · {1}"), WidgetTypeText, MakeCountBadgeText(SerializedPropertyChanges.Num())))
+				.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+				.Font(FAppStyle::GetFontStyle("SmallFont"))
+			]
+		]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.0f, 0.0f, 0.0f, 0.0f)
+		[
+			SNew(SButton)
+			.ToolTipText(LOCTEXT("AddCommonPropertyToWidgetTip", "从常用 Details 捕获该控件属性。"))
+			.OnClicked_Lambda([this, WidgetName]()
+			{
+				OpenWidgetDetailsPropertyPicker(WidgetName, true);
+				return FReply::Handled();
+			})
+			[
+				MakeIconTextButtonContent("Icons.Plus", LOCTEXT("AddCommonPropertyToWidget", "常用属性"))
+			]
+		]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.0f, 0.0f, 0.0f, 0.0f)
+		[
+			SNew(SButton)
+			.ToolTipText(LOCTEXT("EditConfiguredWidgetDetailsTip", "打开全部 Details 捕获更多可支持属性。"))
+			.OnClicked_Lambda([this, WidgetName]()
+			{
+				OpenWidgetDetailsPropertyPicker(WidgetName, false);
+				return FReply::Handled();
+			})
+			[
+				MakeIconTextButtonContent("Icons.Edit", LOCTEXT("EditConfiguredWidgetDetails", "Details"))
+			]
+		]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.0f, 0.0f, 0.0f, 0.0f)
+		[
+			SNew(SButton)
+			.ToolTipText(LOCTEXT("ClearWidgetConfigTip", "清除当前子状态中该控件的全部配置。"))
+			.OnClicked(this, &SUIStateConfigPanel::ClearWidgetConfig, WidgetName)
+			[
+				MakeIconTextButtonContent("Icons.Delete", LOCTEXT("ClearWidgetConfig", "清除"))
+			]
+		]
+	];
 
 	TArray<FString> GroupOrder;
 	TMap<FString, TArray<const FUMGStatePropertyChange*>> GroupedChanges;
@@ -1316,11 +1463,11 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildConfiguredWidgetCard(FName WidgetN
 TSharedRef<SWidget> SUIStateConfigPanel::BuildSerializedPropertyRow(const FUMGStatePropertyChange& Change, TOptional<FText> LabelOverride)
 {
 	const FText Label = LabelOverride.IsSet() ? LabelOverride.GetValue() : GetSerializedPropertyDisplayName(Change.Value.SerializedPropertyPath);
+	const FString CompactValue = MakeCompactValueText(Change.Value.SerializedPropertyValue);
 	return SNew(SHorizontalBox)
-	+ SHorizontalBox::Slot().AutoWidth().Padding(0.0f, 0.0f, 6.0f, 0.0f).VAlign(VAlign_Center)
+	+ SHorizontalBox::Slot().AutoWidth().Padding(0.0f, 0.0f, 4.0f, 0.0f).VAlign(VAlign_Center)
 	[
 		SNew(SButton)
-		.Text(LOCTEXT("RemoveSerializedProperty", "移除"))
 		.OnClicked(this, &SUIStateConfigPanel::RemoveSerializedPropertyChange, Change.TargetWidgetName, Change.Value.SerializedPropertyPath)
 		.ToolTipText(LOCTEXT("RemoveSerializedPropertyTip", "移除该属性配置"))
 		[
@@ -1330,27 +1477,33 @@ TSharedRef<SWidget> SUIStateConfigPanel::BuildSerializedPropertyRow(const FUMGSt
 	+ SHorizontalBox::Slot().AutoWidth().Padding(6.0f, 0.0f).VAlign(VAlign_Center)
 	[
 		SNew(SBox)
-		.WidthOverride(160.0f)
+		.WidthOverride(180.0f)
 		[
-			SNew(STextBlock).Text(Label)
+			SNew(STextBlock)
+			.Text(Label)
+			.Font(FAppStyle::GetFontStyle("SmallFont"))
 		]
 
 	]
 	+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
 	[
 		SNew(STextBlock)
-		.AutoWrapText(true)
-		.Text(FText::FromString(Change.Value.SerializedPropertyValue))
+		.Text(FText::FromString(CompactValue))
+		.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+		.ToolTipText(FText::FromString(Change.Value.SerializedPropertyValue))
 	]
 	+ SHorizontalBox::Slot().AutoWidth().Padding(6.0f, 0.0f, 0.0f, 0.0f).VAlign(VAlign_Center)
 	[
 		SNew(SButton)
-		.Text(LOCTEXT("EditSerializedProperty", "编辑 Details"))
+		.ToolTipText(LOCTEXT("EditSerializedPropertyTip", "打开 Details 编辑该控件属性"))
 		.OnClicked_Lambda([this, WidgetName = Change.TargetWidgetName]()
 		{
 			OpenWidgetDetailsPropertyPicker(WidgetName, false);
 			return FReply::Handled();
 		})
+		[
+			SNew(SImage).Image(FAppStyle::GetBrush("Icons.Edit"))
+		]
 
 	];
 }
@@ -1515,7 +1668,9 @@ void SUIStateConfigPanel::RebuildWidgetRows()
 		{
 			continue;
 		}
-		if (!WidgetFilterText.IsEmpty() && !Widget->GetName().Contains(WidgetFilterText))
+		if (!WidgetFilterText.IsEmpty()
+			&& !Widget->GetName().Contains(WidgetFilterText)
+			&& !Widget->GetClass()->GetName().Contains(WidgetFilterText))
 		{
 			continue;
 		}
@@ -1547,6 +1702,7 @@ TSharedRef<ITableRow> SUIStateConfigPanel::GenerateWidgetRow(TSharedPtr<FUMGStat
 	FString WidgetName = TEXT("Invalid");
 	FString WidgetType = TEXT("-");
 	const FSlateBrush* WidgetIcon = FSlateIconFinder::FindIconForClass(UWidget::StaticClass()).GetIcon();
+	bool bConfiguredInState = false;
 	if (RowItem.IsValid())
 	{
 		if (UWidget* Widget = RowItem->Widget.Get())
@@ -1554,12 +1710,13 @@ TSharedRef<ITableRow> SUIStateConfigPanel::GenerateWidgetRow(TSharedPtr<FUMGStat
 			WidgetName = Widget->GetFName().ToString();
 			WidgetType = Widget->GetClass()->GetName();
 			WidgetIcon = FSlateIconFinder::FindIconForClass(Widget->GetClass()).GetIcon();
+			bConfiguredInState = GetConfiguredWidgetNames().Contains(Widget->GetFName());
 		}
 	}
 	return SNew(STableRow<TSharedPtr<FUMGStateConfigWidgetRow>>, OwnerTable)
 	[
 		SNew(SBorder)
-		.Padding(0.0f)
+		.Padding(FMargin(6.0f, 4.0f))
 		.BorderImage(FAppStyle::GetBrush("NoBorder"))
 		.OnMouseButtonDown(this, &SUIStateConfigPanel::HandleAvailableWidgetRowMouseButtonDown, RowItem)
 		[
@@ -1568,21 +1725,30 @@ TSharedRef<ITableRow> SUIStateConfigPanel::GenerateWidgetRow(TSharedPtr<FUMGStat
 			[
 				SNew(SImage).Image(WidgetIcon)
 			]
-			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+			+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
 			[
-				SNew(SBox)
-				.WidthOverride(180.0f)
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()
 				[
-					SNew(STextBlock).Text(FText::FromString(WidgetName))
+					SNew(STextBlock)
+					.Text(FText::FromString(WidgetName))
+					.HighlightText(FText::FromString(WidgetFilterText))
+				]
+				+ SVerticalBox::Slot().AutoHeight()
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString(WidgetType))
+					.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+					.Font(FAppStyle::GetFontStyle("SmallFont"))
 				]
 			]
-			+ SHorizontalBox::Slot().AutoWidth()
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(6.0f, 0.0f, 0.0f, 0.0f)
 			[
-				SNew(SBox)
-				.WidthOverride(120.0f)
-				[
-					SNew(STextBlock).Text(FText::FromString(WidgetType))
-				]
+				SNew(STextBlock)
+				.Text(LOCTEXT("ConfiguredWidgetBadge", "已加入"))
+				.Visibility(bConfiguredInState ? EVisibility::Visible : EVisibility::Collapsed)
+				.ColorAndOpacity(FLinearColor(0.42f, 0.78f, 0.48f, 1.0f))
+				.Font(FAppStyle::GetFontStyle("SmallFont"))
 			]
 		]
 	];
