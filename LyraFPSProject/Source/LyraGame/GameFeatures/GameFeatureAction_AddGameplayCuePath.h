@@ -8,7 +8,7 @@
 
 /**
  * GameFeatureAction responsible for adding gameplay cue paths to the gameplay cue manager.
- *
+ * 把 GameFeature 插件的目录注册到 GameplayCueManager 的搜索路径
  * @see UAbilitySystemGlobals::GameplayCueNotifyPaths
  */
 UCLASS(MinimalAPI, meta = (DisplayName = "Add Gameplay Cue Path"))

@@ -17,6 +17,7 @@ struct FWorldContext;
 
 /**
  * GameFeatureAction responsible for configuring Splitscreen.
+ * 控制是否禁用分屏（默认禁用）
  */
 UCLASS(MinimalAPI, meta = (DisplayName = "Splitscreen Config"))
 class UGameFeatureAction_SplitscreenConfig final : public UGameFeatureAction_WorldActionBase

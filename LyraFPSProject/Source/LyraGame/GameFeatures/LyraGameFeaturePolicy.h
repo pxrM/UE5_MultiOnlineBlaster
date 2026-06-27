@@ -14,6 +14,11 @@ struct FPrimaryAssetId;
 /**
  * Manager to keep track of the state machines that bring a game feature plugin into memory and active
  * This class discovers plugins either that are built-in and distributed with the game or are reported externally (i.e. by a web service or other endpoint)
+ * 目级 GameFeature 加载策略。
+ *	决定：
+ *		哪些插件允许加载（IsPluginAllowed）
+ *		预加载哪些资源（GetPreloadAssetListForGameFeature）
+ *		客户端/服务器各加载什么数据
  */
 UCLASS(MinimalAPI, Config = Game)
 class ULyraGameFeaturePolicy : public UDefaultGameFeaturesProjectPolicies
@@ -42,6 +47,9 @@ private:
 
 
 // checked
+/**
+ * 插件加载时应用热修复数据
+ */
 UCLASS()
 class ULyraGameFeature_HotfixManager : public UObject, public IGameFeatureStateChangeObserver
 {
@@ -52,6 +60,9 @@ public:
 };
 
 // checked
+/**
+ * 插件注册/注销时自动添加/移除 GameplayCue 路径
+ */
 UCLASS()
 class ULyraGameFeature_AddGameplayCuePaths : public UObject, public IGameFeatureStateChangeObserver
 {

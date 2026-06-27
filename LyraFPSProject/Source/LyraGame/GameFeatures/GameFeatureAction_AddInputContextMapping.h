@@ -32,6 +32,7 @@ struct FInputMappingContextAndPriority
 /**
  * Adds InputMappingContext to local players' EnhancedInput system. 
  * Expects that local players are set up to use the EnhancedInput system.
+ * 激活时注册 EnhancedInput MappingContext，反激活时移除，支持优先级
  */
 UCLASS(MinimalAPI, meta = (DisplayName = "Add Input Mapping"))
 class UGameFeatureAction_AddInputContextMapping final : public UGameFeatureAction_WorldActionBase

@@ -70,6 +70,7 @@ struct FGameFeatureAbilitiesEntry
 
 /**
  * GameFeatureAction responsible for granting abilities (and attributes) to actors of a specified type.
+ * 给指定类型的 Actor 批量授予 GAS 技能、AttributeSet、AbilitySet
  */
 UCLASS(MinimalAPI, meta = (DisplayName = "Add Abilities"))
 class UGameFeatureAction_AddAbilities final : public UGameFeatureAction_WorldActionBase

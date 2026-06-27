@@ -16,6 +16,7 @@ class ULyraInputConfig;
 /**
  * Adds InputMappingContext to local players' EnhancedInput system. 
  * Expects that local players are set up to use the EnhancedInput system.
+ * 通过 ULyraInputConfig 给 Pawn 绑定输入（比上面更高层的 InputConfig 方式）
  */
 UCLASS(MinimalAPI, meta = (DisplayName = "Add Input Binds"))
 class UGameFeatureAction_AddInputBinding final : public UGameFeatureAction_WorldActionBase

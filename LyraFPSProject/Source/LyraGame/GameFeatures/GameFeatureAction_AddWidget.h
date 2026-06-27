@@ -45,6 +45,7 @@ struct FLyraHUDElementEntry
 
 /**
  * GameFeatureAction responsible for adding widgets.
+ * 激活时往 HUD 添加 UI 布局和控件，反激活时自动移除（基于 UIExtension 系统）
  */
 UCLASS(MinimalAPI, meta = (DisplayName = "Add Widgets"))
 class UGameFeatureAction_AddWidgets final : public UGameFeatureAction_WorldActionBase
