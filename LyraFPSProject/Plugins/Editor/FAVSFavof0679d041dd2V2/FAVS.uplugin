@@ -1,0 +1,28 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "FAVS",
+	"Description": "Favorite Asset Bookmarks Plugin",
+	"Category": "Editor",
+	"CreatedBy": "PION GAMES",
+	"CreatedByURL": "https://piongames.com/",
+	"DocsURL": "https://youtu.be/mpuHyqeMBkA",
+	"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/5568bfaf-0b99-49a8-a4d7-1753e8f4e549",
+	"SupportURL": "",
+	"EngineVersion": "5.7.0",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "FAVS",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
+		}
+	]
+}

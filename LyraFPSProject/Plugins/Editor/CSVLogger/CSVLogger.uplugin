@@ -1,0 +1,26 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "CSVLogger",
+	"Description": "Logs runtime data to CSV files for analysis or debugging.",
+	"Category": "Utilities",
+	"CreatedBy": "Moon",
+	"CreatedByURL": "",
+	"DocsURL": "https://drive.google.com/file/d/1qChycWVoC3a7oLie5mgfNF9ZmMBicXgR/view?usp=sharing",
+	"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/4dfe6915-cb3a-41cd-a6f6-2ab526b8c59b",
+	"SupportURL": "",
+	"EngineVersion": "5.7.0",
+	"CanContainContent": true,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "CSVLogger",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		}
+	]
+}

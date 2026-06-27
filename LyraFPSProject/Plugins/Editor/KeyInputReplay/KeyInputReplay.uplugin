@@ -1,0 +1,26 @@
+{
+	"FileVersion": 3,
+	"Version": 131,
+	"VersionName": "1.3.1",
+	"FriendlyName": "KeyInputReplay",
+	"Description": "Save key input and reproduce it.",
+	"Category": "Input",
+	"CreatedBy": "Leon Gameworks Inc.",
+	"CreatedByURL": "https://www.leon-game.co.jp/",
+	"DocsURL": "https://drive.google.com/drive/folders/1pcGgwS_kw6shCxbWWHwZMk6EqXGywkeG?usp=sharing",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EngineVersion": "5.7.0",
+	"CanContainContent": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "KeyInputReplay",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		}
+	]
+}
