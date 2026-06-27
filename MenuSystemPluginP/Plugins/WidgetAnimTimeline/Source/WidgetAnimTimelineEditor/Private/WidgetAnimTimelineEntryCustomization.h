@@ -24,7 +24,6 @@ private:
 	void RefreshChildPhaseOptions();
 	FName GetOwnerPhaseName() const;
 	bool HasOption(const TArray<TSharedPtr<FString>>& Options, const FString& Value) const;
-	static FString StripInstSuffix(const FString& AnimationName);
 
 	void OnTargetWidgetSelected(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);
 	void OnAnimationSelected(TSharedPtr<FString> NewValue, ESelectInfo::Type SelectInfo);

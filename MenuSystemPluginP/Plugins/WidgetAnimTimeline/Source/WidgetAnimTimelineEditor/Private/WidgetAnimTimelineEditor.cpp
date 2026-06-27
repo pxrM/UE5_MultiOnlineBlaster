@@ -10,8 +10,10 @@
 #include "ToolMenus.h"
 #include "WidgetBlueprint.h"
 #include "WidgetBlueprintEditor.h"
+#include "WidgetAnimTimelineEditorUtils.h"
 #include "WidgetAnimTimelineEntryCustomization.h"
 #include "WidgetAnimTimelinePhaseCustomization.h"
+#include "WidgetAnimTimelineSequence.h"
 #include "Widgets/Docking/SDockTab.h"
 
 #define LOCTEXT_NAMESPACE "FWidgetAnimTimelineEditorModule"
@@ -27,40 +29,11 @@ namespace WidgetAnimTimelineEditor
 	static TWeakPtr<SDockTab> ActiveTimelineTab;
 	static int32 PendingPhaseIndex = 0;
 
-	static UWidgetBlueprint* ResolveWidgetBlueprint(TSharedPtr<IPropertyHandle> PhaseHandle)
+	static bool SupportsWidgetAnimTimeline(const UWidgetBlueprint* WidgetBlueprint)
 	{
-		if (!PhaseHandle.IsValid())
-		{
-			return nullptr;
-		}
-
-		TArray<UObject*> OuterObjects;
-		PhaseHandle->GetOuterObjects(OuterObjects);
-		for (UObject* OuterObject : OuterObjects)
-		{
-			for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-			{
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object))
-				{
-					return WidgetBlueprint;
-				}
-
-				if (UClass* Class = Cast<UClass>(Object))
-				{
-					if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Class->ClassGeneratedBy))
-					{
-						return WidgetBlueprint;
-					}
-				}
-
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object->GetClass()->ClassGeneratedBy))
-				{
-					return WidgetBlueprint;
-				}
-			}
-		}
-
-		return nullptr;
+		return WidgetBlueprint != nullptr &&
+			WidgetBlueprint->ParentClass != nullptr &&
+			WidgetBlueprint->ParentClass->IsChildOf(UWidgetAnimTimelineHostWidget::StaticClass());
 	}
 
 	static TSharedRef<SWidget> CreateTimelineContent()
@@ -98,7 +71,7 @@ namespace WidgetAnimTimelineEditor
 	{
 		FGlobalTabmanager::Get()->RegisterNomadTabSpawner(TimelineTabId, FOnSpawnTab::CreateStatic(&SpawnTimelineTab))
 			.SetDisplayName(LOCTEXT("WidgetAnimTimelineTabSpawner", "Widget Anim Timeline"))
-			.SetTooltipText(LOCTEXT("WidgetAnimTimelineTabSpawnerTooltip", "Open the Widget Anim Timeline editor."))
+			.SetTooltipText(LOCTEXT("WidgetAnimTimelineTabSpawnerTooltip", "打开 Widget Anim Timeline 编辑器。"))
 			.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "Sequencer.TabIcon"))
 			.SetMenuType(ETabSpawnerMenuType::Hidden);
 	}
@@ -128,7 +101,7 @@ namespace WidgetAnimTimelineEditor
 			}
 
 			TSharedPtr<FWidgetBlueprintEditor> WidgetBlueprintEditor = StaticCastSharedPtr<FWidgetBlueprintEditor>(Context->BlueprintEditor.Pin());
-			if (!WidgetBlueprintEditor.IsValid() || WidgetBlueprintEditor->GetWidgetBlueprintObj() == nullptr)
+			if (!WidgetBlueprintEditor.IsValid() || !SupportsWidgetAnimTimeline(WidgetBlueprintEditor->GetWidgetBlueprintObj()))
 			{
 				return;
 			}
@@ -139,13 +112,13 @@ namespace WidgetAnimTimelineEditor
 				FUIAction(FExecuteAction::CreateLambda([WeakWidgetBlueprintEditor]()
 				{
 					TSharedPtr<FWidgetBlueprintEditor> WidgetBlueprintEditor = WeakWidgetBlueprintEditor.Pin();
-					if (WidgetBlueprintEditor.IsValid())
+					if (WidgetBlueprintEditor.IsValid() && SupportsWidgetAnimTimeline(WidgetBlueprintEditor->GetWidgetBlueprintObj()))
 					{
 						FWidgetAnimTimelineEditorModule::OpenTimelineForWidgetBlueprint(WidgetBlueprintEditor->GetWidgetBlueprintObj(), 0);
 					}
 				})),
 				LOCTEXT("OpenWidgetAnimTimeline", "Widget Timeline"),
-				LOCTEXT("OpenWidgetAnimTimelineToolTip", "Open the Widget Anim Timeline editor for this Widget Blueprint."),
+				LOCTEXT("OpenWidgetAnimTimelineToolTip", "为当前 Widget Blueprint 打开 Widget Anim Timeline 编辑器。"),
 				FSlateIcon(FAppStyle::GetAppStyleSetName(), "Sequencer.TabIcon")
 			));
 			Entry.InsertPosition = FToolMenuInsert("OpenWidgetReflector", EToolMenuInsertType::After);
@@ -175,7 +148,7 @@ namespace WidgetAnimTimelineEditor
 
 void FWidgetAnimTimelineEditorModule::OpenTimelineForWidgetBlueprint(UWidgetBlueprint* WidgetBlueprint, int32 PhaseIndex)
 {
-	if (WidgetBlueprint == nullptr)
+	if (!WidgetAnimTimelineEditor::SupportsWidgetAnimTimeline(WidgetBlueprint))
 	{
 		return;
 	}
@@ -202,7 +175,7 @@ void FWidgetAnimTimelineEditorModule::OpenTimelineForPhaseHandle(TSharedPtr<IPro
 	}
 
 	WidgetAnimTimelineEditor::PendingPhaseHandle = PhaseHandle;
-	WidgetAnimTimelineEditor::PendingWidgetBlueprint = WidgetAnimTimelineEditor::ResolveWidgetBlueprint(PhaseHandle);
+	WidgetAnimTimelineEditor::PendingWidgetBlueprint = FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(PhaseHandle);
 	WidgetAnimTimelineEditor::PendingPhaseIndex = PhaseHandle->GetIndexInArray();
 	if (WidgetAnimTimelineEditor::PendingPhaseIndex == INDEX_NONE)
 	{

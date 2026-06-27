@@ -4,6 +4,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/AppStyle.h"
 #include "WidgetBlueprintEditor.h"
+#include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "UMGStateConfigTabSummoner"

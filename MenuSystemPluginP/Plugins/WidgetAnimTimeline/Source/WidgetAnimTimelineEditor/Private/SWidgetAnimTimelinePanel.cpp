@@ -1,11 +1,10 @@
 #include "SWidgetAnimTimelinePanel.h"
 
 #include "Animation/WidgetAnimation.h"
-#include "Blueprint/UserWidget.h"
-#include "Blueprint/WidgetTree.h"
 #include "Framework/Application/SlateApplication.h"
 #include "InputCoreTypes.h"
 #include "Kismet2/BlueprintEditorUtils.h"
+#include "Layout/Clipping.h"
 #include "PropertyHandle.h"
 #include "Rendering/DrawElements.h"
 #include "ScopedTransaction.h"
@@ -13,6 +12,7 @@
 #include "UObject/UnrealType.h"
 #include "WidgetBlueprint.h"
 #include "WidgetAnimTimelineDesignerPreviewController.h"
+#include "WidgetAnimTimelineEditorUtils.h"
 #include "WidgetAnimTimelineSequence.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -124,6 +124,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("New")))
+					.ToolTipText(FText::FromString(TEXT("新建一个动画时间轴阶段。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanEditPhases)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::AddPhase)
 				]
@@ -133,6 +134,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Duplicate")))
+					.ToolTipText(FText::FromString(TEXT("复制当前选中的阶段及其所有时间轴条目。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanDuplicatePhase)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::DuplicatePhase)
 				]
@@ -142,6 +144,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Delete Phase")))
+					.ToolTipText(FText::FromString(TEXT("删除当前选中的阶段，并清理引用该阶段的自动播放设置。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanDeletePhase)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::DeletePhase)
 				]
@@ -179,6 +182,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 					SNew(SButton)
 					.HAlign(HAlign_Center)
 					.Text(FText::FromString(TEXT("Preview In Designer")))
+					.ToolTipText(FText::FromString(TEXT("在当前 UMG 设计器预览中播放所选阶段。需要蓝图已编译。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::PlayDesignerPreview)
 				]
 				+ SHorizontalBox::Slot()
@@ -201,6 +205,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Add Direct")))
+					.ToolTipText(FText::FromString(TEXT("添加一个直接播放 WidgetAnimation 的时间轴条目。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::AddDirectAnimationEntry)
 				]
 				+ SHorizontalBox::Slot()
@@ -209,6 +214,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Add Child")))
+					.ToolTipText(FText::FromString(TEXT("添加一个触发子控件时间轴阶段的条目。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::AddChildSequenceEntry)
 				]
 				+ SHorizontalBox::Slot()
@@ -217,6 +223,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Delete Entry")))
+					.ToolTipText(FText::FromString(TEXT("删除当前选中的时间轴条目。")))
 					.IsEnabled(this, &SWidgetAnimTimelinePanel::CanDeleteSelectedEntry)
 					.OnClicked(this, &SWidgetAnimTimelinePanel::DeleteSelectedEntry)
 				]
@@ -226,6 +233,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 				[
 					SNew(SButton)
 					.Text(FText::FromString(TEXT("Fit")))
+					.ToolTipText(FText::FromString(TEXT("缩放并平移视图，使所有时间轴条目尽量显示在当前面板内。")))
 					.OnClicked(this, &SWidgetAnimTimelinePanel::FitTimelineToContent)
 				]
 				+ SHorizontalBox::Slot()
@@ -387,7 +395,7 @@ void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 						.Label()
 						[
 							SNew(STextBlock)
-							.Text(FText::FromString(TEXT("NumLoopsToPlay")))
+							.Text(FText::FromString(TEXT("Loops (0=Inf)")))
 						]
 						.MinValue(0)
 						.MinSliderValue(0)
@@ -405,12 +413,21 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 	Entries.Reset();
 	LaneNames.Reset();
 
+	const auto ClampToKnownTimelineWidth = [this]()
+	{
+		if (LastTimelineWidth > 0.0f)
+		{
+			ClampViewStartTime(LastTimelineWidth);
+		}
+	};
+
 	TSharedPtr<IPropertyHandle> EntriesHandle = GetEntriesHandle();
 	if (!EntriesHandle.IsValid())
 	{
 		FWidgetAnimTimelinePhase* Phase = GetTimelinePhase();
 		if (Phase == nullptr)
 		{
+			ClampToKnownTimelineWidth();
 			return;
 		}
 
@@ -422,11 +439,15 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			ViewModel.EntryIndex = EntryIndex;
 			ViewModel.LaneName = Entry.TargetWidgetName.IsNone() ? TEXT("Self") : Entry.TargetWidgetName.ToString();
 			ViewModel.StartTime = Entry.StartTime;
-			ViewModel.Duration = GetEntryDuration(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.PlaybackRate);
+			ViewModel.Duration = GetEntryDuration(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.PlaybackRate, Entry.NumLoopsToPlay);
 			ViewModel.ValidationError = BuildEntryValidationError(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.ChildPhaseName);
 			if (Entry.EntryType == EWidgetAnimTimelineEntryType::DirectAnimation)
 			{
 				ViewModel.Label = Entry.AnimationName.IsNone() ? TEXT("Animation") : Entry.AnimationName.ToString();
+				if (Entry.NumLoopsToPlay == 0)
+				{
+					ViewModel.Label += TEXT(" (Infinite)");
+				}
 				ViewModel.Color = FLinearColor(0.12f, 0.48f, 0.95f, 1.0f);
 			}
 			else
@@ -439,6 +460,7 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			LaneNames.AddUnique(ViewModel.LaneName);
 		}
 
+		ClampToKnownTimelineWidth();
 		return;
 	}
 
@@ -491,6 +513,11 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 		{
 			RateHandle->GetValue(PlaybackRate);
 		}
+		int32 NumLoopsToPlay = 1;
+		if (TSharedPtr<IPropertyHandle> LoopsHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, NumLoopsToPlay)))
+		{
+			LoopsHandle->GetValue(NumLoopsToPlay);
+		}
 
 		FEntryViewModel ViewModel;
 		ViewModel.EntryIndex = static_cast<int32>(EntryIndex);
@@ -498,11 +525,15 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 		ViewModel.StartTime = StartTime;
 
 		const EWidgetAnimTimelineEntryType EntryType = static_cast<EWidgetAnimTimelineEntryType>(TypeValue);
-		ViewModel.Duration = GetEntryDuration(TargetName, EntryType, AnimationName, PlaybackRate);
+		ViewModel.Duration = GetEntryDuration(TargetName, EntryType, AnimationName, PlaybackRate, NumLoopsToPlay);
 		ViewModel.ValidationError = BuildEntryValidationError(TargetName, EntryType, AnimationName, ChildPhaseName);
 		if (EntryType == EWidgetAnimTimelineEntryType::DirectAnimation)
 		{
 			ViewModel.Label = AnimationName.IsNone() ? TEXT("Animation") : AnimationName.ToString();
+			if (NumLoopsToPlay == 0)
+			{
+				ViewModel.Label += TEXT(" (Infinite)");
+			}
 			ViewModel.Color = FLinearColor(0.12f, 0.48f, 0.95f, 1.0f);
 		}
 		else
@@ -514,6 +545,8 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 		Entries.Add(ViewModel);
 		LaneNames.AddUnique(ViewModel.LaneName);
 	}
+
+	ClampToKnownTimelineWidth();
 }
 
 void SWidgetAnimTimelinePanel::RefreshPhaseOptions()
@@ -634,6 +667,10 @@ int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry&
 		FSlateDrawElement::MakeText(OutDrawElements, CurrentLayer + 10, AllottedGeometry.ToPaintGeometry(FVector2f(HeaderWidth - 16.0f, 18.0f), FSlateLayoutTransform(FVector2f(10.0f, Y + 9.0f))), FText::FromString(LaneNames[LaneIndex]), SmallFont, ESlateDrawEffect::None, FLinearColor(0.82f, 0.82f, 0.82f, 1.0f));
 	}
 
+	const FVector2D ClipTopLeft = AllottedGeometry.LocalToAbsolute(FVector2D(HeaderWidth, TimelineTop - RulerHeight));
+	const FVector2D ClipBottomRight = AllottedGeometry.LocalToAbsolute(FVector2D(TimelineRight, LaneAreaBottom));
+	const FSlateRect TimelineClipRect(ClipTopLeft.X, ClipTopLeft.Y, ClipBottomRight.X, ClipBottomRight.Y);
+	OutDrawElements.PushClip(FSlateClippingZone(TimelineClipRect));
 	for (const FEntryViewModel& Entry : Entries)
 	{
 		const int32 LaneIndex = GetLaneIndex(Entry.LaneName);
@@ -662,6 +699,7 @@ int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry&
 		FSlateDrawElement::MakeText(OutDrawElements, CurrentLayer + 14, AllottedGeometry.ToPaintGeometry(FVector2f(Width - 10.0f, 18.0f), FSlateLayoutTransform(FVector2f(X + 7.0f, Y + 7.0f))), FText::FromString(Entry.Label), SmallFont, ESlateDrawEffect::None, FLinearColor::White);
 		FSlateDrawElement::MakeText(OutDrawElements, CurrentLayer + 14, AllottedGeometry.ToPaintGeometry(FVector2f(Width - 10.0f, 14.0f), FSlateLayoutTransform(FVector2f(X + 7.0f, Y + 21.0f))), FText::FromString(bHasValidationError ? Entry.ValidationError : FormatTime(Entry.StartTime)), SmallFont, ESlateDrawEffect::None, bHasValidationError ? FLinearColor(1.0f, 0.82f, 0.76f, 1.0f) : FLinearColor(0.82f, 0.9f, 1.0f, 0.82f));
 	}
+	OutDrawElements.PopClip();
 
 	const int32 ChildLayer = SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, CurrentLayer + 15, InWidgetStyle, bParentEnabled);
 	return FMath::Max(CurrentLayer + 15, ChildLayer);
@@ -791,102 +829,17 @@ UWidgetBlueprint* SWidgetAnimTimelinePanel::GetWidgetBlueprint() const
 		return SourceWidgetBlueprint.Get();
 	}
 
-	if (!PhaseHandle.IsValid())
-	{
-		return nullptr;
-	}
-
-	TArray<UObject*> OuterObjects;
-	PhaseHandle->GetOuterObjects(OuterObjects);
-	for (UObject* OuterObject : OuterObjects)
-	{
-		for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-		{
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object))
-			{
-				return WidgetBlueprint;
-			}
-
-			if (UClass* Class = Cast<UClass>(Object))
-			{
-				if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Class->ClassGeneratedBy))
-				{
-					return WidgetBlueprint;
-				}
-			}
-
-			if (UWidgetBlueprint* WidgetBlueprint = Cast<UWidgetBlueprint>(Object->GetClass()->ClassGeneratedBy))
-			{
-				return WidgetBlueprint;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveWidgetBlueprint(PhaseHandle);
 }
 
 UClass* SWidgetAnimTimelinePanel::ResolveOwnerWidgetClass() const
 {
-	if (UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint())
-	{
-		return WidgetBlueprint->GeneratedClass;
-	}
-
-	if (!PhaseHandle.IsValid())
-	{
-		return nullptr;
-	}
-
-	TArray<UObject*> OuterObjects;
-	PhaseHandle->GetOuterObjects(OuterObjects);
-	for (UObject* OuterObject : OuterObjects)
-	{
-		for (UObject* Object = OuterObject; Object != nullptr; Object = Object->GetOuter())
-		{
-			if (UClass* Class = Cast<UClass>(Object))
-			{
-				return Class;
-			}
-
-			UClass* ObjectClass = Object->GetClass();
-			if (ObjectClass != nullptr && ObjectClass->ClassGeneratedBy != nullptr)
-			{
-				return ObjectClass;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveOwnerWidgetClass(PhaseHandle, GetWidgetBlueprint());
 }
 
 UClass* SWidgetAnimTimelinePanel::ResolveTargetWidgetClass(UWidgetBlueprint* WidgetBlueprint, FName TargetWidgetName) const
 {
-	if (TargetWidgetName.IsNone())
-	{
-		return ResolveOwnerWidgetClass();
-	}
-
-	if (WidgetBlueprint != nullptr && WidgetBlueprint->WidgetTree != nullptr)
-	{
-		UWidget* TargetWidget = WidgetBlueprint->WidgetTree->FindWidget(TargetWidgetName);
-		if (TargetWidget != nullptr && TargetWidget->GetClass()->IsChildOf(UUserWidget::StaticClass()))
-		{
-			return TargetWidget->GetClass();
-		}
-	}
-
-	if (UClass* OwnerClass = ResolveOwnerWidgetClass())
-	{
-		for (TFieldIterator<FObjectProperty> It(OwnerClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-		{
-			if (It->GetFName() == TargetWidgetName && It->PropertyClass != nullptr && It->PropertyClass->IsChildOf(UUserWidget::StaticClass()))
-			{
-				return It->PropertyClass;
-			}
-		}
-	}
-
-	return nullptr;
+	return FWidgetAnimTimelineEditorUtils::ResolveTargetWidgetClass(WidgetBlueprint, ResolveOwnerWidgetClass(), TargetWidgetName);
 }
 
 FName SWidgetAnimTimelinePanel::GetCurrentPhaseName() const
@@ -912,27 +865,7 @@ FName SWidgetAnimTimelinePanel::GetCurrentPhaseName() const
 
 bool SWidgetAnimTimelinePanel::HasAnimation(UClass* TargetClass, FName AnimationName) const
 {
-	if (TargetClass == nullptr || AnimationName.IsNone())
-	{
-		return false;
-	}
-
-	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-	{
-		if (It->PropertyClass != UWidgetAnimation::StaticClass())
-		{
-			continue;
-		}
-
-		FString PropertyName = It->GetName();
-		PropertyName.RemoveFromEnd(TEXT("_INST"));
-		if (PropertyName == AnimationName.ToString())
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return FWidgetAnimTimelineEditorUtils::HasAnimation(TargetClass, AnimationName);
 }
 
 bool SWidgetAnimTimelinePanel::HasChildPhase(UClass* TargetClass, FName TargetWidgetName, FName ChildPhaseName) const
@@ -978,48 +911,28 @@ bool SWidgetAnimTimelinePanel::HasChildPhase(UClass* TargetClass, FName TargetWi
 	return false;
 }
 
-float SWidgetAnimTimelinePanel::GetEntryDuration(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, float PlaybackRate) const
+float SWidgetAnimTimelinePanel::GetEntryDuration(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, float PlaybackRate, int32 NumLoopsToPlay) const
 {
 	static constexpr float FallbackDuration = 0.5f;
 	const float SafePlaybackRate = FMath::Max(PlaybackRate, KINDA_SMALL_NUMBER);
+	const int32 PreviewLoopCount = NumLoopsToPlay == 0 ? 1 : FMath::Max(NumLoopsToPlay, 1);
 	if (EntryType != EWidgetAnimTimelineEntryType::DirectAnimation)
 	{
-		return FallbackDuration / SafePlaybackRate;
+		return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 	}
 
 	UClass* TargetClass = ResolveTargetWidgetClass(GetWidgetBlueprint(), TargetWidgetName);
 	if (TargetClass == nullptr || AnimationName.IsNone())
 	{
-		return FallbackDuration / SafePlaybackRate;
+		return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 	}
 
-	UObject* DefaultObject = TargetClass->GetDefaultObject();
-	if (DefaultObject == nullptr)
+	if (const UWidgetAnimation* Animation = FWidgetAnimTimelineEditorUtils::ResolveAnimationFromClassDefaultObject(TargetClass, AnimationName))
 	{
-		return FallbackDuration / SafePlaybackRate;
+		return FMath::Max(Animation->GetEndTime(), FallbackDuration) * PreviewLoopCount / SafePlaybackRate;
 	}
 
-	for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-	{
-		if (It->PropertyClass != UWidgetAnimation::StaticClass())
-		{
-			continue;
-		}
-
-		FString PropertyName = It->GetName();
-		PropertyName.RemoveFromEnd(TEXT("_INST"));
-		if (PropertyName != AnimationName.ToString())
-		{
-			continue;
-		}
-
-		if (const UWidgetAnimation* Animation = Cast<UWidgetAnimation>(It->GetObjectPropertyValue_InContainer(DefaultObject)))
-		{
-			return FMath::Max(Animation->GetEndTime(), FallbackDuration) / SafePlaybackRate;
-		}
-	}
-
-	return FallbackDuration / SafePlaybackRate;
+	return FallbackDuration * PreviewLoopCount / SafePlaybackRate;
 }
 
 FString SWidgetAnimTimelinePanel::BuildEntryValidationError(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, FName ChildPhaseName) const
@@ -1155,12 +1068,26 @@ FReply SWidgetAnimTimelinePanel::OnMouseMove(const FGeometry& MyGeometry, const 
 FReply SWidgetAnimTimelinePanel::OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	const FVector2D LocalPosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+	if (!IsInTimelineArea(MyGeometry, LocalPosition))
+	{
+		return FReply::Unhandled();
+	}
+
 	const float AnchorTime = XToTime(LocalPosition.X, MyGeometry);
 	const float AnchorScreenOffset = LocalPosition.X - HeaderWidth;
 	const float ZoomFactor = MouseEvent.GetWheelDelta() > 0.0f ? 1.12f : 1.0f / 1.12f;
 	PixelsPerSecond = FMath::Clamp(PixelsPerSecond * ZoomFactor, WidgetAnimTimelinePanelConstants::MinPixelsPerSecond, WidgetAnimTimelinePanelConstants::MaxPixelsPerSecond);
 	ViewStartTime = AnchorTime - AnchorScreenOffset / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
-	ClampViewStartTime(GetTimelineWidth(MyGeometry));
+	const float TimelineWidth = GetTimelineWidth(MyGeometry);
+	const float VisibleDuration = TimelineWidth / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
+	if (GetTimelineContentEndTime() + 0.5f <= VisibleDuration)
+	{
+		ViewStartTime = 0.0f;
+	}
+	else
+	{
+		ClampViewStartTime(TimelineWidth);
+	}
 	Invalidate(EInvalidateWidgetReason::Paint);
 	return FReply::Handled();
 }
@@ -1576,7 +1503,8 @@ float SWidgetAnimTimelinePanel::GetInspectorWidth() const
 float SWidgetAnimTimelinePanel::GetMaxViewStartTime(float TimelineWidth) const
 {
 	const float VisibleDuration = TimelineWidth / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER);
-	return FMath::Max(0.0f, GetTimelineDuration() - VisibleDuration);
+	const float ScrollableDuration = GetTimelineContentEndTime() + 0.5f;
+	return FMath::Max(0.0f, ScrollableDuration - VisibleDuration);
 }
 
 void SWidgetAnimTimelinePanel::ClampViewStartTime(float TimelineWidth)
@@ -1597,13 +1525,20 @@ float SWidgetAnimTimelinePanel::XToTime(float X, const FGeometry& Geometry) cons
 bool SWidgetAnimTimelinePanel::IsInTimelineArea(const FGeometry& Geometry, FVector2D LocalPosition) const
 {
 	const float TimelineWidth = GetTimelineWidth(Geometry);
+	const float TimelineBottom = Geometry.GetLocalSize().Y;
 	return LocalPosition.X >= HeaderWidth
 		&& LocalPosition.X <= HeaderWidth + TimelineWidth
-		&& LocalPosition.Y >= TimelineTop - RulerHeight;
+		&& LocalPosition.Y >= TimelineTop - RulerHeight
+		&& LocalPosition.Y <= TimelineBottom;
 }
 
 int32 SWidgetAnimTimelinePanel::HitTestEntry(const FGeometry& Geometry, FVector2D LocalPosition) const
 {
+	if (!IsInTimelineArea(Geometry, LocalPosition))
+	{
+		return INDEX_NONE;
+	}
+
 	for (const FEntryViewModel& Entry : Entries)
 	{
 		const int32 LaneIndex = GetLaneIndex(Entry.LaneName);
@@ -2121,31 +2056,11 @@ void SWidgetAnimTimelinePanel::RefreshTargetOptions()
 	TargetOptions.Reset();
 	TargetOptions.Add(MakeShared<FName>(NAME_None));
 
-	TSet<FName> AddedNames;
-	AddedNames.Add(NAME_None);
-	UWidgetBlueprint* WidgetBlueprint = GetWidgetBlueprint();
-	if (WidgetBlueprint != nullptr && WidgetBlueprint->WidgetTree != nullptr)
+	TArray<FName> TargetNames;
+	FWidgetAnimTimelineEditorUtils::CollectTargetWidgetNames(GetWidgetBlueprint(), ResolveOwnerWidgetClass(), TargetNames);
+	for (const FName TargetName : TargetNames)
 	{
-		WidgetBlueprint->WidgetTree->ForEachWidget([this, &AddedNames](UWidget* Widget)
-		{
-			if (Widget != nullptr && Widget->GetClass()->IsChildOf(UUserWidget::StaticClass()) && !AddedNames.Contains(Widget->GetFName()))
-			{
-				AddedNames.Add(Widget->GetFName());
-				TargetOptions.Add(MakeShared<FName>(Widget->GetFName()));
-			}
-		});
-	}
-
-	if (UClass* OwnerClass = ResolveOwnerWidgetClass())
-	{
-		for (TFieldIterator<FObjectProperty> It(OwnerClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-		{
-			if (It->PropertyClass != nullptr && It->PropertyClass->IsChildOf(UUserWidget::StaticClass()) && !AddedNames.Contains(It->GetFName()))
-			{
-				AddedNames.Add(It->GetFName());
-				TargetOptions.Add(MakeShared<FName>(It->GetFName()));
-			}
-		}
+		TargetOptions.Add(MakeShared<FName>(TargetName));
 	}
 }
 
@@ -2164,16 +2079,10 @@ void SWidgetAnimTimelinePanel::RefreshAnimationOptions()
 	AddedNames.Add(NAME_None);
 	if (UClass* TargetClass = ResolveTargetWidgetClass(GetWidgetBlueprint(), Entry.TargetWidgetName))
 	{
-		for (TFieldIterator<FObjectProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
+		TArray<FName> AnimationNames;
+		FWidgetAnimTimelineEditorUtils::CollectAnimationNames(TargetClass, AnimationNames);
+		for (const FName AnimationName : AnimationNames)
 		{
-			if (It->PropertyClass != UWidgetAnimation::StaticClass())
-			{
-				continue;
-			}
-
-			FString PropertyName = It->GetName();
-			PropertyName.RemoveFromEnd(TEXT("_INST"));
-			const FName AnimationName(*PropertyName);
 			if (!AddedNames.Contains(AnimationName))
 			{
 				AddedNames.Add(AnimationName);
@@ -2200,41 +2109,12 @@ void SWidgetAnimTimelinePanel::RefreshChildPhaseOptions()
 		return;
 	}
 
-	UObject* DefaultObject = TargetClass->GetDefaultObject();
-	if (DefaultObject == nullptr)
+	TArray<FName> PhaseNames;
+	const FName ExcludedPhaseName = Entry.TargetWidgetName.IsNone() ? GetCurrentPhaseName() : NAME_None;
+	FWidgetAnimTimelineEditorUtils::CollectChildPhaseNames(TargetClass, ExcludedPhaseName, PhaseNames);
+	for (const FName PhaseName : PhaseNames)
 	{
-		return;
-	}
-
-	TSet<FName> AddedNames;
-	AddedNames.Add(NAME_None);
-	for (TFieldIterator<FStructProperty> It(TargetClass, EFieldIteratorFlags::IncludeSuper); It; ++It)
-	{
-		if (It->Struct != FWidgetAnimTimelineConfig::StaticStruct())
-		{
-			continue;
-		}
-
-		const FWidgetAnimTimelineConfig* Config = It->ContainerPtrToValuePtr<FWidgetAnimTimelineConfig>(DefaultObject);
-		if (Config == nullptr)
-		{
-			continue;
-		}
-
-		for (const FWidgetAnimTimelinePhase& Phase : Config->Phases)
-		{
-			if (Phase.PhaseName.IsNone() || AddedNames.Contains(Phase.PhaseName))
-			{
-				continue;
-			}
-			if (Entry.TargetWidgetName.IsNone() && Phase.PhaseName == GetCurrentPhaseName())
-			{
-				continue;
-			}
-
-			AddedNames.Add(Phase.PhaseName);
-			ChildPhaseOptions.Add(MakeShared<FName>(Phase.PhaseName));
-		}
+		ChildPhaseOptions.Add(MakeShared<FName>(PhaseName));
 	}
 }
 

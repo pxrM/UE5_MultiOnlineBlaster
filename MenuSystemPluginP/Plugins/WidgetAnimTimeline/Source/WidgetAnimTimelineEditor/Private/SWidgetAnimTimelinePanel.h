@@ -57,7 +57,7 @@ private:
 	FName GetCurrentPhaseName() const;
 	bool HasAnimation(UClass* TargetClass, FName AnimationName) const;
 	bool HasChildPhase(UClass* TargetClass, FName TargetWidgetName, FName ChildPhaseName) const;
-	float GetEntryDuration(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, float PlaybackRate) const;
+	float GetEntryDuration(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, float PlaybackRate, int32 NumLoopsToPlay) const;
 	FString BuildEntryValidationError(FName TargetWidgetName, EWidgetAnimTimelineEntryType EntryType, FName AnimationName, FName ChildPhaseName) const;
 	void CommitEntryStartTime(int32 EntryIndex, float NewStartTime);
 	bool GetEntrySnapshot(int32 EntryIndex, FWidgetAnimTimelineEntry& OutEntry) const;

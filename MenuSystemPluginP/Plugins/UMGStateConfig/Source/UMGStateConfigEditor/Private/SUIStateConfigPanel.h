@@ -8,6 +8,7 @@
 struct FPropertyChangedEvent;
 
 class FWidgetBlueprintEditor;
+class ITableRow;
 class SListViewBase;
 class STableViewBase;
 class UUMGStateConfigBlueprintExtension;

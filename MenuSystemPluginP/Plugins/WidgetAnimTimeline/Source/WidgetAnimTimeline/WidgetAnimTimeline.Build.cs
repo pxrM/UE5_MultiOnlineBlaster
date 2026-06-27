@@ -14,9 +14,7 @@ public class WidgetAnimTimeline : ModuleRules
 				"Core",
 				"CoreUObject",
 				"Engine",
-				"UMG",
-				"Slate",
-				"SlateCore"
+				"UMG"
 			});
 	}
 }

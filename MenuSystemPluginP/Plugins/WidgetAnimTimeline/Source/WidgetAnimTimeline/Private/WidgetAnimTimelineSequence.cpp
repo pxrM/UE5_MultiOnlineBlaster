@@ -4,6 +4,21 @@
 #include "Blueprint/WidgetTree.h"
 #include "TimerManager.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogWidgetAnimTimeline, Log, All);
+
+namespace
+{
+	float GetSafePlaybackRate(float PlaybackRate)
+	{
+		return FMath::Max(PlaybackRate, 0.001f);
+	}
+
+	int32 GetSafeNumLoopsToPlay(int32 NumLoopsToPlay)
+	{
+		return FMath::Max(NumLoopsToPlay, 0);
+	}
+}
+
 void UWidgetAnimTimelinePlayer::Initialize(UUserWidget* InOwnerWidget, const FWidgetAnimTimelineConfig& InConfig)
 {
 	OwnerWidget = InOwnerWidget;
@@ -27,7 +42,7 @@ bool UWidgetAnimTimelinePlayer::PlayPhaseInternal(FName PhaseName, TSet<FString>
 	const FString PhaseStackKey = MakePhaseStackKey(PhaseName);
 	if (PhaseStack.Contains(PhaseStackKey))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WidgetAnimTimeline blocked recursive phase playback: %s"), *PhaseStackKey);
+		UE_LOG(LogWidgetAnimTimeline, Warning, TEXT("Blocked recursive phase playback: %s"), *PhaseStackKey);
 		return false;
 	}
 
@@ -142,11 +157,13 @@ void UWidgetAnimTimelinePlayer::ExecuteEntry(FWidgetAnimTimelineEntry Entry, TSe
 
 	ApplyInterruptMode(TargetWidget, Animation, Entry.InterruptMode);
 
-	TargetWidget->PlayAnimation(Animation, 0.0f, Entry.NumLoopsToPlay, EUMGSequencePlayMode::Forward, Entry.PlaybackRate);
-	TrackActiveAnimation(TargetWidget, Animation, Entry);
+	const int32 SafeNumLoopsToPlay = GetSafeNumLoopsToPlay(Entry.NumLoopsToPlay);
+	const float SafePlaybackRate = GetSafePlaybackRate(Entry.PlaybackRate);
+	TargetWidget->PlayAnimation(Animation, 0.0f, SafeNumLoopsToPlay, EUMGSequencePlayMode::Forward, SafePlaybackRate);
+	TrackActiveAnimation(TargetWidget, Animation, Entry, SafePlaybackRate, SafeNumLoopsToPlay);
 }
 
-void UWidgetAnimTimelinePlayer::ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode) const
+void UWidgetAnimTimelinePlayer::ApplyInterruptMode(UUserWidget* TargetWidget, UWidgetAnimation* Animation, EWidgetAnimTimelineInterruptMode InterruptMode)
 {
 	if (TargetWidget == nullptr || Animation == nullptr)
 	{
@@ -169,7 +186,7 @@ void UWidgetAnimTimelinePlayer::ApplyInterruptMode(UUserWidget* TargetWidget, UW
 	}
 }
 
-void UWidgetAnimTimelinePlayer::TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, const FWidgetAnimTimelineEntry& Entry)
+void UWidgetAnimTimelinePlayer::TrackActiveAnimation(UUserWidget* TargetWidget, UWidgetAnimation* Animation, const FWidgetAnimTimelineEntry& Entry, float PlaybackRate, int32 NumLoopsToPlay)
 {
 	if (TargetWidget == nullptr || Animation == nullptr)
 	{
@@ -183,11 +200,11 @@ void UWidgetAnimTimelinePlayer::TrackActiveAnimation(UUserWidget* TargetWidget, 
 	ActiveAnimation.Animation = Animation;
 	ActiveAnimation.InterruptMode = Entry.InterruptMode;
 
-	if (Entry.NumLoopsToPlay > 0 && OwnerWidget != nullptr)
+	if (NumLoopsToPlay > 0 && OwnerWidget != nullptr)
 	{
 		if (UWorld* World = OwnerWidget->GetWorld())
 		{
-			const float Duration = Animation->GetEndTime() * Entry.NumLoopsToPlay / FMath::Max(Entry.PlaybackRate, KINDA_SMALL_NUMBER);
+			const float Duration = Animation->GetEndTime() * NumLoopsToPlay / GetSafePlaybackRate(PlaybackRate);
 			if (Duration > 0.0f)
 			{
 				World->GetTimerManager().SetTimer(
@@ -257,7 +274,7 @@ UUserWidget* UWidgetAnimTimelinePlayer::ResolveTargetWidget(FName TargetWidgetNa
 	return Cast<UUserWidget>(OwnerWidget->WidgetTree->FindWidget(TargetWidgetName));
 }
 
-UWidgetAnimation* UWidgetAnimTimelinePlayer::ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName) const
+UWidgetAnimation* UWidgetAnimTimelinePlayer::ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName)
 {
 	if (TargetWidget == nullptr || AnimationName.IsNone())
 	{
