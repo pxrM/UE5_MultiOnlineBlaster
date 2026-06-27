@@ -17,6 +17,10 @@
 
 
 
+# Allow documentation files.
+!/DevDoc/**
+!**/*.md
+
 # Only allow .uasset and .umap files from /Content dir.
 # They're tracked by git-lfs, don't forget to track other
 # files if adding them here.
