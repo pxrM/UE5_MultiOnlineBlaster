@@ -27,19 +27,21 @@ public:
 	virtual FReply OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnMouseWheel(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
+	// 鼠标悬停条目边缘时改抓取手光标显示
 	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override;
+	// 返回true，让面板能接收键盘焦点
 	virtual bool SupportsKeyboardFocus() const override;
 
 private:
 	struct FEntryViewModel
 	{
-		int32 EntryIndex = INDEX_NONE;
-		FString LaneName;
-		FString Label;
-		FString ValidationError;
-		float StartTime = 0.0f;
-		float Duration = 0.5f;
-		FLinearColor Color = FLinearColor::White;
+		int32 EntryIndex = INDEX_NONE;				//指向 FWidgetAnimTimelineConfig 中真实条目的索引，用于回写修改
+		FString LaneName;							//所属轨道名（按目标 Widget 名分组），决定条目画在哪一行
+		FString Label;								//条目块上显示的文本（如动画名 / 子阶段名）
+		FString ValidationError;					//校验错误信息（目标 Widget 不存在、动画缺失等），显示红色警告
+		float StartTime = 0.0f;						//条目起始时间（秒），决定条块 X 坐标
+		float Duration = 0.5f;						//条目持续时长（秒），决定条块宽度，默认 0.5s
+		FLinearColor Color = FLinearColor::White;	//条块颜色，按条目类型或轨道区分
 	};
 
 	void RefreshEntries();
@@ -134,6 +136,7 @@ private:
 	FReply DeleteSelectedEntry();
 	bool CanDeleteSelectedEntry() const;
 
+private:
 	TSharedPtr<IPropertyHandle> PhaseHandle;
 	TWeakObjectPtr<UWidgetBlueprint> SourceWidgetBlueprint;
 	int32 PhaseIndex = INDEX_NONE;

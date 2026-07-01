@@ -26,17 +26,19 @@
 
 namespace WidgetAnimTimelinePanelConstants
 {
-	static constexpr float MinPixelsPerSecond = 60.0f;
-	static constexpr float MaxPixelsPerSecond = 420.0f;
-	static constexpr float BlockMinWidth = 38.0f;
-	static constexpr float MajorGridAlpha = 0.34f;
-	static constexpr float MinorGridAlpha = 0.11f;
+	static constexpr float MinPixelsPerSecond = 60.0f;	//滚轮缩放下限
+	static constexpr float MaxPixelsPerSecond = 420.0f;	//滚轮缩放上限
+	static constexpr float BlockMinWidth = 38.0f;		//条块最小宽度防消失
+	static constexpr float MajorGridAlpha = 0.34f;		//整秒竖线透明度
+	static constexpr float MinorGridAlpha = 0.11f;		//半秒/分数秒竖线透明度
 
+	// 判断时刻是否落在标签步长上
 	static bool IsTimeOnStep(float Time, float Step)
 	{
 		return FMath::IsNearlyZero(FMath::Fmod(Time + KINDA_SMALL_NUMBER, Step), 0.001f);
 	}
-
+	
+	// 标尺时间格式化。整秒显示 5s，非整秒显示 1.25s，且把 0.00s 替换为 "s"（零时刻）
 	static FString FormatRulerTime(float Time)
 	{
 		if (FMath::IsNearlyEqual(Time, FMath::RoundToFloat(Time), 0.001f))
@@ -49,6 +51,7 @@ namespace WidgetAnimTimelinePanelConstants
 		return Text;
 	}
 }
+
 
 void SWidgetAnimTimelinePanel::Construct(const FArguments& InArgs)
 {
@@ -1366,7 +1369,7 @@ void SWidgetAnimTimelinePanel::AddEntry(EWidgetAnimTimelineEntryType EntryType)
 {
 	FWidgetAnimTimelineEntry NewEntry;
 	NewEntry.EntryType = EntryType;
-	NewEntry.StartTime = SelectedEntryIndex == INDEX_NONE ? 0.0f : GetTimelineDuration() - 0.5f;
+	NewEntry.StartTime = GetTimelineContentEndTime();
 	NewEntry.StartTime = FMath::Max(0.0f, SnapTime(NewEntry.StartTime, false));
 
 	FScopedTransaction Transaction(FText::FromString(TEXT("Add Widget Anim Timeline Entry")));

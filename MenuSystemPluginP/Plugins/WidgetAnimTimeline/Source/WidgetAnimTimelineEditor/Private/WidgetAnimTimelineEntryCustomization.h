@@ -41,6 +41,7 @@ private:
 	EVisibility GetChildPhaseNameValidationVisibility() const;
 	EWidgetAnimTimelineEntryType GetEntryType() const;
 
+private:
 	TSharedPtr<IPropertyHandle> StructHandle;
 	TSharedPtr<IPropertyHandle> TargetWidgetNameHandle;
 	TSharedPtr<IPropertyHandle> EntryTypeHandle;

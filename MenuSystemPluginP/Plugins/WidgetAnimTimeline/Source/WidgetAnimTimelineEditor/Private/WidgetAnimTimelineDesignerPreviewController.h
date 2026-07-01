@@ -52,6 +52,7 @@ private:
 	UWidgetAnimation* ResolveAnimation(UUserWidget* TargetWidget, FName AnimationName) const;
 	FString MakePhaseStackKey(UUserWidget* Widget, FName PhaseName) const;
 
+private:
 	TWeakObjectPtr<UWidgetBlueprint> WidgetBlueprint;
 	FWidgetAnimTimelinePhase RootPhase;
 	TArray<FPendingEntry> PendingEntries;
