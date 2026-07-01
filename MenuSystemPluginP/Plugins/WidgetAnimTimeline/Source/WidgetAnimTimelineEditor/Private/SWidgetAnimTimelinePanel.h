@@ -21,7 +21,8 @@ public:
 
 	void Construct(const FArguments& InArgs);
 
-	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
+	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements,
+	                      int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
@@ -44,9 +45,46 @@ private:
 		FLinearColor Color = FLinearColor::White;	//条块颜色，按条目类型或轨道区分
 	};
 
+	struct FTimelinePaintContext
+	{
+		const FGeometry& Geometry;
+		FSlateWindowElementList& OutDrawElements;
+		const FSlateBrush* WhiteBrush;
+		const FSlateFontInfo& SmallFont;
+		FVector2D Size;
+		float Duration = 0.0f;
+		float TimelineWidth = 0.0f;
+		float TimelineRight = 0.0f;
+		float LaneAreaBottom = 0.0f;
+		int32 LayerId = 0;
+	};
+
+	// entry 的块颜色、描边颜色、强调色、副文本颜色
+	struct FEntryPaintColors
+	{
+		FLinearColor Block;
+		FLinearColor Outline;
+		FLinearColor Accent;
+		FLinearColor SecondaryText;
+	};
+
+	// entry 的位置和宽度
+	struct FEntryPaintLayout
+	{
+		FVector2D Position;
+		float Width = 0.0f;
+	};
+
+private:
 	void RefreshEntries();
 	void RefreshPhaseOptions();
 	void RefreshAutoPlayOptions();
+	void PaintTimelineBackground(const FTimelinePaintContext& Context) const;
+	void PaintTimelineRuler(const FTimelinePaintContext& Context) const;
+	void PaintTimelineLanes(const FTimelinePaintContext& Context) const;
+	void PaintTimelineEntries(const FTimelinePaintContext& Context) const;
+	static FEntryPaintColors GetEntryPaintColors(const FEntryViewModel& Entry, bool bSelected, bool bActive, bool bHasValidationError);
+	void PaintTimelineEntry(const FTimelinePaintContext& Context, const FEntryViewModel& Entry, const FEntryPaintLayout& Layout, const FEntryPaintColors& Colors, bool bSelected, bool bHasValidationError) const;
 	FWidgetAnimTimelineConfig* GetTimelineConfig() const;
 	FWidgetAnimTimelinePhase* GetTimelinePhase() const;
 	UWidgetBlueprint* GetWidgetBlueprint() const;
@@ -102,7 +140,7 @@ private:
 	void OnAutoPlayChanged(TSharedPtr<FName> Option, ESelectInfo::Type SelectInfo);
 	FText GetBlueprintCompileStatusText() const;
 	FSlateColor GetBlueprintCompileStatusColor() const;
-	FReply PlayDesignerPreview();
+	FReply PlayDesignerPreview() const;
 	FReply FitTimelineToContent();
 	EVisibility GetEntryInspectorVisibility() const;
 	FText GetSelectedEntryTitleText() const;
