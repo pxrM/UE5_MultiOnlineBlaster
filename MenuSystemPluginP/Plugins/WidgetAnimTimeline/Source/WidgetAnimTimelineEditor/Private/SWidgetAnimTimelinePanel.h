@@ -47,16 +47,16 @@ private:
 
 	struct FTimelinePaintContext
 	{
-		const FGeometry& Geometry;
-		FSlateWindowElementList& OutDrawElements;
-		const FSlateBrush* WhiteBrush;
-		const FSlateFontInfo& SmallFont;
-		FVector2D Size;
-		float Duration = 0.0f;
-		float TimelineWidth = 0.0f;
-		float TimelineRight = 0.0f;
-		float LaneAreaBottom = 0.0f;
-		int32 LayerId = 0;
+		const FGeometry& Geometry;					// 控件几何（坐标变换用）
+		FSlateWindowElementList& OutDrawElements;   // 绘制元素输出列表
+		const FSlateBrush* WhiteBrush;				// 缓存的白色画刷（FAppStyle 取一次）
+		const FSlateFontInfo& SmallFont;			// 缓存的小字体
+		FVector2D Size;								// 控件局部尺寸
+		float Duration;								// 时间轴总时长
+		float TimelineWidth;						// 时间轴区域宽度（不含 header 和 inspector）
+		float TimelineRight;						// 时间轴右边界 = HeaderWidth + TimelineWidth
+		float LaneAreaBottom;						// 轨道区域底部
+		int32 LayerId;								// 起始层深度
 	};
 
 	// entry 的块颜色、描边颜色、强调色、副文本颜色
@@ -79,7 +79,9 @@ private:
 	void RefreshEntries();
 	void RefreshPhaseOptions();
 	void RefreshAutoPlayOptions();
+	// 画四个底层纯色矩形块，四个不同灰度色块把面板分为 工具栏 → 标尺 → 轨道名区 → 时间轴轨道区
 	void PaintTimelineBackground(const FTimelinePaintContext& Context) const;
+	// 画时间轴标尺和竖线网格
 	void PaintTimelineRuler(const FTimelinePaintContext& Context) const;
 	void PaintTimelineLanes(const FTimelinePaintContext& Context) const;
 	void PaintTimelineEntries(const FTimelinePaintContext& Context) const;
@@ -120,7 +122,7 @@ private:
 	int32 HitTestEntry(const FGeometry& Geometry, FVector2D LocalPosition) const;
 	int32 GetLaneIndex(const FString& LaneName) const;
 	float SnapTime(float Time, bool bUseFineSnap) const;
-	FString FormatTime(float Time) const;
+	static FString FormatTime(float Time);
 	TSharedPtr<IPropertyHandle> GetEntriesHandle() const;
 	TSharedPtr<IPropertyHandle> GetEntryHandle(int32 EntryIndex) const;
 	FText GetPhaseTitle() const;
@@ -153,7 +155,7 @@ private:
 	TOptional<float> GetSelectedEntryStartTime() const;
 	TOptional<float> GetSelectedEntryPlaybackRate() const;
 	TOptional<int32> GetSelectedEntryNumLoops() const;
-	FText GetNameOptionText(TSharedPtr<FName> Option) const;
+	static FText GetNameOptionText(TSharedPtr<FName> Option);
 	TSharedRef<SWidget> MakeNameOptionWidget(TSharedPtr<FName> Option) const;
 	TSharedRef<SWidget> MakeEntryTypeOptionWidget(TSharedPtr<EWidgetAnimTimelineEntryType> Option) const;
 	void RefreshTargetOptions();

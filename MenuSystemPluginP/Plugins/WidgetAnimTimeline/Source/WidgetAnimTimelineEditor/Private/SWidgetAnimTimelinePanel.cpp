@@ -31,10 +31,12 @@ namespace WidgetAnimTimelinePanelConstants
 	static constexpr float BlockMinWidth = 38.0f; // 条块最小宽度防消失
 	static constexpr float MajorGridAlpha = 0.34f; // 整秒竖线透明度
 	static constexpr float MinorGridAlpha = 0.11f; // 半秒/分数秒竖线透明度
+	static constexpr float HighDensityThreshold = 180.0f; // 缩放超过此值时刻度从0.25s切0.1s
 
 	// 判断时刻是否落在标签步长上
 	static bool IsTimeOnStep(float Time, float Step)
 	{
+		// Fmod(5.3, 1.0) = 0.3，Fmod(5.0, 1.0) = 0.0
 		return FMath::IsNearlyZero(FMath::Fmod(Time + KINDA_SMALL_NUMBER, Step), 0.001f);
 	}
 
@@ -55,7 +57,7 @@ namespace WidgetAnimTimelinePanelConstants
 	static float GetLabelStep(float PixelsPerSecond)
 	{
 		if (PixelsPerSecond >= 300.0f) return 0.1f;
-		if (PixelsPerSecond >= 180.0f) return 0.25f;
+		if (PixelsPerSecond >= WidgetAnimTimelinePanelConstants::HighDensityThreshold) return 0.25f;
 		if (PixelsPerSecond >= 100.0f) return 0.5f;
 		return 1.0f;
 	}
@@ -530,10 +532,8 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			ViewModel.EntryIndex = EntryIndex;
 			ViewModel.LaneName = Entry.TargetWidgetName.IsNone() ? TEXT("Self") : Entry.TargetWidgetName.ToString();
 			ViewModel.StartTime = Entry.StartTime;
-			ViewModel.Duration = GetEntryDuration(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName,
-			                                      Entry.PlaybackRate, Entry.NumLoopsToPlay);
-			ViewModel.ValidationError = BuildEntryValidationError(Entry.TargetWidgetName, Entry.EntryType,
-			                                                      Entry.AnimationName, Entry.ChildPhaseName);
+			ViewModel.Duration = GetEntryDuration(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.PlaybackRate, Entry.NumLoopsToPlay);
+			ViewModel.ValidationError = BuildEntryValidationError(Entry.TargetWidgetName, Entry.EntryType, Entry.AnimationName, Entry.ChildPhaseName);
 			if (Entry.EntryType == EWidgetAnimTimelineEntryType::DirectAnimation)
 			{
 				ViewModel.Label = Entry.AnimationName.IsNone() ? TEXT("Animation") : Entry.AnimationName.ToString();
@@ -570,18 +570,12 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			continue;
 		}
 
-		TSharedPtr<IPropertyHandle> TargetHandle = EntryHandle->GetChildHandle(
-			GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, TargetWidgetName));
-		TSharedPtr<IPropertyHandle> TypeHandle = EntryHandle->GetChildHandle(
-			GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, EntryType));
-		TSharedPtr<IPropertyHandle> AnimationHandle = EntryHandle->GetChildHandle(
-			GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, AnimationName));
-		TSharedPtr<IPropertyHandle> ChildPhaseHandle = EntryHandle->GetChildHandle(
-			GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, ChildPhaseName));
-		TSharedPtr<IPropertyHandle> StartHandle = EntryHandle->GetChildHandle(
-			GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, StartTime));
-		TSharedPtr<IPropertyHandle> RateHandle = EntryHandle->GetChildHandle(
-			GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, PlaybackRate));
+		TSharedPtr<IPropertyHandle> TargetHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, TargetWidgetName));
+		TSharedPtr<IPropertyHandle> TypeHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, EntryType));
+		TSharedPtr<IPropertyHandle> AnimationHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, AnimationName));
+		TSharedPtr<IPropertyHandle> ChildPhaseHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, ChildPhaseName));
+		TSharedPtr<IPropertyHandle> StartHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, StartTime));
+		TSharedPtr<IPropertyHandle> RateHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, PlaybackRate));
 
 		FName TargetName = NAME_None;
 		FName AnimationName = NAME_None;
@@ -615,8 +609,7 @@ void SWidgetAnimTimelinePanel::RefreshEntries()
 			RateHandle->GetValue(PlaybackRate);
 		}
 		int32 NumLoopsToPlay = 1;
-		if (TSharedPtr<IPropertyHandle> LoopsHandle = EntryHandle->GetChildHandle(
-			GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, NumLoopsToPlay)))
+		if (TSharedPtr<IPropertyHandle> LoopsHandle = EntryHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelineEntry, NumLoopsToPlay)))
 		{
 			LoopsHandle->GetValue(NumLoopsToPlay);
 		}
@@ -708,21 +701,22 @@ void SWidgetAnimTimelinePanel::RefreshAutoPlayOptions()
 	}
 }
 
+// 绘制层 Z-Order
 namespace WidgetAnimTimelinePaintLayers
 {
-	static constexpr int32 Background = 1;
-	static constexpr int32 Header = 2;
-	static constexpr int32 LaneHeader = 3;
-	static constexpr int32 RulerBackground = 4;
-	static constexpr int32 Grid = 6;
-	static constexpr int32 RulerTick = 7;
-	static constexpr int32 RulerText = 8;
-	static constexpr int32 LaneBackground = 9;
-	static constexpr int32 LaneText = 10;
-	static constexpr int32 EntryBlock = 12;
-	static constexpr int32 EntryOutline = 13;
-	static constexpr int32 EntryText = 14;
-	static constexpr int32 ChildWidget = 15;
+	static constexpr int32 Background = 1;			//整体面板底色
+	static constexpr int32 Header = 2;				//顶部工具栏区底色
+	static constexpr int32 LaneHeader = 3;			//左侧轨道名区域底色
+	static constexpr int32 RulerBackground = 4;		//时间轴标尺底色
+	static constexpr int32 Grid = 6;				//竖线网格（整秒/半秒/分数秒）
+	static constexpr int32 RulerTick = 7;			//标尺刻度短线
+	static constexpr int32 RulerText = 8;			//标尺时间文字标签
+	static constexpr int32 LaneBackground = 9;		//轨道行底色（隔行交替）
+	static constexpr int32 LaneText = 10;			//左侧轨道名文字
+	static constexpr int32 EntryBlock = 12;			//条块色块矩形
+	static constexpr int32 EntryOutline = 13;		//条块描边/选中高亮/错误指示
+	static constexpr int32 EntryText = 14;			//条块标签文字和起始时间
+	static constexpr int32 ChildWidget = 15;		//子控件绘制基准（工具栏按钮等）
 }
 
 int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry,
@@ -764,18 +758,25 @@ int32 SWidgetAnimTimelinePanel::OnPaint(const FPaintArgs& Args, const FGeometry&
 
 void SWidgetAnimTimelinePanel::PaintTimelineBackground(const FTimelinePaintContext& Context) const
 {
+	//最底层的深黑底色
 	FSlateDrawElement::MakeBox(Context.OutDrawElements, Context.LayerId + WidgetAnimTimelinePaintLayers::Background,
 	                           Context.Geometry.ToPaintGeometry(FVector2f(Context.Size.X, Context.Size.Y),
 	                           FSlateLayoutTransform(FVector2f::ZeroVector)),
 	                           Context.WhiteBrush, ESlateDrawEffect::None, FLinearColor(0.018f, 0.018f, 0.018f, 1.0f));
+	
+	//工具栏区域略亮
 	FSlateDrawElement::MakeBox(Context.OutDrawElements, Context.LayerId + WidgetAnimTimelinePaintLayers::Header,
 	                           Context.Geometry.ToPaintGeometry(FVector2f(Context.Size.X, TimelineTop),
 	                           FSlateLayoutTransform(FVector2f::ZeroVector)),
 	                           Context.WhiteBrush, ESlateDrawEffect::None, FLinearColor(0.028f, 0.028f, 0.03f, 1.0f));
+	
+	//轨道名区域比 toolbar 更亮
 	FSlateDrawElement::MakeBox(Context.OutDrawElements, Context.LayerId + WidgetAnimTimelinePaintLayers::LaneHeader,
 	                           Context.Geometry.ToPaintGeometry(FVector2f(HeaderWidth, Context.Size.Y),
 	                           FSlateLayoutTransform(FVector2f::ZeroVector)),
 	                           Context.WhiteBrush, ESlateDrawEffect::None, FLinearColor(0.032f, 0.032f, 0.034f, 1.0f));
+	
+	//时间轴标尺底色最亮，与轨道区域区分
 	FSlateDrawElement::MakeBox(Context.OutDrawElements, Context.LayerId + WidgetAnimTimelinePaintLayers::RulerBackground,
 	                           Context.Geometry.ToPaintGeometry(FVector2f(Context.TimelineWidth, RulerHeight),
 	                           FSlateLayoutTransform(FVector2f(HeaderWidth, TimelineTop - RulerHeight))),
@@ -784,39 +785,56 @@ void SWidgetAnimTimelinePanel::PaintTimelineBackground(const FTimelinePaintConte
 
 void SWidgetAnimTimelinePanel::PaintTimelineRuler(const FTimelinePaintContext& Context) const
 {
-	const float MinorStep = PixelsPerSecond >= 180.0f ? 0.1f : 0.25f;
-	// Labels become denser after zooming so sub-second edits still show concrete ruler time.
+	// 刻度线间距
+	const float MinorStep = PixelsPerSecond >= WidgetAnimTimelinePanelConstants::HighDensityThreshold ? 0.1f : 0.25f;
+	// 文字标签间距
 	const float LabelStep = WidgetAnimTimelinePanelConstants::GetLabelStep(PixelsPerSecond);
+	// 当前视口能看到的最后一个时间点。	右边界时间 = 左边界时间 + 可见时长（像素宽度 ÷ 每秒像素数 = 视口内可见的秒数）
 	const float VisibleEndTime = ViewStartTime + (Context.TimelineWidth / FMath::Max(PixelsPerSecond, KINDA_SMALL_NUMBER));
+	// 从 ViewStartTime 往前多画一个刻度，确保左边界外开始的竖线在边界内可见。
+	// FMath::GridSnap 把 ViewStartTime 向下对齐到 MinorStep 的整数倍。比如 ViewStartTime = 1.35，MinorStep = 0.1 → 1.3。对齐后再往前退一个步长。1.3 - 0.1 = 1.2。
+	// 不直接从 GridSnap 值（1.3）开始循环，是因为 1.3 的刻度可能刚好在边界上或边界外一点点。
 	const float FirstTickTime = FMath::Max(0.0f, FMath::GridSnap(ViewStartTime, MinorStep) - MinorStep);
+	// 遍历可视时间范围：起点=FirstTickTime；终点=Min(时间轴总长, 可视右边界+多画一个刻度)；步长=Time+=MinorStep
 	for (float Time = FirstTickTime; Time <= FMath::Min(Context.Duration, VisibleEndTime + MinorStep) + KINDA_SMALL_NUMBER; Time += MinorStep)
 	{
+		//1.刻度分类
+		//整秒刻度	bIsMajor = Time % 1.0 ≈ 0   // 整秒 → 如 1.0, 2.0, 3.0
 		const bool bIsMajor = FMath::IsNearlyZero(FMath::Fmod(Time, 1.0f), 0.001f);
+		//半秒刻度	bIsHalf = Time % 0.5 ≈ 0    // 半秒 → 如 1.5, 2.5, 但非整秒
 		const bool bIsHalf = !bIsMajor && FMath::IsNearlyZero(FMath::Fmod(Time, 0.5f), 0.001f);
+		// 当前时刻是否该画文字标签
 		const bool bDrawLabel = WidgetAnimTimelinePanelConstants::IsTimeOnStep(Time, LabelStep);
-		if (!bIsMajor && !bIsHalf && PixelsPerSecond < 180.0f)
+		// 低缩放时只画整秒和半秒，0.1s/0.25s 的刻度太密直接跳过。高缩放（≥180 px/s）时全部保留——因为 0.1s 步长下刻度间距 18px，不密集。
+		if (!bIsMajor && !bIsHalf && PixelsPerSecond < WidgetAnimTimelinePanelConstants::HighDensityThreshold)
 		{
 			continue;
 		}
 
+		//2.可见性裁剪
+		// 时间轴区域在 [HeaderWidth, TimelineRight] 之间
 		const float X = TimeToX(Time, Context.Geometry);
 		if (X < HeaderWidth || X > Context.TimelineRight)
 		{
 			continue;
 		}
 
+		//3.画网格线 + 刻度线
+		//整秒线更粗、更亮、刻度更长
 		const float TickHeight = bIsMajor ? 11.0f : 6.0f;
 		const FLinearColor LineColor = bIsMajor
 			                               ? FLinearColor(0.45f, 0.45f, 0.45f, WidgetAnimTimelinePanelConstants::MajorGridAlpha)
 			                               : FLinearColor(0.38f, 0.38f, 0.38f, WidgetAnimTimelinePanelConstants::MinorGridAlpha);
+		//竖线贯穿全部轨道行，辅助对齐
 		const TArray<FVector2D> GridLine = {FVector2D(X, TimelineTop - RulerHeight + TickHeight), FVector2D(X, Context.LaneAreaBottom)};
 		FSlateDrawElement::MakeLines(Context.OutDrawElements, Context.LayerId + WidgetAnimTimelinePaintLayers::Grid, Context.Geometry.ToPaintGeometry(), GridLine,
 		                             ESlateDrawEffect::None, LineColor, true, bIsMajor ? 1.0f : 0.5f);
-
+		//标尺上的刻度短线
 		const TArray<FVector2D> RulerTick = {FVector2D(X, TimelineTop - TickHeight), FVector2D(X, TimelineTop)};
 		FSlateDrawElement::MakeLines(Context.OutDrawElements, Context.LayerId + WidgetAnimTimelinePaintLayers::RulerTick, Context.Geometry.ToPaintGeometry(), RulerTick, ESlateDrawEffect::None,
 		                             FLinearColor(0.64f, 0.64f, 0.64f, bIsMajor ? 0.78f : 0.28f), true, 1.0f);
 
+		//4.画时间标签
 		if (bDrawLabel)
 		{
 			const FLinearColor LabelColor = bIsMajor
@@ -882,10 +900,7 @@ void SWidgetAnimTimelinePanel::PaintTimelineEntries(const FTimelinePaintContext&
 }
 
 SWidgetAnimTimelinePanel::FEntryPaintColors SWidgetAnimTimelinePanel::GetEntryPaintColors(
-	const FEntryViewModel& Entry,
-	bool bSelected,
-	bool bActive,
-	bool bHasValidationError)
+	const FEntryViewModel& Entry, bool bSelected, bool bActive, bool bHasValidationError)
 {
 	static constexpr FLinearColor ErrorColor(1.0f, 0.14f, 0.08f, 1.0f);
 
@@ -914,8 +929,7 @@ void SWidgetAnimTimelinePanel::PaintTimelineEntry(
 	const FEntryViewModel& Entry,
 	const FEntryPaintLayout& Layout,
 	const FEntryPaintColors& Colors,
-	bool bSelected,
-	bool bHasValidationError) const
+	bool bSelected, bool bHasValidationError) const
 {
 	const FVector2D BlockPosition(Layout.Position.X, Layout.Position.Y + 5.0f);
 	const FVector2f BlockSize(Layout.Width, LaneHeight - 10.0f);
@@ -1880,7 +1894,7 @@ float SWidgetAnimTimelinePanel::SnapTime(float Time, bool bUseFineSnap) const
 	return FMath::GridSnap(Time, bUseFineSnap ? 0.01f : SnapInterval);
 }
 
-FString SWidgetAnimTimelinePanel::FormatTime(float Time) const
+FString SWidgetAnimTimelinePanel::FormatTime(float Time)
 {
 	return FString::Printf(TEXT("%.2fs"), Time);
 }
@@ -2352,7 +2366,7 @@ TOptional<int32> SWidgetAnimTimelinePanel::GetSelectedEntryNumLoops() const
 	return GetEntrySnapshot(SelectedEntryIndex, Entry) ? TOptional<int32>(Entry.NumLoopsToPlay) : TOptional<int32>();
 }
 
-FText SWidgetAnimTimelinePanel::GetNameOptionText(TSharedPtr<FName> Option) const
+FText SWidgetAnimTimelinePanel::GetNameOptionText(TSharedPtr<FName> Option)
 {
 	if (!Option.IsValid() || Option->IsNone())
 	{
