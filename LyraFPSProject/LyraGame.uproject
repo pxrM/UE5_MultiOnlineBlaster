@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.7",
+	"EngineAssociation": "5.6",
 	"Category": "Samples",
 	"Description": "",
 	"Modules": [
@@ -386,7 +386,7 @@
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/5568bfaf-0b99-49a8-a4d7-1753e8f4e549"
 		},
-{
+		{
 			"Name": "KeyInputReplay",
 			"Enabled": true
 		}
