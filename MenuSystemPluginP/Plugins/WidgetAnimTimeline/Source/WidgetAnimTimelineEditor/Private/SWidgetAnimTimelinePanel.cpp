@@ -1916,10 +1916,8 @@ FText SWidgetAnimTimelinePanel::GetPhaseTitle() const
 {
 	if (FWidgetAnimTimelinePhase* Phase = GetTimelinePhase())
 	{
-		return FText::FromString(
-			FString::Printf(TEXT("Phase: %s"), Phase->PhaseName.IsNone()
-				                                   ? TEXT("None")
-				                                   : *Phase->PhaseName.ToString()));
+		const auto PhaseName =  Phase->PhaseName.IsNone() ? TEXT("None") : *Phase->PhaseName.ToString();
+		return FText::FromString(FString::Printf(TEXT("Phase: %s"), PhaseName));
 	}
 
 	if (!PhaseHandle.IsValid())
@@ -1927,16 +1925,14 @@ FText SWidgetAnimTimelinePanel::GetPhaseTitle() const
 		return FText::FromString(TEXT("Phase: None"));
 	}
 
-	TSharedPtr<IPropertyHandle> PhaseNameHandle = PhaseHandle->GetChildHandle(
-		GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelinePhase, PhaseName));
+	TSharedPtr<IPropertyHandle> PhaseNameHandle = PhaseHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FWidgetAnimTimelinePhase, PhaseName));
 	FName PhaseName = NAME_None;
 	if (PhaseNameHandle.IsValid())
 	{
 		PhaseNameHandle->GetValue(PhaseName);
 	}
 
-	return FText::FromString(
-		FString::Printf(TEXT("Phase: %s"), PhaseName.IsNone() ? TEXT("None") : *PhaseName.ToString()));
+	return FText::FromString(FString::Printf(TEXT("Phase: %s"), PhaseName.IsNone() ? TEXT("None") : *PhaseName.ToString()));
 }
 
 FText SWidgetAnimTimelinePanel::GetSelectedPhaseText() const
@@ -2133,8 +2129,7 @@ FReply SWidgetAnimTimelinePanel::DeletePhase()
 
 	if (FWidgetAnimTimelineConfig* UpdatedConfig = GetTimelineConfig())
 	{
-		PhaseIndex = UpdatedConfig->Phases.Num() == 0 ? INDEX_NONE
-			             : FMath::Clamp(DeletedPhaseIndex, 0, UpdatedConfig->Phases.Num() - 1);
+		PhaseIndex = UpdatedConfig->Phases.Num() == 0 ? INDEX_NONE : FMath::Clamp(DeletedPhaseIndex, 0, UpdatedConfig->Phases.Num() - 1);
 	}
 	else
 	{
