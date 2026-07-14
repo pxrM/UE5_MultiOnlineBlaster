@@ -26,9 +26,13 @@ class UIFRAMEWORKWIDGETS_API UUIRootWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	/** Push a widget onto the given layer's stack. Returns the created widget (top of stack). */
+	/** Create a widget of the class and push it onto the layer's stack. Returns it. */
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	UUserWidget* PushToLayer(EUILayer Layer, TSubclassOf<UUserWidget> WidgetClass);
+
+	/** Push an existing widget instance onto the layer's stack (for pooled / cached reuse). */
+	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
+	UUserWidget* PushWidget(EUILayer Layer, UUserWidget* Widget);
 
 	/** Pop the top widget off the given layer. Returns true if a widget was removed. */
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")

@@ -48,6 +48,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	UUserWidget* PushToLayer(EUILayer Layer, TSubclassOf<UUserWidget> WidgetClass);
 
+	/** Push an existing widget instance onto a layer (for pooled / cached reuse). */
+	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
+	UUserWidget* PushWidget(EUILayer Layer, UUserWidget* Widget);
+
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	bool PopFromLayer(EUILayer Layer);
 

@@ -42,10 +42,16 @@ Plugins/UIFramework/
 │   │   ├── UIFrameworkCore.Build.cs
 │   │   ├── Public/
 │   │   └── Private/
-│   ├── UIFrameworkWidgets/       # Runtime, 依赖 UMG/CommonUI (控件基类 + Root)
+│   ├── UIFrameworkWidgets/       # Runtime, 依赖 UMG/CommonUI/CommonInput/MVVM
 │   │   ├── UIFrameworkWidgets.Build.cs
-│   │   ├── Public/
-│   │   └── Private/
+│   │   ├── Public/  (Private/ 镜像同结构)
+│   │   │   ├── Layers/        # UIRootWidget, UILayerSubsystem
+│   │   │   ├── Config/        # UISettings, UIWidgetRegistry (配置 schema, app 填值)
+│   │   │   ├── Management/    # UIManagerSubsystem, UIWidgetCache (运行时编排)
+│   │   │   ├── ViewModels/    # UIViewModelBase, UIViewModelSupport, UIViewModelWidgetBase
+│   │   │   ├── Pool/          # UIWidgetPool, UIPoolableWidget
+│   │   │   ├── Styles/        # UITextStyle, UIButtonStyle, UIPanelStyle, UITheme
+│   │   │   └── Widgets/       # 控件: Text/Button/Dialog/List/ActivatableScreen/Typewriter
 │   └── UIFrameworkEditor/        # Editor (可视化工具, 可选)
 │       ├── UIFrameworkEditor.Build.cs
 │       ├── Public/
@@ -132,6 +138,55 @@ PopFromLayer(ELayer Layer)
 PopAll(ELayer Layer)
 HandleBackAction()          // 返回键：顶层栈 pop
 ```
+
+### 运行时架构（已实现）
+
+职责拆两层 subsystem，避免「管层的东西又管业务开关」：
+
+```
+调用方
+  ├─ 日常按 tag 开关   → UUIManagerSubsystem::OpenUI(Tag) / CloseUI(Tag)   [策略]
+  └─ 手推特定 class    → UUILayerSubsystem::PushToLayer(Layer, Class)      [机制]
+                              ↓
+                          UUIRootWidget (层容器 + 每层栈)
+```
+
+| 类 | 层次 | 职责 | 位置 |
+|----|------|------|------|
+| `EUILayer` | 类型 | 层枚举（纯 enum，无 UMG） | **UIFrameworkCore** |
+| `UUILayerSubsystem` | 机制 | Root 生命周期 + push/pop/remove/back | UIFrameworkWidgets |
+| `UUIManagerSubsystem` | 策略 | 查注册表 + 软加载 + tag 开关 + 追踪 | UIFrameworkWidgets |
+| `UUIRootWidget` | 表现 | 各层容器 + `TMap<层,栈>` | UIFrameworkWidgets |
+
+- **EUILayer 在 Core**：纯枚举下沉，Core 的事件总线/VM 可引用层而不反依赖 Widgets。依赖单向 `Widgets → Core`
+- **Layer=机制**：不认 GameplayTag/注册表/设置，只干搬控件进出层。可单独复用
+- **Manager=策略**：`OpenUI(Tag)` 查 `UUIWidgetRegistry`（tag→{class, layer, bAllowMultiple}）→ 软加载 → `EnsureRoot`（首帧按 `UUISettings::DefaultRootClass` 懒建 Root，避开 viewport 时机坑）→ 委托 Layer push。换策略（过渡动画/权限）不碰机制
+
+配置驱动（换项目只改配置，零硬编码 class）：
+- `UUISettings`（DeveloperSettings，项目设置 > Game > UI Framework）：`DefaultRootClass` + `Registry`
+- `UUIWidgetRegistry`（DataAsset）：`TMap<GameplayTag, FUIWidgetEntry>`
+
+> ⚠️ **遗留一致性点**：`UUIDialogBase::Close()` 直接调 `Layer->PopFromLayer(Modal)`。若该 Dialog 是经 `Manager::OpenUI` 开的（被追踪），自 pop 后 Manager 的 OpenWidgets 会留脏项。待修：Dialog Close 走 `Manager::CloseUI`，或 Manager 监听控件移除事件清理。
+
+### CommonUI 选择性接入（手柄/主机支持）
+
+框架**保留自造层栈**（UUIRootWidget + TMap），但为手柄导航/输入路由/返回键**选择性借用 CommonUI**——不使用其 ActivatableWidgetStack。
+
+关键：CommonUI 的输入能力来自 **Action Router**，它追踪的是**激活的 `UCommonActivatableWidget`**，与是否用 Stack widget 无关。
+
+```
+屏基类:  UUIActivatableScreenBase : UCommonActivatableWidget   ← 激活/返回/焦点/输入配置
+层容器:  UUIRootWidget 的 TMap 栈（不变）                       ← push/pop 时调 Activate/Deactivate
+Action Router (CommonUI 自动, 每 LocalPlayer 一个):            ← 追激活的屏 → 手柄导航 + 输入路由
+```
+
+- `PushToLayer`：盖住旧顶前 `DeactivateWidget`，新屏 `ActivateWidget`（非屏则 `SetFocus`）
+- `PopFromLayer`：弹顶后重新 `ActivateWidget` 新顶
+- 屏用**继承自 CommonActivatable** 的 `DesiredFocusWidget`（WBP 里同名绑定，手柄焦点入口）+ 覆盖 `GetDesiredInputConfig`（输入模式 Menu/Game/All）
+- **叶子控件**（金币/血条）用 `UUIViewModelWidgetBase`（普通 UUserWidget），不激活；**屏**用 `UUIActivatableScreenBase`。VM 注入逻辑经 `UIFrameworkVM::Inject` 共享，不随基类重复
+- 未动：Manager / Registry / 样式 / 事件总线 / 池 / 层栈结构
+
+> 返回键：绑 Enhanced Input → `Manager/Layer HandleBackAction`（弹顶层栈）。屏可在 CommonUI 侧拦截（`bIsBackHandler`）。二者择一，避免双重处理。
 
 ### 为什么不用纯 ZOrder 手调
 
@@ -229,13 +284,29 @@ Build.cs 无项目耦合，目标项目启用插件后直接编译过。
 ## 10. 待实现清单
 
 - [x] `.uplugin` + 3 个 Build.cs + 各模块入口 cpp
-- [x] `UUIRootWidget` C++ 基类（层引用 + push/pop + 返回处理）
-- [x] `UUILayerSubsystem`（自造方案，单 viewport；分屏可升 LocalPlayerSubsystem）
+- [x] `EUILayer` 层枚举下沉 Core（UILayerTypes.h）
+- [x] `UUIEventBusSubsystem`（Core 纯逻辑：tag 频道 pub/sub，UI↔逻辑解耦）
+- [x] `UUIRootWidget` C++ 基类（层引用 + push/pop/remove + 返回处理）
+- [x] `UUILayerSubsystem`（纯机制；单 viewport，分屏可升 LocalPlayerSubsystem）
+- [x] `UUIManagerSubsystem`（策略：OpenUI/CloseUI 查表 + 软加载 + EnsureRoot）
+- [x] `UUISettings`（DeveloperSettings）+ `UUIWidgetRegistry`（tag→entry）
 - [x] 样式 DataAsset 类（Button/Text/Panel/Theme）
 - [x] 控件基类 Text / Button（读样式 + PreConstruct 预览）
 - [x] 控件基类 Dialog（推 Modal 层 + OnConfirmed/OnCancelled + 自动弹栈）
-- [ ] 控件基类 List（用 UListView 虚拟化）
+- [x] 编译验证 3 模块
+- [x] 控件基类 List（UListView 虚拟化 + UUIListEntryBase 条目接口）
+- [x] `UUIViewModelBase`（MVVM 逻辑层，继承 UMVVMViewModelBase + 生命周期钩子）
+- [x] `UUIViewModelWidgetBase`（叶子控件：持 VM 类，自动建/注入/Initialize/Shutdown）
+- [x] `UUIActivatableScreenBase`（屏基类：CommonActivatable + VM + 焦点 + 输入模式）
+- [x] `UUIWidgetPool`（控件复用，按类分桶 + Prewarm + TTL 回收）
+- [x] `UUIWidgetCache`（独立缓存类：类缓存 + 实例缓存 + 生命周期管理）
+- [x] 缓存策略（`EUICachePolicy`：Transient / CacheClass / KeepUntilIdle(TTL) / KeepUntilSceneChange / KeepPersistent）
+- [x] `OpenUIAsync`（StreamableManager 异步流式加载 + 回调）
 - [ ] WBP 配对（WBP_Root / WBP_Text / WBP_Button / WBP_Dialog）
 - [ ] 默认主题 DA_Theme_Default + 样式实例
 - [ ] 示例场景
-- [ ] 控件池（仅高频增删场景需要；UListView 覆盖则免）
+- [ ] Dialog Close 与 Manager 追踪一致性（见 §4 遗留点）
+
+> 放置纠正：`UUIViewModelBase` 与 `UUIWidgetPool` 均落 **Widgets** 而非 Core。
+> VM 继承 `UMVVMViewModelBase`（模块 ModelViewViewModel 依赖 UMG）；池的是
+> `UUserWidget`（UMG 类型）。放 Core 会破坏「Core 无 UMG」铁律。模块归属≠逻辑耦合。

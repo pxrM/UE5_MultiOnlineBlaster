@@ -76,6 +76,16 @@ UUserWidget* UUILayerSubsystem::PushToLayer(EUILayer Layer, TSubclassOf<UUserWid
 	return Root->PushToLayer(Layer, WidgetClass);
 }
 
+UUserWidget* UUILayerSubsystem::PushWidget(EUILayer Layer, UUserWidget* Widget)
+{
+	if (!Root)
+	{
+		UE_LOG(LogUIFramework, Warning, TEXT("PushWidget: no root. Initialize the root first."));
+		return nullptr;
+	}
+	return Root->PushWidget(Layer, Widget);
+}
+
 bool UUILayerSubsystem::PopFromLayer(EUILayer Layer)
 {
 	return Root ? Root->PopFromLayer(Layer) : false;

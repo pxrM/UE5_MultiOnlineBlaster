@@ -3,6 +3,28 @@
 #include "UIRootWidget.h"
 #include "UIFrameworkCoreModule.h"
 #include "Components/PanelWidget.h"
+#include "CommonActivatableWidget.h"
+
+namespace
+{
+	/** Activate a widget if it is a CommonUI activatable screen (so the action router tracks it). */
+	void ActivateIfScreen(UUserWidget* Widget)
+	{
+		if (UCommonActivatableWidget* Screen = Cast<UCommonActivatableWidget>(Widget))
+		{
+			Screen->ActivateWidget();
+		}
+	}
+
+	/** Deactivate a widget if it is a CommonUI activatable screen. */
+	void DeactivateIfScreen(UUserWidget* Widget)
+	{
+		if (UCommonActivatableWidget* Screen = Cast<UCommonActivatableWidget>(Widget))
+		{
+			Screen->DeactivateWidget();
+		}
+	}
+}
 
 void UUIRootWidget::NativeOnInitialized()
 {
@@ -50,13 +72,46 @@ UUserWidget* UUIRootWidget::PushToLayer(EUILayer Layer, TSubclassOf<UUserWidget>
 		return nullptr;
 	}
 
-	Container->AddChild(NewWidget);
-	LayerStacks.FindOrAdd(Layer).Add(NewWidget);
+	return PushWidget(Layer, NewWidget);
+}
 
-	// New page owns focus so gamepad / keyboard navigation lands on it.
-	NewWidget->SetFocus();
+UUserWidget* UUIRootWidget::PushWidget(EUILayer Layer, UUserWidget* Widget)
+{
+	if (!Widget)
+	{
+		UE_LOG(LogUIFramework, Warning, TEXT("PushWidget: null widget."));
+		return nullptr;
+	}
 
-	return NewWidget;
+	UPanelWidget* Container = GetLayerContainer(Layer);
+	if (!Container)
+	{
+		UE_LOG(LogUIFramework, Warning, TEXT("PushWidget: layer %d has no bound container."), static_cast<int32>(Layer));
+		return nullptr;
+	}
+
+	// Deactivate the screen currently on top of this layer before covering it.
+	TArray<TObjectPtr<UUserWidget>>& Stack = LayerStacks.FindOrAdd(Layer);
+	if (Stack.Num() > 0)
+	{
+		DeactivateIfScreen(Stack.Last());
+	}
+
+	Container->AddChild(Widget);
+	Stack.Add(Widget);
+
+	// Activate if it's a CommonUI screen (drives focus/input via the action router);
+	// otherwise focus it directly so gamepad / keyboard navigation lands on it.
+	if (Cast<UCommonActivatableWidget>(Widget))
+	{
+		ActivateIfScreen(Widget);
+	}
+	else
+	{
+		Widget->SetFocus();
+	}
+
+	return Widget;
 }
 
 bool UUIRootWidget::PopFromLayer(EUILayer Layer)
@@ -72,15 +127,23 @@ bool UUIRootWidget::PopFromLayer(EUILayer Layer)
 
 	if (Top)
 	{
+		DeactivateIfScreen(Top);
 		Top->RemoveFromParent();
 	}
 
-	// Return focus to the new top of this layer, if any.
+	// Re-activate / focus the newly exposed top of this layer, if any.
 	if (Stack->Num() > 0)
 	{
 		if (UUserWidget* NewTop = Stack->Last())
 		{
-			NewTop->SetFocus();
+			if (Cast<UCommonActivatableWidget>(NewTop))
+			{
+				ActivateIfScreen(NewTop);
+			}
+			else
+			{
+				NewTop->SetFocus();
+			}
 		}
 	}
 
