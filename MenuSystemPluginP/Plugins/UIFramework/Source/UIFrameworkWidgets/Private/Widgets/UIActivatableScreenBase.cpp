@@ -6,24 +6,27 @@
 #include "UIFrameworkCoreModule.h"
 #include "Components/Widget.h"
 
-void UUIActivatableScreenBase::NativeOnInitialized()
+void UUIActivatableScreenBase::NativeConstruct()
 {
-	Super::NativeOnInitialized();
+	Super::NativeConstruct();
 
 	if (!ViewModelClass)
 	{
 		return;
 	}
 
-	ViewModel = CreateViewModel();
+	if (!ViewModel)
+	{
+		ViewModel = CreateViewModel();
+	}
 	if (!ViewModel)
 	{
 		UE_LOG(LogUIFramework, Warning, TEXT("UIActivatableScreen: CreateViewModel returned null."));
 		return;
 	}
 
-	ViewModel->Initialize();
 	InjectViewModel(ViewModel);
+	ViewModel->Initialize();
 }
 
 void UUIActivatableScreenBase::NativeDestruct()
@@ -31,7 +34,6 @@ void UUIActivatableScreenBase::NativeDestruct()
 	if (ViewModel)
 	{
 		ViewModel->Shutdown();
-		ViewModel = nullptr;
 	}
 	Super::NativeDestruct();
 }

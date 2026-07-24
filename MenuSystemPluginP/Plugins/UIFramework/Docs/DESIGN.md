@@ -91,7 +91,7 @@ Plugins/UIFramework/
 
 UI 分层，别都堆一个 Canvas 手调 ZOrder。
 
-- **层 (Layer)**：固定顺序，决定谁盖谁。HUD 底，Menu 中，Popup/Modal 顶
+- **层 (Layer)**：固定顺序，决定谁盖谁。PersistentSystem 最底，Tips 最高
 - **栈 (Stack)**：层内动态 push/pop，管页面前后 + 激活/返回/焦点
 
 层定 Z 顺序（固定），栈定层内先后（动态）。
@@ -103,10 +103,15 @@ UI 分层，别都堆一个 Canvas 手调 ZOrder。
 ```
 WBP_Root (继承 C++ 基类 UUIRootWidget)
 └── Overlay (根容器, 撑满屏)
-    ├── Layer_GameHUD    ← 层0  底  血条/准星/小地图
-    ├── Layer_Menu       ← 层1      菜单/背包/设置
-    ├── Layer_Popup      ← 层2      提示/Toast
-    └── Layer_Modal      ← 层3  顶  确认框/加载遮罩
+    ├── Layer_PersistentSystem  ← 层0  系统常驻
+    ├── Layer_Loading           ← 层1  加载
+    ├── Layer_Background        ← 层2  背景
+    ├── Layer_Dock              ← 层3  停靠 UI
+    ├── Layer_FullWindow        ← 层4  全屏窗口
+    ├── Layer_PopupWindow       ← 层5  弹窗
+    ├── Layer_Guide             ← 层6  引导
+    ├── Layer_Notification      ← 层7  通知
+    └── Layer_Tips              ← 层8  顶层提示
 ```
 
 设计要点：
@@ -115,18 +120,24 @@ WBP_Root (继承 C++ 基类 UUIRootWidget)
 - **层内摆控件用 Canvas**：同层内 tooltip 盖按钮等，用 CanvasPanelSlot ZOrder 微调
 - **每层是一个栈容器**：页面不直接 AddChild，经栈逻辑 push/pop，自动管激活/返回/焦点
   - 上 CommonUI：每层用 `CommonActivatableWidgetStack`（自带 push/pop/焦点/返回）
-  - 自造轻量：每层 Canvas + Subsystem 管 `TMap<层, 栈>`
+  - 当前实现：各层 Panel + `UUILayerStack` 单数组统一管理
 
 ### 层枚举
 
 ```
-UI.Layer.GameHUD
-UI.Layer.Menu
-UI.Layer.Popup
-UI.Layer.Modal
+PersistentSystem
+Loading
+Background
+Dock
+FullWindow
+PopupWindow
+Guide
+Notification
+Tips
+Max (仅哨兵，不可入栈)
 ```
 
-自造用 UENUM，CommonUI 方案用 GameplayTag。层值留间隔（0/10/20/30）好插新层。
+使用 `EUILayer` UENUM，枚举声明顺序就是从低到高的绘制和栈优先级。
 
 ### C++ 基类接口（UUIRootWidget）
 
@@ -156,31 +167,75 @@ HandleBackAction()          // 返回键：顶层栈 pop
 | `EUILayer` | 类型 | 层枚举（纯 enum，无 UMG） | **UIFrameworkCore** |
 | `UUILayerSubsystem` | 机制 | Root 生命周期 + push/pop/remove/back | UIFrameworkWidgets |
 | `UUIManagerSubsystem` | 策略 | 查注册表 + 软加载 + tag 开关 + 追踪 | UIFrameworkWidgets |
-| `UUIRootWidget` | 表现 | 各层容器 + `TMap<层,栈>` | UIFrameworkWidgets |
+| `UUIRootWidget` | 表现 | 各层容器 + 转发到 `UUILayerStack` 单栈 | UIFrameworkWidgets |
 
 - **EUILayer 在 Core**：纯枚举下沉，Core 的事件总线/VM 可引用层而不反依赖 Widgets。依赖单向 `Widgets → Core`
 - **Layer=机制**：不认 GameplayTag/注册表/设置，只干搬控件进出层。可单独复用
 - **Manager=策略**：`OpenUI(Tag)` 查 `UUIWidgetRegistry`（tag→{class, layer, bAllowMultiple}）→ 软加载 → `EnsureRoot`（首帧按 `UUISettings::DefaultRootClass` 懒建 Root，避开 viewport 时机坑）→ 委托 Layer push。换策略（过渡动画/权限）不碰机制
 
+运行时生命周期只有一个出口：`UUILayerStack` 在 Pop、Back、Remove、Clear、Root teardown
+时统一广播移除事件，经 Root 和 LayerSubsystem 转发给 Manager。Manager 在该回调中清理打开记录并
+执行缓存策略，因此业务即使从低层触发返回，也不会留下脏记录。重复 `OpenUIAsync` 会共享同一
+加载句柄；`CancelOpenUI`、`CloseUI`（尚未打开时）和 `CloseAllUI` 都可取消待完成的加载。
+
+### Managed Widget 生命周期协议
+
+通过 `UUIManagerSubsystem` 打开的 Widget 若实现 `IUIManagedWidget`，会收到统一协议：
+
+```text
+新实例: Opening -> Opened -> Activated
+缓存实例: RestoredFromCache -> Opening -> Opened -> Activated
+被新页面盖住: Deactivated
+重新成为栈顶: Activated
+关闭: Closing -> Deactivated(若当前激活) -> Closed
+关闭完成后: Manager 按 CachePolicy 决定缓存或释放
+```
+
+- `FUIOpenContext`：`Key / Layer / Payload / bRestoredFromCache`
+- `FUICloseContext`：`Key / Layer / Reason / Result / bWillBeCached`
+- `EUIWidgetCloseReason`：区分 Requested、Back、LayerPop、LayerClear、RootTeardown、SceneChange、SubsystemShutdown
+- `OpenUI(Tag, Payload)` 和 `CloseUI(Tag, Result)` 负责参数与结果传递
+- 异步打开会强引用 Payload 直到完成或取消；同 Tag 单实例的并发请求共享首个请求的 Payload
+- `UUIActivatableScreenBase` 和 `UUIViewModelWidgetBase` 默认实现接口，蓝图子类可直接 Override
+
+Manager 使用 deferred stack refresh，保证 Widget 已 Construct 且 `Opened` 完成后才触发首次
+`Activated`。关闭事件同样由栈的 Removing/ActivationChanged/Removed 三阶段保证顺序。
+
 配置驱动（换项目只改配置，零硬编码 class）：
 - `UUISettings`（DeveloperSettings，项目设置 > Game > UI Framework）：`DefaultRootClass` + `Registry`
 - `UUIWidgetRegistry`（DataAsset）：`TMap<GameplayTag, FUIWidgetEntry>`
 
-> ⚠️ **遗留一致性点**：`UUIDialogBase::Close()` 直接调 `Layer->PopFromLayer(Modal)`。若该 Dialog 是经 `Manager::OpenUI` 开的（被追踪），自 pop 后 Manager 的 OpenWidgets 会留脏项。待修：Dialog Close 走 `Manager::CloseUI`，或 Manager 监听控件移除事件清理。
+`UUIDialogBase::Close()` 会优先调用 `UUIManagerSubsystem::CloseWidget(this)`，保证
+Manager 的打开记录和实例缓存同步；若 Dialog 是直接通过 Layer 机制推入，则回退为
+`RemoveWidget(PopupWindow, this)`，避免误弹出后来压在它上面的其他弹窗。
+
+### 栈管理类 UUILayerStack + 单栈可见性（跨层遮挡）
+
+栈逻辑从 `UUIRootWidget` 抽出独立类，按 Lua UIStack 的**单数组 + CheckShow 两阶段**实现。
+
+- **职责拆分**：`UUIRootWidget` = 视图（持 9 个层容器 + 转发）；`UUILayerStack` = 帧序 + 可见性 + 激活策略。延续 Layer/Manager/Cache 的单一职责
+- **单数组** `Frames`（bottom→top），`EUILayer` 当优先级 tier。`FindInsertIndex` 按 tier 插入、同层 FILO（等价 UIStack 的 `CheckPushUPAble` 优先级比较）。不再 `TMap<层,栈>`
+- **帧** `FUIStackFrame { Widget, Layer }`
+- **CheckShow + 覆盖矩阵**（UIStack 6.3 + 4.1）：每帧检查其上方所有**可见**帧，若某上方帧的层被配置为可覆盖本帧的层 → 隐藏本帧。**跨层生效**
+- **覆盖矩阵** `UUICoverageConfig`（DataAsset，Config/）：`Rules[]` 每条 `{CoveredLayer, CoveringLayer}`，即 UIStack 的 `UIStackFrameTypeCoveredableCfg[被覆盖][覆盖]`。可配、集中。项目设置 `CoverageConfig` 指定；未设=不跨层隐藏
+  - 例：`{Covered=Dock, Covering=FullWindow}` → 全屏窗口隐藏停靠 UI；未配置的层组合保持同时可见
+- **返回键** = 弹全栈最顶帧（UIStack 单栈语义），不再「按最高层弹」
+
+> 来源：参考 Lua UIStack（优先级单栈 + 覆盖矩阵 + CheckShow + 拍脸 FIFO + 溢出驱逐）。采用其单栈 + CheckShow + **可配覆盖矩阵**（层×层）；**未采用**拍脸 FIFO（无需求）、溢出驱逐（UUIWidgetCache 已管生命周期）。层的固定 Z 仍由 WBP 容器保证，Stack 只决定该序内的可见性与激活。
 
 ### CommonUI 选择性接入（手柄/主机支持）
 
-框架**保留自造层栈**（UUIRootWidget + TMap），但为手柄导航/输入路由/返回键**选择性借用 CommonUI**——不使用其 ActivatableWidgetStack。
+框架**保留自造层栈**（UUIRootWidget + UUILayerStack 单数组），但为手柄导航/输入路由/返回键**选择性借用 CommonUI**——不使用其 ActivatableWidgetStack。
 
 关键：CommonUI 的输入能力来自 **Action Router**，它追踪的是**激活的 `UCommonActivatableWidget`**，与是否用 Stack widget 无关。
 
 ```
 屏基类:  UUIActivatableScreenBase : UCommonActivatableWidget   ← 激活/返回/焦点/输入配置
-层容器:  UUIRootWidget 的 TMap 栈（不变）                       ← push/pop 时调 Activate/Deactivate
+层容器:  UUIRootWidget + UUILayerStack 单栈                     ← push/pop 时调 Activate/Deactivate
 Action Router (CommonUI 自动, 每 LocalPlayer 一个):            ← 追激活的屏 → 手柄导航 + 输入路由
 ```
 
-- `PushToLayer`：盖住旧顶前 `DeactivateWidget`，新屏 `ActivateWidget`（非屏则 `SetFocus`）
+- `PushToLayer`：盖住旧顶前 `DeactivateWidget`，新屏 `ActivateWidget`；普通 Widget 仅在存在 OwningPlayer 时设置焦点
 - `PopFromLayer`：弹顶后重新 `ActivateWidget` 新顶
 - 屏用**继承自 CommonActivatable** 的 `DesiredFocusWidget`（WBP 里同名绑定，手柄焦点入口）+ 覆盖 `GetDesiredInputConfig`（输入模式 Menu/Game/All）
 - **叶子控件**（金币/血条）用 `UUIViewModelWidgetBase`（普通 UUserWidget），不激活；**屏**用 `UUIActivatableScreenBase`。VM 注入逻辑经 `UIFrameworkVM::Inject` 共享，不随基类重复
@@ -302,10 +357,16 @@ Build.cs 无项目耦合，目标项目启用插件后直接编译过。
 - [x] `UUIWidgetCache`（独立缓存类：类缓存 + 实例缓存 + 生命周期管理）
 - [x] 缓存策略（`EUICachePolicy`：Transient / CacheClass / KeepUntilIdle(TTL) / KeepUntilSceneChange / KeepPersistent）
 - [x] `OpenUIAsync`（StreamableManager 异步流式加载 + 回调）
+- [x] 异步请求按 Tag 合并、取消与 Deinitialize 清理
+- [x] Layer → Manager 统一移除通知（Pop / Back / Clear / teardown）
+- [x] 多实例打开追踪 + 多实例关闭缓存
+- [x] 缓存 Widget 的 ViewModel 重建生命周期
+- [x] Core Automation Tests（CoverageConfig / LayerStack / WidgetCache）
+- [x] `IUIManagedWidget` 生命周期协议 + Open Payload / Close Result
 - [ ] WBP 配对（WBP_Root / WBP_Text / WBP_Button / WBP_Dialog）
 - [ ] 默认主题 DA_Theme_Default + 样式实例
 - [ ] 示例场景
-- [ ] Dialog Close 与 Manager 追踪一致性（见 §4 遗留点）
+- [x] Dialog Close 与 Manager 追踪一致性（见 §4）
 
 > 放置纠正：`UUIViewModelBase` 与 `UUIWidgetPool` 均落 **Widgets** 而非 Core。
 > VM 继承 `UMVVMViewModelBase`（模块 ModelViewViewModel 依赖 UMG）；池的是

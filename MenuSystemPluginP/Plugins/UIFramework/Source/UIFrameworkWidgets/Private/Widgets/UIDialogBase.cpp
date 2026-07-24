@@ -2,6 +2,7 @@
 
 #include "Widgets/UIDialogBase.h"
 #include "Widgets/UIButtonBase.h"
+#include "UIManagerSubsystem.h"
 #include "UILayerSubsystem.h"
 #include "Components/TextBlock.h"
 
@@ -47,10 +48,22 @@ void UUIDialogBase::HandleCancel()
 
 void UUIDialogBase::Close()
 {
+	if (UUIManagerSubsystem* Manager = UUIManagerSubsystem::Get(this))
+	{
+		if (Manager->CloseWidget(this))
+		{
+			return;
+		}
+	}
+
 	if (UUILayerSubsystem* Layers = UUILayerSubsystem::Get(this))
 	{
-		// Dialog lives on top of the Modal layer, so popping it removes this dialog.
-		Layers->PopFromLayer(EUILayer::Modal);
+		// Direct layer usage is untracked; remove this exact instance instead of
+		// accidentally popping a different modal that was pushed above it.
+		if (!Layers->RemoveWidget(EUILayer::PopupWindow, this))
+		{
+			RemoveFromParent();
+		}
 	}
 	else
 	{

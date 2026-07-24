@@ -6,6 +6,7 @@
 #include "CommonActivatableWidget.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Templates/SubclassOf.h"
+#include "Management/UIManagedWidget.h"
 #include "UIActivatableScreenBase.generated.h"
 
 class UWidget;
@@ -17,15 +18,15 @@ class UUIViewModelBase;
  * WITHOUT using CommonUI's activatable stack. The framework's own UUIRootWidget keeps
  * the layer stacks and activates/deactivates these screens on push/pop.
  *
- * Also hosts a view model (same lifecycle as UUIViewModelWidgetBase, shared via
- * UIFrameworkVM). Use this for screens; use UUIViewModelWidgetBase for leaf widgets
- * that don't need activation. See Docs/DESIGN.md sections 2 & 4.
+ * Also hosts a view model (same reconstruct-safe lifecycle as
+ * UUIViewModelWidgetBase, shared via UIFrameworkVM). Use this for screens; use
+ * UUIViewModelWidgetBase for leaf widgets that don't need activation.
  *
  * WBP pairing: reparent the screen WBP to a subclass; set ViewModelClass, optionally
  * bind DesiredFocusWidget, and choose InputMode.
  */
 UCLASS(Abstract, Blueprintable)
-class UIFRAMEWORKWIDGETS_API UUIActivatableScreenBase : public UCommonActivatableWidget
+class UIFRAMEWORKWIDGETS_API UUIActivatableScreenBase : public UCommonActivatableWidget, public IUIManagedWidget
 {
 	GENERATED_BODY()
 
@@ -35,7 +36,7 @@ public:
 	UUIViewModelBase* GetViewModel() const { return ViewModel; }
 
 protected:
-	virtual void NativeOnInitialized() override;
+	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
 	// CommonUI: input routing while active. Focus target uses the inherited

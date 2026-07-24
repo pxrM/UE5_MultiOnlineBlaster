@@ -5,24 +5,27 @@
 #include "UIViewModelSupport.h"
 #include "UIFrameworkCoreModule.h"
 
-void UUIViewModelWidgetBase::NativeOnInitialized()
+void UUIViewModelWidgetBase::NativeConstruct()
 {
-	Super::NativeOnInitialized();
+	Super::NativeConstruct();
 
 	if (!ViewModelClass)
 	{
 		return;
 	}
 
-	ViewModel = CreateViewModel();
+	if (!ViewModel)
+	{
+		ViewModel = CreateViewModel();
+	}
 	if (!ViewModel)
 	{
 		UE_LOG(LogUIFramework, Warning, TEXT("UIViewModelWidget: CreateViewModel returned null."));
 		return;
 	}
 
-	ViewModel->Initialize();
 	InjectViewModel(ViewModel);
+	ViewModel->Initialize();
 }
 
 void UUIViewModelWidgetBase::NativeDestruct()
@@ -30,7 +33,6 @@ void UUIViewModelWidgetBase::NativeDestruct()
 	if (ViewModel)
 	{
 		ViewModel->Shutdown();
-		ViewModel = nullptr;
 	}
 	Super::NativeDestruct();
 }

@@ -9,6 +9,11 @@
 
 class APlayerController;
 
+/** Fired for every widget removed through any layer-stack path. */
+DECLARE_MULTICAST_DELEGATE_TwoParams(FUILayerWidgetRemoved, UUserWidget*, EUILayer);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FUILayerWidgetRemoving, UUserWidget*, EUILayer, EUIWidgetCloseReason);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FUILayerWidgetActivationChanged, UUserWidget*, EUILayer, bool);
+
 /**
  * Low-level layer mechanism: owns the single UI root widget and forwards push/pop
  * to its layer stacks. Pure mechanism — it knows nothing about the widget registry,
@@ -24,13 +29,19 @@ class UIFRAMEWORKWIDGETS_API UUILayerSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public:
+	/** Native lifecycle event consumed by the high-level manager. */
+	FUILayerWidgetRemoved& OnWidgetRemoved() { return WidgetRemovedEvent; }
+	FUILayerWidgetRemoving& OnWidgetRemoving() { return WidgetRemovingEvent; }
+	FUILayerWidgetActivationChanged& OnWidgetActivationChanged() { return WidgetActivationChangedEvent; }
+
 	/** Convenience accessor from any object with a world. Returns nullptr if unavailable. */
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer", meta = (WorldContext = "WorldContextObject"))
 	static UUILayerSubsystem* Get(const UObject* WorldContextObject);
 
 	/**
 	 * Create the root widget, add it to the viewport, and keep it. Tears down any
-	 * existing root first. Returns the created root (nullptr on failure).
+	 * existing root first. Pass the local player controller when CommonUI input
+	 * routing is required. Returns the created root (nullptr on failure).
 	 */
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	UUIRootWidget* InitializeRoot(TSubclassOf<UUIRootWidget> RootClass, APlayerController* OwningPlayer = nullptr, int32 ZOrder = 0);
@@ -52,6 +63,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	UUserWidget* PushWidget(EUILayer Layer, UUserWidget* Widget);
 
+	UUserWidget* PushWidgetDeferred(EUILayer Layer, UUserWidget* Widget, bool bBlocksInput = true, bool bHandlesBack = true);
+	void RefreshStack();
+
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	bool PopFromLayer(EUILayer Layer);
 
@@ -61,6 +75,9 @@ public:
 	/** Remove a specific widget from a layer (not necessarily the top). Returns true if found. */
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	bool RemoveWidget(EUILayer Layer, UUserWidget* Widget);
+	bool RemoveWidgetWithReason(EUILayer Layer, UUserWidget* Widget, EUIWidgetCloseReason Reason);
+
+	bool IsWidgetActive(const UUserWidget* Widget) const;
 
 	UFUNCTION(BlueprintCallable, Category = "UI|Layer")
 	bool HandleBackAction();
@@ -69,6 +86,15 @@ public:
 	virtual void Deinitialize() override;
 
 private:
+	void HandleRootWidgetRemoved(UUserWidget* Widget, EUILayer Layer);
+	void HandleRootWidgetRemoving(UUserWidget* Widget, EUILayer Layer, EUIWidgetCloseReason Reason);
+	void HandleRootWidgetActivationChanged(UUserWidget* Widget, EUILayer Layer, bool bIsActive);
+	void TeardownRootWithReason(EUIWidgetCloseReason Reason);
+
 	UPROPERTY()
 	TObjectPtr<UUIRootWidget> Root;
+
+	FUILayerWidgetRemoved WidgetRemovedEvent;
+	FUILayerWidgetRemoving WidgetRemovingEvent;
+	FUILayerWidgetActivationChanged WidgetActivationChangedEvent;
 };

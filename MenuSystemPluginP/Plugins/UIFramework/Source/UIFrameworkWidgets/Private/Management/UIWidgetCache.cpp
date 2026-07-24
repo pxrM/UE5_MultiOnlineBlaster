@@ -3,7 +3,6 @@
 #include "UIWidgetCache.h"
 #include "UIFrameworkCoreModule.h"
 #include "Blueprint/UserWidget.h"
-#include "UObject/UObjectGlobals.h"
 
 bool UUIWidgetCache::CachesClass(EUICachePolicy Policy)
 {
@@ -19,12 +18,15 @@ bool UUIWidgetCache::CachesInstance(EUICachePolicy Policy)
 
 void UUIWidgetCache::Initialize()
 {
+	if (TickHandle.IsValid())
+	{
+		return;
+	}
+
 	// Real-time ticker (world-independent) so idle reaping survives level loads.
 	TickHandle = FTSTicker::GetCoreTicker().AddTicker(
 		FTickerDelegate::CreateUObject(this, &UUIWidgetCache::Tick), ReapInterval);
 
-	MapChangedHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(
-		this, &UUIWidgetCache::HandleMapChanged);
 }
 
 void UUIWidgetCache::Shutdown()
@@ -34,38 +36,62 @@ void UUIWidgetCache::Shutdown()
 		FTSTicker::GetCoreTicker().RemoveTicker(TickHandle);
 		TickHandle.Reset();
 	}
-	if (MapChangedHandle.IsValid())
-	{
-		FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(MapChangedHandle);
-		MapChangedHandle.Reset();
-	}
 	ClearAll();
 }
 
 TSubclassOf<UUserWidget> UUIWidgetCache::ResolveClass(FGameplayTag Key, const FUIWidgetEntry& Entry)
 {
+	const FSoftObjectPath RequestedPath = Entry.WidgetClass.ToSoftObjectPath();
 	if (TSubclassOf<UUserWidget>* Cached = Classes.Find(Key))
 	{
-		return *Cached;
+		if (CachesClass(Entry.CachePolicy))
+		{
+			if (const FSoftObjectPath* CachedPath = ClassPaths.Find(Key); CachedPath && *CachedPath == RequestedPath)
+			{
+				return *Cached;
+			}
+		}
+		Classes.Remove(Key);
+		ClassPaths.Remove(Key);
 	}
 
 	TSubclassOf<UUserWidget> WidgetClass = Entry.WidgetClass.LoadSynchronous();
 	if (WidgetClass && CachesClass(Entry.CachePolicy))
 	{
 		Classes.Add(Key, WidgetClass);
+		ClassPaths.Add(Key, RequestedPath);
 	}
 	return WidgetClass;
 }
 
-UUserWidget* UUIWidgetCache::TakeInstance(FGameplayTag Key)
+UUserWidget* UUIWidgetCache::TakeInstance(FGameplayTag Key, const FUIWidgetEntry& Entry)
 {
-	if (FUICachedInstance* Cached = ClosedInstances.Find(Key))
+	FUICachedInstanceList* List = ClosedInstances.Find(Key);
+	if (!List)
 	{
-		UUserWidget* Widget = Cached->Widget;
-		ClosedInstances.Remove(Key);
-		return Widget;
+		return nullptr;
 	}
-	return nullptr;
+
+	UUserWidget* Widget = nullptr;
+	const FSoftObjectPath RequestedPath = Entry.WidgetClass.ToSoftObjectPath();
+	while (!List->Instances.IsEmpty() && !Widget)
+	{
+		const FUICachedInstance Cached = List->Instances.Pop();
+		if (IsValid(Cached.Widget) && Cached.WidgetClassPath == RequestedPath)
+		{
+			Widget = Cached.Widget;
+		}
+		else
+		{
+			Widget = nullptr;
+		}
+	}
+
+	if (List->Instances.IsEmpty())
+	{
+		ClosedInstances.Remove(Key);
+	}
+	return Widget;
 }
 
 void UUIWidgetCache::ReturnInstance(FGameplayTag Key, UUserWidget* Widget, const FUIWidgetEntry& Entry)
@@ -80,16 +106,41 @@ void UUIWidgetCache::ReturnInstance(FGameplayTag Key, UUserWidget* Widget, const
 
 	FUICachedInstance Cached;
 	Cached.Widget = Widget;
+	Cached.WidgetClassPath = Entry.WidgetClass.ToSoftObjectPath();
 	Cached.Policy = Entry.CachePolicy;
 	Cached.IdleTimeout = Entry.IdleTimeoutSeconds;
 	Cached.ClosedTime = FPlatformTime::Seconds();
-	ClosedInstances.Add(Key, Cached);
+
+	FUICachedInstanceList& List = ClosedInstances.FindOrAdd(Key);
+	List.Instances.RemoveAll(
+		[Widget](const FUICachedInstance& Existing) { return Existing.Widget == Widget; });
+	if (Entry.MaxCachedInstances > 0 && List.Instances.Num() >= Entry.MaxCachedInstances)
+	{
+		// Keep the newest closed instances; the oldest one is least likely to be reused.
+		const int32 RemoveCount = List.Instances.Num() - Entry.MaxCachedInstances + 1;
+		List.Instances.RemoveAt(0, RemoveCount);
+	}
+	List.Instances.Add(MoveTemp(Cached));
 }
 
 void UUIWidgetCache::ClearAll()
 {
 	Classes.Empty();
+	ClassPaths.Empty();
 	ClosedInstances.Empty();
+}
+
+void UUIWidgetCache::Remove(FGameplayTag Key)
+{
+	Classes.Remove(Key);
+	ClassPaths.Remove(Key);
+	ClosedInstances.Remove(Key);
+}
+
+int32 UUIWidgetCache::GetNumInstances(FGameplayTag Key) const
+{
+	const FUICachedInstanceList* List = ClosedInstances.Find(Key);
+	return List ? List->Instances.Num() : 0;
 }
 
 bool UUIWidgetCache::Tick(float /*DeltaTime*/)
@@ -108,27 +159,38 @@ void UUIWidgetCache::ReapIdle()
 	const double Now = FPlatformTime::Seconds();
 	for (auto It = ClosedInstances.CreateIterator(); It; ++It)
 	{
-		const FUICachedInstance& Cached = It.Value();
-		if (!Cached.Widget)
+		TArray<FUICachedInstance>& Instances = It.Value().Instances;
+		for (int32 Index = Instances.Num() - 1; Index >= 0; --Index)
 		{
-			It.RemoveCurrent();
-			continue;
+			const FUICachedInstance& Cached = Instances[Index];
+			if (!IsValid(Cached.Widget)
+				|| (Cached.Policy == EUICachePolicy::KeepUntilIdle
+					&& (Now - Cached.ClosedTime) >= Cached.IdleTimeout))
+			{
+				Instances.RemoveAtSwap(Index);
+			}
 		}
-		if (Cached.Policy == EUICachePolicy::KeepUntilIdle
-			&& (Now - Cached.ClosedTime) >= Cached.IdleTimeout)
+
+		if (Instances.IsEmpty())
 		{
-			// Drop the hard ref; the widget is collected on the next GC.
 			It.RemoveCurrent();
 		}
 	}
 }
 
-void UUIWidgetCache::HandleMapChanged(UWorld* /*World*/)
+void UUIWidgetCache::HandleSceneChange()
 {
 	// A new scene loaded: free everything except session-persistent instances.
 	for (auto It = ClosedInstances.CreateIterator(); It; ++It)
 	{
-		if (It.Value().Policy != EUICachePolicy::KeepPersistent)
+		TArray<FUICachedInstance>& Instances = It.Value().Instances;
+		Instances.RemoveAll(
+			[](const FUICachedInstance& Cached)
+			{
+				return Cached.Policy != EUICachePolicy::KeepPersistent;
+			});
+
+		if (Instances.IsEmpty())
 		{
 			It.RemoveCurrent();
 		}

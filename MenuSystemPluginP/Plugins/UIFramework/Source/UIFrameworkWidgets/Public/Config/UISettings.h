@@ -8,6 +8,7 @@
 
 class UUIRootWidget;
 class UUIWidgetRegistry;
+class UUICoverageConfig;
 
 /**
  * Project-level UI framework config, editable under Project Settings > Game > UI Framework.
@@ -27,6 +28,10 @@ public:
 	/** Registry mapping GameplayTag keys to widget entries. */
 	UPROPERTY(config, EditAnywhere, Category = "UI Framework")
 	TSoftObjectPtr<UUIWidgetRegistry> Registry;
+
+	/** Layer coverage matrix (which layer hides which). If unset, no cross-layer hiding. */
+	UPROPERTY(config, EditAnywhere, Category = "UI Framework")
+	TSoftObjectPtr<UUICoverageConfig> CoverageConfig;
 
 	virtual FName GetCategoryName() const override { return TEXT("Game"); }
 };

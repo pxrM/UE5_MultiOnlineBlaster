@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "xqvVs7caGzc=",
+  "success": true,
+  "projectFilePath": "D:\\M\\UE5_MultiOnlineBlaster\\MenuSystemPluginP\\Plugins\\UnLua\\Source\\UnLuaDefaultParamCollectorUbtPlugin\\UnLuaDefaultParamCollectorUbtPlugin.ubtplugin.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}

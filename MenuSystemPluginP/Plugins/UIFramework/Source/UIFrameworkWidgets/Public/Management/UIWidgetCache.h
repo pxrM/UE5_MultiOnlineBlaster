@@ -6,12 +6,12 @@
 #include "UObject/Object.h"
 #include "Templates/SubclassOf.h"
 #include "GameplayTagContainer.h"
+#include "UObject/SoftObjectPath.h"
 #include "Containers/Ticker.h"
 #include "UIWidgetRegistry.h"
 #include "UIWidgetCache.generated.h"
 
 class UUserWidget;
-class UWorld;
 
 /** A cached, currently-closed widget instance plus the metadata driving its lifetime. */
 USTRUCT()
@@ -23,6 +23,9 @@ struct FUICachedInstance
 	TObjectPtr<UUserWidget> Widget = nullptr;
 
 	UPROPERTY()
+	FSoftObjectPath WidgetClassPath;
+
+	UPROPERTY()
 	EUICachePolicy Policy = EUICachePolicy::Transient;
 
 	/** Idle seconds before destruction (KeepUntilIdle only). */
@@ -30,6 +33,16 @@ struct FUICachedInstance
 
 	/** Real time (seconds) the instance was returned to the cache. */
 	double ClosedTime = 0.0;
+};
+
+/** Closed instances for one registry key, newest at the end. */
+USTRUCT()
+struct FUICachedInstanceList
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FUICachedInstance> Instances;
 };
 
 /**
@@ -46,7 +59,7 @@ class UIFRAMEWORKWIDGETS_API UUIWidgetCache : public UObject
 	GENERATED_BODY()
 
 public:
-	/** Start the idle reaper and subscribe to scene changes. */
+	/** Start the idle reaper. Safe to call repeatedly. */
 	void Initialize();
 
 	/** Stop the reaper, unsubscribe, and drop everything. */
@@ -56,13 +69,22 @@ public:
 	TSubclassOf<UUserWidget> ResolveClass(FGameplayTag Key, const FUIWidgetEntry& Entry);
 
 	/** Take a cached closed instance for reuse (removes it from the cache), or null. */
-	UUserWidget* TakeInstance(FGameplayTag Key);
+	UUserWidget* TakeInstance(FGameplayTag Key, const FUIWidgetEntry& Entry);
 
 	/** Return a closed instance to the cache if its policy keeps instances; else a no-op. */
 	void ReturnInstance(FGameplayTag Key, UUserWidget* Widget, const FUIWidgetEntry& Entry);
 
 	/** Drop all cached classes and instances. */
 	void ClearAll();
+
+	/** Drop the cached class and all closed instances for one registry key. */
+	void Remove(FGameplayTag Key);
+
+	/** Drop scene-scoped instances after the manager has closed the old scene. */
+	void HandleSceneChange();
+
+	/** Number of closed reusable instances held for a key. */
+	int32 GetNumInstances(FGameplayTag Key) const;
 
 	/** True if the policy keeps the widget class resident. */
 	static bool CachesClass(EUICachePolicy Policy);
@@ -73,18 +95,19 @@ public:
 private:
 	bool Tick(float DeltaTime);
 	void ReapIdle();
-	void HandleMapChanged(UWorld* World);
 
 	/** Key -> resident widget class. */
 	UPROPERTY()
 	TMap<FGameplayTag, TSubclassOf<UUserWidget>> Classes;
 
-	/** Key -> closed, reusable instance. */
 	UPROPERTY()
-	TMap<FGameplayTag, FUICachedInstance> ClosedInstances;
+	TMap<FGameplayTag, FSoftObjectPath> ClassPaths;
+
+	/** Key -> closed, reusable instances (supports bAllowMultiple). */
+	UPROPERTY()
+	TMap<FGameplayTag, FUICachedInstanceList> ClosedInstances;
 
 	FTSTicker::FDelegateHandle TickHandle;
-	FDelegateHandle MapChangedHandle;
 
 	/** Reaper cadence (seconds). */
 	float ReapInterval = 5.f;

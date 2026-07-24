@@ -3,6 +3,7 @@
 #include "UIEventBusSubsystem.h"
 #include "UIFrameworkCoreModule.h"
 #include "Engine/GameInstance.h"
+#include "Engine/World.h"
 
 UUIEventBusSubsystem* UUIEventBusSubsystem::Get(const UObject* WorldContextObject)
 {
@@ -31,7 +32,7 @@ void UUIEventBusSubsystem::Subscribe(FGameplayTag Channel, const FUIEventHandler
 		UE_LOG(LogUIFramework, Warning, TEXT("Subscribe: invalid channel or unbound handler."));
 		return;
 	}
-	Channels.FindOrAdd(Channel).Add(Handler);
+	Channels.FindOrAdd(Channel).AddUnique(Handler);
 }
 
 void UUIEventBusSubsystem::Unsubscribe(FGameplayTag Channel, const FUIEventHandler& Handler)
@@ -39,6 +40,10 @@ void UUIEventBusSubsystem::Unsubscribe(FGameplayTag Channel, const FUIEventHandl
 	if (FUIEventMulticast* Multicast = Channels.Find(Channel))
 	{
 		Multicast->Remove(Handler);
+		if (!Multicast->IsBound())
+		{
+			Channels.Remove(Channel);
+		}
 	}
 }
 
@@ -48,9 +53,13 @@ void UUIEventBusSubsystem::UnsubscribeAll(UObject* Subscriber)
 	{
 		return;
 	}
-	for (TPair<FGameplayTag, FUIEventMulticast>& Pair : Channels)
+	for (auto It = Channels.CreateIterator(); It; ++It)
 	{
-		Pair.Value.RemoveAll(Subscriber);
+		It.Value().RemoveAll(Subscriber);
+		if (!It.Value().IsBound())
+		{
+			It.RemoveCurrent();
+		}
 	}
 }
 
@@ -58,7 +67,10 @@ void UUIEventBusSubsystem::Broadcast(FGameplayTag Channel, UObject* Payload)
 {
 	if (FUIEventMulticast* Multicast = Channels.Find(Channel))
 	{
-		Multicast->Broadcast(Payload);
+		// Subscribers may add/remove channels from inside their callback. Broadcast
+		// a snapshot so TMap mutation cannot invalidate the delegate being invoked.
+		FUIEventMulticast Snapshot = *Multicast;
+		Snapshot.Broadcast(Payload);
 	}
 }
 

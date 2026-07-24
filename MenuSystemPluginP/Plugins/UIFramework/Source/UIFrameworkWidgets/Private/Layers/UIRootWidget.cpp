@@ -1,39 +1,28 @@
 // Copyright TikiStar. All Rights Reserved.
 
 #include "UIRootWidget.h"
+#include "UILayerStack.h"
+#include "UISettings.h"
+#include "UICoverageConfig.h"
 #include "UIFrameworkCoreModule.h"
 #include "Components/PanelWidget.h"
-#include "CommonActivatableWidget.h"
-
-namespace
-{
-	/** Activate a widget if it is a CommonUI activatable screen (so the action router tracks it). */
-	void ActivateIfScreen(UUserWidget* Widget)
-	{
-		if (UCommonActivatableWidget* Screen = Cast<UCommonActivatableWidget>(Widget))
-		{
-			Screen->ActivateWidget();
-		}
-	}
-
-	/** Deactivate a widget if it is a CommonUI activatable screen. */
-	void DeactivateIfScreen(UUserWidget* Widget)
-	{
-		if (UCommonActivatableWidget* Screen = Cast<UCommonActivatableWidget>(Widget))
-		{
-			Screen->DeactivateWidget();
-		}
-	}
-}
 
 void UUIRootWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	// Seed a stack for every bound layer so lookups never miss.
-	for (EUILayer Layer : GetLayersTopDown())
+	if (!Stack)
 	{
-		LayerStacks.FindOrAdd(Layer);
+		Stack = NewObject<UUILayerStack>(this);
+		Stack->OnWidgetRemoved().AddUObject(this, &UUIRootWidget::HandleStackWidgetRemoved);
+		Stack->OnWidgetRemoving().AddUObject(this, &UUIRootWidget::HandleStackWidgetRemoving);
+		Stack->OnWidgetActivationChanged().AddUObject(this, &UUIRootWidget::HandleStackWidgetActivationChanged);
+
+		// Wire the coverage matrix from settings (may be unset -> no cross-layer hiding).
+		if (const UUISettings* Settings = GetDefault<UUISettings>())
+		{
+			Stack->SetCoverageConfig(Settings->CoverageConfig.LoadSynchronous());
+		}
 	}
 }
 
@@ -41,12 +30,17 @@ UPanelWidget* UUIRootWidget::GetLayerContainer(EUILayer Layer) const
 {
 	switch (Layer)
 	{
-	case EUILayer::GameHUD: return Layer_GameHUD;
-	case EUILayer::Menu:    return Layer_Menu;
-	case EUILayer::Popup:   return Layer_Popup;
-	case EUILayer::Modal:   return Layer_Modal;
-	case EUILayer::Tooltip: return Layer_Tooltip;
-	default:                return nullptr;
+	case EUILayer::PersistentSystem: return Layer_PersistentSystem;
+	case EUILayer::Loading:          return Layer_Loading;
+	case EUILayer::Background:       return Layer_Background;
+	case EUILayer::Dock:             return Layer_Dock;
+	case EUILayer::FullWindow:       return Layer_FullWindow;
+	case EUILayer::PopupWindow:      return Layer_PopupWindow;
+	case EUILayer::Guide:            return Layer_Guide;
+	case EUILayer::Notification:     return Layer_Notification;
+	case EUILayer::Tips:             return Layer_Tips;
+	case EUILayer::Max:
+	default:                         return nullptr;
 	}
 }
 
@@ -55,13 +49,6 @@ UUserWidget* UUIRootWidget::PushToLayer(EUILayer Layer, TSubclassOf<UUserWidget>
 	if (!WidgetClass)
 	{
 		UE_LOG(LogUIFramework, Warning, TEXT("PushToLayer: null WidgetClass."));
-		return nullptr;
-	}
-
-	UPanelWidget* Container = GetLayerContainer(Layer);
-	if (!Container)
-	{
-		UE_LOG(LogUIFramework, Warning, TEXT("PushToLayer: layer %d has no bound container."), static_cast<int32>(Layer));
 		return nullptr;
 	}
 
@@ -77,9 +64,19 @@ UUserWidget* UUIRootWidget::PushToLayer(EUILayer Layer, TSubclassOf<UUserWidget>
 
 UUserWidget* UUIRootWidget::PushWidget(EUILayer Layer, UUserWidget* Widget)
 {
-	if (!Widget)
+	UUserWidget* Result = PushWidgetDeferred(Layer, Widget);
+	if (Result)
 	{
-		UE_LOG(LogUIFramework, Warning, TEXT("PushWidget: null widget."));
+		RefreshStack();
+	}
+	return Result;
+}
+
+UUserWidget* UUIRootWidget::PushWidgetDeferred(EUILayer Layer, UUserWidget* Widget, bool bBlocksInput, bool bHandlesBack)
+{
+	if (!Widget || !IsValidUILayer(Layer))
+	{
+		UE_LOG(LogUIFramework, Warning, TEXT("PushWidget: null widget or invalid layer %d."), static_cast<int32>(Layer));
 		return nullptr;
 	}
 
@@ -90,146 +87,84 @@ UUserWidget* UUIRootWidget::PushWidget(EUILayer Layer, UUserWidget* Widget)
 		return nullptr;
 	}
 
-	// Deactivate the screen currently on top of this layer before covering it.
-	TArray<TObjectPtr<UUserWidget>>& Stack = LayerStacks.FindOrAdd(Layer);
-	if (Stack.Num() > 0)
-	{
-		DeactivateIfScreen(Stack.Last());
-	}
+	return Stack ? Stack->Push(Container, Layer, Widget, false, bBlocksInput, bHandlesBack) : nullptr;
+}
 
-	Container->AddChild(Widget);
-	Stack.Add(Widget);
-
-	// Activate if it's a CommonUI screen (drives focus/input via the action router);
-	// otherwise focus it directly so gamepad / keyboard navigation lands on it.
-	if (Cast<UCommonActivatableWidget>(Widget))
+void UUIRootWidget::RefreshStack()
+{
+	if (Stack)
 	{
-		ActivateIfScreen(Widget);
+		Stack->Refresh();
 	}
-	else
-	{
-		Widget->SetFocus();
-	}
-
-	return Widget;
 }
 
 bool UUIRootWidget::PopFromLayer(EUILayer Layer)
 {
-	TArray<TObjectPtr<UUserWidget>>* Stack = LayerStacks.Find(Layer);
-	if (!Stack || Stack->Num() == 0)
-	{
-		return false;
-	}
-
-	UUserWidget* Top = Stack->Last();
-	Stack->Pop();
-
-	if (Top)
-	{
-		DeactivateIfScreen(Top);
-		Top->RemoveFromParent();
-	}
-
-	// Re-activate / focus the newly exposed top of this layer, if any.
-	if (Stack->Num() > 0)
-	{
-		if (UUserWidget* NewTop = Stack->Last())
-		{
-			if (Cast<UCommonActivatableWidget>(NewTop))
-			{
-				ActivateIfScreen(NewTop);
-			}
-			else
-			{
-				NewTop->SetFocus();
-			}
-		}
-	}
-
-	return true;
+	return Stack ? Stack->PopTop(Layer, EUIWidgetCloseReason::LayerPop) : false;
 }
 
 void UUIRootWidget::PopAllFromLayer(EUILayer Layer)
 {
-	TArray<TObjectPtr<UUserWidget>>* Stack = LayerStacks.Find(Layer);
-	if (!Stack)
+	if (Stack)
 	{
-		return;
+		Stack->ClearLayer(Layer, EUIWidgetCloseReason::LayerClear);
 	}
-
-	for (int32 i = Stack->Num() - 1; i >= 0; --i)
-	{
-		if (UUserWidget* Widget = (*Stack)[i])
-		{
-			Widget->RemoveFromParent();
-		}
-	}
-	Stack->Reset();
 }
 
 bool UUIRootWidget::RemoveWidget(EUILayer Layer, UUserWidget* Widget)
 {
-	if (!Widget)
-	{
-		return false;
-	}
+	return RemoveWidgetWithReason(Layer, Widget, EUIWidgetCloseReason::Requested);
+}
 
-	TArray<TObjectPtr<UUserWidget>>* Stack = LayerStacks.Find(Layer);
-	if (!Stack)
-	{
-		return false;
-	}
-
-	const int32 Index = Stack->IndexOfByKey(Widget);
-	if (Index == INDEX_NONE)
-	{
-		return false;
-	}
-
-	Stack->RemoveAt(Index);
-	Widget->RemoveFromParent();
-	return true;
+bool UUIRootWidget::RemoveWidgetWithReason(EUILayer Layer, UUserWidget* Widget, EUIWidgetCloseReason Reason)
+{
+	return Stack ? Stack->Remove(Layer, Widget, Reason) : false;
 }
 
 UUserWidget* UUIRootWidget::GetTopWidget(EUILayer Layer) const
 {
-	const TArray<TObjectPtr<UUserWidget>>* Stack = LayerStacks.Find(Layer);
-	if (Stack && Stack->Num() > 0)
-	{
-		return Stack->Last();
-	}
-	return nullptr;
+	return Stack ? Stack->GetTop(Layer) : nullptr;
+}
+
+UUserWidget* UUIRootWidget::GetTopMostWidget() const
+{
+	return Stack ? Stack->GetTopMost() : nullptr;
 }
 
 bool UUIRootWidget::IsLayerActive(EUILayer Layer) const
 {
-	const TArray<TObjectPtr<UUserWidget>>* Stack = LayerStacks.Find(Layer);
-	return Stack && Stack->Num() > 0;
+	return Stack ? Stack->IsLayerActive(Layer) : false;
+}
+
+bool UUIRootWidget::IsWidgetActive(const UUserWidget* Widget) const
+{
+	return Stack ? Stack->IsWidgetActive(Widget) : false;
 }
 
 bool UUIRootWidget::HandleBackAction()
 {
-	// Highest active layer consumes the back action first.
-	for (EUILayer Layer : GetLayersTopDown())
-	{
-		if (IsLayerActive(Layer))
-		{
-			return PopFromLayer(Layer);
-		}
-	}
-	return false;
+	return Stack ? Stack->PopTopMost(EUIWidgetCloseReason::Back) : false;
 }
 
-const TArray<EUILayer>& UUIRootWidget::GetLayersTopDown()
+void UUIRootWidget::ClearAllWidgets(EUIWidgetCloseReason Reason)
 {
-	// Top to bottom: Tooltip is above Modal is above Popup ... GameHUD is bottom.
-	static const TArray<EUILayer> Layers = {
-		EUILayer::Tooltip,
-		EUILayer::Modal,
-		EUILayer::Popup,
-		EUILayer::Menu,
-		EUILayer::GameHUD
-	};
-	return Layers;
+	if (Stack)
+	{
+		Stack->ClearAll(Reason);
+	}
+}
+
+void UUIRootWidget::HandleStackWidgetRemoved(UUserWidget* Widget, EUILayer Layer)
+{
+	WidgetRemovedEvent.Broadcast(Widget, Layer);
+}
+
+void UUIRootWidget::HandleStackWidgetRemoving(UUserWidget* Widget, EUILayer Layer, EUIWidgetCloseReason Reason)
+{
+	WidgetRemovingEvent.Broadcast(Widget, Layer, Reason);
+}
+
+void UUIRootWidget::HandleStackWidgetActivationChanged(UUserWidget* Widget, EUILayer Layer, bool bIsActive)
+{
+	WidgetActivationChangedEvent.Broadcast(Widget, Layer, bIsActive);
 }

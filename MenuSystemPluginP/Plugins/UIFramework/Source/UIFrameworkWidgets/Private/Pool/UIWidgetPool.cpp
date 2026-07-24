@@ -9,6 +9,14 @@
 
 void UUIWidgetPool::SetWorld(UWorld* InWorld)
 {
+	if (World.Get() != InWorld)
+	{
+		StopReaper();
+		// Widgets are world-bound. Never hand an instance created in the old
+		// world to callers operating in the new one.
+		ReleaseAll();
+		Reset();
+	}
 	World = InWorld;
 	StartReaper();
 }
@@ -79,7 +87,7 @@ UUserWidget* UUIWidgetPool::Acquire(TSubclassOf<UUserWidget> WidgetClass)
 
 	if (Result)
 	{
-		ActiveWidgets.Add(Result);
+		ActiveWidgets.AddUnique(Result);
 		NotifyAcquired(Result);
 	}
 	return Result;
@@ -89,6 +97,14 @@ void UUIWidgetPool::Release(UUserWidget* Widget)
 {
 	if (!Widget)
 	{
+		return;
+	}
+
+	if (!ActiveWidgets.Contains(Widget))
+	{
+		UE_LOG(LogUIFramework, Warning,
+			TEXT("WidgetPool::Release ignored widget '%s' because it is not currently acquired."),
+			*GetNameSafe(Widget));
 		return;
 	}
 

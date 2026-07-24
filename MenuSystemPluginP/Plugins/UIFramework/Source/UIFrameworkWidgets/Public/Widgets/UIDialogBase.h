@@ -13,9 +13,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUIDialogConfirmed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUIDialogCancelled);
 
 /**
- * Modal confirm dialog. Pushed onto the Modal layer via UUILayerSubsystem; closes
- * itself by popping that layer, so the stack stays in sync. Demonstrates the layer
- * system + button controls working together. See Docs/DESIGN.md sections 4 & 6.
+ * Confirm dialog placed on PopupWindow. When opened by UUIManagerSubsystem it closes through that
+ * manager so registry tracking and instance caching stay in sync. Direct layer use
+ * remains supported as a fallback. See Docs/DESIGN.md sections 4 & 6.
  *
  * WBP pairing: reparent WBP_Dialog to this class. Name the title/body text blocks
  * "TitleText" / "BodyText" and the buttons "ConfirmButton" / "CancelButton"
@@ -39,7 +39,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI|Dialog")
 	void Setup(const FText& InTitle, const FText& InBody);
 
-	/** Close the dialog by popping the Modal layer. */
+	/** Close through the manager when tracked, otherwise remove this PopupWindow widget. */
 	UFUNCTION(BlueprintCallable, Category = "UI|Dialog")
 	void Close();
 

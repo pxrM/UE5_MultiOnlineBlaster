@@ -18,6 +18,7 @@ public class UIFrameworkWidgets : ModuleRules
 			Path.Combine(ModuleDirectory, "Public", "Layers"),
 			Path.Combine(ModuleDirectory, "Public", "Management"),
 			Path.Combine(ModuleDirectory, "Public", "Pool"),
+			Path.Combine(ModuleDirectory, "Public", "Scripting"),
 			Path.Combine(ModuleDirectory, "Public", "ViewModels"),
 			Path.Combine(ModuleDirectory, "Public", "Styles"),
 			Path.Combine(ModuleDirectory, "Public", "Widgets")
