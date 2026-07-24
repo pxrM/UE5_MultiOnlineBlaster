@@ -31,6 +31,14 @@
 		{
 			"Name": "WidgetAnimTimeline",
 			"Enabled": true
+		},
+		{
+			"Name": "UnLua",
+			"Enabled": true
+		},
+		{
+			"Name": "UIFrameworkUnLua",
+			"Enabled": true
 		}
 	]
 }
