@@ -69,6 +69,7 @@ public:
 		int32 MaxOpenInstances,
 		int32 MaxCachedInstances,
 		float IdleTimeoutSeconds,
+		const FString& ScriptModule,
 		bool bReplaceExisting,
 		FString& OutError);
 

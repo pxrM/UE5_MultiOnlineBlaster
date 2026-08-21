@@ -20,10 +20,16 @@ public class UIFrameworkUnLua : ModuleRules
 			"CommonInput",
 			"GameplayTags",
 			"FieldNotification",
+			"UIFrameworkCore",
 			"UIFrameworkWidgets",
 			"UnLua"
 		});
 
-		PrivateDependencyModuleNames.Add("Lua");
+		// Only the automation tests include lua.hpp directly; the runtime adapter
+		// reaches Lua exclusively through UnLua's reflection layer.
+		if (Target.bBuildDeveloperTools)
+		{
+			PrivateDependencyModuleNames.Add("Lua");
+		}
 	}
 }

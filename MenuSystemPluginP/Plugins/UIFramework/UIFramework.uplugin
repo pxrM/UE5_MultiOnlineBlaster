@@ -6,7 +6,7 @@
 	"Description": "Production-grade reusable UMG UI framework with layered stack management.",
 	"Category": "UI",
 	"CreatedBy": "TikiStar",
-	"CanContainContent": true,
+	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,

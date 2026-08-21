@@ -69,6 +69,18 @@ struct FUIWidgetEntry
 	/** Idle seconds before a KeepUntilIdle instance is destroyed. Ignored by other policies. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (EditCondition = "CachePolicy == EUICachePolicy::KeepUntilIdle", ClampMin = "0.0"))
 	float IdleTimeoutSeconds = 60.f;
+
+	/**
+	 * Optional script module bound to the instance at construction, e.g. "UI.MainMenu"
+	 * for Content/Script/UI/MainMenu.lua. Empty means no script binding.
+	 *
+	 * Requires a script adapter plugin (see IUIScriptClassBinder). Because script
+	 * runtimes bind per UClass, two entries must not map the same WidgetClass to
+	 * different modules. Leave empty when the widget class already declares its own
+	 * module statically.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI|Scripting")
+	FString ScriptModule;
 };
 
 /** Validate one entry from either the asset registry or a runtime script overlay. */
@@ -98,6 +110,74 @@ inline void ValidateUIWidgetEntry(
 	{
 		OutErrors.Add(FString::Printf(TEXT("Registry key '%s' sets MaxOpenInstances but disallows multiple instances."), *Key.ToString()));
 	}
+	// A zero TTL means the reaper frees the instance on its next pass, so the entry
+	// pays the cost of instance caching and gets none of the benefit. Almost always a
+	// forgotten field rather than an intent.
+	if (Entry.CachePolicy == EUICachePolicy::KeepUntilIdle && Entry.IdleTimeoutSeconds <= 0.f)
+	{
+		OutErrors.Add(FString::Printf(
+			TEXT("Registry key '%s' uses KeepUntilIdle with IdleTimeoutSeconds %.2f; ")
+			TEXT("a non-positive timeout discards the instance immediately. Use Transient instead."),
+			*Key.ToString(), Entry.IdleTimeoutSeconds));
+	}
+	if (!Entry.ScriptModule.IsEmpty())
+	{
+		// Script module paths are dot-separated and suffix-free; the runtime resolves
+		// them against its own script root. Catch the two mistakes people actually make.
+		if (Entry.ScriptModule.EndsWith(TEXT(".lua"), ESearchCase::IgnoreCase))
+		{
+			OutErrors.Add(FString::Printf(
+				TEXT("Registry key '%s' ScriptModule '%s' must not include the .lua suffix."),
+				*Key.ToString(), *Entry.ScriptModule));
+		}
+		if (Entry.ScriptModule.Contains(TEXT("/")) || Entry.ScriptModule.Contains(TEXT("\\")))
+		{
+			OutErrors.Add(FString::Printf(
+				TEXT("Registry key '%s' ScriptModule '%s' must use dots, not path separators."),
+				*Key.ToString(), *Entry.ScriptModule));
+		}
+		// Binding happens on the constructed widget, so a module with nothing to bind
+		// to would be dropped without ever being loaded.
+		if (Entry.WidgetClass.IsNull())
+		{
+			OutErrors.Add(FString::Printf(
+				TEXT("Registry key '%s' sets ScriptModule '%s' but has no WidgetClass to bind it to."),
+				*Key.ToString(), *Entry.ScriptModule));
+		}
+	}
+}
+
+/**
+ * Script runtimes bind a module to a UClass, not to an instance, so the same widget
+ * class cannot serve two different modules. Collect that conflict across a whole set
+ * of entries. Entries with an empty ScriptModule are ignored.
+ */
+inline void ValidateUIScriptModuleUniqueness(
+	const TMap<FGameplayTag, FUIWidgetEntry>& Entries,
+	TArray<FString>& OutErrors)
+{
+	TMap<FSoftObjectPath, TPair<FGameplayTag, FString>> ClaimedByClass;
+	for (const TPair<FGameplayTag, FUIWidgetEntry>& Pair : Entries)
+	{
+		if (Pair.Value.ScriptModule.IsEmpty() || Pair.Value.WidgetClass.IsNull())
+		{
+			continue;
+		}
+		const FSoftObjectPath ClassPath = Pair.Value.WidgetClass.ToSoftObjectPath();
+		if (const TPair<FGameplayTag, FString>* Claim = ClaimedByClass.Find(ClassPath))
+		{
+			if (Claim->Value != Pair.Value.ScriptModule)
+			{
+				OutErrors.Add(FString::Printf(
+					TEXT("Registry keys '%s' and '%s' both use WidgetClass '%s' but request different ")
+					TEXT("ScriptModules ('%s' vs '%s'). Script binding is per class, so only one can win."),
+					*Claim->Key.ToString(), *Pair.Key.ToString(), *ClassPath.ToString(),
+					*Claim->Value, *Pair.Value.ScriptModule));
+			}
+			continue;
+		}
+		ClaimedByClass.Add(ClassPath, TPair<FGameplayTag, FString>(Pair.Key, Pair.Value.ScriptModule));
+	}
 }
 
 /**
@@ -118,7 +198,11 @@ public:
 	/** Look up an entry; returns nullptr if the key is not registered. */
 	const FUIWidgetEntry* FindEntry(const FGameplayTag& Key) const { return Entries.Find(Key); }
 
-	/** Validate configuration without loading any WidgetClass assets. */
+	/**
+	 * Validate configuration without loading any WidgetClass assets.
+	 * ScriptModule uniqueness spans the DataAsset and the runtime overlay together, so
+	 * it is checked by the manager (see ValidateUIScriptModuleUniqueness), not here.
+	 */
 	void ValidateEntries(TArray<FString>& OutErrors) const
 	{
 		for (const TPair<FGameplayTag, FUIWidgetEntry>& Pair : Entries)

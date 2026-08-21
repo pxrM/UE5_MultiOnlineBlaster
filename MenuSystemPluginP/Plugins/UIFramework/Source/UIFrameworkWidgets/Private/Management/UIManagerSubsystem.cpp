@@ -8,6 +8,7 @@
 #include "UIWidgetCache.h"
 #include "UIManagedWidget.h"
 #include "UIRootWidget.h"
+#include "UIScriptClassBinder.h"
 #include "UIFrameworkCoreModule.h"
 #include "Engine/GameInstance.h"
 #include "Engine/AssetManager.h"
@@ -114,6 +115,26 @@ const FUIWidgetEntry* UUIManagerSubsystem::ResolveEntry(FGameplayTag Key) const
 	return Registry ? Registry->FindEntry(Key) : nullptr;
 }
 
+void UUIManagerSubsystem::BuildEffectiveEntries(TMap<FGameplayTag, FUIWidgetEntry>& OutEntries) const
+{
+	OutEntries.Reset();
+
+	const UUISettings* Settings = GetDefault<UUISettings>();
+	if (Settings && !Settings->Registry.IsNull())
+	{
+		if (const UUIWidgetRegistry* Registry = Settings->Registry.LoadSynchronous())
+		{
+			OutEntries = Registry->Entries;
+		}
+	}
+
+	// Runtime overlays win, matching ResolveEntry.
+	for (const TPair<FGameplayTag, FUIWidgetEntry>& Pair : RuntimeEntries)
+	{
+		OutEntries.Add(Pair.Key, Pair.Value);
+	}
+}
+
 bool UUIManagerSubsystem::RegisterRuntimeEntry(
 	FGameplayTag Key,
 	const FUIWidgetEntry& Entry,
@@ -132,6 +153,25 @@ bool UUIManagerSubsystem::RegisterRuntimeEntry(
 	{
 		OutError = FString::Printf(TEXT("Registry key '%s' already exists."), *Key.ToString());
 		return false;
+	}
+
+	// Script binding is per UClass, so reject a second module for a class another key
+	// already claimed. Checked here rather than only in ValidateConfiguration because
+	// the losing entry would otherwise fail silently at open time. Compared against the
+	// effective registry, since the conflicting claim can come from the DataAsset.
+	if (!Entry.ScriptModule.IsEmpty() && !Entry.WidgetClass.IsNull())
+	{
+		TMap<FGameplayTag, FUIWidgetEntry> Combined;
+		BuildEffectiveEntries(Combined);
+		Combined.Add(Key, Entry);
+
+		TArray<FString> ScriptErrors;
+		ValidateUIScriptModuleUniqueness(Combined, ScriptErrors);
+		if (!ScriptErrors.IsEmpty())
+		{
+			OutError = FString::Join(ScriptErrors, TEXT(" "));
+			return false;
+		}
 	}
 
 	CancelOpenUI(Key);
@@ -353,7 +393,13 @@ UUserWidget* UUIManagerSubsystem::PushEntry(FGameplayTag Key, UObject* Payload)
 			return nullptr;
 		}
 
+		// Bind before the widget reaches a layer: the widget tree already exists (so
+		// BindWidget members are populated) but NativeConstruct has not run yet.
 		Widget = CreateWidget<UUserWidget>(Layers->GetRoot(), WidgetClass);
+		if (Widget && !Entry->ScriptModule.IsEmpty())
+		{
+			UIFrameworkScript::BindWidget(this, Widget, Entry->ScriptModule);
+		}
 	}
 
 	if (!Widget)
@@ -733,6 +779,12 @@ bool UUIManagerSubsystem::ValidateConfiguration(TArray<FString>& OutErrors) cons
 	{
 		ValidateUIWidgetEntry(Pair.Key, Pair.Value, OutErrors);
 	}
+
+	// Script binding is per UClass, so this check has to span the DataAsset and the
+	// runtime overlay together rather than validating either in isolation.
+	TMap<FGameplayTag, FUIWidgetEntry> Effective;
+	BuildEffectiveEntries(Effective);
+	ValidateUIScriptModuleUniqueness(Effective, OutErrors);
 
 	if (!Settings->CoverageConfig.IsNull())
 	{

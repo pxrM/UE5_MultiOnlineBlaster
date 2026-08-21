@@ -43,8 +43,13 @@ protected:
 	// DesiredFocusWidget (bind a widget named "DesiredFocusWidget" in the WBP).
 	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 
-	/** Create the view model instance. Override to customize construction / dependencies. */
-	virtual UUIViewModelBase* CreateViewModel();
+	/**
+	 * Create the view model instance. Override (C++, Blueprint, or a bound script) to
+	 * customize construction / dependencies. The default news up ViewModelClass.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "UI|ViewModel")
+	UUIViewModelBase* CreateViewModel();
+	virtual UUIViewModelBase* CreateViewModel_Implementation();
 
 	/** Wire the instance into MVVM bindings. Override (C++ or BP) for custom injection. */
 	UFUNCTION(BlueprintNativeEvent, Category = "UI|ViewModel")

@@ -164,6 +164,7 @@ bool UUIScriptBridgeSubsystem::RegisterRuntimeWidget(
 	int32 MaxOpenInstances,
 	int32 MaxCachedInstances,
 	float IdleTimeoutSeconds,
+	const FString& ScriptModule,
 	bool bReplaceExisting,
 	FString& OutError)
 {
@@ -201,6 +202,7 @@ bool UUIScriptBridgeSubsystem::RegisterRuntimeWidget(
 	Entry.MaxOpenInstances = MaxOpenInstances;
 	Entry.MaxCachedInstances = MaxCachedInstances;
 	Entry.IdleTimeoutSeconds = IdleTimeoutSeconds;
+	Entry.ScriptModule = ScriptModule;
 	return Manager->RegisterRuntimeEntry(Key, Entry, bReplaceExisting, OutError);
 }
 

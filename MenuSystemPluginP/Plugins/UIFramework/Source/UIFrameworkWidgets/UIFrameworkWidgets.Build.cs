@@ -21,6 +21,7 @@ public class UIFrameworkWidgets : ModuleRules
 			Path.Combine(ModuleDirectory, "Public", "Scripting"),
 			Path.Combine(ModuleDirectory, "Public", "ViewModels"),
 			Path.Combine(ModuleDirectory, "Public", "Styles"),
+			Path.Combine(ModuleDirectory, "Public", "Tests"),
 			Path.Combine(ModuleDirectory, "Public", "Widgets")
 		});
 

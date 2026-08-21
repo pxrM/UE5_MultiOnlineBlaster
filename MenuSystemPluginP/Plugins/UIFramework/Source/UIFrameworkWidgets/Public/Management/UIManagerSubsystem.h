@@ -196,6 +196,12 @@ private:
 	/** Runtime overlays win; the configured DataAsset remains the fallback. */
 	const FUIWidgetEntry* ResolveEntry(FGameplayTag Key) const;
 
+	/**
+	 * The registry as ResolveEntry sees it: DataAsset entries with runtime overlays
+	 * applied on top. Needed for checks that span keys rather than inspecting one.
+	 */
+	void BuildEffectiveEntries(TMap<FGameplayTag, FUIWidgetEntry>& OutEntries) const;
+
 	/** Most recently opened live instance for a key, or null. */
 	UUserWidget* GetLatestOpenWidget(FGameplayTag Key) const;
 

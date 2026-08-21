@@ -44,7 +44,7 @@ TOptional<FUIInputConfig> UUIActivatableScreenBase::GetDesiredInputConfig() cons
 	return FUIInputConfig(InputMode, EMouseCaptureMode::NoCapture);
 }
 
-UUIViewModelBase* UUIActivatableScreenBase::CreateViewModel()
+UUIViewModelBase* UUIActivatableScreenBase::CreateViewModel_Implementation()
 {
 	return NewObject<UUIViewModelBase>(this, ViewModelClass);
 }
